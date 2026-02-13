@@ -1,4 +1,4 @@
-# KIneJD: KINE App
+# KIneJD: MAIKINE
 
 This is the repository that will contain the source code for the Kinesiology web application marketplace. The project is to provide a platform where UPR students and professors may buy and sell their old sports equipment after its purpose has been fulfilled. Additionally, it allows for the UPRM Kinesiology department to lend out their equipment for both students and professors. The site provides a safe, organized, and user-friendly interface where the process of obtaining sports equipment may be streamlined for the faculty.
 
