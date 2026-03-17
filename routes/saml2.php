@@ -19,6 +19,8 @@ Route::any('/auth/callback', function () {
         'first_name' => $saml->first_name,
         'last_name' => $saml->last_name,
         'auth_type' => 'saml2',
+        'role' => 'user',
+        'status' => 'active',
         'password' => "thisisatest",
     ]);
 

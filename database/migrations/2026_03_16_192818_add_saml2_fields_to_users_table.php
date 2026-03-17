@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('first_name')->nullable(true);
             $table->string('last_name')->nullable(true);
             $table->string('auth_type')->default('local');
-
+            $table->string('role')->default('user');
+            $table->string('status')->default('active');
         });
     }
 
