@@ -7,7 +7,7 @@ Route::get('/', function () {
 });
 Route::get('/welcome', function () {
     return view('welcome');
-});
+})->middleware(['role:super_admin']);
 
 // Asi se le otorgamos accesos a los views filtrando por roles
 Route::get('/permisos', function () {
@@ -16,12 +16,12 @@ Route::get('/permisos', function () {
 
 // Ver lista de usuarios
 Route::get('/users', [UserController::class, 'index'])
-    ->middleware(['auth', 'role:super_admin'])
+    ->middleware(['role:super_admin'])
     ->name('users.index');
 
 // Cambiar rol de un usuario
 Route::post('/users/{user}/role', [UserController::class, 'updateRole'])
-    ->middleware(['auth', 'role:super_admin'])
+    ->middleware(['role:super_admin'])
     ->name('users.updateRole');
 
 require __DIR__.'\saml2.php';
