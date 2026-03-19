@@ -9,7 +9,4 @@ Route::get('/welcome', function () {
     return view('welcome');
 });
 
-
-
-
 require __DIR__.'\saml2.php';
