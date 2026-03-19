@@ -1,11 +1,11 @@
-@import 'tailwindcss';
+@import 'bootstrap/dist/css/bootstrap.min.css';
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+body {
+    font-family: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+    background-color: #f8f9fa;
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+.marketplace-card img {
+    height: 220px;
+    object-fit: cover;
 }
