@@ -69,13 +69,16 @@
     <div class="mt-4">
 {{--        <a href="{{ route('saml.login') }}" class="btn login-btn text-white shadow">--}}
         <a href="/kinventory" class="btn login-btn text-white shadow">
-        Accede con tu cuenta UPRM
+        Accede con tu cuenta UPRM*
         </a>
     </div>
 
     <!-- Footer -->
-    <p class="footer-text">
-        Sistema de Marketplace e Inventario de Kinesiología
+    <p class="footer-text fw-bold">
+        *El portal del departamento de Kinesiologia llamado MAIKINE <br>
+        es de uso exclusivo para ingresados de la Universidad <br>
+        de Puerto Rico Recinto de Mayagüez (UPRM)
+
     </p>
 
 </div>
