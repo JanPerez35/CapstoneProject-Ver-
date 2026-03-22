@@ -1,4 +1,7 @@
 <x-layout>
+    <x-navbar>
+    </x-navbar>
+
     {{-- Ignore this, this was me testing the email service it is for me to reference later--}}
 <h2>Send Email</h2>
 
