@@ -1,11 +1,5 @@
-{{-- Ignore this, this was me testing the email service it is for me to reference later--}}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Send Email</title>
-</head>
-<body>
-
+<x-layout>
+    {{-- Ignore this, this was me testing the email service it is for me to reference later--}}
 <h2>Send Email</h2>
 
 @if(session('success'))
@@ -35,5 +29,4 @@
     <button type="submit">Send</button>
 </form>
 
-</body>
-</html>
+ </x-layout>

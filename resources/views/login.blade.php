@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>MAIKINE Portal</title>
 
-    <!-- Bootstrap CDN, this is temporary until we figure out how to install it locally -->
+    <!-- Bootstrap npm package connection -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
