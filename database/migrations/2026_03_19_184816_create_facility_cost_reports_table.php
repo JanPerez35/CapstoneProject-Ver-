@@ -10,22 +10,13 @@ return new class extends Migration
     {
         Schema::create('facility_cost_reports', function (Blueprint $table) {
             $table->id();
-
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-
-            $table->integer('classroom_id');
-
-            $table->timestamp('start_time');
-            $table->timestamp('end_time');
-
-            $table->timestamp('event_date');
-            $table->text('event_description');
-
             $table->timestamps();
         });
-        }
+    }
 
-    public function down(): void {
-        Schema::dropIfExists('users');
+    public function down(): void
+    {
+        Schema::dropIfExists('facility_cost_reports');
     }
 };
