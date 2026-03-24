@@ -37,6 +37,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let cart = [];
 
+    function updateCartBadge() {
+        const count = cart.length;
+
+        cartCount.textContent = count;
+
+        if (count >= 1) {
+            cartCount.classList.remove('d-none');
+        } else {
+            cartCount.classList.add('d-none');
+        }
+    }
+
     const toast = bootstrap.Toast.getOrCreateInstance(cartToastEl);
 
     document.querySelectorAll('.open-borrow-modal').forEach((button) => {
@@ -85,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
             image: currentItem.image
         });
 
-        cartCount.textContent = cart.length;
+        updateCartBadge();
         renderCart();
 
         cartToastMessage.textContent = `${currentItem.name} agregado al carrito`;
@@ -127,9 +139,11 @@ document.addEventListener('DOMContentLoaded', () => {
             button.addEventListener('click', () => {
                 const index = parseInt(button.dataset.index, 10);
                 cart.splice(index, 1);
-                cartCount.textContent = cart.length;
+                updateCartBadge();
                 renderCart();
             });
         });
     }
+
+    updateCartBadge();
 });
