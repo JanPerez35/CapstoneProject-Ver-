@@ -16,7 +16,7 @@ Route::get('/my_profile', function () {
 })->name('my_profile');
 
 
-Route::get('/dashboard', [EmailController::class, 'showForm'])->name('kinventory');
+Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
 Route::post('/send-email', [EmailController::class, 'sendEmail']);
 
 Route::get('/search_user', function () {
@@ -25,7 +25,7 @@ Route::get('/search_user', function () {
 
 Route::get('/inventory_management', function () {
     return view('inventory_management');
-})->name('inventory_management')->middleware('role:super,inventory,user');
+})->name('inventory_management')->middleware('role:super,inventory');
 
 Route::get('/kinemercado', function () {
     return view('kinemercado');
