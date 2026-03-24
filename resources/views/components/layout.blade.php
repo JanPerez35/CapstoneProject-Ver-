@@ -25,10 +25,17 @@
         </a>
         <ul class="nav nav-pills">
             <li class="nav-item">
-                <a href="#" class="btn btn-outline-success btn-md mx-3"> Mi perfil</a>
+                <a href="#" class="btn btn-outline-success btn-md mx-3">
+                    <i class="bi bi-person-fill"></i>
+                    Mi perfil
+                </a>
             </li>
             <li class="nav-item">
-                <a href="#" class="btn btn-outline-success btn-md" >Cerrar Sesión</a></li>
+                <a href="#" class="btn btn-outline-success btn-md" >
+                    <i class="bi bi-box-arrow-right"></i>
+                    Cerrar Sesión
+                </a>
+            </li>
         </ul>
     </header>
 </div>
