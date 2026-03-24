@@ -10,7 +10,7 @@ Route::get('/auth/saml/login', function () {
 })->name("saml.login");
 
 Route::any('/auth/callback', function () {
-    $saml = Socialite::driver('saml2')->user();
+    $saml = Socialite::driver('saml2')->stateless()->user();
 
     $user = User::updateOrCreate([
         'email' => $saml->getEmail(),
