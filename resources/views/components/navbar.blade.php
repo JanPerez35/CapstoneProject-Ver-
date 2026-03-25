@@ -8,17 +8,30 @@
             <ul class="nav w-100 justify-content-between flex-wrap justify-content-between gap-2">
 
                 <li class="nav-item flex-fill text-center">
-                    <a href="#" class="btn btn-outline-success w-100">Kinemercado</a>
+                    <a href="{{ route('kinemercado') }}"
+                       class="btn w-100
+                    {{request()->routeIs('kinemercado')? 'btn-success': 'btn-outline-success'}}">
+
+                        <i class="bi bi-shop"></i>
+
+                         Kinemercado
+                    </a>
                 </li>
 
                 <li class="nav-item flex-fill text-center">
-                    <a href="#" class="btn btn-outline-success w-100">Gestión de Mercado</a>
+                    <a href="{{ route('marketplace_management') }}"
+                       class="btn w-100
+                       {{request()->routeIs('marketplace_management')? 'btn-success': 'btn-outline-success'}}">
+                        <i class="bi bi-shop-window"></i>
+                        Gestión de Mercado
+                    </a>
                 </li>
 
                 <li class="nav-item flex-fill text-center">
                     <a href="{{ route('kinventory') }}"
                        class="btn w-100
-   {{ request()->routeIs('kinventory') ? 'btn-success' : 'btn-outline-success' }}">
+                        {{ request()->routeIs('kinventory') ? 'btn-success' : 'btn-outline-success' }}">
+                        <i class="bi bi-box-seam"></i>
                         Kinventario
                     </a>
                 </li>
@@ -26,7 +39,10 @@
                 <li class="nav-item flex-fill text-center">
                     <a href="{{ route('inventory_management') }}"
                        class="btn w-100
-   {{ request()->routeIs('inventory_management') ? 'btn-success' : 'btn-outline-success' }}">
+                        {{ request()->routeIs('inventory_management') ? 'btn-success' : 'btn-outline-success' }}">
+
+                        <i class="bi bi-boxes"></i>
+
                         Gestión de Inventario
                     </a>
                 </li>
@@ -34,17 +50,32 @@
                 <li class="nav-item flex-fill text-center">
                     <a href="{{ route('search_user') }}"
                        class="btn w-100
-   {{ request()->routeIs('search_user') ? 'btn-success' : 'btn-outline-success' }}">
+                         {{ request()->routeIs('search_user') ? 'btn-success' : 'btn-outline-success' }}">
+
+                        <i class="bi bi-people"></i>
+
                         Buscar Usuarios
                     </a>
                 </li>
 
                 <li class="nav-item flex-fill text-center">
-                    <a href="#" class="btn btn-outline-success w-100">Registros de Acceso</a>
+                    <a href="{{ route('access_logs') }}"
+                       class="btn w-100
+                        {{ request()->routeIs('access_logs') ? 'btn-success' : 'btn-outline-success' }}">
+
+                        <i class="bi bi-clipboard-check"></i>
+                        Registros de Acceso
+                    </a>
                 </li>
 
                 <li class="nav-item flex-fill text-center">
-                    <a href="#" class="btn btn-outline-success w-100">Gestión de Costos</a>
+                    <a href="{{ route('facility_management') }}"
+                       class="btn w-100
+                       {{ request()->routeIs('facility_management') ? 'btn-success' : 'btn-outline-success' }}">
+
+                        <i class="bi bi-currency-dollar"></i>
+                        Gestión de Costos (Mangual)
+                    </a>
                 </li>
 
             </ul>

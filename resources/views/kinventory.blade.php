@@ -142,11 +142,64 @@
                     </button>
                     <button type="button" class="btn btn-success" id="confirmAddToCart">
                         <i class="bi bi-cart-plus me-1"></i> Agregar
+
                     </button>
                 </div>
             </div>
         </div>
     </div>
+
+{{--    shopping cart icon--}}
+
+    <button
+        type="button"
+        class="btn btn-success rounded-circle shadow-lg cart-fab  pb-7"
+        data-bs-toggle="modal"
+        data-bs-target="#cartModal"
+    >
+        <i class="bi bi-cart3 fs-4"></i>
+        <span class="cart-badge" id="cartCount">0</span>
+    </button>
+
+{{--cart modal--}}
+
+    <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-end modal-lg">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header">
+                    <h4 class="modal-title fw-bold" id="cartModalLabel">Carrito</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="cartItemsContainer">
+                        <p class="text-muted mb-0">Tu carrito está vacío.</p>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-success">Continuar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="toast-container position-fixed bottom-0 start-0 p-3 ">
+    <div id="cartToast" class="toast align-items-center border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+        <div class = "toast-body fw-semibold" id="cartToastMessage">
+             Has agregado un equipo al carrito!
+        </div>
+        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+    </div>
+
+    </div>
+
+</div>
+
+
+
 </x-layout>
 
 
