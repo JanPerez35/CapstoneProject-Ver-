@@ -56,3 +56,37 @@
     justify-content: center;
     border: 2px solid white;
 }
+
+.report-btn:hover {
+    color: red !important;
+    border-color: red !important;
+    background-color: transparent !important;
+}
+
+.report-btn:hover i {
+    color: red !important;
+}
+
+.carousel-image-box {
+    height: 500px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+}
+
+.carousel-image {
+    max-height: 100%;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(1);
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    padding: 12px;
+}

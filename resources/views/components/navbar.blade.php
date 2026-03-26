@@ -9,12 +9,9 @@
 
                 <li class="nav-item flex-fill text-center">
                     <a href="{{ route('kinemercado') }}"
-                       class="btn w-100
-                    {{request()->routeIs('kinemercado')? 'btn-success': 'btn-outline-success'}}">
-
+                       class="btn w-100 {{ request()->routeIs('kinemercado', 'kinemercado_mensaje') ? 'btn-success' : 'btn-outline-success' }}">
                         <i class="bi bi-shop"></i>
-
-                         Kinemercado
+                        Kinemercado
                     </a>
                 </li>
 

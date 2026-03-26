@@ -40,12 +40,12 @@ Route::get('/facility_management', function () {
 })->name('facility_management');
 
 
-Route::get('/kinemercado/reportar_usuario', function () {
+/*Route::get('/kinemercado/reportar_usuario', function () {
     return view('kinemercado');
-})->name('kinemercado.reportar_usuario');
+})->name('kinemercado.reportar_usuario');*/
 
 Route::get('/kinemercado/mensaje', function () {
-    return view('kinemercado');
-})->name('kinemercado.mensaje');
+    return view('kinemercado_mensaje');
+})->name('kinemercado_mensaje');
 
 require __DIR__.'\saml2.php';

@@ -3,40 +3,42 @@
 ])
 <!doctype html>
 <html lang="en">
-@vite(['resources/css/app.css', 'resources/js/app.js'])
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{$title}}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body>
-<div class="container">
-    <header
-        class="d-flex flex-wrap justify-content-center py-3"
-    >
-        <a
-            href="/"
-            class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none"
-        >
-            <svg class="bi me-2" width="40" height="40" aria-hidden="true">
-                <use xlink:href="#bootstrap"></use>
-            </svg>
-            <span class="fs-4 fw-bold text-success">MAIKINE</span>
+<div class="container-fluid px-0">
+    <!--Webpage Header-->
+    <header class="d-flex flex-wrap align-items-center justify-content-between py-2 px-2 border-bottom bg-light">
+
+        <!-- Left-side -->
+        <a href="/kinemercado"
+           class="d-flex align-items-center mb-2 mb-md-0 text-decoration-none">
+
+            <img src="/images/kines_logo.png"
+                 alt="Logo"
+                 style="height: 75px; width:auto;"
+                 class="me-2">
+
+            <span class="fs-3 fw-bold text-success m-0">MAIKINE</span>
         </a>
-        <ul class="nav nav-pills">
-            <li class="nav-item">
-                <a href="#" class="btn btn-outline-success btn-md mx-3">
-                    <i class="bi bi-person-fill"></i>
-                    Mi perfil
-                </a>
-            </li>
-            <li class="nav-item">
-                <a href="#" class="btn btn-outline-success btn-md" >
-                    <i class="bi bi-box-arrow-right"></i>
-                    Cerrar Sesión
-                </a>
-            </li>
-        </ul>
+
+        <!-- Right-side-->
+        <div class="d-flex align-items-center text-end">
+            <a href="/search_user" class="btn btn-outline-success me-2">
+                <i class="bi bi-person-fill"></i>
+                Mi perfil
+            </a>
+
+            <a href="/" class="btn btn-success">
+                <i class="bi bi-box-arrow-right"></i>
+                Cerrar Sesión
+            </a>
+        </div>
+
     </header>
 </div>
 <main>{{$slot}}</main>
@@ -106,16 +108,19 @@
 
         <hr>
 
+        <!--All rights reserved & terms and condition information-->
         <div class="text-center pb-3">
             <p class="mb-1">
                 © 2026 MAIKINE - Portal del Departamento de Kinesiología | Colegio de Artes y Ciencias | Recinto Universitario de Mayagüez |<br> Universidad de Puerto Rico.
                 Todos los derechos reservados.
             </p>
+            <a href="" class="text-success d-block mb-1">
+                Terminos y Condiciones
+            </a>
             <small class="text-muted">
                 Sistema exclusivo para comunidad de UPRM
             </small>
         </div>
-
     </div>
 </footer>
 </body>
