@@ -33,7 +33,7 @@
                                 Publica tu equipo deportivo a la venta para otros usuarios
                             </p>
                             <small class="text-muted">
-                                Los campos marcados con <span class="text-danger">*</span> son obligatorios.
+                                <span class="text-danger fst-italic ">*</span> Campos requeridos (italic font)
                             </small>
                         </div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -110,7 +110,7 @@
                                 Subir imágenes
                             </label>
                             <small class="text-muted d-block" id="photoCounter">
-                                Máximo 3 fotos permitidos (0/3)
+                                Máximo 3 fotos permitidos (0/3) (italic font)
                             </small>
                         </form>
                     </div>
