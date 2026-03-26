@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loanDetailsSection = document.getElementById('loanDetailsSection');
     const emptyCartSection = document.getElementById('emptyCartSection');
-
     const cartFooterActions = document.getElementById('cartFooterActions');
 
     const cartModal = document.getElementById('cartModal');
@@ -36,18 +35,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const returnDate = document.getElementById('returnDate');
     const specialReason = document.getElementById('specialReason');
 
-    if (
-        !borrowModal ||
-        !borrowModalText ||
-        !borrowModalImage ||
-        !borrowModalStock ||
-        !borrowQuantity ||
-        !confirmAddToCart ||
-        !cartCount ||
-        !cartItemsContainer ||
-        !cartToastEl ||
-        !cartToastMessage
-    ) {
+    const hasBorrowModal =
+        borrowModal &&
+        borrowModalText &&
+        borrowModalImage &&
+        borrowModalStock &&
+        borrowQuantity &&
+        confirmAddToCart;
+
+    const hasCartUI =
+        cartCount &&
+        cartItemsContainer &&
+        cartToastEl &&
+        cartToastMessage;
+
+    if (!hasCartUI) {
         return;
     }
 
@@ -86,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function isBlockedPickupDay(dateString) {
         const date = new Date(`${dateString}T00:00:00`);
-        const day = date.getDay(); // 0=Sun, 5=Fri, 6=Sat
+        const day = date.getDay();
         return day === 0 || day === 5 || day === 6;
     }
 
@@ -123,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
             submitItemCount.textContent = totalUnits;
         }
     }
-
 
     function updateCartUI() {
         updateCartBadge();
@@ -246,69 +247,71 @@ document.addEventListener('DOMContentLoaded', () => {
         attachCartActionEvents();
     }
 
-    document.querySelectorAll('.open-borrow-modal').forEach((button) => {
-        button.addEventListener('click', () => {
-            currentItem.name = button.dataset.itemName || '';
-            currentItem.stock = parseInt(button.dataset.itemStock || '1', 10);
-            currentItem.image = button.dataset.itemImage || '';
-            currentItem.location = button.dataset.itemLocation || 'Sala de Equipo A';
+    if (hasBorrowModal) {
+        document.querySelectorAll('.open-borrow-modal').forEach((button) => {
+            button.addEventListener('click', () => {
+                currentItem.name = button.dataset.itemName || '';
+                currentItem.stock = parseInt(button.dataset.itemStock || '1', 10);
+                currentItem.image = button.dataset.itemImage || '';
+                currentItem.location = button.dataset.itemLocation || 'Sala de Equipo A';
 
-            borrowModalText.textContent = `Selecciona la cantidad de ${currentItem.name} que deseas`;
-            borrowModalImage.src = currentItem.image;
-            borrowModalImage.alt = currentItem.name;
-            borrowModalStock.textContent = currentItem.stock;
+                borrowModalText.textContent = `Selecciona la cantidad de ${currentItem.name} que deseas`;
+                borrowModalImage.src = currentItem.image;
+                borrowModalImage.alt = currentItem.name;
+                borrowModalStock.textContent = currentItem.stock;
 
-            borrowQuantity.value = 1;
-            borrowQuantity.min = 1;
-            borrowQuantity.max = currentItem.stock;
-        });
-    });
-
-    borrowQuantity.addEventListener('input', () => {
-        let value = parseInt(borrowQuantity.value, 10);
-
-        if (isNaN(value) || value < 1) {
-            value = 1;
-        }
-
-        if (value > currentItem.stock) {
-            value = currentItem.stock;
-        }
-
-        borrowQuantity.value = value;
-    });
-
-    confirmAddToCart.addEventListener('click', () => {
-        const quantity = parseInt(borrowQuantity.value, 10);
-
-        if (isNaN(quantity) || quantity < 1 || quantity > currentItem.stock) {
-            borrowQuantity.value = 1;
-            return;
-        }
-
-        const existingItemIndex = cart.findIndex((item) => item.name === currentItem.name);
-
-        if (existingItemIndex !== -1) {
-            const newQuantity = cart[existingItemIndex].quantity + quantity;
-            cart[existingItemIndex].quantity = Math.min(newQuantity, cart[existingItemIndex].stock);
-        } else {
-            cart.push({
-                name: currentItem.name,
-                quantity: quantity,
-                stock: currentItem.stock,
-                image: currentItem.image,
-                location: currentItem.location
+                borrowQuantity.value = 1;
+                borrowQuantity.min = 1;
+                borrowQuantity.max = currentItem.stock;
             });
-        }
+        });
 
-        updateCartUI();
+        borrowQuantity.addEventListener('input', () => {
+            let value = parseInt(borrowQuantity.value, 10);
 
-        cartToastMessage.textContent = `${currentItem.name} agregado al carrito`;
-        cartToast.show();
+            if (isNaN(value) || value < 1) {
+                value = 1;
+            }
 
-        const borrowModalInstance = bootstrap.Modal.getOrCreateInstance(borrowModal);
-        borrowModalInstance.hide();
-    });
+            if (value > currentItem.stock) {
+                value = currentItem.stock;
+            }
+
+            borrowQuantity.value = value;
+        });
+
+        confirmAddToCart.addEventListener('click', () => {
+            const quantity = parseInt(borrowQuantity.value, 10);
+
+            if (isNaN(quantity) || quantity < 1 || quantity > currentItem.stock) {
+                borrowQuantity.value = 1;
+                return;
+            }
+
+            const existingItemIndex = cart.findIndex((item) => item.name === currentItem.name);
+
+            if (existingItemIndex !== -1) {
+                const newQuantity = cart[existingItemIndex].quantity + quantity;
+                cart[existingItemIndex].quantity = Math.min(newQuantity, cart[existingItemIndex].stock);
+            } else {
+                cart.push({
+                    name: currentItem.name,
+                    quantity: quantity,
+                    stock: currentItem.stock,
+                    image: currentItem.image,
+                    location: currentItem.location
+                });
+            }
+
+            updateCartUI();
+
+            cartToastMessage.textContent = `${currentItem.name} agregado al carrito`;
+            cartToast.show();
+
+            const borrowModalInstance = bootstrap.Modal.getOrCreateInstance(borrowModal);
+            borrowModalInstance.hide();
+        });
+    }
 
     if (specialCaseCheck && specialCaseFields) {
         specialCaseCheck.addEventListener('change', () => {
