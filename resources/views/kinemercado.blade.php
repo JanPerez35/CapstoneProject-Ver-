@@ -131,7 +131,7 @@
                             </small>
 
                             <small class="text-muted d-block fst-italic">
-                                Formatos permitidos: JPG.
+                                Formatos permitidos: JPEG.
                             </small>
 
                             <div id="imageError" class="text-danger small mt-2 d-none"></div>
