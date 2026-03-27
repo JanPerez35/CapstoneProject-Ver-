@@ -24,7 +24,7 @@ Route::any('/auth/callback', function () {
 
     Auth::login($user);
 
-    return redirect('/dashboard');
+    return redirect('/kinventory');
 })->name("saml.callback");
 
 Route::get('/auth/saml/metadata', function () {

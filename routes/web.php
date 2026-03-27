@@ -25,7 +25,7 @@ Route::get('/search_user', function () {
 
 Route::get('/inventory_management', function () {
     return view('inventory_management');
-})->name('inventory_management');
+})->name('inventory_management')->middleware('role:super,inventory');
 
 Route::get('/kinemercado', function () {
     return view('kinemercado');
