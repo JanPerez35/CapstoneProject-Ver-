@@ -431,4 +431,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setMinDates();
     updateCartUI();
+
+
+
+    const deletePostModal = document.getElementById('deletePostModal');
+    const deletePostModalText = document.getElementById('deletePostModalText');
+    const confirmDeletePost = document.getElementById('confirmDeletePost');
+
+    let postCardToDelete = null;
+
+    if (deletePostModal && confirmDeletePost) {
+        document.querySelectorAll('.open-delete-post-modal').forEach((button) => {
+            button.addEventListener('click', () => {
+                postCardToDelete = button.closest('.post-card-wrapper');
+
+                const postTitle = button.dataset.postTitle || 'esta publicación';
+
+                if (deletePostModalText) {
+                    deletePostModalText.textContent = `Vas a borrar "${postTitle}".`;
+                }
+
+                const modalInstance = bootstrap.Modal.getOrCreateInstance(deletePostModal);
+                modalInstance.show();
+            });
+        });
+
+        confirmDeletePost.addEventListener('click', () => {
+            if (postCardToDelete) {
+                postCardToDelete.remove();
+                postCardToDelete = null;
+            }
+
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(deletePostModal);
+            modalInstance.hide();
+        });
+    }
 });
