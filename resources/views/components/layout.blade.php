@@ -236,7 +236,7 @@
 
 {{-- Global Toast --}}
 <div class="toast-container position-fixed bottom-0 start-0 p-3">
-    <div id="cartToast" class="toast align-items-center border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="cartToast" class="toast align-items-center border-0 shadow text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
             <div class="toast-body fw-semibold" id="cartToastMessage">
                 Producto agregado al carrito
@@ -246,7 +246,7 @@
     </div>
 
     {{--Inventory Request Submitted Toast--}}
-    <div id="submitToast" class="toast align-items-center border-0 shadow">
+    <div id="submitToast" class="toast align-items-center border-0 shadow text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
             <div class="toast-body fw-semibold text-success">
                 Tu solicitud ha sido enviada! Pronto recibirás un email con el estado de tu solicitud.

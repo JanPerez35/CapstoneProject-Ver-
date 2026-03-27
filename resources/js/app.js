@@ -1,6 +1,8 @@
 import './bootstrap';
 import * as bootstrap from 'bootstrap';
 
+window.bootstrap = bootstrap;
+
 document.addEventListener('DOMContentLoaded', () => {
     const borrowModal = document.getElementById('borrowModal');
     const borrowModalText = document.getElementById('borrowModalText');
@@ -49,164 +51,243 @@ document.addEventListener('DOMContentLoaded', () => {
         cartToastEl &&
         cartToastMessage;
 
-    if (!hasCartUI) {
-        return;
-    }
+    if (hasCartUI) {
+        let currentItem = {
+            name: '',
+            stock: 0,
+            image: '',
+            location: 'Sala de Equipo A'
+        };
 
-    let currentItem = {
-        name: '',
-        stock: 0,
-        image: '',
-        location: 'Sala de Equipo A'
-    };
+        let cart = [];
 
-    let cart = [];
+        const cartToast = bootstrap.Toast.getOrCreateInstance(cartToastEl);
 
-    const cartToast = bootstrap.Toast.getOrCreateInstance(cartToastEl);
-
-    function toLocalDateString(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    function setMinDates() {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
-        const minDate = toLocalDateString(tomorrow);
-
-        if (loanPickupDate) {
-            loanPickupDate.min = minDate;
+        function toLocalDateString(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
-        if (returnDate) {
-            returnDate.min = minDate;
-        }
-    }
+        function setMinDates() {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
 
-    function isBlockedPickupDay(dateString) {
-        const date = new Date(`${dateString}T00:00:00`);
-        const day = date.getDay();
-        return day === 0 || day === 5 || day === 6;
-    }
+            const minDate = toLocalDateString(tomorrow);
 
-    function getTodayAtMidnight() {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        return today;
-    }
+            if (loanPickupDate) {
+                loanPickupDate.min = minDate;
+            }
 
-    function getTotalUnits() {
-        return cart.reduce((sum, item) => sum + item.quantity, 0);
-    }
-
-    function updateCartBadge() {
-        const totalUnits = getTotalUnits();
-
-        cartCount.textContent = totalUnits;
-
-        if (totalUnits >= 1) {
-            cartCount.classList.remove('d-none');
-        } else {
-            cartCount.classList.add('d-none');
-        }
-    }
-
-    function updateCartLabels() {
-        const totalUnits = getTotalUnits();
-
-        if (cartItemCountLabel) {
-            cartItemCountLabel.textContent = totalUnits;
-        }
-
-        if (submitItemCount) {
-            submitItemCount.textContent = totalUnits;
-        }
-    }
-
-    function updateCartUI() {
-        updateCartBadge();
-        updateCartLabels();
-        renderCart();
-
-        const hasItems = cart.length > 0;
-
-        if (loanDetailsSection && emptyCartSection) {
-            if (hasItems) {
-                loanDetailsSection.classList.remove('d-none');
-                emptyCartSection.classList.add('d-none');
-            } else {
-                loanDetailsSection.classList.add('d-none');
-                emptyCartSection.classList.remove('d-none');
+            if (returnDate) {
+                returnDate.min = minDate;
             }
         }
 
-        if (cartFooterActions) {
-            if (hasItems) {
-                cartFooterActions.classList.remove('d-none');
+        function isBlockedPickupDay(dateString) {
+            const date = new Date(`${dateString}T00:00:00`);
+            const day = date.getDay();
+            return day === 0 || day === 5 || day === 6;
+        }
+
+        function getTodayAtMidnight() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return today;
+        }
+
+        function getTotalUnits() {
+            return cart.reduce((sum, item) => sum + item.quantity, 0);
+        }
+
+        function updateCartBadge() {
+            const totalUnits = getTotalUnits();
+
+            cartCount.textContent = totalUnits;
+
+            if (totalUnits >= 1) {
+                cartCount.classList.remove('d-none');
             } else {
-                cartFooterActions.classList.add('d-none');
+                cartCount.classList.add('d-none');
             }
         }
-    }
 
-    function resetLoanForm() {
-        if (loanFullName) loanFullName.value = '';
-        if (loanPickupDate) loanPickupDate.value = '';
-        if (pickupTimeBlock) pickupTimeBlock.value = '';
-        if (returnDate) returnDate.value = '';
-        if (specialReason) specialReason.value = '';
+        function updateCartLabels() {
+            const totalUnits = getTotalUnits();
 
-        if (specialCaseCheck) {
-            specialCaseCheck.checked = false;
+            if (cartItemCountLabel) {
+                cartItemCountLabel.textContent = totalUnits;
+            }
+
+            if (submitItemCount) {
+                submitItemCount.textContent = totalUnits;
+            }
         }
 
-        if (specialCaseFields) {
-            specialCaseFields.classList.add('d-none');
-        }
-    }
+        function updateCartUI() {
+            updateCartBadge();
+            updateCartLabels();
+            renderCart();
 
-    function attachCartActionEvents() {
-        document.querySelectorAll('.remove-cart-item').forEach((button) => {
-            button.addEventListener('click', () => {
-                const index = parseInt(button.dataset.index, 10);
-                cart.splice(index, 1);
-                updateCartUI();
-            });
-        });
+            const hasItems = cart.length > 0;
 
-        document.querySelectorAll('.increase-cart-item').forEach((button) => {
-            button.addEventListener('click', () => {
-                const index = parseInt(button.dataset.index, 10);
-
-                if (cart[index].quantity < cart[index].stock) {
-                    cart[index].quantity += 1;
-                    updateCartUI();
+            if (loanDetailsSection && emptyCartSection) {
+                if (hasItems) {
+                    loanDetailsSection.classList.remove('d-none');
+                    emptyCartSection.classList.add('d-none');
+                } else {
+                    loanDetailsSection.classList.add('d-none');
+                    emptyCartSection.classList.remove('d-none');
                 }
-            });
-        });
+            }
 
-        document.querySelectorAll('.decrease-cart-item').forEach((button) => {
-            button.addEventListener('click', () => {
-                const index = parseInt(button.dataset.index, 10);
-
-                if (cart[index].quantity > 1) {
-                    cart[index].quantity -= 1;
-                    updateCartUI();
+            if (cartFooterActions) {
+                if (hasItems) {
+                    cartFooterActions.classList.remove('d-none');
+                } else {
+                    cartFooterActions.classList.add('d-none');
                 }
-            });
-        });
-    }
-
-    function renderCart() {
-        if (cart.length === 0) {
-            cartItemsContainer.innerHTML = '';
-            return;
+            }
         }
 
-        cartItemsContainer.innerHTML = cart.map((item, index) => `
+        function markInvalid(field) {
+            if (field) field.classList.add('is-invalid');
+        }
+
+        function clearInvalid(field) {
+            if (field) field.classList.remove('is-invalid');
+        }
+
+        function clearLoanValidation() {
+            [
+                loanFullName,
+                loanPickupDate,
+                pickupTimeBlock,
+                returnDate,
+                specialReason
+            ].forEach(clearInvalid);
+        }
+
+        function resetLoanForm() {
+            if (loanFullName) loanFullName.value = '';
+            if (loanPickupDate) loanPickupDate.value = '';
+            if (pickupTimeBlock) pickupTimeBlock.value = '';
+            if (returnDate) returnDate.value = '';
+            if (specialReason) specialReason.value = '';
+
+            clearLoanValidation();
+
+            if (specialCaseCheck) {
+                specialCaseCheck.checked = false;
+            }
+
+            if (specialCaseFields) {
+                specialCaseFields.classList.add('d-none');
+            }
+        }
+
+        function validateLoanForm() {
+            clearLoanValidation();
+
+            let hasError = false;
+
+            const name = loanFullName?.value.trim();
+            const pickupDateValue = loanPickupDate?.value;
+            const pickupTime = pickupTimeBlock?.value;
+            const isSpecialCase = specialCaseCheck?.checked;
+            const returnVal = returnDate?.value;
+            const reason = specialReason?.value.trim();
+
+            if (!name || name.length < 5 || name.length > 80) {
+                markInvalid(loanFullName);
+                hasError = true;
+            }
+
+            if (!pickupDateValue) {
+                markInvalid(loanPickupDate);
+                hasError = true;
+            }
+
+            if (!pickupTime) {
+                markInvalid(pickupTimeBlock);
+                hasError = true;
+            }
+
+            if (pickupDateValue) {
+                const today = getTodayAtMidnight();
+                const pickupDateObj = new Date(`${pickupDateValue}T00:00:00`);
+
+                if (pickupDateObj <= today || isBlockedPickupDay(pickupDateValue)) {
+                    markInvalid(loanPickupDate);
+                    hasError = true;
+                }
+            }
+
+            if (isSpecialCase) {
+                if (!returnVal) {
+                    markInvalid(returnDate);
+                    hasError = true;
+                }
+
+                if (returnVal) {
+                    const today = getTodayAtMidnight();
+                    const returnDateObj = new Date(`${returnVal}T00:00:00`);
+
+                    if (returnDateObj <= today) {
+                        markInvalid(returnDate);
+                        hasError = true;
+                    }
+                }
+
+                if (!reason || reason.length > 500) {
+                    markInvalid(specialReason);
+                    hasError = true;
+                }
+            }
+
+            return !hasError;
+        }
+
+        function attachCartActionEvents() {
+            document.querySelectorAll('.remove-cart-item').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const index = parseInt(button.dataset.index, 10);
+                    cart.splice(index, 1);
+                    updateCartUI();
+                });
+            });
+
+            document.querySelectorAll('.increase-cart-item').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const index = parseInt(button.dataset.index, 10);
+
+                    if (cart[index].quantity < cart[index].stock) {
+                        cart[index].quantity += 1;
+                        updateCartUI();
+                    }
+                });
+            });
+
+            document.querySelectorAll('.decrease-cart-item').forEach((button) => {
+                button.addEventListener('click', () => {
+                    const index = parseInt(button.dataset.index, 10);
+
+                    if (cart[index].quantity > 1) {
+                        cart[index].quantity -= 1;
+                        updateCartUI();
+                    }
+                });
+            });
+        }
+
+        function renderCart() {
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '';
+                return;
+            }
+
+            cartItemsContainer.innerHTML = cart.map((item, index) => `
             <div class="row g-0 align-items-center px-3 py-3 border-bottom">
                 <div class="col-6">
                     <div class="d-flex align-items-center gap-3">
@@ -244,195 +325,174 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `).join('');
 
-        attachCartActionEvents();
-    }
+            attachCartActionEvents();
+        }
 
-    if (hasBorrowModal) {
-        document.querySelectorAll('.open-borrow-modal').forEach((button) => {
-            button.addEventListener('click', () => {
-                currentItem.name = button.dataset.itemName || '';
-                currentItem.stock = parseInt(button.dataset.itemStock || '1', 10);
-                currentItem.image = button.dataset.itemImage || '';
-                currentItem.location = button.dataset.itemLocation || 'Sala de Equipo A';
+        if (hasBorrowModal) {
+            document.querySelectorAll('.open-borrow-modal').forEach((button) => {
+                button.addEventListener('click', () => {
+                    currentItem.name = button.dataset.itemName || '';
+                    currentItem.stock = parseInt(button.dataset.itemStock || '1', 10);
+                    currentItem.image = button.dataset.itemImage || '';
+                    currentItem.location = button.dataset.itemLocation || 'Sala de Equipo A';
 
-                borrowModalText.textContent = `Selecciona la cantidad de ${currentItem.name} que deseas`;
-                borrowModalImage.src = currentItem.image;
-                borrowModalImage.alt = currentItem.name;
-                borrowModalStock.textContent = currentItem.stock;
+                    borrowModalText.textContent = `Selecciona la cantidad de ${currentItem.name} que deseas`;
+                    borrowModalImage.src = currentItem.image;
+                    borrowModalImage.alt = currentItem.name;
+                    borrowModalStock.textContent = currentItem.stock;
 
-                borrowQuantity.value = 1;
-                borrowQuantity.min = 1;
-                borrowQuantity.max = currentItem.stock;
-            });
-        });
-
-        borrowQuantity.addEventListener('input', () => {
-            let value = parseInt(borrowQuantity.value, 10);
-
-            if (isNaN(value) || value < 1) {
-                value = 1;
-            }
-
-            if (value > currentItem.stock) {
-                value = currentItem.stock;
-            }
-
-            borrowQuantity.value = value;
-        });
-
-        confirmAddToCart.addEventListener('click', () => {
-            const quantity = parseInt(borrowQuantity.value, 10);
-
-            if (isNaN(quantity) || quantity < 1 || quantity > currentItem.stock) {
-                borrowQuantity.value = 1;
-                return;
-            }
-
-            const existingItemIndex = cart.findIndex((item) => item.name === currentItem.name);
-
-            if (existingItemIndex !== -1) {
-                const newQuantity = cart[existingItemIndex].quantity + quantity;
-                cart[existingItemIndex].quantity = Math.min(newQuantity, cart[existingItemIndex].stock);
-            } else {
-                cart.push({
-                    name: currentItem.name,
-                    quantity: quantity,
-                    stock: currentItem.stock,
-                    image: currentItem.image,
-                    location: currentItem.location
+                    borrowQuantity.value = 1;
+                    borrowQuantity.min = 1;
+                    borrowQuantity.max = currentItem.stock;
                 });
-            }
+            });
 
-            updateCartUI();
+            borrowQuantity.addEventListener('input', () => {
+                let value = parseInt(borrowQuantity.value, 10);
 
-            cartToastMessage.textContent = `${currentItem.name} agregado al carrito`;
-            cartToast.show();
+                if (isNaN(value) || value < 1) {
+                    value = 1;
+                }
 
-            const borrowModalInstance = bootstrap.Modal.getOrCreateInstance(borrowModal);
-            borrowModalInstance.hide();
-        });
-    }
+                if (value > currentItem.stock) {
+                    value = currentItem.stock;
+                }
 
-    if (specialCaseCheck && specialCaseFields) {
-        specialCaseCheck.addEventListener('change', () => {
-            if (specialCaseCheck.checked) {
-                specialCaseFields.classList.remove('d-none');
-            } else {
-                specialCaseFields.classList.add('d-none');
-            }
-        });
-    }
+                borrowQuantity.value = value;
+            });
 
-    if (loanPickupDate) {
-        loanPickupDate.addEventListener('change', () => {
-            if (loanPickupDate.value && isBlockedPickupDay(loanPickupDate.value)) {
-                alert('No se permiten recogidas viernes, sábado ni domingo.');
-                loanPickupDate.value = '';
-            }
-        });
-    }
+            confirmAddToCart.addEventListener('click', () => {
+                const quantity = parseInt(borrowQuantity.value, 10);
 
-    if (returnDate) {
-        returnDate.addEventListener('change', () => {
-            if (!returnDate.value) return;
-
-            const selected = new Date(`${returnDate.value}T00:00:00`);
-            const today = getTodayAtMidnight();
-
-            if (selected <= today) {
-                alert('La fecha de devolución propuesta debe ser futura.');
-                returnDate.value = '';
-            }
-        });
-    }
-
-    if (loanFullName) {
-        loanFullName.addEventListener('input', () => {
-            loanFullName.value = loanFullName.value.slice(0, 80);
-        });
-    }
-
-    if (specialReason) {
-        specialReason.addEventListener('input', () => {
-            specialReason.value = specialReason.value.slice(0, 500);
-        });
-    }
-
-    if (submitLoanRequest && submitToastEl && cartModal) {
-        const submitToast = bootstrap.Toast.getOrCreateInstance(submitToastEl);
-
-        submitLoanRequest.addEventListener('click', () => {
-            const name = loanFullName?.value.trim();
-            const pickupDateValue = loanPickupDate?.value;
-            const pickupTime = pickupTimeBlock?.value;
-
-            if (!name || !pickupDateValue || !pickupTime) {
-                alert('Por favor completa todos los campos obligatorios.');
-                return;
-            }
-
-            if (name.length < 5 || name.length > 80) {
-                alert('El nombre completo debe tener entre 5 y 80 caracteres.');
-                return;
-            }
-
-            const today = getTodayAtMidnight();
-            const pickupDateObj = new Date(`${pickupDateValue}T00:00:00`);
-
-            if (pickupDateObj <= today) {
-                alert('La fecha de recogida debe ser futura.');
-                return;
-            }
-
-            if (isBlockedPickupDay(pickupDateValue)) {
-                alert('La fecha de recogida no puede ser viernes, sábado ni domingo.');
-                return;
-            }
-
-            if (specialCaseCheck?.checked) {
-                const returnVal = returnDate?.value;
-                const reason = specialReason?.value.trim();
-
-                if (!returnVal || !reason) {
-                    alert('Debes completar los campos del caso especial.');
+                if (isNaN(quantity) || quantity < 1 || quantity > currentItem.stock) {
+                    borrowQuantity.value = 1;
                     return;
                 }
 
-                const returnDateObj = new Date(`${returnVal}T00:00:00`);
+                const existingItemIndex = cart.findIndex((item) => item.name === currentItem.name);
 
-                if (returnDateObj <= today) {
-                    alert('La fecha de devolución propuesta debe ser futura.');
+                if (existingItemIndex !== -1) {
+                    const newQuantity = cart[existingItemIndex].quantity + quantity;
+                    cart[existingItemIndex].quantity = Math.min(newQuantity, cart[existingItemIndex].stock);
+                } else {
+                    cart.push({
+                        name: currentItem.name,
+                        quantity: quantity,
+                        stock: currentItem.stock,
+                        image: currentItem.image,
+                        location: currentItem.location
+                    });
+                }
+
+                updateCartUI();
+
+                cartToastMessage.textContent = `${currentItem.name} agregado al carrito`;
+                cartToast.show();
+
+                const borrowModalInstance = bootstrap.Modal.getOrCreateInstance(borrowModal);
+                borrowModalInstance.hide();
+            });
+        }
+
+        if (specialCaseCheck && specialCaseFields) {
+            specialCaseCheck.addEventListener('change', () => {
+                if (specialCaseCheck.checked) {
+                    specialCaseFields.classList.remove('d-none');
+                } else {
+                    specialCaseFields.classList.add('d-none');
+                    clearInvalid(returnDate);
+                    clearInvalid(specialReason);
+                }
+            });
+        }
+
+        if (loanPickupDate) {
+            loanPickupDate.addEventListener('change', () => {
+                clearInvalid(loanPickupDate);
+
+                if (loanPickupDate.value && isBlockedPickupDay(loanPickupDate.value)) {
+                    markInvalid(loanPickupDate);
+                }
+            });
+        }
+
+        if (returnDate) {
+            returnDate.addEventListener('change', () => {
+                clearInvalid(returnDate);
+
+                if (!returnDate.value) return;
+
+                const selected = new Date(`${returnDate.value}T00:00:00`);
+                const today = getTodayAtMidnight();
+
+                if (selected <= today) {
+                    markInvalid(returnDate);
+                }
+            });
+        }
+
+        if (loanFullName) {
+            loanFullName.addEventListener('input', () => {
+                loanFullName.value = loanFullName.value.slice(0, 80);
+                clearInvalid(loanFullName);
+            });
+        }
+
+        if (pickupTimeBlock) {
+            pickupTimeBlock.addEventListener('change', () => {
+                clearInvalid(pickupTimeBlock);
+            });
+        }
+
+        if (loanPickupDate) {
+            loanPickupDate.addEventListener('input', () => {
+                clearInvalid(loanPickupDate);
+            });
+        }
+
+        if (returnDate) {
+            returnDate.addEventListener('input', () => {
+                clearInvalid(returnDate);
+            });
+        }
+
+        if (specialReason) {
+            specialReason.addEventListener('input', () => {
+                specialReason.value = specialReason.value.slice(0, 500);
+                clearInvalid(specialReason);
+            });
+        }
+
+        if (submitLoanRequest && submitToastEl && cartModal) {
+            const submitToast = bootstrap.Toast.getOrCreateInstance(submitToastEl);
+
+            submitLoanRequest.addEventListener('click', () => {
+                const isValid = validateLoanForm();
+
+                if (!isValid) {
                     return;
                 }
 
-                if (reason.length > 500) {
-                    alert('La razón del caso especial no puede exceder 500 caracteres.');
+                if (cart.length === 0) {
                     return;
                 }
-            }
 
-            if (cart.length === 0) {
-                alert('Tu carrito está vacío.');
-                return;
-            }
+                const cartModalInstance = bootstrap.Modal.getOrCreateInstance(cartModal);
+                cartModalInstance.hide();
 
-            const cartModalInstance = bootstrap.Modal.getOrCreateInstance(cartModal);
-            cartModalInstance.hide();
+                cart = [];
+                updateCartUI();
+                resetLoanForm();
 
-            cart = [];
-            updateCartUI();
-            resetLoanForm();
+                setTimeout(() => {
+                    submitToast.show();
+                }, 250);
+            });
+        }
 
-            setTimeout(() => {
-                submitToast.show();
-            }, 250);
-        });
+        setMinDates();
+        updateCartUI();
     }
-
-    setMinDates();
-    updateCartUI();
-
-
 
     const deletePostModal = document.getElementById('deletePostModal');
     const deletePostModalText = document.getElementById('deletePostModalText');
