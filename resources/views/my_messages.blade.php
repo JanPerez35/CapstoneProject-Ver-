@@ -7,7 +7,7 @@
 
                 <div class="col-md-4 border-end">
                     <div class="p-4 border-bottom">
-                        <a href="{{ url('/kinemercado') }}" class="text-decoration-none text-dark fw-semibold">
+                        <a href="{{ url('/kinemarket') }}" class="text-decoration-none text-dark fw-semibold">
                             <i class="bi bi-arrow-left me-2"></i>Volver
                         </a>
                         <h1 class="fw-bold mt-3 mb-1">Mensajes</h1>
