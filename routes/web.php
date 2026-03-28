@@ -27,9 +27,9 @@ Route::get('/inventory_management', function () {
     return view('inventory_management');
 })->name('inventory_management')->middleware('role:super,inventory');
 
-Route::get('/kinemercado', function () {
-    return view('kinemercado');
-})->name('kinemercado');
+Route::get('/kinemarket', function () {
+    return view('kinemarket');
+})->name('kinemarket');
 
 Route::get('/marketplace_management', function () {
     return view('marketplace_management');
@@ -43,14 +43,9 @@ Route::get('/facility_management', function () {
     return view('facility_management');
 })->name('facility_management');
 
-
-Route::get('/kinemercado/reportar_usuario', function () {
-    return view('kinemercado');
-})->name('kinemercado.reportar_usuario');
-
-Route::get('/kinemercado/mensaje', function () {
-    return view('kinemercado');
-})->name('kinemercado.mensaje');
+Route::get('/my_messages', function () {
+    return view('my_messages');
+})->name('my_messages');
 
 Route::middleware('auth')->group(function () {
     Route::get('/conversations', [ChatController::class, 'getConversations']);
