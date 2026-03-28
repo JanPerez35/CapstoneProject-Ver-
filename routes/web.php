@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmailController;
-
+use App\Http\Controllers\ChatController;
 
 Route::get('/', function () {
     return view('login');
@@ -52,4 +52,12 @@ Route::get('/kinemercado/mensaje', function () {
     return view('kinemercado');
 })->name('kinemercado.mensaje');
 
+Route::middleware('auth')->group(function () {
+    Route::get('/conversations', [ChatController::class, 'getConversations']);
+    Route::get('/chat/{receiverId}', [ChatController::class, 'fetchMessages']);
+    Route::post('/send-message', [ChatController::class, 'sendMessage']);
+    Route::get('/chat-ui', function () {
+        return view('chat');
+    });
+});
 require __DIR__.'\saml2.php';

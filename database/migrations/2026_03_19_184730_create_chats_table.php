@@ -9,17 +9,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('chats', function (Blueprint $table) {
-            $table->id();
-
-            $table->foreignId('post_id')->constrained()->cascadeOnDelete();
-
-            $table->foreignId('buyer_user_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('seller_user_id')->constrained('users')->cascadeOnDelete();
-
-            $table->string('status');
-
-            $table->timestamps();
-        });
+                $table->id();
+                $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
+                $table->foreignId('receiver_id')->constrained('users')->onDelete('cascade');
+                $table->text('message');
+                $table->timestamps();
+            });
     }
 
     public function down(): void
