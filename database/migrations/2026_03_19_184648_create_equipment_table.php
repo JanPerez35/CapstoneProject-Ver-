@@ -13,7 +13,7 @@ return new class extends Migration
             $table->string('category');
             $table->integer('quantity');
             $table->text('description')->nullable();
-            $table->string('status');
+            $table->integer('available_quantity');
             $table->string('location');
             $table->string('equipment_photo_url')->nullable();
             $table->float('stats')->nullable();

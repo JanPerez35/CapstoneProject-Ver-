@@ -44,7 +44,7 @@ class EquipmentSeeder extends Seeder
                 'category' => $data['category'],
                 'quantity' => (int) $data['quantity'],
                 'description' => $data['description'] !== '' ? $data['description'] : null,
-                'status' => $data['status'],
+                'available_quantity' => (int) $data['available_quantity'],
                 'location' => $data['location'],
                 'equipment_photo_url' => $data['equipment_photo_url'] !== '' ? $data['equipment_photo_url'] : null,
                 'stats' => $data['stats'] !== '' ? (float) $data['stats'] : null,
