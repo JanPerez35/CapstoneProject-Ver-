@@ -3,10 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmailController;
 
-
 Route::get('/', function () {
     return view('login');
 });
+
 Route::get('/welcome', function () {
     return view('welcome');
 });
@@ -14,7 +14,6 @@ Route::get('/welcome', function () {
 Route::get('/my_profile', function () {
     return view('my_profile');
 })->name('my_profile');
-
 
 Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
 Route::post('/send-email', [EmailController::class, 'sendEmail']);
@@ -24,8 +23,16 @@ Route::get('/search_user', function () {
 })->name('search_user');
 
 Route::get('/inventory_management', function () {
-    return view('inventory_management');
-})->name('inventory_management');
+    return view('inventory_management.admin_inventory');
+})->name('inventory_management.admin_inventory');
+
+Route::get('/inventory_management/borrows', function () {
+    return view('inventory_management.borrows');
+})->name('inventory_management.borrows');
+
+Route::get('/inventory_management/inventory_statistics', function () {
+    return view('inventory_management.inventory_statistics');
+})->name('inventory_management.inventory_statistics');
 
 Route::get('/kinemercado', function () {
     return view('kinemercado');
@@ -43,7 +50,6 @@ Route::get('/facility_management', function () {
     return view('facility_management');
 })->name('facility_management');
 
-
 /*Route::get('/kinemercado/reportar_usuario', function () {
     return view('kinemercado');
 })->name('kinemercado.reportar_usuario');*/
@@ -52,4 +58,4 @@ Route::get('/kinemercado/mensaje', function () {
     return view('kinemercado_mensaje');
 })->name('kinemercado_mensaje');
 
-require __DIR__.'\saml2.php';
+require __DIR__ . '\saml2.php';

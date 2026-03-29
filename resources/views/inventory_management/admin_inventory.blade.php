@@ -13,17 +13,17 @@
 
         {{-- Internal nav --}}
         <div class="d-flex flex-wrap gap-2 mb-4">
-            <a href="#"
+            <a href="{{ route('inventory_management.borrows') }}"
                class="btn btn-outline-success px-4 fw-semibold">
                 Préstamos
             </a>
 
-            <a href="#"
+            <a href="{{ route('inventory_management.inventory_statistics') }}"
                class="btn btn-outline-success px-4 fw-semibold">
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
 
-            <a href="#"
+            <a href="{{ route('inventory_management.admin_inventory') }}"
                class="btn btn-success px-4 fw-semibold">
                 Inventario Administrativo
             </a>
