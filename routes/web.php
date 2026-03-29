@@ -16,8 +16,18 @@ Route::get('/my_profile', function () {
 })->name('my_profile');
 
 
-Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
+// Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
+Route::get('/kinventory', [EquipmentController::class, 'kinventory'])
+    ->name('kinventory');
+Route::post('/kinventory/borrow', [EquipmentController::class, 'borrow'])
+    ->name('kinventory.borrow');
 Route::post('/send-email', [EmailController::class, 'sendEmail']);
+
+Route::post('/cart/add', [EquipmentController::class, 'addToCart'])->name('cart.add');
+
+Route::get('/cart', [EquipmentController::class, 'cart'])->name('cart.index');
+Route::delete('/cart/remove/{id}', [EquipmentController::class, 'removeFromCart'])->name('cart.remove');
+Route::post('/cart/checkout', [EquipmentController::class, 'checkoutCart'])->name('cart.checkout');
 
 Route::get('/search_user', function () {
     return view('search_user');

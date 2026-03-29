@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Facades\DB;
 use App\Models\Equipment;
+use App\Models\Lending;
+use App\Models\LendingItem;
+
 
 class EquipmentController extends Controller
 {
@@ -97,4 +100,182 @@ public function destroy($id)
     return redirect()->route('inventory_management')
         ->with('success', 'Item eliminado correctamente');
 }
+
+public function kinventory()
+{
+    $items = Equipment::where('available_quantity', '>', 0)->get();
+
+    return view('kinventory', compact('items'));
+}
+
+public function borrow(Request $request)
+{
+    $validated = $request->validate([
+        'equipment_id' => 'required|integer|exists:equipment,id',
+        'quantity' => 'required|integer|min:1',
+    ]);
+
+    DB::transaction(function () use ($validated) {
+        $equipment = Equipment::lockForUpdate()->findOrFail($validated['equipment_id']);
+
+        if ($validated['quantity'] > $equipment->available_quantity) {
+            abort(422, 'La cantidad solicitada excede la cantidad disponible.');
+        }
+
+        $lending = Lending::create([
+            'user_id' => 1, // temporary until auth is connected
+            'commentary' => 'Solicitud realizada desde Kinventory',
+            'start_time' => now(),
+            'end_time' => now()->addDays(7), // temporary
+            'flag' => false,
+            'status' => 'active',
+            'created_at' => now(),
+        ]);
+
+        LendingItem::create([
+            'lending_id' => $lending->id,
+            'equipment_id' => $equipment->id,
+            'quantity' => $validated['quantity'],
+            'item_status' => 'borrowed',
+        ]);
+
+        $equipment->available_quantity -= $validated['quantity'];
+        $equipment->save();
+    });
+
+    return redirect()->route('kinventory')->with('success', 'Equipo solicitado correctamente.');
+}
+
+public function addToCart(Request $request)
+{
+    $validated = $request->validate([
+        'equipment_id' => 'required|integer|exists:equipment,id',
+        'quantity' => 'required|integer|min:1',
+    ]);
+
+    $equipment = Equipment::findOrFail($validated['equipment_id']);
+
+    if ($validated['quantity'] > $equipment->available_quantity) {
+        return redirect()->route('kinventory')
+            ->with('error', 'La cantidad solicitada excede la cantidad disponible.');
+    }
+
+    $cart = session()->get('cart', []);
+
+    if (isset($cart[$equipment->id])) {
+        $newQuantity = $cart[$equipment->id]['quantity'] + $validated['quantity'];
+
+        if ($newQuantity > $equipment->available_quantity) {
+            return redirect()->route('kinventory')
+                ->with('error', 'La cantidad total en el carrito excede la cantidad disponible.');
+        }
+
+        $cart[$equipment->id]['quantity'] = $newQuantity;
+    } else {
+        $cart[$equipment->id] = [
+            'equipment_id' => $equipment->id,
+            'description' => $equipment->description,
+            'category' => $equipment->category,
+            'location' => $equipment->location,
+            'equipment_photo_url' => $equipment->equipment_photo_url,
+            'quantity' => $validated['quantity'],
+        ];
+    }
+
+    session()->put('cart', $cart);
+
+    return redirect()->route('kinventory')
+        ->with('success', 'Equipo añadido al carrito.');
+}
+
+public function cart()
+{
+    $cart = session()->get('cart', []);
+
+    return view('cart.index', compact('cart'));
+}
+
+public function removeFromCart($id)
+{
+    $cart = session()->get('cart', []);
+
+    if (isset($cart[$id])) {
+        unset($cart[$id]);
+        session()->put('cart', $cart);
+    }
+    return redirect()->back()->with('success', 'Item eliminado del carrito..');
+}
+
+public function checkoutCart(Request $request)
+{
+    $isSpecialCase = $request->has('special_case');
+
+    $rules = [
+        'pickup_date' => 'required|date|after_or_equal:today',
+        'pickup_time' => 'required|date_format:H:i:s',
+        'commentary' => 'nullable|string|max:1000',
+        'accept_terms' => 'required|accepted',
+    ];
+
+    if ($isSpecialCase) {
+        $rules['return_date'] = 'required|date|after_or_equal:pickup_date';
+        $rules['special_reason'] = 'required|string|max:1000';
+    } else {
+        $rules['return_date'] = 'nullable|date';
+        $rules['special_reason'] = 'nullable|string|max:1000';
+    }
+
+    $validated = $request->validate($rules);
+
+    $cart = session()->get('cart', []);
+
+    if (empty($cart)) {
+        return redirect()->back()->with('error', 'El carrito está vacío.');
+    }
+
+    $startDateTime = $validated['pickup_date'] . ' ' . $validated['pickup_time'];
+
+    $endDateTime = $isSpecialCase
+        ? $validated['return_date'] . ' 15:00:00'
+        : $validated['pickup_date'] . ' 15:00:00';
+
+    $finalCommentary = $isSpecialCase
+        ? $validated['special_reason']
+        : ($validated['commentary'] ?? null);
+
+    DB::transaction(function () use ($cart, $startDateTime, $endDateTime, $isSpecialCase, $finalCommentary) {
+        $lending = Lending::create([
+            'user_id' => 1, // replace later with authenticated user
+            'commentary' => $finalCommentary,
+            'start_time' => $startDateTime,
+            'end_time' => $endDateTime,
+            'flag' => $isSpecialCase,
+            'status' => 'active',
+        ]);
+
+        foreach ($cart as $cartItem) {
+            $equipment = Equipment::lockForUpdate()->findOrFail($cartItem['equipment_id']);
+
+            if ($cartItem['quantity'] > $equipment->available_quantity) {
+                throw new \Exception('La cantidad solicitada excede la cantidad disponible para ' . $equipment->description);
+            }
+
+            LendingItem::create([
+                'lending_id' => $lending->id,
+                'equipment_id' => $equipment->id,
+                'quantity' => $cartItem['quantity'],
+                'item_status' => 'borrowed',
+            ]);
+
+            $equipment->available_quantity -= $cartItem['quantity'];
+            $equipment->save();
+        }
+    });
+
+    session()->forget('cart');
+
+    return redirect()->route('kinventory')
+        ->with('success', 'Solicitud de préstamo realizada correctamente.');
+}
+
 }

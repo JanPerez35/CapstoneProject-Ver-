@@ -17,6 +17,18 @@
 
 {{--    </p>--}}
 
+@if(session('success'))
+    <div class="alert alert-success">
+        {{ session('success') }}
+    </div>
+@endif
+
+@if(session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+@endif
+
 </div>
         <div class="row mb-4 g-3">
             <div class="col-md-8">
@@ -48,51 +60,65 @@
 
 {{--        okay this will be some sort of card grid, It will be filled when the cards are actually available--}}
         <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
-                    <img
-                        src="{{ asset('images/kinventory_images/Baloncesto.jpg') }}"
-                        class="card-img-top"
-                        alt="Baloncesto"
-                        style="height: 300px; object-fit: cover; object-position: center;"
-                    >
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h5 class="card-title mb-0 fw-bold">Balon de Baloncesto</h5>
-                            <span class="badge rounded-0 " style="background-color:#6FC21F; color:white;">Disponible</span>
-                        </div>
-
-                        <p class="text-muted small mb-3">
-                            Bola de baloncesto de tamaño oficial para uso interior/exterior.
-                        </p>
-
-                        <div class="small mb-3">
-                            <div class="d-flex justify-content-between">
-                                <span class="text-muted">Cantidad Disponible:</span>
-                                <strong class="text-success">18</strong>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span class="text-muted">Ubicación:</span>
-                                <strong>Almacen A</strong>
-                            </div>
-                        </div>
-
-                        <div class="mt-auto d-grid gap-2">
-                            <button
-                                class="btn btn-success open-borrow-modal"
-                                data-item-name="Balón de Baloncesto"
-                                data-item-stock="18"
-                                data-item-image="{{ asset('images/kinventory_images/Baloncesto.jpg') }}"
-                                data-item-location="Almacen A"
-                                data-bs-toggle="modal"
-                                data-bs-target="#borrowModal"
+            <div class="row g-4">
+                @forelse($items as $item)
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
+                            <img
+                                src="{{ $item->equipment_photo_url ? asset('storage/' . $item->equipment_photo_url) : asset('images/kinventory_images/default.jpg') }}"
+                                class="card-img-top"
+                                alt="{{ $item->description }}"
+                                style="height: 300px; object-fit: contain; object-position: center; background-color:#f8f9fa;"
                             >
-                                Pedir prestado
-                            </button>
 
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0 fw-bold">
+                                        {{ $item->description }}
+                                    </h5>
+
+                                    <span class="badge rounded-0"
+                                        style="background-color: {{ $item->available_quantity > 0 ? '#6FC21F' : '#dc3545' }}; color:white;">
+                                        {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
+                                    </span>
+                                </div>
+
+                                <div class="small mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Cantidad Disponible:</span>
+                                        <strong class="text-success">{{ $item->available_quantity }}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Ubicación:</span>
+                                        <strong>{{ $item->location }}</strong>
+                                    </div>
+                                </div>
+
+                                <div class="mt-auto d-grid gap-2">
+                                    <button
+                                        class="btn btn-success open-borrow-modal"
+                                        data-item-id="{{ $item->id }}"
+                                        data-item-name="{{ $item->description }}"
+                                        data-item-stock="{{ $item->available_quantity }}"
+                                        data-item-image="{{ $item->equipment_photo_url ? asset('storage/' . $item->equipment_photo_url) : asset('images/kinventory_images/default.jpg') }}"
+                                        data-item-location="{{ $item->location }}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#borrowModal"
+                                        {{ $item->available_quantity == 0 ? 'disabled' : '' }}
+                                    >
+                                        Pedir prestado
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
+                @empty
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            No hay equipos disponibles.
+                        </div>
+                    </div>
+                @endforelse
             </div>
 
 
@@ -115,66 +141,82 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
-                <div class="modal-body">
-                    <img
-                        id="borrowModalImage"
-                        src="{{ asset('images/kinventory_images/Baloncesto.jpg') }}"
-                        alt="Equipo"
-                        class="img-fluid rounded-4 mb-3"
-                        style="height: 280px; width: 100%; object-fit: cover; object-position: center;"
-                    >
+                <form method="POST" action="{{ route('cart.add') }}">
+                    @csrf
 
-                    <div class="d-flex justify-content-between mb-3">
-                        <span class="text-muted">Cantidad Disponible:</span>
-                        <strong class="text-success">
-                            <span id="borrowModalStock">18</span> unidades
-                        </strong>
-                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="equipment_id" id="borrowEquipmentId">
 
-                    <div class="mb-3">
-                        <label for="borrowQuantity" class="form-label fw-semibold">Cantidad</label>
-                        <input
-                            type="number"
-                            id="borrowQuantity"
-                            class="form-control form-control-lg"
-                            min="1"
-                            max="18"
-                            value="1"
+                        <img
+                            id="borrowModalImage"
+                            src=""
+                            alt="Equipo"
+                            class="img-fluid rounded-4 mb-3"
+                            style="height: 280px; width: 100%; object-fit: contain; object-position: center; background-color:#f8f9fa;"
                         >
+
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="text-muted">Cantidad Disponible:</span>
+                            <strong class="text-success">
+                                <span id="borrowModalStock">0</span> unidades
+                            </strong>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="borrowQuantity" class="form-label fw-semibold">Cantidad</label>
+                            <input
+                                type="number"
+                                id="borrowQuantity"
+                                name="quantity"
+                                class="form-control form-control-lg"
+                                min="1"
+                                value="1"
+                                required
+                            >
+                        </div>
                     </div>
-                </div>
 
-                <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-                    <button type="button" class="btn btn-success" id="confirmAddToCart">
-                        <i class="bi bi-cart-plus me-1"></i> Agregar
-
-                    </button>
-                </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-cart-plus me-1"></i> Añadir al carrito
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-
-
-
-
-
-
-
 </x-layout>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const borrowButtons = document.querySelectorAll('.open-borrow-modal');
+    const borrowEquipmentId = document.getElementById('borrowEquipmentId');
+    const borrowModalText = document.getElementById('borrowModalText');
+    const borrowModalImage = document.getElementById('borrowModalImage');
+    const borrowModalStock = document.getElementById('borrowModalStock');
+    const borrowQuantity = document.getElementById('borrowQuantity');
 
+    borrowButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const itemId = this.dataset.itemId;
+            const itemName = this.dataset.itemName;
+            const itemStock = this.dataset.itemStock;
+            const itemImage = this.dataset.itemImage;
 
-
-
-
-
-
-
-
+            borrowEquipmentId.value = itemId;
+            borrowModalText.textContent = `Selecciona la cantidad que deseas de "${itemName}"`;
+            borrowModalImage.src = itemImage;
+            borrowModalStock.textContent = itemStock;
+            borrowQuantity.max = itemStock;
+            borrowQuantity.value = 1;
+        });
+    });
+});
+</script>
 
     {{-- Ignore this, this was me testing the email service it is for me to reference later--}}
 {{--<h2>Send Email</h2>--}}
