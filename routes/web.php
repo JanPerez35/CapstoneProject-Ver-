@@ -47,12 +47,6 @@ Route::get('/my_messages', function () {
     return view('my_messages');
 })->name('my_messages');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/conversations', [ChatController::class, 'getConversations']);
-    Route::get('/chat/{receiverId}', [ChatController::class, 'fetchMessages']);
-    Route::post('/send-message', [ChatController::class, 'sendMessage']);
-    Route::get('/chat-ui', function () {
-        return view('chat');
-    });
-});
+Route::post('/send-message', [ChatController::class, 'sendMessage']);
+
 require __DIR__.'\saml2.php';

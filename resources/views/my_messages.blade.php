@@ -1,92 +1,157 @@
 <x-layout title="Mensajes - MAIKINE">
     <x-navbar></x-navbar>
 
+    <!-- 🔥 Load Echo -->
+    <script src="http://localhost:5173/resources/js/app.js"></script>
+
     <div class="container-fluid py-4">
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
             <div class="row g-0" style="min-height: 650px;">
 
+                <!-- LEFT -->
                 <div class="col-md-4 border-end">
                     <div class="p-4 border-bottom">
-                        <a href="{{ url('/kinemarket') }}" class="text-decoration-none text-dark fw-semibold">
-                            <i class="bi bi-arrow-left me-2"></i>Volver
-                        </a>
-                        <h1 class="fw-bold mt-3 mb-1">Mensajes</h1>
-                        <p class="text-muted mb-0">Chats relacionados con tus publicaciones</p>
+                        <h1 class="fw-bold">Mensajes</h1>
                     </div>
 
-                    <div class="p-3 border-bottom">
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="bi bi-search"></i>
-                            </span>
-                            <input type="text" class="form-control border-start-0" placeholder="Buscar chats...">
-                        </div>
-                    </div>
-
-                    <div class="p-4 bg-success bg-opacity-10 border-start border-4 border-success">
-                        <div class="d-flex align-items-start">
-                            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3"
-                                 style="width: 48px; height: 48px;">
-                                J
-                            </div>
-
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-1 fw-bold">John Davis</h5>
-                                    <span class="badge border text-dark rounded-pill">Vendedor</span>
-                                </div>
-
-                                <div class="text-muted mb-2">
-                                    <i class="bi bi-box-seam me-1"></i>
-                                    Baloncesto - Spalding
-                                </div>
-
-                                <div class="text-muted">Sin mensajes</div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- 🔥 Conversations -->
+                    <div id="conversations"></div>
                 </div>
 
+                <!-- RIGHT -->
                 <div class="col-md-8 d-flex flex-column">
+
+                    <!-- Header -->
                     <div class="p-4 border-bottom">
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3"
-                                 style="width: 48px; height: 48px;">
-                                J
-                            </div>
-
-                            <div>
-                                <h4 class="mb-1 fw-bold">John Davis</h4>
-                                <div class="text-muted">
-                                    <i class="bi bi-box-seam me-1"></i>
-                                    Baloncesto - Spalding
-                                    <span class="badge border text-dark rounded-pill ms-2">Vendedor</span>
-                                </div>
-                            </div>
-                        </div>
+                        <h4 id="chat-user">Selecciona un chat</h4>
                     </div>
 
-                    <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center text-center text-muted">
-                        <i class="bi bi-chat fs-1 mb-3"></i>
-                        <h3 class="fw-normal">No hay mensajes aún</h3>
-                        <p>Envía el primer mensaje para comenzar la conversación</p>
-                    </div>
+                    <!-- 🔥 Messages -->
+                    <div id="chat-box" class="flex-grow-1 p-4 overflow-auto"></div>
 
+                    <!-- Input -->
                     <div class="p-4 border-top">
                         <div class="input-group">
-                            <input
-                                type="text"
-                                class="form-control form-control-lg border-end-0"
-                                placeholder="Escribe un mensaje..."
-                            >
-                            <button class="btn btn-success px-4" type="button">
-                                <i class="bi bi-send"></i>
+                            <input id="message"
+                                   class="form-control form-control-lg"
+                                   placeholder="Escribe un mensaje...">
+                            <button onclick="sendMessage()" class="btn btn-success">
+                                Enviar
                             </button>
                         </div>
                     </div>
+
                 </div>
 
             </div>
         </div>
     </div>
+
+<script>
+let currentReceiverId = null;
+const USER_ID = {{ auth()->id() }};
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+// 🔥 Load conversations
+function loadConversations() {
+    fetch('/conversations')
+        .then(res => res.json())
+        .then(data => {
+            let container = document.getElementById('conversations');
+            container.innerHTML = '';
+
+            Object.keys(data).forEach(userId => {
+                let chat = data[userId];
+
+                container.innerHTML += `
+                    <div class="p-3 border-bottom cursor-pointer"
+                         onclick="selectUser(${userId})">
+                        <b>User ${userId}</b><br>
+                        <small>${chat.message}</small>
+                    </div>
+                `;
+            });
+        });
+}
+
+// 🔥 Select user
+function selectUser(userId) {
+    currentReceiverId = userId;
+    document.getElementById('chat-user').innerText = "User " + userId;
+    loadMessages(userId);
+}
+
+// 🔥 Load messages
+function loadMessages(receiverId) {
+    fetch(`/chat/${receiverId}`)
+        .then(res => res.json())
+        .then(messages => {
+            let box = document.getElementById('chat-box');
+            box.innerHTML = '';
+
+            messages.forEach(msg => {
+                let isMine = msg.sender_id == USER_ID;
+
+                box.innerHTML += `
+                    <div class="mb-2 ${isMine ? 'text-end' : ''}">
+                        <span class="badge bg-${isMine ? 'success' : 'secondary'}">
+                            ${msg.message}
+                        </span>
+                    </div>
+                `;
+            });
+
+            box.scrollTop = box.scrollHeight;
+        });
+}
+
+// 🔥 Send message (NO polling)
+function sendMessage() {
+    let message = document.getElementById('message').value;
+
+    if (!message || !currentReceiverId) return;
+
+    fetch('/send-message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify({
+            receiver_id: currentReceiverId,
+            message: message
+        })
+    })
+    .then(() => {
+        document.getElementById('message').value = '';
+    });
+}
+
+// 🔥 REALTIME LISTENER
+window.Echo.private(`chat.${USER_ID}`)
+    .listen('.MessageSent', (e) => {
+
+        console.log('🔥 REALTIME EVENT', e);
+
+        if (e.chat.sender_id == currentReceiverId) {
+            let box = document.getElementById('chat-box');
+
+            box.innerHTML += `
+                <div class="mb-2">
+                    <span class="badge bg-secondary">
+                        ${e.chat.message}
+                    </span>
+                </div>
+            `;
+
+            box.scrollTop = box.scrollHeight;
+        }
+
+        loadConversations();
+    });
+
+// Init
+loadConversations();
+</script>
+
 </x-layout>
