@@ -23,7 +23,7 @@
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
 
-            <a href="{{ route('inventory_management.admin_inventory') }}"
+            <a href="{{ route('inventory_management') }}"
                class="btn btn-success px-4 fw-semibold">
                 Inventario Administrativo
             </a>

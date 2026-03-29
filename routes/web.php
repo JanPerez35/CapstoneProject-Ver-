@@ -34,9 +34,9 @@ Route::get('/inventory_management/inventory_statistics', function () {
     return view('inventory_management.inventory_statistics');
 })->name('inventory_management.inventory_statistics');
 
-Route::get('/kinemercado', function () {
-    return view('kinemercado');
-})->name('kinemercado');
+Route::get('/kinemarket', function () {
+    return view('kinemarket');
+})->name('kinemarket');
 
 Route::get('/marketplace_management', function () {
     return view('marketplace_management');
@@ -49,14 +49,6 @@ Route::get('/access_logs', function () {
 Route::get('/facility_management', function () {
     return view('facility_management');
 })->name('facility_management');
-
-/*Route::get('/kinemercado/reportar_usuario', function () {
-    return view('kinemercado');
-})->name('kinemercado.reportar_usuario');*/
-
-Route::get('/kinemercado/mensaje', function () {
-    return view('kinemercado_mensaje');
-})->name('kinemercado_mensaje');
 
 Route::get('/my_messages', function () {
     return view('my_messages');

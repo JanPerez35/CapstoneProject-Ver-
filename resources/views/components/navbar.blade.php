@@ -34,10 +34,9 @@
                 </li>
 
                 <li class="nav-item flex-fill text-center">
-                    <a href="{{ route('inventory_management.admin_inventory') }}"
+                    <a href="{{ route('inventory_management') }}"
                        class="btn w-100
-                        {{ request()->routeIs('inventory_management') ? 'btn-success' : 'btn-outline-success' }}">
-
+   {{ request()->routeIs('inventory_management') ? 'btn-success' : 'btn-outline-success' }}">
                         <i class="bi bi-boxes"></i>
 
                         Gestión de Inventario
