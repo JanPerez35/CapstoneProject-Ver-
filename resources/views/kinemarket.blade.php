@@ -40,54 +40,68 @@
                     </div>
                     <!--Modal Body-->
                     <div class="modal-body pt-3">
-                        <form id="createPostForm">
+                        <form id="createPostForm" novalidate>
                             @csrf
                             <div class="mb-3">
-                                <label for="postTitle" class="form-label fw-semibold">Título<span class="text-danger">*</span></label>
+                                <label for="postTitle" class="form-label fw-semibold">
+                                    Título<span class="text-danger">*</span>
+                                </label>
                                 <input
                                 type="text"
                                 class="form-control form-control-lg"
                                 id="postTitle"
                                 placeholder="ej. Baloncesto - Spalding"
                                 minlength="5"
-                                maxlength="255"
-                                pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,()\-]+"
-                                title="Solo letras, números, espacios y puntación básica: punto, coma, paréntesis y guion."
+                                maxlength="100"
                                 required
                                 >
                                 <small class="text-muted d-block fst-italic">
-                                    Máximo 255 caracteres.
+                                    Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
                                 </small>
+                                <div class="invalid-feedback" id="postTitleError"></div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="postDescription" class="form-label fw-semibold">Description (Opcional)</label>
+                                <label for="postDescription" class="form-label fw-semibold">
+                                    Description (Opcional)
+                                </label>
                                 <textarea
                                 class="form-control form-control-lg"
                                 id="postDescription"
                                 rows="4"
                                 placeholder="Describe el estado y detalles"
+                                minlength="10"
                                 maxlength="1000"
                                 ></textarea>
                                 <small class="text-muted d-block fst-italic">
-                                    Máximo 100 caracteres.
+                                    Si escribes una descripción, debe tener entre 10 y 1000 caracteres.
+                                    Solo letras, números espacios, punto, coma y guion.
                                 </small>
-
+                                <div class="invalid-feedback" id="postDescriptionError"></div>
                             </div>
+
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="postPrice" class="form-label fw-semibold">Precio ($)<span class="text-danger">*</span></label>
+                                    <label for="postPrice" class="form-label fw-semibold">
+                                        Precio ($)<span class="text-danger">*</span>
+                                    </label>
                                     <input
-                                    type="number"
+                                    type="text"
+                                    inputmode="decimal"
                                     class="form-control form-control-lg"
                                     id="postPrice"
                                     placeholder="0.00"
-                                    step="0.01"
-                                    min="0"
                                     required>
+                                    <small class="text-muted d-block fst-italic">
+                                        Solo números decimales validos.
+                                    </small>
+                                    <div class="invalid-feedback" id="postPriceError"></div>
                                 </div>
+
                                 <div class="col-md-6 mb-3">
-                                    <label for="postCategory" class="form-label fw-semibold">Categoría<span class="text-danger">*</span></label>
+                                    <label for="postCategory" class="form-label fw-semibold">
+                                        Categoría<span class="text-danger">*</span>
+                                    </label>
                                     <select class="form-select form-select-lg" id="postCategory" required>
                                         <option value="" selected disabled>Seleccionar</option>
                                         <option>Baloncesto</option>
@@ -98,10 +112,14 @@
                                         <option>Levantamiento de Pesas</option>
                                         <option>Otro</option>
                                     </select>
+                                    <div class="invalid-feedback">Selecciona una categoría.</div>
                                 </div>
                             </div>
+
                             <div class="mb-3">
-                                <label for="postCondition" class="form-label fw-semibold">Condición<span class="text-danger">*</span></label>
+                                <label for="postCondition" class="form-label fw-semibold">
+                                    Condición<span class="text-danger">*</span>
+                                </label>
                                 <select class="form-select form-select-lg" id="postCondition" required>
                                     <option value="" selected disabled>Seleccionar</option>
                                     <option>Nuevo</option>
@@ -109,15 +127,18 @@
                                     <option>Buen Estado</option>
                                     <option>Justo</option>
                                 </select>
+                                <div class="invalid-feedback">Seleciona una condición.</div>
                             </div>
 
                             <div class="mb-2">
-                                <label for="postImage" class="form-label fw-semibold">Fotos<span class="text-danger">*</span></label>
+                                <label for="postImage" class="form-label fw-semibold">
+                                    Fotos<span class="text-danger">*</span>
+                                </label>
                                 <input
                                 type="file"
                                 class="d-none"
                                 id="postImage"
-                                accept="image/jpeg"
+                                accept=".jpg,.jpeg,image/jpeg"
                                 multiple
                                 required>
                             </div>
@@ -128,23 +149,19 @@
 
                             <small class="text-muted d-block fst-italic mt-2">
                                 Mínimo 1 imagen y máximo 3 imágenes permitidas.
+                                Solo JPEG/JPG.
+                                Máximo 2MB por imagen.
                             </small>
-
-                            <small class="text-muted d-block fst-italic">
-                                Formatos permitidos: JPEG.
-                            </small>
-
-                            <div id="imageError" class="text-danger small mt-2 d-none"></div>
-
+                            <div id="imageError" class="invalid-feedback d-block d-none"></div>
                             <div id="imagePreviewContainer" class="row g-3 mt-1"></div>
                         </form>
                     </div>
                    <!--Modal Footer-->
                     <div class="modal-footer border-0 pt-0">
-                        <button type="button" class="btn btn-outline-secondary px-4"  data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-outline-secondary px-4" id="cancelCreatePostBtn">
                             Cancelar
                         </button>
-                        <button type="button" class="btn btn-success px-4" id="publishBtn" >
+                        <button type="button" class="btn btn-success px-4" id="publishBtn" disabled >
                             Publicar
                         </button>
                     </div>
@@ -152,28 +169,30 @@
             </div>
         </div>
 
-{{--        <!-- Cancel Confirmation Modal -->--}}
-{{--        <div class="modal fade" id="cancelConfirmModal" tabindex="-1" aria-labelledby="cancelConfirmLabel" aria-hidden="true">--}}
-{{--            <div class="modal-dialog modal-dialog-centered">--}}
-{{--                <div class="modal-content rounded-4 border-0 shadow">--}}
-{{--                    <div class="modal-header border-0">--}}
-{{--                        <h5 class="modal-title fw-bold" id="cancelConfirmLabel">¿Seguro que deseas cancelar?</h5>--}}
-{{--                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>--}}
-{{--                    </div>--}}
-{{--                    <div class="modal-body">--}}
-{{--                        Se perderán los datos e imágenes que hayas escrito en esta publicación.--}}
-{{--                    </div>--}}
-{{--                    <div class="modal-footer border-0">--}}
-{{--                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">--}}
-{{--                            Seguir editando--}}
-{{--                        </button>--}}
-{{--                        <button type="button" class="btn btn-danger" id="confirmCancelCreatePost">--}}
-{{--                            Sí, cancelar--}}
-{{--                        </button>--}}
-{{--                    </div>--}}
-{{--                </div>--}}
-{{--            </div>--}}
-{{--        </div>--}}
+        <div class="modal fade" id="cancelConfirmModal" tabindex="-1" aria-label="cancelConfirmLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <div class="modal-header border-0">
+                     <h5 class="modal-title fw-bold" id="cancelConfirmLabel">
+                        ¿Seguro que deseas cancelar?
+                     </h5>
+                    </div>
+
+                    <div class="modal-body">
+                        Se perderán los datos e imágenes que hayas escrito en este formularion.
+                    </div>
+
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Seguir editando
+                        </button>
+                        <button type="button" class="btn btn-danger" id="confirmCancelCreatePost">
+                            Sí, cancelar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <!--Post template-->
     </div>
@@ -273,7 +292,7 @@
         </div>
 
         <div class="modal fade" id="postDetailsModal" tabindex="-1" aria-labelledby="postDetailsModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+            <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
                 <div class="modal-content rounded-4 border-0 shadow">
 
                     <div class="modal-header border-0 pb-0 align-items-start">
@@ -284,7 +303,7 @@
                         <button type="button" class="btn-close mt-1" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                     </div>
 
-                    <div class="modal-body pt-3">
+                    <div class="modal-body pt-3 post-details-body">
                         <div id="postImagesCarousel" class="carousel slide mb-4">
                             <div class="carousel-indicators">
                                 <button type="button" data-bs-target="#postImagesCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
@@ -292,12 +311,13 @@
                                 <button type="button" data-bs-target="#postImagesCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
                             </div>
 
-                            <div class="carousel-inner rounded-4 overflow-hidden">
-                                <div class="carousel-item active">
+                            <div class="carousel-inner rounded-4 overflow-hidden post-carousel-inner">
+                                <div class="carousel-item active post-carousel-item">
                                     <div class="carousel-image-box">
                                     <img
                                         src="{{ asset('images/marketplace_images/Baloncesto.jpg') }}"
                                         alt="Imagen 1"
+                                        class="post-carousel-img"
                                     >
                                     </div>
                                 </div>
@@ -307,6 +327,7 @@
                                     <img
                                         src="{{ asset('images/marketplace_images/ball2.jpg') }}"
                                         alt="Imagen 2"
+                                        class="post-carousel-img"
                                     >
                                     </div>
                                 </div>
@@ -316,6 +337,7 @@
                                     <img
                                         src="{{ asset('images/marketplace_images/ball3.jpg') }}"
                                         alt="Imagen 3"
+                                        class="post-carousel-img"
                                     >
                                     </div>
                                 </div>
@@ -363,7 +385,11 @@
                             </div>
 
                             <div class="col-6 text-muted">Condición:</div>
-                            <div class="col-6 text-end">Muy Bueno</div>
+                            <div class="col-6 text-end">
+                              <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
+                                Muy Bueno
+                              </span>
+                            </div>
 
                             <div class="col-6 text-muted">Vendedor:</div>
                             <div class="col-6 text-end fw-bold">John Davis</div>
@@ -376,7 +402,7 @@
 
                             <div class="col-6 text-muted">Categoría:</div>
                             <div class="col-6 text-end">
-                        <span class="badge rounded-0 px-3 py-2" style="background-color:#E8F5E9; color:#212529;">
+                        <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
                             Baloncesto
                         </span>
                             </div>
@@ -388,14 +414,17 @@
                             <h5 class="fw-bold mb-3">Calificar Esta Publicación</h5>
 
                             <label class="form-label fw-semibold">Tu Calificación</label>
-                            <div class="mb-2 fs-4 text-warning">
-                                <i class="bi bi-star-fill"></i>
-                                <i class="bi bi-star"></i>
-                                <i class="bi bi-star"></i>
-                                <i class="bi bi-star"></i>
-                                <i class="bi bi-star"></i>
+
+                            <div class="mb-2 rating-stars text-warning fs-3" id="sellerRatingStars">
+                                <i class="bi bi-star rating-star" data-value="1" role="button" tabindex="0" aria-label="1 estrella"></i>
+                                <i class="bi bi-star rating-star" data-value="2" role="button" tabindex="0" aria-label="2 estrellas"></i>
+                                <i class="bi bi-star rating-star" data-value="3" role="button" tabindex="0" aria-label="3 estrellas"></i>
+                                <i class="bi bi-star rating-star" data-value="4" role="button" tabindex="0" aria-label="4 estrellas"></i>
+                                <i class="bi bi-star rating-star" data-value="5" role="button" tabindex="0" aria-label="5 estrellas"></i>
                             </div>
-                            <p class="text-muted small mb-3">Malo</p>
+
+                            <input type="hidden" id="sellerRatingValue" value="0">
+                            <p class="text-muted small mb-3" id="sellerRatingText">Selecciona una calificación</p>
 
                             <label for="postComment" class="form-label fw-semibold">Comentario (Opcional)</label>
                             <textarea
@@ -426,7 +455,7 @@
                             </div>
 
                             <div class="col-6">
-                                <a href="{{ url('/kinemercado/mensaje') }}" class="btn btn-outline-success w-100 rounded-3">
+                                <a href="{{ url('/my_messages') }}" class="btn btn-outline-success w-100 rounded-3">
                                     <i class="bi bi-chat me-2"></i> Enviar Mensaje
                                 </a>
                             </div>

@@ -24,7 +24,7 @@ Route::get('/search_user', function () {
 
 Route::get('/inventory_management', function () {
     return view('inventory_management.admin_inventory');
-})->name('inventory_management.admin_inventory');
+})->name('inventory_management');
 
 Route::get('/inventory_management/borrows', function () {
     return view('inventory_management.borrows');
@@ -57,5 +57,9 @@ Route::get('/facility_management', function () {
 Route::get('/kinemercado/mensaje', function () {
     return view('kinemercado_mensaje');
 })->name('kinemercado_mensaje');
+
+Route::get('/my_messages', function () {
+    return view('my_messages');
+})->name('my_messages');
 
 require __DIR__ . '\saml2.php';

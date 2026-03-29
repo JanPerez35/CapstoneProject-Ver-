@@ -8,8 +8,8 @@
             <ul class="nav w-100 justify-content-between flex-wrap justify-content-between gap-2">
 
                 <li class="nav-item flex-fill text-center">
-                    <a href="{{ route('kinemercado') }}"
-                       class="btn w-100 {{ request()->routeIs('kinemercado', 'kinemercado_mensaje') ? 'btn-success' : 'btn-outline-success' }}">
+                    <a href="{{ route('kinemarket') }}"
+                       class="btn w-100 {{ request()->routeIs('kinemarket', 'my_messages') ? 'btn-success' : 'btn-outline-success' }}">
                         <i class="bi bi-shop"></i>
                         Kinemercado
                     </a>

@@ -529,4 +529,578 @@ document.addEventListener('DOMContentLoaded', () => {
             modalInstance.hide();
         });
     }
+    // Post validation
+    const createPostForm = document.getElementById('createPostForm');
+    const publishBtn = document.getElementById('publishBtn');
+    const postTitle = document.getElementById('postTitle');
+    const postTitleError = document.getElementById('postTitleError');
+    const postDescription = document.getElementById('postDescription');
+    const postDescriptionError = document.getElementById('postDescriptionError');
+    const postPrice = document.getElementById('postPrice');
+    const postPriceError = document.getElementById('postPriceError');
+    const postCategory = document.getElementById('postCategory');
+    const postCondition = document.getElementById('postCondition');
+    const postImage = document.getElementById('postImage');
+    const imageError = document.getElementById('imageError');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+
+    const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
+    const priceRegex = /^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/;
+    const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+    const MAX_IMAGES = 3;
+    const MIN_IMAGES = 1;
+
+    let selectedPostImages = [];
+
+    function setFieldError(field, errorElement, message) {
+        if (!field) return;
+        field.classList.add('is-invalid');
+        if (errorElement) {
+            errorElement.textContent = message;
+        }
+    }
+
+    function clearFieldError(field, errorElement) {
+        if (!field) return;
+        field.classList.remove('is-invalid');
+        if (errorElement) {
+            errorElement.textContent = '';
+        }
+    }
+
+    function showImageError(message) {
+        if (!imageError) return;
+        imageError.textContent = message;
+        imageError.classList.remove('d-none');
+    }
+
+    function clearImageError() {
+        if (!imageError) return;
+        imageError.textContent = '';
+        imageError.classList.add('d-none');
+    }
+
+    function renderImagePreviews(files) {
+        if (!imagePreviewContainer) return;
+
+        imagePreviewContainer.innerHTML = '';
+
+        files.forEach((file, index) => {
+            const url = URL.createObjectURL(file);
+
+            imagePreviewContainer.insertAdjacentHTML('beforeend', `
+    <div class="col-md-4">
+        <div class="border rounded-4 overflow-hidden bg-light position-relative">
+
+            <button
+                type="button"
+                class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle d-flex align-items-center justify-content-center remove-preview-image"
+                style="width:32px; height:32px;"
+                data-index="${index}"
+            >
+                <i class="bi bi-x"></i>
+            </button>
+
+            <img
+                src="${url}"
+                alt="Preview"
+                class="w-100"
+                style="height: 180px; object-fit: cover;"
+            >
+
+            <div class="p-2 small text-muted text-truncate">
+                ${file.name}
+            </div>
+        </div>
+    </div>
+`);
+        });
+
+        document.querySelectorAll('.remove-preview-image').forEach((button) => {
+            button.addEventListener('click', () => {
+                const index = Number(button.dataset.index);
+
+                selectedPostImages.splice(index, 1);
+
+                renderImagePreviews(selectedPostImages);
+                clearImageError();
+                if (postImage) {
+                    postImage.value = '';
+                }
+                updateCreatePostDirtyState();
+                updatePublishButtonState();
+            });
+        });
+    }
+
+    async function isRealJpeg(file) {
+        if (!file || !file.type.includes('jpeg')) {
+            return false;
+        }
+
+        const buffer = await file.slice(0, 3).arrayBuffer();
+        const bytes = new Uint8Array(buffer);
+
+        return bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
+    }
+
+    function validateTitle(showError = true) {
+        if (!postTitle || !postTitleError) return true;
+
+        const value = postTitle.value.trim();
+
+        if (showError) {
+            clearFieldError(postTitle, postTitleError);
+        }
+
+        if (!value) {
+            if (showError) setFieldError(postTitle, postTitleError, 'El título es obligatorio.');
+            return false;
+        }
+
+        if (value.length < 5) {
+            if (showError) setFieldError(postTitle, postTitleError, 'El título debe tener al menos 5 caracteres.');
+            return false;
+        }
+
+        if (value.length > 100) {
+            if (showError) setFieldError(postTitle, postTitleError, 'El título no puede exceder 100 caracteres.');
+            return false;
+        }
+
+        if (!allowedTextRegex.test(value)) {
+            if (showError) setFieldError(postTitle, postTitleError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateDescription(showError = true) {
+        if (!postDescription || !postDescriptionError) return true;
+
+        const value = postDescription.value.trim();
+
+        if (showError) {
+            clearFieldError(postDescription, postDescriptionError);
+        }
+
+        if (!value) {
+            return true;
+        }
+
+        if (value.length < 10) {
+            if (showError) setFieldError(postDescription, postDescriptionError, 'La descripción debe tener al menos 10 caracteres.');
+            return false;
+        }
+
+        if (value.length > 1000) {
+            if (showError) setFieldError(postDescription, postDescriptionError, 'La descripción no puede exceder 1000 caracteres.');
+            return false;
+        }
+
+        if (!allowedTextRegex.test(value)) {
+            if (showError) setFieldError(postDescription, postDescriptionError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+            return false;
+        }
+
+        return true;
+    }
+
+    function validatePrice(showError = true) {
+        if (!postPrice || !postPriceError) return true;
+
+        const value = postPrice.value.trim();
+
+        if (showError) {
+            clearFieldError(postPrice, postPriceError);
+        }
+
+        if (!value) {
+            if (showError) setFieldError(postPrice, postPriceError, 'El precio es obligatorio.');
+            return false;
+        }
+
+        if (/[eE+\-]/.test(value)) {
+            if (showError) setFieldError(postPrice, postPriceError, 'No se permite usar e, E, + ni - en el precio.');
+            return false;
+        }
+
+        if (!priceRegex.test(value)) {
+            if (showError) setFieldError(postPrice, postPriceError, 'Ingresa un precio válido usando solo números y hasta 2 decimales.');
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateSelect(field, showError = true) {
+        if (!field) return true;
+
+        const isValid = !!field.value;
+
+        if (showError) {
+            if (!isValid) {
+                field.classList.add('is-invalid');
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        }
+
+        return isValid;
+    }
+
+    function validateImages(showError = true) {
+        if (showError) {
+            clearImageError();
+        }
+
+        if (selectedPostImages.length < MIN_IMAGES) {
+            if (showError) showImageError('Debes subir al menos 1 imagen.');
+            return false;
+        }
+
+        if (selectedPostImages.length > MAX_IMAGES) {
+            if (showError) showImageError('Solo puedes subir un máximo de 3 imágenes.');
+            return false;
+        }
+
+        return true;
+    }
+
+    function updatePublishButtonState() {
+        if (!publishBtn) return;
+
+        const isReady =
+            validateTitle(false) &&
+            validatePrice(false) &&
+            validateSelect(postCategory, false) &&
+            validateSelect(postCondition, false) &&
+            validateImages(false) &&
+            validateDescription(false);
+
+        publishBtn.disabled = !isReady;
+    }
+
+    if (postTitle) {
+        postTitle.addEventListener('input', () => {
+            postTitle.value = postTitle.value.slice(0, 100);
+            validateTitle(true);
+            updatePublishButtonState();
+        });
+    }
+
+    if (postDescription) {
+        postDescription.addEventListener('input', () => {
+            postDescription.value = postDescription.value.slice(0, 1000);
+            validateDescription(true);
+            updatePublishButtonState();
+        });
+    }
+
+    if (postPrice) {
+        postPrice.addEventListener('keydown', (e) => {
+            if (['e', 'E', '+', '-'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+
+        postPrice.addEventListener('input', () => {
+            postPrice.value = postPrice.value.replace(/[^0-9.]/g, '');
+
+            const firstDotIndex = postPrice.value.indexOf('.');
+            if (firstDotIndex !== -1) {
+                const integerPart = postPrice.value.slice(0, firstDotIndex + 1);
+                const decimalPart = postPrice.value
+                    .slice(firstDotIndex + 1)
+                    .replace(/\./g, '')
+                    .slice(0, 2);
+
+                postPrice.value = integerPart + decimalPart;
+            }
+
+            validatePrice(true);
+            updatePublishButtonState();
+        });
+    }
+
+    if (postCategory) {
+        postCategory.addEventListener('change', () => {
+            validateSelect(postCategory, true);
+            updatePublishButtonState();
+        });
+    }
+
+    if (postCondition) {
+        postCondition.addEventListener('change', () => {
+            validateSelect(postCondition, true);
+            updatePublishButtonState();
+        });
+    }
+
+    if (postImage) {
+        postImage.addEventListener('change', async () => {
+            const newFiles = Array.from(postImage.files || []);
+            if (newFiles.length === 0) return;
+
+            clearImageError();
+
+            const allowedSlots = MAX_IMAGES - selectedPostImages.length;
+
+            if (allowedSlots <= 0) {
+                showImageError('Solo puedes subir un máximo de 3 imágenes.');
+                postImage.value = '';
+                updatePublishButtonState();
+                return;
+            }
+
+            if (newFiles.length > allowedSlots) {
+                showImageError(`Solo puedes agregar ${allowedSlots} imagen${allowedSlots === 1 ? '' : 'es'} más.`);
+                postImage.value = '';
+                updatePublishButtonState();
+                return;
+            }
+
+            for (const file of newFiles) {
+                if (file.size > MAX_IMAGE_SIZE) {
+                    showImageError(`"${file.name}" excede el tamaño máximo de 2MB.`);
+                    postImage.value = '';
+                    updatePublishButtonState();
+                    return;
+                }
+
+                if (!(await isRealJpeg(file))) {
+                    showImageError(`"${file.name}" no es un JPEG válido.`);
+                    postImage.value = '';
+                    updatePublishButtonState();
+                    return;
+                }
+            }
+
+            selectedPostImages = [...selectedPostImages, ...newFiles];
+            renderImagePreviews(selectedPostImages);
+
+            postImage.value = '';
+            updateCreatePostDirtyState();
+            updatePublishButtonState();
+        });
+    }
+
+    if (publishBtn && createPostForm) {
+        publishBtn.addEventListener('click', async () => {
+            const isTitleValid = validateTitle(true);
+            const isDescriptionValid = validateDescription(true);
+            const isPriceValid = validatePrice(true);
+            const isCategoryValid = validateSelect(postCategory, true);
+            const isConditionValid = validateSelect(postCondition, true);
+            const areImagesValid = validateImages(true);
+
+            if (
+                !isTitleValid ||
+                !isDescriptionValid ||
+                !isPriceValid ||
+                !isCategoryValid ||
+                !isConditionValid ||
+                !areImagesValid
+            ) {
+                updatePublishButtonState();
+                return;
+            }
+
+            createPostForm.submit();
+        });
+    }
+
+    updatePublishButtonState();
+
+    const createPostModal = document.getElementById('createPostModal');
+    const cancelCreatePostBtn = document.getElementById('cancelCreatePostBtn');
+    const cancelConfirmModal = document.getElementById('cancelConfirmModal');
+    const confirmCancelCreatePost = document.getElementById('confirmCancelCreatePost');
+
+    let isCreatePostDirty = false;
+    let allowCreatePostClose = false;
+
+    function resetCreatePostValidation() {
+        clearFieldError(postTitle, postTitleError);
+        clearFieldError(postDescription, postDescriptionError);
+        clearFieldError(postPrice, postPriceError);
+
+        if (postCategory) postCategory.classList.remove('is-invalid');
+        if (postCondition) postCondition.classList.remove('is-invalid');
+
+        clearImageError();
+    }
+
+    function resetCreatePostForm() {
+        if (createPostForm) {
+            createPostForm.reset();
+        }
+
+        selectedPostImages = [];
+        isCreatePostDirty = false;
+        allowCreatePostClose = false;
+
+        if (imagePreviewContainer) {
+            imagePreviewContainer.innerHTML = '';
+        }
+
+        if (postImage) {
+            postImage.value = '';
+        }
+
+        resetCreatePostValidation();
+        updatePublishButtonState();
+    }
+
+    function updateCreatePostDirtyState() {
+        const hasText =
+            (postTitle?.value.trim() || '') !== '' ||
+            (postDescription?.value.trim() || '') !== '' ||
+            (postPrice?.value.trim() || '') !== '';
+
+        const hasSelects =
+            !!postCategory?.value ||
+            !!postCondition?.value;
+
+        const hasImages = selectedPostImages.length > 0;
+
+        isCreatePostDirty = hasText || hasSelects || hasImages;
+    }
+
+// Track changes
+    [postTitle, postDescription, postPrice, postCategory, postCondition].forEach((field) => {
+        if (!field) return;
+
+        field.addEventListener('input', updateCreatePostDirtyState);
+        field.addEventListener('change', updateCreatePostDirtyState);
+    });
+
+// Modal open / close behavior
+    if (createPostModal) {
+        createPostModal.addEventListener('show.bs.modal', () => {
+            resetCreatePostValidation();
+            updatePublishButtonState();
+        });
+
+        createPostModal.addEventListener('hide.bs.modal', (event) => {
+            if (allowCreatePostClose) return;
+
+            updateCreatePostDirtyState();
+
+            if (!isCreatePostDirty) {
+                resetCreatePostForm();
+                return;
+            }
+
+            event.preventDefault();
+
+            if (cancelConfirmModal) {
+                const confirmModal = bootstrap.Modal.getOrCreateInstance(cancelConfirmModal);
+                confirmModal.show();
+            }
+        });
+
+        createPostModal.addEventListener('hidden.bs.modal', () => {
+            if (allowCreatePostClose) {
+                resetCreatePostForm();
+                allowCreatePostClose = false;
+            }
+        });
+    }
+
+// Cancel button behavior
+    if (cancelCreatePostBtn && createPostModal) {
+        cancelCreatePostBtn.addEventListener('click', () => {
+            updateCreatePostDirtyState();
+
+            const modal = bootstrap.Modal.getOrCreateInstance(createPostModal);
+
+            if (!isCreatePostDirty) {
+                allowCreatePostClose = true;
+                modal.hide();
+                return;
+            }
+
+            if (cancelConfirmModal) {
+                const confirmModal = bootstrap.Modal.getOrCreateInstance(cancelConfirmModal);
+                confirmModal.show();
+            }
+        });
+    }
+
+// Confirm cancel
+    if (confirmCancelCreatePost && createPostModal && cancelConfirmModal) {
+        confirmCancelCreatePost.addEventListener('click', () => {
+            allowCreatePostClose = true;
+
+            const confirmModal = bootstrap.Modal.getOrCreateInstance(cancelConfirmModal);
+            confirmModal.hide();
+
+            const modal = bootstrap.Modal.getOrCreateInstance(createPostModal);
+            modal.hide();
+        });
+    }
+
+    //Rating Functionality
+    const ratingContainer = document.getElementById('sellerRatingStars');
+    const ratingInput = document.getElementById('sellerRatingValue');
+    const ratingText = document.getElementById('sellerRatingText');
+
+    if (ratingContainer && ratingInput && ratingText) {
+        const stars = ratingContainer.querySelectorAll('.rating-star');
+
+        const ratingLabels = {
+            0: 'Selecciona una calificación',
+            1: 'Malo',
+            2: 'Regular',
+            3: 'Bueno',
+            4: 'Muy Bueno',
+            5: 'Excelente'
+        };
+
+        function paintStars(value) {
+            stars.forEach((star) => {
+                const starValue = Number(star.dataset.value);
+
+                if (starValue <= value) {
+                    star.classList.remove('bi-star');
+                    star.classList.add('bi-star-fill');
+                } else {
+                    star.classList.remove('bi-star-fill');
+                    star.classList.add('bi-star');
+                }
+            });
+
+            ratingText.textContent = ratingLabels[value] || ratingLabels[0];
+        }
+
+        stars.forEach((star) => {
+            star.addEventListener('mouseenter', function () {
+                const value = Number(this.dataset.value);
+                paintStars(value);
+            });
+
+            star.addEventListener('click', function () {
+                const value = Number(this.dataset.value);
+                ratingInput.value = value;
+                paintStars(value);
+            });
+
+            star.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    const value = Number(this.dataset.value);
+                    ratingInput.value = value;
+                    paintStars(value);
+                }
+            });
+        });
+
+        ratingContainer.addEventListener('mouseleave', () => {
+            paintStars(Number(ratingInput.value));
+        });
+
+        paintStars(Number(ratingInput.value));
+    }
 });
