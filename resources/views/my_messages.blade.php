@@ -5,6 +5,7 @@
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
             <div class="row g-0" style="min-height: 650px;">
 
+                <!-- LEFT SIDE (CHAT LIST) -->
                 <div class="col-md-4 border-end">
                     <div class="p-4 border-bottom">
                         <a href="{{ url('/kinemarket') }}" class="text-decoration-none text-dark fw-semibold">
@@ -23,6 +24,7 @@
                         </div>
                     </div>
 
+                    <!-- Example Chat -->
                     <div class="p-4 bg-success bg-opacity-10 border-start border-4 border-success">
                         <div class="d-flex align-items-start">
                             <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3"
@@ -31,59 +33,26 @@
                             </div>
 
                             <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-1 fw-bold">John Davis</h5>
-                                    <span class="badge border text-dark rounded-pill">Vendedor</span>
-                                </div>
-
-                                <div class="text-muted mb-2">
-                                    <i class="bi bi-box-seam me-1"></i>
-                                    Baloncesto - Spalding
-                                </div>
-
+                                <h5 class="mb-1 fw-bold">John Davis</h5>
                                 <div class="text-muted">Sin mensajes</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- RIGHT SIDE (LIVEWIRE CHAT) -->
                 <div class="col-md-8 d-flex flex-column">
+
+                    <!-- HEADER -->
                     <div class="p-4 border-bottom">
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3"
-                                 style="width: 48px; height: 48px;">
-                                J
-                            </div>
-
-                            <div>
-                                <h4 class="mb-1 fw-bold">John Davis</h4>
-                                <div class="text-muted">
-                                    <i class="bi bi-box-seam me-1"></i>
-                                    Baloncesto - Spalding
-                                    <span class="badge border text-dark rounded-pill ms-2">Vendedor</span>
-                                </div>
-                            </div>
-                        </div>
+                        <h4 class="fw-bold">Chat en tiempo real</h4>
                     </div>
 
-                    <div class="flex-grow-1 d-flex flex-column justify-content-center align-items-center text-center text-muted">
-                        <i class="bi bi-chat fs-1 mb-3"></i>
-                        <h3 class="fw-normal">No hay mensajes aún</h3>
-                        <p>Envía el primer mensaje para comenzar la conversación</p>
+                    <!-- 💬 LIVEWIRE CHAT COMPONENT -->
+                    <div class="flex-grow-1">
+                        @livewire('chatbox') 
                     </div>
 
-                    <div class="p-4 border-top">
-                        <div class="input-group">
-                            <input
-                                type="text"
-                                class="form-control form-control-lg border-end-0"
-                                placeholder="Escribe un mensaje..."
-                            >
-                            <button class="btn btn-success px-4" type="button">
-                                <i class="bi bi-send"></i>
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
             </div>
