@@ -54,4 +54,11 @@ Route::get('/my_messages', function () {
     return view('my_messages');
 })->name('my_messages');
 
+Route::get('/chat/{postId}/{sellerId}', function ($postId, $sellerId) {
+    return view('my_messages', [
+        'postId' => $postId,
+        'sellerId' => $sellerId,
+    ]);
+})->middleware('auth');
+
 require __DIR__ . '\saml2.php';
