@@ -131,4 +131,30 @@
     color: #ffc107;
 }
 
+.modal-body {
+    padding-bottom: 1.5rem;
+}
+
+#createPostModal .modal-content,
+#postDetailsModal .modal-content,
+#reportUserModal .modal-content {
+    max-height: 92vh;
+}
+
+#createPostModal .modal-body,
+#postDetailsModal .modal-body,
+#reportUserModal .modal-body {
+    overflow-y: auto;
+}
+
+.report-warning-icon {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+#cancelReportConfirmModal .modal-content {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
 
