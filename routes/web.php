@@ -15,6 +15,11 @@ Route::get('/my_profile', function () {
     return view('my_profile');
 })->name('my_profile');
 
+Route::get('/terms_and_conditions', function () {
+    return view('terms_and_conditions');
+})->name('terms_and_conditions');
+
+
 Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
 Route::post('/send-email', [EmailController::class, 'sendEmail']);
 

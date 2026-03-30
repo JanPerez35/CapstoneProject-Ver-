@@ -40,6 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const returnDate = document.getElementById('returnDate');
     const specialReason = document.getElementById('specialReason');
 
+    const loanFullNameError = document.getElementById('loanFullNameError');
+    const loanPickupDateError = document.getElementById('loanPickupDateError');
+    const pickupTimeBlockError = document.getElementById('pickupTimeBlockError');
+    const returnDateError = document.getElementById('returnDateError');
+    const specialReasonError = document.getElementById('specialReasonError');
+
     const hasBorrowModal =
         borrowModal &&
         borrowModalText &&
@@ -65,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let cart = [];
 
         const cartToast = bootstrap.Toast.getOrCreateInstance(cartToastEl);
+        const loanAllowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
 
         function toLocalDateString(date) {
             const year = date.getFullYear();
@@ -152,7 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     cartFooterActions.classList.add('d-none');
                 }
             }
+            updateLoanSubmitButtonState();
         }
+
 
         function markInvalid(field) {
             if (field) field.classList.add('is-invalid');
@@ -162,14 +171,110 @@ document.addEventListener('DOMContentLoaded', () => {
             if (field) field.classList.remove('is-invalid');
         }
 
+
+        function setLoanFieldError(field, errorElement, message) {
+            if (!field) return;
+            field.classList.add('is-invalid');
+            if (errorElement) {
+                errorElement.textContent = message;
+            }
+        }
+
+        function clearLoanFieldError(field, errorElement) {
+            if (!field) return;
+            field.classList.remove('is-invalid');
+            if (errorElement) {
+                errorElement.textContent = '';
+            }
+        }
+
         function clearLoanValidation() {
-            [
-                loanFullName,
-                loanPickupDate,
-                pickupTimeBlock,
-                returnDate,
-                specialReason
-            ].forEach(clearInvalid);
+            clearLoanFieldError(loanFullName, loanFullNameError);
+            clearLoanFieldError(loanPickupDate, loanPickupDateError);
+            clearLoanFieldError(pickupTimeBlock, pickupTimeBlockError);
+            clearLoanFieldError(returnDate, returnDateError);
+            clearLoanFieldError(specialReason, specialReasonError);
+        }
+
+        function validateLoanFullNameField(showError = true) {
+            const name = loanFullName?.value.trim() || '';
+
+            if (showError) {
+                clearLoanFieldError(loanFullName, loanFullNameError);
+            }
+
+            if (!name) {
+                if (showError) {
+                    setLoanFieldError(loanFullName, loanFullNameError, 'El nombre completo es obligatorio.');
+                }
+                return false;
+            }
+
+            if (name.length < 5) {
+                if (showError) {
+                    setLoanFieldError(loanFullName, loanFullNameError, 'El nombre debe tener al menos 5 caracteres.');
+                }
+                return false;
+            }
+
+            if (name.length > 80) {
+                if (showError) {
+                    setLoanFieldError(loanFullName, loanFullNameError, 'El nombre no puede exceder 80 caracteres.');
+                }
+                return false;
+            }
+
+            if (!loanAllowedTextRegex.test(name)) {
+                if (showError) {
+                    setLoanFieldError(
+                        loanFullName,
+                        loanFullNameError,
+                        'Solo se permiten letras, números, espacios, punto, coma y guion.'
+                    );
+                }
+                return false;
+            }
+
+            return true;
+        }
+
+        function validateSpecialReasonField(showError = true) {
+            const reason = specialReason?.value.trim() || '';
+
+            if (showError) {
+                clearLoanFieldError(specialReason, specialReasonError);
+            }
+
+            if (!specialCaseCheck?.checked) {
+                return true;
+            }
+
+            if (!reason) {
+                if (showError) {
+                    setLoanFieldError(specialReason, specialReasonError, 'La razón del caso especial es obligatoria.');
+                }
+                return false;
+            }
+
+            if (reason.length > 500) {
+                if (showError) {
+                    setLoanFieldError(specialReason, specialReasonError, 'La razón no puede exceder 500 caracteres.');
+                }
+                return false;
+            }
+
+            if (!loanAllowedTextRegex.test(reason)) {
+                if (showError) {
+                    setLoanFieldError(
+                        specialReason,
+                        specialReasonError,
+                        'Solo se permiten letras, números, espacios, punto, coma y guion.'
+                    );
+                }
+                return false;
+            }
+
+            return true;
         }
 
         function resetLoanForm() {
@@ -188,10 +293,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (specialCaseFields) {
                 specialCaseFields.classList.add('d-none');
             }
+            updateLoanSubmitButtonState();
         }
 
-        function validateLoanForm() {
-            clearLoanValidation();
+        function validateLoanForm(showErrors = true) {
+            if (showErrors) {
+                clearLoanValidation();
+            }
 
             let hasError = false;
 
@@ -202,54 +310,95 @@ document.addEventListener('DOMContentLoaded', () => {
             const returnVal = returnDate?.value;
             const reason = specialReason?.value.trim();
 
-            if (!name || name.length < 5 || name.length > 80) {
-                markInvalid(loanFullName);
+            if (!validateLoanFullNameField(showErrors)) {
                 hasError = true;
             }
 
             if (!pickupDateValue) {
-                markInvalid(loanPickupDate);
+                if (showErrors) {
+                    setLoanFieldError(loanPickupDate, loanPickupDateError, 'La fecha de recogida es obligatoria.');
+                }
                 hasError = true;
-            }
-
-            if (!pickupTime) {
-                markInvalid(pickupTimeBlock);
-                hasError = true;
-            }
-
-            if (pickupDateValue) {
+            } else {
                 const today = getTodayAtMidnight();
                 const pickupDateObj = new Date(`${pickupDateValue}T00:00:00`);
 
-                if (pickupDateObj <= today || isBlockedPickupDay(pickupDateValue)) {
-                    markInvalid(loanPickupDate);
+                if (pickupDateObj <= today) {
+                    if (showErrors) {
+                        setLoanFieldError(loanPickupDate, loanPickupDateError, 'La fecha debe ser futura.');
+                    }
+                    hasError = true;
+                } else if (isBlockedPickupDay(pickupDateValue)) {
+                    if (showErrors) {
+                        setLoanFieldError(loanPickupDate, loanPickupDateError, 'No se permiten viernes, sábados ni domingos.');
+                    }
                     hasError = true;
                 }
+            }
+
+            if (!pickupTime) {
+                if (showErrors) {
+                    setLoanFieldError(pickupTimeBlock, pickupTimeBlockError, 'La hora de recogida es obligatoria.');
+                }
+                hasError = true;
             }
 
             if (isSpecialCase) {
                 if (!returnVal) {
-                    markInvalid(returnDate);
+                    if (showErrors) {
+                        setLoanFieldError(returnDate, returnDateError, 'La fecha de devolución es obligatoria.');
+                    }
                     hasError = true;
-                }
-
-                if (returnVal) {
+                } else {
                     const today = getTodayAtMidnight();
                     const returnDateObj = new Date(`${returnVal}T00:00:00`);
 
                     if (returnDateObj <= today) {
-                        markInvalid(returnDate);
+                        if (showErrors) {
+                            setLoanFieldError(returnDate, returnDateError, 'La fecha de devolución debe ser futura.');
+                        }
                         hasError = true;
                     }
                 }
 
-                if (!reason || reason.length > 500) {
-                    markInvalid(specialReason);
+                if (!reason) {
+                    if (showErrors) {
+                        setLoanFieldError(specialReason, specialReasonError, 'La razón del caso especial es obligatoria.');
+                    }
+                    hasError = true;
+                } else if (reason.length < 10) {
+                    if (showErrors) {
+                        setLoanFieldError(specialReason, specialReasonError, 'La razón debe tener al menos 10 caracteres.');
+                    }
+                    hasError = true;
+                } else if (reason.length > 500) {
+                    if (showErrors) {
+                        setLoanFieldError(specialReason, specialReasonError, 'La razón no puede exceder 500 caracteres.');
+                    }
+                    hasError = true;
+                } else if (!loanAllowedTextRegex.test(reason)) {
+                    if (showErrors) {
+                        setLoanFieldError(
+                            specialReason,
+                            specialReasonError,
+                            'Solo se permiten letras, números, espacios, punto, coma y guion.'
+                        );
+                    }
                     hasError = true;
                 }
+
             }
 
             return !hasError;
+        }
+
+        function updateLoanSubmitButtonState() {
+            if (!submitLoanRequest) return;
+
+            const formIsValid = validateLoanForm(false);
+            const hasItems = cart.length > 0;
+
+            submitLoanRequest.disabled = !(formIsValid && hasItems);
         }
 
         function attachCartActionEvents() {
@@ -403,80 +552,94 @@ document.addEventListener('DOMContentLoaded', () => {
                     specialCaseFields.classList.remove('d-none');
                 } else {
                     specialCaseFields.classList.add('d-none');
-                    clearInvalid(returnDate);
-                    clearInvalid(specialReason);
+                    clearLoanFieldError(returnDate, returnDateError);
+                    clearLoanFieldError(specialReason, specialReasonError);
                 }
+
+                updateLoanSubmitButtonState();
             });
         }
 
         if (loanPickupDate) {
+            loanPickupDate.addEventListener('input', () => {
+                clearLoanFieldError(loanPickupDate, loanPickupDateError);
+                updateLoanSubmitButtonState();
+            });
+
             loanPickupDate.addEventListener('change', () => {
-                clearInvalid(loanPickupDate);
+                clearLoanFieldError(loanPickupDate, loanPickupDateError);
 
                 if (loanPickupDate.value && isBlockedPickupDay(loanPickupDate.value)) {
-                    markInvalid(loanPickupDate);
+                    setLoanFieldError(loanPickupDate, loanPickupDateError, 'No se permiten viernes, sábados ni domingos.');
                 }
+
+                updateLoanSubmitButtonState();
             });
         }
 
         if (returnDate) {
-            returnDate.addEventListener('change', () => {
-                clearInvalid(returnDate);
+            returnDate.addEventListener('input', () => {
+                clearLoanFieldError(returnDate, returnDateError);
+                updateLoanSubmitButtonState();
+            });
 
-                if (!returnDate.value) return;
+            returnDate.addEventListener('change', () => {
+                clearLoanFieldError(returnDate, returnDateError);
+
+                if (!returnDate.value) {
+                    updateLoanSubmitButtonState();
+                    return;
+                }
 
                 const selected = new Date(`${returnDate.value}T00:00:00`);
                 const today = getTodayAtMidnight();
 
                 if (selected <= today) {
-                    markInvalid(returnDate);
+                    setLoanFieldError(returnDate, returnDateError, 'La fecha de devolución debe ser futura.');
                 }
+
+                updateLoanSubmitButtonState();
             });
         }
 
         if (loanFullName) {
             loanFullName.addEventListener('input', () => {
                 loanFullName.value = loanFullName.value.slice(0, 80);
-                clearInvalid(loanFullName);
+                validateLoanFullNameField(true);
+                updateLoanSubmitButtonState();
             });
         }
 
         if (pickupTimeBlock) {
             pickupTimeBlock.addEventListener('change', () => {
-                clearInvalid(pickupTimeBlock);
+                clearLoanFieldError(pickupTimeBlock, pickupTimeBlockError);
+                updateLoanSubmitButtonState();
             });
         }
 
-        if (loanPickupDate) {
-            loanPickupDate.addEventListener('input', () => {
-                clearInvalid(loanPickupDate);
-            });
-        }
-
-        if (returnDate) {
-            returnDate.addEventListener('input', () => {
-                clearInvalid(returnDate);
-            });
-        }
 
         if (specialReason) {
             specialReason.addEventListener('input', () => {
                 specialReason.value = specialReason.value.slice(0, 500);
-                clearInvalid(specialReason);
+                clearLoanFieldError(specialReason, specialReasonError);
+                updateLoanSubmitButtonState();
             });
         }
+
 
         if (submitLoanRequest && submitToastEl && cartModal) {
             const submitToast = bootstrap.Toast.getOrCreateInstance(submitToastEl);
 
             submitLoanRequest.addEventListener('click', () => {
-                const isValid = validateLoanForm();
+                const isValid = validateLoanForm(true);
 
                 if (!isValid) {
+                    updateLoanSubmitButtonState();
                     return;
                 }
 
                 if (cart.length === 0) {
+                    updateLoanSubmitButtonState();
                     return;
                 }
 
@@ -486,6 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cart = [];
                 updateCartUI();
                 resetLoanForm();
+                updateLoanSubmitButtonState();
 
                 setTimeout(() => {
                     submitToast.show();
@@ -493,8 +657,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+
         setMinDates();
         updateCartUI();
+        updateLoanSubmitButtonState();
     }
 
     const deletePostModal = document.getElementById('deletePostModal');

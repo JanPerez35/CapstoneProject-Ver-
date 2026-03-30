@@ -12,6 +12,12 @@
 
         {{-- Internal nav --}}
         <div class="d-flex flex-wrap gap-2 mb-4">
+
+            <a href="{{ route('inventory_management') }}"
+               class="btn btn-outline-success px-4 fw-semibold">
+                Inventario Administrativo
+            </a>
+
             <a href="{{ route('inventory_management.borrows') }}"
                class="btn btn-success px-4 fw-semibold">
                 Préstamos
@@ -22,10 +28,7 @@
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
 
-            <a href="{{ route('inventory_management') }}"
-               class="btn btn-outline-success px-4 fw-semibold">
-                Inventario Administrativo
-            </a>
+
         </div>
 
         {{-- Title --}}
@@ -337,32 +340,73 @@
 
     {{-- Toasts --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
-        <div id="approveToast" class="toast text-bg-success border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
+
+        <!-- APPROVE (verde suave) -->
+        <div id="approveToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: auto; max-width: fit-content;">
+
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Caso especial aprobado correctamente.
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="background-color: transparent; border: none; transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
-        <div id="denyToast" class="toast text-bg-danger border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
+        <!-- DENY (rojo suave) -->
+        <div id="denyToast"
+             class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: auto; max-width: fit-content;">
+
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Caso especial denegado.
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="background-color: transparent; border: none; transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
-        <div id="returnedToast" class="toast text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
+        <!-- RETURNED (verde suave) -->
+        <div id="returnedToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: auto; max-width: fit-content;">
+
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Equipo ha sido devuelto.
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="background-color: transparent; border: none; transform: scale(0.8);">
+                </button>
             </div>
         </div>
+
     </div>
 
     <script>

@@ -27,46 +27,46 @@
         </a>
 
         <div class="d-flex align-items-center text-end">
-        <ul class="nav nav-pills align-items-center d-flex gap-3">
-            <li class="nav-item">
-                <a href="{{ route('my_profile') }}"
-                   class="btn btn-outline {{ request()->routeIs('my_profile') ? 'btn-success' : 'btn-outline-success' }} btn-md">
-                    <i class="bi bi-person-fill"></i>
-                    Mi Perfil
-                </a>
-            </li>
+            <ul class="nav nav-pills align-items-center d-flex gap-3">
+                <li class="nav-item">
+                    <a href="{{ route('my_profile') }}"
+                       class="btn btn-outline {{ request()->routeIs('my_profile') ? 'btn-success' : 'btn-outline-success' }} btn-md">
+                        <i class="bi bi-person-fill"></i>
+                        Mi Perfil
+                    </a>
+                </li>
 
-            <li class="nav-item">
-                <a href="{{route('my_messages')}}"
-                   class="btn btn-outline {{request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success'}} btn-md">
-                    <i class="bi bi-chat-left-text"></i>
-                    Mi Chats
-                </a>
-            </li>
+                <li class="nav-item">
+                    <a href="{{route('my_messages')}}"
+                       class="btn btn-outline {{request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success'}} btn-md">
+                        <i class="bi bi-chat-left-text"></i>
+                        Mi Chats
+                    </a>
+                </li>
 
-            <li class="nav-item">
-                <button
-                    type="button"
-                    class="btn btn-outline-success position-relative"
-                    data-bs-toggle="modal"
-                    data-bs-target="#cartModal"
-                >
-                    <i class="bi bi-cart3 me-1"></i>
-                    Carrito
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="cartCount">
-                        0
-                    </span>
-                </button>
-            </li>
+                <li class="nav-item">
+                    <button
+                        type="button"
+                        class="btn btn-outline-success position-relative"
+                        data-bs-toggle="modal"
+                        data-bs-target="#cartModal"
+                    >
+                        <i class="bi bi-cart3 me-1"></i>
+                        Carrito
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="cartCount">
+                            0
+                        </span>
+                    </button>
+                </li>
 
-            <li class="nav-item">
-                <a href="/"
-                   class="btn btn-success">
-                    <i class="bi bi-box-arrow-right"></i>
-                    Cerrar Sesión
-                </a>
-            </li>
-        </ul>
+                <li class="nav-item">
+                    <a href="/"
+                       class="btn btn-success">
+                        <i class="bi bi-box-arrow-right"></i>
+                        Cerrar Sesión
+                    </a>
+                </li>
+            </ul>
         </div>
     </header>
 </div>
@@ -119,8 +119,11 @@
                     </button>
                 </div>
 
-
-                <div id="loanDetailsSection" class="mb-4 d-none">                    <h3 class="fw-bold mb-4">Detalles del Préstamo</h3>
+                <div id="loanDetailsSection" class="mb-4 d-none">
+                    <h3 class="fw-bold mb-2">Detalles del Préstamo</h3>
+                    <p class="text-muted mb-4">
+                        <span class="text-danger">*</span> Campos requeridos
+                    </p>
 
                     <div class="border rounded-4 p-4 mb-4 bg-light-subtle">
                         <h5 class="fw-bold text-secondary mb-3">
@@ -143,7 +146,9 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="loanFullName" class="form-label fw-semibold">Nombre Completo *</label>
+                        <label for="loanFullName" class="form-label fw-semibold">
+                            Nombre Completo <span class="text-danger">*</span>
+                        </label>
                         <input
                             type="text"
                             class="form-control form-control-lg"
@@ -154,10 +159,13 @@
                             required
                         >
                         <div class="form-text">Entre 5 y 80 caracteres.</div>
+                        <div class="invalid-feedback d-block" id="loanFullNameError"></div>
                     </div>
 
                     <div class="mb-3">
-                        <label for="loanPickupDate" class="form-label fw-semibold">Fecha de Recogida *</label>
+                        <label for="loanPickupDate" class="form-label fw-semibold">
+                            Fecha de Recogida <span class="text-danger">*</span>
+                        </label>
                         <input
                             type="date"
                             class="form-control form-control-lg"
@@ -165,11 +173,13 @@
                             required
                         >
                         <div class="form-text">Solo días futuros. No se permiten viernes, sábados ni domingos.</div>
+                        <div class="invalid-feedback d-block" id="loanPickupDateError"></div>
                     </div>
 
-{{--                    Yeah im not letting the user write pick up at 12 am -Jan--}}
                     <div class="mb-3">
-                        <label for="pickupTimeBlock" class="form-label fw-semibold">Hora de Recogida *</label>
+                        <label for="pickupTimeBlock" class="form-label fw-semibold">
+                            Hora de Recogida <span class="text-danger">*</span>
+                        </label>
                         <select id="pickupTimeBlock" class="form-select form-select-lg" required>
                             <option value="">Selecciona una hora</option>
                             <option value="08:00">8:00 AM</option>
@@ -185,6 +195,7 @@
                             <option value="13:00">1:00 PM</option>
                         </select>
                         <div class="form-text">Horario disponible entre 8:00 AM y 1:00 PM.</div>
+                        <div class="invalid-feedback d-block" id="pickupTimeBlockError"></div>
                     </div>
 
                     <hr class="my-4">
@@ -202,17 +213,22 @@
 
                     <div id="specialCaseFields" class="d-none">
                         <div class="mb-3">
-                            <label for="returnDate" class="form-label fw-semibold">Fecha de Devolución Propuesta *</label>
+                            <label for="returnDate" class="form-label fw-semibold">
+                                Fecha de Devolución Propuesta <span class="text-danger">*</span>
+                            </label>
                             <input
                                 type="date"
                                 class="form-control form-control-lg"
                                 id="returnDate"
                             >
                             <div class="form-text">Debe ser una fecha futura.</div>
+                            <div class="invalid-feedback d-block" id="returnDateError"></div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="specialReason" class="form-label fw-semibold">Razón del Caso Especial *</label>
+                            <label for="specialReason" class="form-label fw-semibold">
+                                Razón del Caso Especial <span class="text-danger">*</span>
+                            </label>
                             <textarea
                                 class="form-control form-control-lg"
                                 id="specialReason"
@@ -221,6 +237,7 @@
                                 placeholder="Explica por qué necesitas el equipo por más tiempo"
                             ></textarea>
                             <div class="form-text">Máximo 500 caracteres.</div>
+                            <div class="invalid-feedback d-block" id="specialReasonError"></div>
                         </div>
 
                         <div class="alert alert-warning border-warning-subtle rounded-4">
@@ -231,10 +248,11 @@
                 </div>
             </div>
 
-            <div class="modal-footer border-0 pt-0" id="cartFooterActions">                <button type="button" class="btn btn-outline-secondary btn-lg" data-bs-dismiss="modal">
+            <div class="modal-footer border-0 pt-0" id="cartFooterActions">
+                <button type="button" class="btn btn-outline-secondary btn-lg" data-bs-dismiss="modal">
                     Cancelar
                 </button>
-                <button type="button" class="btn btn-success btn-lg" id="submitLoanRequest">
+                <button type="button" class="btn btn-success btn-lg" id="submitLoanRequest" disabled>
                     <i class="bi bi-check-circle me-1"></i>
                     Enviar Solicitud (<span id="submitItemCount">0</span> ítem)
                 </button>
@@ -245,25 +263,49 @@
 
 {{-- Global Toast --}}
 <div class="toast-container position-fixed bottom-0 start-0 p-3">
-    <div id="cartToast" class="toast align-items-center border-0 shadow text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body fw-semibold" id="cartToastMessage">
+    <div id="cartToast"
+         class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true"
+         style="width: auto; max-width: fit-content;">
+
+        <div class="d-flex align-items-center">
+            <div class="toast-body fw-semibold rounded-0 pe-1"
+                 id="cartToastMessage"
+                 style="padding-right: 0;">
                 Producto agregado al carrito
             </div>
-            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+
+            <button type="button"
+                    class="btn-close p-0 ms-1 me-2"
+                    data-bs-dismiss="toast"
+                    aria-label="Cerrar"
+                    style="background-color: transparent; border: none; transform: scale(0.8);">
+            </button>
         </div>
     </div>
 
     {{--Inventory Request Submitted Toast--}}
-    <div id="submitToast" class="toast align-items-center border-0 shadow text-bg-success" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body fw-semibold text-success">
+    <div id="submitToast"
+         class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true">
+
+        <div class="d-flex align-items-center">
+            <div class="toast-body fw-semibold rounded-0">
                 Tu solicitud ha sido enviada! Pronto recibirás un email con el estado de tu solicitud.
             </div>
-            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+
+            <button type="button"
+                    class="btn-close me-2"
+                    data-bs-dismiss="toast"
+                    aria-label="Cerrar"
+                    style="background-color: transparent; border: none; filter: none;">
+            </button>
         </div>
     </div>
-
 </div>
 
 <!--Webpage Footer-->
@@ -274,8 +316,8 @@
             <!--The first column of the footer-->
             <div class="col-md-4 mb-3">
                 <h5 class="d-flex align-items-center mb-2">
-                <i class="bi bi-question-circle me-2 text-success"></i>
-                 Ayuda y Soporte
+                    <i class="bi bi-question-circle me-2 text-success"></i>
+                    Ayuda y Soporte
                 </h5>
                 <p class="text-muted">
                     Soporte técnico y administración general del sistema
