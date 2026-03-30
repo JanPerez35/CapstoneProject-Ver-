@@ -23,7 +23,7 @@
         </button>
 
         <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-dialog modal-dialog-scrollable modal-lg">
                 <div class="modal-content rounded-4 border-0 shadow">
                    <!--Modal Header-->
                     <div class="modal-header border-0 pb-0 align-items-start">
@@ -179,7 +179,7 @@
                     </div>
 
                     <div class="modal-body">
-                        Se perderán los datos e imágenes que hayas escrito en este formularion.
+                        Se perderán los datos e imágenes que hayas escrito en este formulario.
                     </div>
 
                     <div class="modal-footer border-0">
@@ -199,100 +199,58 @@
         <div class="row mb-4 g-3">
             <div class="col-md-6">
                 <div class="input-group search-group">
-        <span class="input-group-text bg-white border-0">
-            <i class="bi bi-search"></i>
-        </span>
+                   <span class="input-group-text bg-white border-0">
+                      <i class="bi bi-search"></i>
+                  </span>
 
                     <input
                         type="text"
                         class="form-control border-0"
+                        id="marketplaceSearch"
                         placeholder="Buscar publicaciones..."
                     >
                 </div>
             </div>
             <div class="col-md-3">
-                <select class="form-select border-2 border-dark ">
-                    <option>Todas las categorías</option>
-                    <option>Baloncesto</option>
-                    <option>Tenis</option>
-                    <option>Fútbol</option>
-                    <option>Deporte Recreativo</option>
-                    <option>Volibol</option>
-                    <option>Levantamiento de Pesas</option>
-                    <option>Otros</option>
+                <select class="form-select border-2 border-dark" id="marketplaceCategoryFilter">
+                    <option value="all">Todas las categorías</option>
+                    <option value="Baloncesto">Baloncesto</option>
+                    <option value="Tenis">Tenis</option>
+                    <option value="Fútbol">Fútbol</option>
+                    <option value="Deporte Recreativo">Deporte Recreativo</option>
+                    <option value="Volibol">Volibol</option>
+                    <option value="Levantamiento de Pesas">Levantamiento de Pesas</option>
+                    <option value="Otros">Otros</option>
                 </select>
             </div>
             <div class="col-md-3">
-                <select class="form-select border-2 border-dark">
-                    <option>Todas los Estados</option>
-                    <option>Solo Disponible</option>
-                    <option>Solo Vendidos</option>
+                <select class="form-select border-2 border-dark" id="marketplaceStatusFilter">
+                    <option value="all">Todas los Estados</option>
+                    <option value="Disponible">Solo Disponible</option>
+                    <option value="Vendido">Solo Vendidos</option>
                 </select>
             </div>
         </div>
 
-        <!--Card grid style-->
+        <!--Card template style-->
 
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
-                <div class="card h-100 shadow-sm rounded-4 overflow-hidden item-card border-0">
-                    <img
-                        src="{{ asset('images/marketplace_images/Baloncesto.jpg') }}"
-                        class="card-img-top"
-                        alt="Baloncesto - Spalding"
-                        style="height: 400px; object-fit: cover; object-position: center;"
-                    >
-
-                    <div class="card-body d-flex flex-column p-4">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h5 class="card-title mb-0 fw-bold">Baloncesto - Spalding</h5>
-                            <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
-                        Disponible
-                    </span>
-                        </div>
-
-                        <p class="text-muted mb-3">
-                            Balón de baloncesto tamaño oficial, uso interior/exterior. Excelente agarre y rebote.
-                        </p>
-
-                        <h3 class="fw-bold text-success mb-3">$25</h3>
-
-                        <div class="d-flex gap-2 mb-3 flex-wrap">
-                            <span class="badge  border rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">Muy Bueno</span>
-                            <span class="badge px-3 py-2 rounded-0" style="background-color:#6FC21F; color:white;">
-                        Baloncesto
-                    </span>
-                        </div>
-
-                        <div class="small text-muted mb-3">
-                            <div class="mb-2">
-                                <i class="bi bi-person me-2"></i> John Davis
-                            </div>
-                            <div class="mb-2">
-                                <i class="bi bi-star-fill text-warning me-2"></i> 4.3 (8 calificaciones)
-                            </div>
-                            <div>
-                                <i class="bi bi-clock me-2"></i> hace 2 días
-                            </div>
-                        </div>
-
-                        <div class="mt-auto d-grid">
-                            <button
-                                type="button"
-                                class="btn btn-outline-secondary rounded-3"
-                                data-bs-toggle="modal"
-                                data-bs-target="#postDetailsModal"
-                            >
-                                Ver Detalles
-                            </button>
-                        </div>
-                    </div>
+        <div class="row g-4" id="marketplaceCardsContainer">
+            <div class="col-12 d-none" id="marketplaceEmptyState">
+                <div class="border rounded-4 p-4 text-center bg-light">
+                    <h5 class="fw-bold mb-2">No se encontraron publicaciones</h5>
+                    <p class="text-muted mb-0">
+                        Intenta cambiar la búsqueda o los filtros.
+                    </p>
                 </div>
             </div>
         </div>
 
+        <nav aria-label="Paginación de publicaciones" class="mt-4">
+            <ul class="pagination justify-content-center mb-0" id="marketplacePagination"></ul>
+        </nav>
+
         <div class="modal fade" id="postDetailsModal" tabindex="-1" aria-labelledby="postDetailsModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+            <div class="modal-dialog modal-dialog-scrollable modal-lg">
                 <div class="modal-content rounded-4 border-0 shadow">
 
                     <div class="modal-header border-0 pb-0 align-items-start">
@@ -322,7 +280,7 @@
                                     </div>
                                 </div>
 
-                                <div class="carousel-item">
+                                <div class="carousel-item post-carousel-item">
                                     <div class="carousel-image-box">
                                     <img
                                         src="{{ asset('images/marketplace_images/ball2.jpg') }}"
@@ -332,7 +290,7 @@
                                     </div>
                                 </div>
 
-                                <div class="carousel-item">
+                                <div class="carousel-item post-carousel-item">
                                     <div class="carousel-image-box">
                                     <img
                                         src="{{ asset('images/marketplace_images/ball3.jpg') }}"
@@ -373,7 +331,7 @@
 
                         <hr>
 
-                        <div class="row gy-3">
+                        <div class="row gy-3 pb-2">
                             <div class="col-6 text-muted">Precio:</div>
                             <div class="col-6 text-end fw-bold text-success">$25</div>
 
@@ -410,7 +368,7 @@
 
                         <hr>
 
-                        <div class="mt-4">
+                        <div class="mt-4 pb-2">
                             <h5 class="fw-bold mb-3">Calificar Esta Publicación</h5>
 
                             <label class="form-label fw-semibold">Tu Calificación</label>
@@ -465,24 +423,40 @@
             </div>
         </div>
         <div class="modal fade" id="reportUserModal" tabindex="-1" aria-labelledby="reportUserModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-scrollable">
                 <div class="modal-content rounded-4 border-0 shadow">
 
-                    <div class="modal-header border-0 pb-0">
-                        <div>
-                            <h4 class="modal-title fw-bold mb-2" id="reportUserModalLabel">
-                                <i class="bi bi-exclamation-triangle text-danger me-2"></i>
+                    <div class="modal-header border-0 pb-0 position-relative">
+                        <div class="w-100 pe-5">
+                            <h4 class="modal-title fw-bold mb-2 d-flex align-items-center" id="reportUserModalLabel">
+                                <img
+                                    src="{{ asset('images/icons/warning-triangle.png') }}"
+                                    alt="Advertencia"
+                                    class="me-2 report-warning-icon"
+                                >
                                 Reportar Usuario
                             </h4>
-                            <p class="text-muted mb-0">
+
+                            <p class="text-muted mb-1">
                                 Reportar a John Davis por comportamiento sospechoso
                             </p>
+
+                            <small class="text-muted">
+                                <span class="text-danger">*</span> Campos requeridos
+                            </small>
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+                        <button
+                            type="button"
+                            class="btn-close position-absolute top-0 end-0 m-3"
+                            id="closeReportModalBtn"
+                            aria-label="Cerrar"
+                        ></button>
                     </div>
 
                     <div class="modal-body pt-3">
-                        <form>
+                        @csrf
+                        <form id="reportUserForm" novalidate>
                             <div class="mb-3">
                                 <label for="reportReason" class="form-label fw-semibold">
                                     Razón <span class="text-danger">*</span>
@@ -495,6 +469,7 @@
                                     <option>Contenido inapropiado</option>
                                     <option>Otro</option>
                                 </select>
+                                <div class="invalid-feedback" id="reportReasonError">Seleciona una razón.</div>
                             </div>
 
                             <div class="mb-3">
@@ -506,9 +481,14 @@
                                     class="form-control form-control-lg"
                                     rows="4"
                                     placeholder="Proporciona detalles sobre el comportamiento sospechoso..."
+                                    minlength="10"
                                     maxlength="500"
                                     required
                                 ></textarea>
+                                <small class="text-muted d-block fst-italic">
+                                    Entre 10 y 500 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                </small>
+                                <div class="invalid-feedback" id="reportDescriptionError"></div>
                             </div>
 
                             <div class="alert alert-warning rounded-4 mb-0">
@@ -519,14 +499,37 @@
                     </div>
 
                     <div class="modal-footer border-0 pt-0">
-                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+                        <button type="button" class="btn btn-outline-secondary px-4" id="cancelReportBtn">
                             Cancelar
                         </button>
-                        <button type="button" class="btn btn-danger px-4">
+                        <button type="button" class="btn btn-danger px-4" id="submitReportBtn" disabled>
                             Enviar Reporte
                         </button>
                     </div>
 
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="cancelReportConfirmModal" tabindex="-1" aria-labelledby="cancelReportConfirmLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold" id="cancelReportConfirmLabel">¿Seguro que deseas cancelar?</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        Se perderán los datos que hayas escrito en este formulario.
+                    </div>
+
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Seguir editando
+                        </button>
+                        <button type="button" class="btn btn-danger" id="confirmCancelReport">
+                            Sí, cancelar
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

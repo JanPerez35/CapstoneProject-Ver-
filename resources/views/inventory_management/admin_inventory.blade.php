@@ -13,6 +13,11 @@
 
         {{-- Internal nav --}}
         <div class="d-flex flex-wrap gap-2 mb-4">
+
+            <a href="{{ route('inventory_management') }}"
+               class="btn btn-success px-4 fw-semibold">
+                Inventario Administrativo
+            </a>
             <a href="{{ route('inventory_management.borrows') }}"
                class="btn btn-outline-success px-4 fw-semibold">
                 Préstamos
@@ -23,10 +28,7 @@
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
 
-            <a href="{{ route('inventory_management') }}"
-               class="btn btn-success px-4 fw-semibold">
-                Inventario Administrativo
-            </a>
+
         </div>
 
         {{-- Section heading + button --}}
@@ -136,6 +138,9 @@
                         <p class="text-muted mb-0">
                             Completa la información del nuevo equipo
                         </p>
+                        <p class="mt-2 mb-0 text-muted">
+                            <span class="text-danger">*</span> Campos requeridos
+                        </p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
@@ -143,20 +148,28 @@
                 <div class="modal-body">
                     <form id="addItemForm" novalidate>
                         <div class="mb-3">
-                            <label for="nombre_item" class="form-label fw-semibold">Nombre del Item*</label>
+                            <label for="nombre_item" class="form-label fw-semibold">
+                                Nombre del Item<span class="text-danger">*</span>
+                            </label>
                             <input
                                 type="text"
                                 id="nombre_item"
                                 name="nombre_item"
                                 class="form-control form-control-lg"
                                 placeholder="Ejemplo. Bola de Volibol"
+                                maxlength="100"
                                 required
                             >
+                            <div class="form-text">
+                                Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                            </div>
+                            <div class="invalid-feedback d-block" id="nombreItemError"></div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="categoria" class="form-label fw-semibold">Categoría*</label>
-                            <select
+                            <label for="categoria" class="form-label fw-semibold">
+                                Categoría<span class="text-danger">*</span>
+                            </label>                            <select
                                 id="categoria"
                                 name="categoria"
                                 class="form-select form-select-lg"
@@ -171,10 +184,14 @@
                                 <option value="Levantamiento de Pesas">Levantamiento de Pesas</option>
                                 <option value="Otros">Otros</option>
                             </select>
+                            <div class="invalid-feedback d-block" id="categoriaError"></div>
+
                         </div>
 
                         <div class="mb-3">
-                            <label for="cantidad_total" class="form-label fw-semibold">Cantidad Total*</label>
+                            <label for="cantidad_total" class="form-label fw-semibold">
+                                Cantidad Total<span class="text-danger">*</span>
+                            </label>
                             <input
                                 type="number"
                                 id="cantidad_total"
@@ -184,11 +201,16 @@
                                 placeholder="Ej. 10"
                                 required
                             >
+                            <div class="form-text">
+                                Debe ser un número entero mayor o igual a 1.
+                            </div>
+                            <div class="invalid-feedback d-block" id="cantidadTotalError"></div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="cantidad_disponible" class="form-label fw-semibold">Cantidad Disponible*</label>
-                            <input
+                            <label for="cantidad_disponible" class="form-label fw-semibold">
+                                Cantidad Disponible<span class="text-danger">*</span>
+                            </label>                            <input
                                 type="number"
                                 id="cantidad_disponible"
                                 name="cantidad_disponible"
@@ -197,36 +219,55 @@
                                 placeholder="Ej. 8"
                                 required
                             >
+                            <div class="form-text">
+                                Debe ser un número entero igual o mayor a 0 y no puede exceder la cantidad total.
+                            </div>
+                            <div class="invalid-feedback d-block" id="cantidadDisponibleError"></div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="ubicacion" class="form-label fw-semibold">Ubicación*</label>
-                            <input
-                                type="text"
+                            <label for="ubicacion" class="form-label fw-semibold">
+                                Ubicación<span class="text-danger">*</span>
+                            </label>
+                            <select
                                 id="ubicacion"
                                 name="ubicacion"
-                                class="form-control form-control-lg"
-                                placeholder="Ej. Almacén A"
+                                class="form-select form-select-lg"
                                 required
                             >
+                                <option value="" selected disabled>Selecciona una ubicación</option>
+                                <option value="Almacén A">Almacén A</option>
+                                <option value="Almacén B">Almacén B</option>
+                                <option value="Almacén C">Almacén C</option>
+                                <option value="Almacén D">Almacén D</option>
+                            </select>
+                            <div class="invalid-feedback d-block" id="ubicacionError"></div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="imagen" class="form-label fw-semibold">Imagen del Item*</label>
+                        <div class="mb-2">
+                            <label for="imagen" class="form-label fw-semibold">
+                                Imagen del Item<span class="text-danger">*</span>
+                            </label>
                             <input
                                 type="file"
+                                class="d-none"
                                 id="imagen"
                                 name="imagen"
-                                class="form-control"
                                 accept=".jpg,.jpeg,image/jpeg"
                                 required
                             >
-                            <div class="form-text">
-                                Solo se permiten archivos JPG/JPEG de hasta 2 MB.
-                            </div>
-                            <div id="imageError" class="text-danger small mt-2 d-none"></div>
                         </div>
 
+                        <label for="imagen" class="form-control form-control-lg text-center py-3" style="cursor:pointer;">
+                            <i class="bi bi-upload me-2"></i>
+                            Subir imagen
+                        </label>
+
+                        <small class="text-muted d-block fst-italic mt-2">
+                            Solo 1 imagen permitida. Formato JPEG/JPG. Máximo 2MB.
+                        </small>
+
+                        <div class="invalid-feedback d-block" id="imageError"></div>
                         <div class="mb-3 d-none" id="previewWrapper">
                             <label class="form-label fw-semibold">Vista previa</label>
                             <img
@@ -242,7 +283,7 @@
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                                 Cancelar
                             </button>
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-success" id="submitAddItemBtn" disabled>
                                 <i class="bi bi-plus-lg me-1"></i> Agregar Item
                             </button>
                         </div>
@@ -279,24 +320,53 @@
     </div>
 
     {{-- Toasts --}}
+    {{-- Toasts --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
-        <div id="inventoryToast" class="toast text-bg-success border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
+
+        <!-- SUCCESS (Agregar item) -->
+        <div id="inventoryToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: auto; max-width: fit-content;">
+
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Item añadido correctamente
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="background-color: transparent; border: none; transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
-        <div id="inventoryDeleteToast" class="toast text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
+        <!--  ERROR (Eliminar item) -->
+        <div id="inventoryDeleteToast"
+             class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: auto; max-width: fit-content;">
+
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Item eliminado del inventario
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="background-color: transparent; border: none; transform: scale(0.8);">
+                </button>
             </div>
         </div>
+
     </div>
 
     <script>
@@ -315,6 +385,13 @@
             const inventoryToast = document.getElementById('inventoryToast');
             const inventoryDeleteToast = document.getElementById('inventoryDeleteToast');
 
+            const nombreItemError = document.getElementById('nombreItemError');
+            const categoriaError = document.getElementById('categoriaError');
+            const cantidadTotalError = document.getElementById('cantidadTotalError');
+            const cantidadDisponibleError = document.getElementById('cantidadDisponibleError');
+            const ubicacionError = document.getElementById('ubicacionError');
+            const submitAddItemBtn = document.getElementById('submitAddItemBtn');
+
             const deleteInventoryItemModal = document.getElementById('deleteInventoryItemModal');
             const deleteInventoryItemText = document.getElementById('deleteInventoryItemText');
             const confirmDeleteInventoryItem = document.getElementById('confirmDeleteInventoryItem');
@@ -322,6 +399,9 @@
             const inventoryCards = document.getElementById('inventoryCards');
 
             let inventoryCardToDelete = null;
+
+            const inventoryAllowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
+            const maxImageSize = 2 * 1024 * 1024;
 
             const requiredFields = [
                 nombreInput,
@@ -332,23 +412,177 @@
                 imageInput
             ];
 
-            function markInvalid(field) {
+            function setFieldError(field, errorElement, message) {
+                if (!field) return;
                 field.classList.add('is-invalid');
+                if (errorElement) {
+                    errorElement.textContent = message;
+                }
             }
 
-            function clearInvalid(field) {
+            function clearFieldError(field, errorElement) {
+                if (!field) return;
                 field.classList.remove('is-invalid');
+                if (errorElement) {
+                    errorElement.textContent = '';
+                }
             }
 
             function clearAllInvalid() {
-                requiredFields.forEach(field => clearInvalid(field));
+                clearFieldError(nombreInput, nombreItemError);
+                clearFieldError(categoriaInput, categoriaError);
+                clearFieldError(cantidadTotalInput, cantidadTotalError);
+                clearFieldError(cantidadDisponibleInput, cantidadDisponibleError);
+                clearFieldError(ubicacionInput, ubicacionError);
+                clearFieldError(imageInput, imageError);
             }
 
             function resetImageState() {
-                imageError.classList.add('d-none');
                 imageError.textContent = '';
+                imageInput.classList.remove('is-invalid');
                 previewWrapper.classList.add('d-none');
                 imagePreview.src = '';
+            }
+
+            function validateNombreItem(showError = true) {
+                const value = nombreInput.value.trim();
+
+                if (showError) {
+                    clearFieldError(nombreInput, nombreItemError);
+                }
+
+                if (!value) {
+                    if (showError) setFieldError(nombreInput, nombreItemError, 'El nombre del item es obligatorio.');
+                    return false;
+                }
+
+                if (value.length < 5) {
+                    if (showError) setFieldError(nombreInput, nombreItemError, 'El nombre debe tener al menos 5 caracteres.');
+                    return false;
+                }
+
+                if (value.length > 100) {
+                    if (showError) setFieldError(nombreInput, nombreItemError, 'El nombre no puede exceder 100 caracteres.');
+                    return false;
+                }
+
+                if (!inventoryAllowedTextRegex.test(value)) {
+                    if (showError) setFieldError(nombreInput, nombreItemError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+                    return false;
+                }
+
+                return true;
+            }
+
+            function validateCategoria(showError = true) {
+                const isValid = !!categoriaInput.value;
+
+                if (showError) {
+                    if (!isValid) {
+                        setFieldError(categoriaInput, categoriaError, 'Debes seleccionar una categoría.');
+                    } else {
+                        clearFieldError(categoriaInput, categoriaError);
+                    }
+                }
+
+                return isValid;
+            }
+
+            function validateCantidadTotal(showError = true) {
+                const value = cantidadTotalInput.value.trim();
+
+                if (showError) {
+                    clearFieldError(cantidadTotalInput, cantidadTotalError);
+                }
+
+                if (!value) {
+                    if (showError) setFieldError(cantidadTotalInput, cantidadTotalError, 'La cantidad total es obligatoria.');
+                    return false;
+                }
+
+                if (!Number.isInteger(Number(value)) || Number(value) < 1) {
+                    if (showError) setFieldError(cantidadTotalInput, cantidadTotalError, 'Debe ser un número entero mayor o igual a 1.');
+                    return false;
+                }
+
+                return true;
+            }
+
+            function validateCantidadDisponible(showError = true) {
+                const value = cantidadDisponibleInput.value.trim();
+                const totalValue = cantidadTotalInput.value.trim();
+
+                if (showError) {
+                    clearFieldError(cantidadDisponibleInput, cantidadDisponibleError);
+                }
+
+                if (value === '') {
+                    if (showError) setFieldError(cantidadDisponibleInput, cantidadDisponibleError, 'La cantidad disponible es obligatoria.');
+                    return false;
+                }
+
+                if (!Number.isInteger(Number(value)) || Number(value) < 0) {
+                    if (showError) setFieldError(cantidadDisponibleInput, cantidadDisponibleError, 'Debe ser un número entero igual o mayor a 0.');
+                    return false;
+                }
+
+                if (totalValue !== '' && Number(value) > Number(totalValue)) {
+                    if (showError) setFieldError(cantidadDisponibleInput, cantidadDisponibleError, 'No puede exceder la cantidad total.');
+                    return false;
+                }
+
+                return true;
+            }
+
+            function validateUbicacion(showError = true) {
+                const isValid = !!ubicacionInput.value;
+
+                if (showError) {
+                    if (!isValid) {
+                        setFieldError(ubicacionInput, ubicacionError, 'Debes seleccionar una ubicación.');
+                    } else {
+                        clearFieldError(ubicacionInput, ubicacionError);
+                    }
+                }
+
+                return isValid;
+            }
+
+            function validateImage(showError = true) {
+                const file = imageInput.files[0];
+
+                if (showError) {
+                    clearFieldError(imageInput, imageError);
+                }
+
+                if (!file) {
+                    if (showError) setFieldError(imageInput, imageError, 'Debes subir una imagen.');
+                    return false;
+                }
+
+                if (file.type !== 'image/jpeg') {
+                    if (showError) setFieldError(imageInput, imageError, 'Solo se permiten archivos JPG o JPEG.');
+                    return false;
+                }
+
+                if (file.size > maxImageSize) {
+                    if (showError) setFieldError(imageInput, imageError, 'La imagen no puede exceder 2 MB.');
+                    return false;
+                }
+
+                return true;
+            }
+
+            function updateAddItemButtonState() {
+                const isReady =
+                    validateNombreItem(false) &&
+                    validateCategoria(false) &&
+                    validateCantidadTotal(false) &&
+                    validateCantidadDisponible(false) &&
+                    validateUbicacion(false) &&
+                    validateImage(false);
+
+                submitAddItemBtn.disabled = !isReady;
             }
 
             function updateStatusBadge(cardWrapper) {
@@ -463,211 +697,203 @@
                 });
             }
 
-            requiredFields.forEach(field => {
-                field.addEventListener('input', function () {
-                    clearInvalid(field);
-                    if (field === imageInput) {
-                        imageError.classList.add('d-none');
-                        imageError.textContent = '';
-                    }
-                });
-
-                field.addEventListener('change', function () {
-                    clearInvalid(field);
-                    if (field === imageInput) {
-                        imageError.classList.add('d-none');
-                        imageError.textContent = '';
-                    }
-                });
-            });
-
             imageInput.addEventListener('change', function () {
+                const file = imageInput.files[0];
+
+
                 resetImageState();
-                clearInvalid(imageInput);
 
-                const file = this.files[0];
-                if (!file) return;
-
-                const allowedTypes = ['image/jpeg'];
-                const maxSize = 2 * 1024 * 1024;
-
-                if (!allowedTypes.includes(file.type)) {
-                    markInvalid(imageInput);
-                    imageError.textContent = 'Solo se permiten archivos JPG o JPEG.';
-                    imageError.classList.remove('d-none');
-                    this.value = '';
+                if (!file) {
+                    updateAddItemButtonState();
                     return;
                 }
 
-                if (file.size > maxSize) {
-                    markInvalid(imageInput);
-                    imageError.textContent = 'La imagen no puede exceder 2 MB.';
-                    imageError.classList.remove('d-none');
-                    this.value = '';
+
+                if (file.type !== 'image/jpeg') {
+                    setFieldError(imageInput, imageError, 'Solo se permiten archivos JPG o JPEG.');
+                    updateAddItemButtonState();
                     return;
                 }
+
+                if (file.size > maxImageSize) {
+                    setFieldError(imageInput, imageError, 'La imagen no puede exceder 2 MB.');
+                    updateAddItemButtonState();
+                    return;
+                }
+
 
                 const reader = new FileReader();
+
                 reader.onload = function (e) {
                     imagePreview.src = e.target.result;
-                    previewWrapper.classList.remove('d-none');
+                    previewWrapper.classList.remove('d-none'); // 👈 CLAVE
                 };
+
                 reader.readAsDataURL(file);
+
+                clearFieldError(imageInput, imageError);
+                updateAddItemButtonState();
+            });
+
+            nombreInput.addEventListener('input', function () {
+                nombreInput.value = nombreInput.value.slice(0, 100);
+                validateNombreItem(true);
+                updateAddItemButtonState();
+            });
+
+            categoriaInput.addEventListener('change', function () {
+                validateCategoria(true);
+                updateAddItemButtonState();
+            });
+
+            cantidadTotalInput.addEventListener('input', function () {
+                validateCantidadTotal(true);
+                validateCantidadDisponible(true);
+                updateAddItemButtonState();
+            });
+
+            cantidadDisponibleInput.addEventListener('input', function () {
+                validateCantidadDisponible(true);
+                updateAddItemButtonState();
+            });
+
+            ubicacionInput.addEventListener('change', function () {
+                validateUbicacion(true);
+                updateAddItemButtonState();
+            });
+
+            nombreInput.addEventListener('input', function () {
+                nombreInput.value = nombreInput.value.slice(0, 100);
+                validateNombreItem(true);
+                updateAddItemButtonState();
+            });
+
+            categoriaInput.addEventListener('change', function () {
+                validateCategoria(true);
+                updateAddItemButtonState();
+            });
+
+            cantidadTotalInput.addEventListener('input', function () {
+                validateCantidadTotal(true);
+                validateCantidadDisponible(true);
+                updateAddItemButtonState();
+            });
+
+            cantidadDisponibleInput.addEventListener('input', function () {
+                validateCantidadDisponible(true);
+                updateAddItemButtonState();
+            });
+
+            ubicacionInput.addEventListener('change', function () {
+                validateUbicacion(true);
+                updateAddItemButtonState();
             });
 
             addItemForm.addEventListener('submit', function (e) {
                 e.preventDefault();
 
-                clearAllInvalid();
+                const isNombreValid = validateNombreItem(true);
+                const isCategoriaValid = validateCategoria(true);
+                const isCantidadTotalValid = validateCantidadTotal(true);
+                const isCantidadDisponibleValid = validateCantidadDisponible(true);
+                const isUbicacionValid = validateUbicacion(true);
+                const isImageValid = validateImage(true);
+
+                if (
+                    !isNombreValid ||
+                    !isCategoriaValid ||
+                    !isCantidadTotalValid ||
+                    !isCantidadDisponibleValid ||
+                    !isUbicacionValid ||
+                    !isImageValid
+                ) {
+                    updateAddItemButtonState();
+                    return;
+                }
 
                 const nombre = nombreInput.value.trim();
                 const categoria = categoriaInput.value;
                 const cantidadTotal = cantidadTotalInput.value;
                 const cantidadDisponible = cantidadDisponibleInput.value;
-                const ubicacion = ubicacionInput.value.trim();
+                const ubicacion = ubicacionInput.value;
                 const file = imageInput.files[0];
-
-                let hasError = false;
-
-                if (!nombre) {
-                    markInvalid(nombreInput);
-                    hasError = true;
-                }
-
-                if (!categoria) {
-                    markInvalid(categoriaInput);
-                    hasError = true;
-                }
-
-                if (!cantidadTotal || Number(cantidadTotal) < 1) {
-                    markInvalid(cantidadTotalInput);
-                    hasError = true;
-                }
-
-                if (cantidadDisponible === '' || Number(cantidadDisponible) < 0) {
-                    markInvalid(cantidadDisponibleInput);
-                    hasError = true;
-                }
-
-                if (
-                    cantidadTotal &&
-                    cantidadDisponible !== '' &&
-                    Number(cantidadDisponible) > Number(cantidadTotal)
-                ) {
-                    markInvalid(cantidadDisponibleInput);
-                    markInvalid(cantidadTotalInput);
-                    hasError = true;
-                }
-
-                if (!ubicacion) {
-                    markInvalid(ubicacionInput);
-                    hasError = true;
-                }
-
-                if (!file) {
-                    markInvalid(imageInput);
-                    imageError.textContent = 'Debes subir una imagen.';
-                    imageError.classList.remove('d-none');
-                    hasError = true;
-                }
-
-                if (hasError) {
-                    return;
-                }
-
-                const allowedTypes = ['image/jpeg'];
-                const maxSize = 2 * 1024 * 1024;
-
-                if (!allowedTypes.includes(file.type)) {
-                    markInvalid(imageInput);
-                    imageError.textContent = 'Solo se permiten archivos JPG o JPEG.';
-                    imageError.classList.remove('d-none');
-                    return;
-                }
-
-                if (file.size > maxSize) {
-                    markInvalid(imageInput);
-                    imageError.textContent = 'La imagen no puede exceder 2 MB.';
-                    imageError.classList.remove('d-none');
-                    return;
-                }
 
                 const imageUrl = URL.createObjectURL(file);
                 const statusText = Number(cantidadDisponible) > 0 ? 'Disponible' : 'No disponible';
                 const statusColor = Number(cantidadDisponible) > 0 ? '#6FC21F' : '#dc3545';
 
                 const cardHtml = `
-                    <div class="col-md-6 col-lg-4 inventory-card-wrapper">
-                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
-                            <img
-                                src="${imageUrl}"
-                                class="card-img-top"
-                                alt="${nombre}"
-                                style="height: 220px; object-fit: cover; object-position: center;"
-                            >
+        <div class="col-md-6 col-lg-4 inventory-card-wrapper">
+            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
+                <img
+                    src="${imageUrl}"
+                    class="card-img-top"
+                    alt="${nombre}"
+                    style="height: 220px; object-fit: cover; object-position: center;"
+                >
 
-                            <div class="card-body d-flex flex-column">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="card-title mb-0 fw-bold inventory-item-name">${nombre}</h5>
-                                    <span class="badge rounded-0 inventory-status-badge" style="background-color:${statusColor}; color:white;">
-                                        ${statusText}
-                                    </span>
-                                </div>
+                <div class="card-body d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0 fw-bold inventory-item-name">${nombre}</h5>
+                        <span class="badge rounded-0 inventory-status-badge" style="background-color:${statusColor}; color:white;">
+                            ${statusText}
+                        </span>
+                    </div>
 
-                                <p class="text-muted small mb-3 inventory-description">
-                                    Item agregado manualmente al inventario.
-                                </p>
+                    <p class="text-muted small mb-3 inventory-description">
+                        Item agregado manualmente al inventario.
+                    </p>
 
-                                <div class="small mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Cantidad Total:</span>
-                                        <strong class="inventory-total">${cantidadTotal}</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Cantidad Disponible:</span>
-                                        <strong class="text-success inventory-available">${cantidadDisponible}</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Ubicación:</span>
-                                        <strong class="inventory-location">${ubicacion}</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Categoría:</span>
-                                        <strong class="inventory-category">${categoria}</strong>
-                                    </div>
-                                </div>
-
-                                <div class="mt-auto d-grid gap-3">
-                                    <div>
-                                        <div class="small text-muted mb-1">Editar Cantidad Total</div>
-                                        <div class="d-flex align-items-center justify-content-between gap-2">
-                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-decrease">-</button>
-                                            <span class="fw-bold inventory-total-control">${cantidadTotal}</span>
-                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-increase">+</button>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <div class="small text-muted mb-1">Editar Cantidad Disponible</div>
-                                        <div class="d-flex align-items-center justify-content-between gap-2">
-                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-decrease">-</button>
-                                            <span class="fw-bold inventory-available-control">${cantidadDisponible}</span>
-                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-increase">+</button>
-                                        </div>
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        class="btn btn-danger open-delete-item-modal"
-                                        data-item-name="${nombre}"
-                                    >
-                                        <i class="bi bi-trash me-1"></i> Eliminar Item
-                                    </button>
-                                </div>
-                            </div>
+                    <div class="small mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Cantidad Total:</span>
+                            <strong class="inventory-total">${cantidadTotal}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Cantidad Disponible:</span>
+                            <strong class="text-success inventory-available">${cantidadDisponible}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Ubicación:</span>
+                            <strong class="inventory-location">${ubicacion}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Categoría:</span>
+                            <strong class="inventory-category">${categoria}</strong>
                         </div>
                     </div>
-                `;
+
+                    <div class="mt-auto d-grid gap-3">
+                        <div>
+                            <div class="small text-muted mb-1">Editar Cantidad Total</div>
+                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-decrease">-</button>
+                                <span class="fw-bold inventory-total-control">${cantidadTotal}</span>
+                                <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-increase">+</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="small text-muted mb-1">Editar Cantidad Disponible</div>
+                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-decrease">-</button>
+                                <span class="fw-bold inventory-available-control">${cantidadDisponible}</span>
+                                <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-increase">+</button>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="btn btn-danger open-delete-item-modal"
+                            data-item-name="${nombre}"
+                        >
+                            <i class="bi bi-trash me-1"></i> Eliminar Item
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
 
                 inventoryCards.insertAdjacentHTML('beforeend', cardHtml);
 
@@ -677,6 +903,7 @@
                 addItemForm.reset();
                 clearAllInvalid();
                 resetImageState();
+                updateAddItemButtonState();
 
                 attachInventoryCardEvents();
 
@@ -704,6 +931,7 @@
             }
 
             attachInventoryCardEvents();
+            updateAddItemButtonState();
         });
     </script>
 </x-layout>

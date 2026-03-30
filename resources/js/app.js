@@ -40,6 +40,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const returnDate = document.getElementById('returnDate');
     const specialReason = document.getElementById('specialReason');
 
+    const loanFullNameError = document.getElementById('loanFullNameError');
+    const loanPickupDateError = document.getElementById('loanPickupDateError');
+    const pickupTimeBlockError = document.getElementById('pickupTimeBlockError');
+    const returnDateError = document.getElementById('returnDateError');
+    const specialReasonError = document.getElementById('specialReasonError');
+
     const hasBorrowModal =
         borrowModal &&
         borrowModalText &&
@@ -65,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let cart = [];
 
         const cartToast = bootstrap.Toast.getOrCreateInstance(cartToastEl);
+        const loanAllowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
 
         function toLocalDateString(date) {
             const year = date.getFullYear();
@@ -152,7 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     cartFooterActions.classList.add('d-none');
                 }
             }
+            updateLoanSubmitButtonState();
         }
+
 
         function markInvalid(field) {
             if (field) field.classList.add('is-invalid');
@@ -162,14 +171,110 @@ document.addEventListener('DOMContentLoaded', () => {
             if (field) field.classList.remove('is-invalid');
         }
 
+
+        function setLoanFieldError(field, errorElement, message) {
+            if (!field) return;
+            field.classList.add('is-invalid');
+            if (errorElement) {
+                errorElement.textContent = message;
+            }
+        }
+
+        function clearLoanFieldError(field, errorElement) {
+            if (!field) return;
+            field.classList.remove('is-invalid');
+            if (errorElement) {
+                errorElement.textContent = '';
+            }
+        }
+
         function clearLoanValidation() {
-            [
-                loanFullName,
-                loanPickupDate,
-                pickupTimeBlock,
-                returnDate,
-                specialReason
-            ].forEach(clearInvalid);
+            clearLoanFieldError(loanFullName, loanFullNameError);
+            clearLoanFieldError(loanPickupDate, loanPickupDateError);
+            clearLoanFieldError(pickupTimeBlock, pickupTimeBlockError);
+            clearLoanFieldError(returnDate, returnDateError);
+            clearLoanFieldError(specialReason, specialReasonError);
+        }
+
+        function validateLoanFullNameField(showError = true) {
+            const name = loanFullName?.value.trim() || '';
+
+            if (showError) {
+                clearLoanFieldError(loanFullName, loanFullNameError);
+            }
+
+            if (!name) {
+                if (showError) {
+                    setLoanFieldError(loanFullName, loanFullNameError, 'El nombre completo es obligatorio.');
+                }
+                return false;
+            }
+
+            if (name.length < 5) {
+                if (showError) {
+                    setLoanFieldError(loanFullName, loanFullNameError, 'El nombre debe tener al menos 5 caracteres.');
+                }
+                return false;
+            }
+
+            if (name.length > 80) {
+                if (showError) {
+                    setLoanFieldError(loanFullName, loanFullNameError, 'El nombre no puede exceder 80 caracteres.');
+                }
+                return false;
+            }
+
+            if (!loanAllowedTextRegex.test(name)) {
+                if (showError) {
+                    setLoanFieldError(
+                        loanFullName,
+                        loanFullNameError,
+                        'Solo se permiten letras, números, espacios, punto, coma y guion.'
+                    );
+                }
+                return false;
+            }
+
+            return true;
+        }
+
+        function validateSpecialReasonField(showError = true) {
+            const reason = specialReason?.value.trim() || '';
+
+            if (showError) {
+                clearLoanFieldError(specialReason, specialReasonError);
+            }
+
+            if (!specialCaseCheck?.checked) {
+                return true;
+            }
+
+            if (!reason) {
+                if (showError) {
+                    setLoanFieldError(specialReason, specialReasonError, 'La razón del caso especial es obligatoria.');
+                }
+                return false;
+            }
+
+            if (reason.length > 500) {
+                if (showError) {
+                    setLoanFieldError(specialReason, specialReasonError, 'La razón no puede exceder 500 caracteres.');
+                }
+                return false;
+            }
+
+            if (!loanAllowedTextRegex.test(reason)) {
+                if (showError) {
+                    setLoanFieldError(
+                        specialReason,
+                        specialReasonError,
+                        'Solo se permiten letras, números, espacios, punto, coma y guion.'
+                    );
+                }
+                return false;
+            }
+
+            return true;
         }
 
         function resetLoanForm() {
@@ -188,10 +293,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (specialCaseFields) {
                 specialCaseFields.classList.add('d-none');
             }
+            updateLoanSubmitButtonState();
         }
 
-        function validateLoanForm() {
-            clearLoanValidation();
+        function validateLoanForm(showErrors = true) {
+            if (showErrors) {
+                clearLoanValidation();
+            }
 
             let hasError = false;
 
@@ -202,54 +310,95 @@ document.addEventListener('DOMContentLoaded', () => {
             const returnVal = returnDate?.value;
             const reason = specialReason?.value.trim();
 
-            if (!name || name.length < 5 || name.length > 80) {
-                markInvalid(loanFullName);
+            if (!validateLoanFullNameField(showErrors)) {
                 hasError = true;
             }
 
             if (!pickupDateValue) {
-                markInvalid(loanPickupDate);
+                if (showErrors) {
+                    setLoanFieldError(loanPickupDate, loanPickupDateError, 'La fecha de recogida es obligatoria.');
+                }
                 hasError = true;
-            }
-
-            if (!pickupTime) {
-                markInvalid(pickupTimeBlock);
-                hasError = true;
-            }
-
-            if (pickupDateValue) {
+            } else {
                 const today = getTodayAtMidnight();
                 const pickupDateObj = new Date(`${pickupDateValue}T00:00:00`);
 
-                if (pickupDateObj <= today || isBlockedPickupDay(pickupDateValue)) {
-                    markInvalid(loanPickupDate);
+                if (pickupDateObj <= today) {
+                    if (showErrors) {
+                        setLoanFieldError(loanPickupDate, loanPickupDateError, 'La fecha debe ser futura.');
+                    }
+                    hasError = true;
+                } else if (isBlockedPickupDay(pickupDateValue)) {
+                    if (showErrors) {
+                        setLoanFieldError(loanPickupDate, loanPickupDateError, 'No se permiten viernes, sábados ni domingos.');
+                    }
                     hasError = true;
                 }
+            }
+
+            if (!pickupTime) {
+                if (showErrors) {
+                    setLoanFieldError(pickupTimeBlock, pickupTimeBlockError, 'La hora de recogida es obligatoria.');
+                }
+                hasError = true;
             }
 
             if (isSpecialCase) {
                 if (!returnVal) {
-                    markInvalid(returnDate);
+                    if (showErrors) {
+                        setLoanFieldError(returnDate, returnDateError, 'La fecha de devolución es obligatoria.');
+                    }
                     hasError = true;
-                }
-
-                if (returnVal) {
+                } else {
                     const today = getTodayAtMidnight();
                     const returnDateObj = new Date(`${returnVal}T00:00:00`);
 
                     if (returnDateObj <= today) {
-                        markInvalid(returnDate);
+                        if (showErrors) {
+                            setLoanFieldError(returnDate, returnDateError, 'La fecha de devolución debe ser futura.');
+                        }
                         hasError = true;
                     }
                 }
 
-                if (!reason || reason.length > 500) {
-                    markInvalid(specialReason);
+                if (!reason) {
+                    if (showErrors) {
+                        setLoanFieldError(specialReason, specialReasonError, 'La razón del caso especial es obligatoria.');
+                    }
+                    hasError = true;
+                } else if (reason.length < 10) {
+                    if (showErrors) {
+                        setLoanFieldError(specialReason, specialReasonError, 'La razón debe tener al menos 10 caracteres.');
+                    }
+                    hasError = true;
+                } else if (reason.length > 500) {
+                    if (showErrors) {
+                        setLoanFieldError(specialReason, specialReasonError, 'La razón no puede exceder 500 caracteres.');
+                    }
+                    hasError = true;
+                } else if (!loanAllowedTextRegex.test(reason)) {
+                    if (showErrors) {
+                        setLoanFieldError(
+                            specialReason,
+                            specialReasonError,
+                            'Solo se permiten letras, números, espacios, punto, coma y guion.'
+                        );
+                    }
                     hasError = true;
                 }
+
             }
 
             return !hasError;
+        }
+
+        function updateLoanSubmitButtonState() {
+            if (!submitLoanRequest) return;
+
+            const formIsValid = validateLoanForm(false);
+            const hasItems = cart.length > 0;
+
+            submitLoanRequest.disabled = !(formIsValid && hasItems);
         }
 
         function attachCartActionEvents() {
@@ -403,80 +552,94 @@ document.addEventListener('DOMContentLoaded', () => {
                     specialCaseFields.classList.remove('d-none');
                 } else {
                     specialCaseFields.classList.add('d-none');
-                    clearInvalid(returnDate);
-                    clearInvalid(specialReason);
+                    clearLoanFieldError(returnDate, returnDateError);
+                    clearLoanFieldError(specialReason, specialReasonError);
                 }
+
+                updateLoanSubmitButtonState();
             });
         }
 
         if (loanPickupDate) {
+            loanPickupDate.addEventListener('input', () => {
+                clearLoanFieldError(loanPickupDate, loanPickupDateError);
+                updateLoanSubmitButtonState();
+            });
+
             loanPickupDate.addEventListener('change', () => {
-                clearInvalid(loanPickupDate);
+                clearLoanFieldError(loanPickupDate, loanPickupDateError);
 
                 if (loanPickupDate.value && isBlockedPickupDay(loanPickupDate.value)) {
-                    markInvalid(loanPickupDate);
+                    setLoanFieldError(loanPickupDate, loanPickupDateError, 'No se permiten viernes, sábados ni domingos.');
                 }
+
+                updateLoanSubmitButtonState();
             });
         }
 
         if (returnDate) {
-            returnDate.addEventListener('change', () => {
-                clearInvalid(returnDate);
+            returnDate.addEventListener('input', () => {
+                clearLoanFieldError(returnDate, returnDateError);
+                updateLoanSubmitButtonState();
+            });
 
-                if (!returnDate.value) return;
+            returnDate.addEventListener('change', () => {
+                clearLoanFieldError(returnDate, returnDateError);
+
+                if (!returnDate.value) {
+                    updateLoanSubmitButtonState();
+                    return;
+                }
 
                 const selected = new Date(`${returnDate.value}T00:00:00`);
                 const today = getTodayAtMidnight();
 
                 if (selected <= today) {
-                    markInvalid(returnDate);
+                    setLoanFieldError(returnDate, returnDateError, 'La fecha de devolución debe ser futura.');
                 }
+
+                updateLoanSubmitButtonState();
             });
         }
 
         if (loanFullName) {
             loanFullName.addEventListener('input', () => {
                 loanFullName.value = loanFullName.value.slice(0, 80);
-                clearInvalid(loanFullName);
+                validateLoanFullNameField(true);
+                updateLoanSubmitButtonState();
             });
         }
 
         if (pickupTimeBlock) {
             pickupTimeBlock.addEventListener('change', () => {
-                clearInvalid(pickupTimeBlock);
+                clearLoanFieldError(pickupTimeBlock, pickupTimeBlockError);
+                updateLoanSubmitButtonState();
             });
         }
 
-        if (loanPickupDate) {
-            loanPickupDate.addEventListener('input', () => {
-                clearInvalid(loanPickupDate);
-            });
-        }
-
-        if (returnDate) {
-            returnDate.addEventListener('input', () => {
-                clearInvalid(returnDate);
-            });
-        }
 
         if (specialReason) {
             specialReason.addEventListener('input', () => {
                 specialReason.value = specialReason.value.slice(0, 500);
-                clearInvalid(specialReason);
+                clearLoanFieldError(specialReason, specialReasonError);
+                updateLoanSubmitButtonState();
             });
         }
+
 
         if (submitLoanRequest && submitToastEl && cartModal) {
             const submitToast = bootstrap.Toast.getOrCreateInstance(submitToastEl);
 
             submitLoanRequest.addEventListener('click', () => {
-                const isValid = validateLoanForm();
+                const isValid = validateLoanForm(true);
 
                 if (!isValid) {
+                    updateLoanSubmitButtonState();
                     return;
                 }
 
                 if (cart.length === 0) {
+                    updateLoanSubmitButtonState();
                     return;
                 }
 
@@ -486,6 +649,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cart = [];
                 updateCartUI();
                 resetLoanForm();
+                updateLoanSubmitButtonState();
 
                 setTimeout(() => {
                     submitToast.show();
@@ -493,8 +657,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+
         setMinDates();
         updateCartUI();
+        updateLoanSubmitButtonState();
     }
 
     const deletePostModal = document.getElementById('deletePostModal');
@@ -529,6 +695,268 @@ document.addEventListener('DOMContentLoaded', () => {
             modalInstance.hide();
         });
     }
+    // Marketplace search and filters includes pagination
+    const marketplaceSearch = document.getElementById('marketplaceSearch');
+    const marketplaceCategoryFilter = document.getElementById('marketplaceCategoryFilter');
+    const marketplaceStatusFilter = document.getElementById('marketplaceStatusFilter');
+    const marketplaceCardsContainer = document.getElementById('marketplaceCardsContainer');
+    const marketplaceEmptyState = document.getElementById('marketplaceEmptyState');
+    const marketplacePagination = document.getElementById('marketplacePagination');
+
+    const POSTS_PER_PAGE = 12;
+    let currentMarketplacePage = 1;
+
+    function getStoredMarketplacePosts() {
+        try {
+            const raw = localStorage.getItem('marketplacePosts');
+            return raw ? JSON.parse(raw) : [];
+        } catch {
+            return [];
+        }
+    }
+
+    function saveMarketplacePosts(posts) {
+        localStorage.setItem('marketplacePosts', JSON.stringify(posts));
+    }
+
+    let allMarketplacePosts = getStoredMarketplacePosts();
+
+    function createMarketplacePostObject() {
+        const firstImage = selectedPostImages[0]
+            ? URL.createObjectURL(selectedPostImages[0])
+            : '';
+
+        return {
+            id: Date.now(),
+            title: postTitle.value.trim(),
+            description: postDescription.value.trim() || 'Sin descripción.',
+            price: postPrice.value.trim(),
+            category: postCategory.value,
+            condition: postCondition.value,
+            status: 'Disponible',
+            seller: 'John Davis',
+            rating: '4.3',
+            reviews: '8',
+            createdAt: 'hace unos segundos',
+            image: firstImage
+        };
+    }
+
+    function createMarketplaceCardHTML(post) {
+        return `
+        <div
+            class="col-md-6 col-lg-4 marketplace-card"
+            data-id="${post.id}"
+            data-title="${post.title}"
+            data-description="${post.description}"
+            data-category="${post.category}"
+            data-status="${post.status}"
+            data-condition="${post.condition}"
+            data-seller="${post.seller}"
+        >
+            <div class="card h-100 shadow-sm rounded-4 overflow-hidden item-card border-0">
+                <img
+                    src="${post.image}"
+                    class="card-img-top"
+                    alt="${post.title}"
+                    style="height: 400px; object-fit: cover; object-position: center;"
+                >
+
+                <div class="card-body d-flex flex-column p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="card-title mb-0 fw-bold">${post.title}</h5>
+                        <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
+                            ${post.status}
+                        </span>
+                    </div>
+
+                    <p class="text-muted mb-3">${post.description}</p>
+
+                    <h3 class="fw-bold text-success mb-3">$${post.price}</h3>
+
+                    <div class="d-flex gap-2 mb-3 flex-wrap">
+                        <span class="badge border rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
+                            ${post.condition}
+                        </span>
+                        <span class="badge px-3 py-2 rounded-0" style="background-color:#6FC21F; color:white;">
+                            ${post.category}
+                        </span>
+                    </div>
+
+                    <div class="small text-muted mb-3">
+                        <div class="mb-2">
+                            <i class="bi bi-person me-2"></i> ${post.seller}
+                        </div>
+                        <div class="mb-2">
+                            <i class="bi bi-star-fill text-warning me-2"></i> ${post.rating} (${post.reviews} calificaciones)
+                        </div>
+                        <div>
+                            <i class="bi bi-clock me-2"></i> ${post.createdAt}
+                        </div>
+                    </div>
+
+                    <div class="mt-auto d-grid">
+                        <button
+                            type="button"
+                            class="btn btn-outline-secondary rounded-3"
+                            data-bs-toggle="modal"
+                            data-bs-target="#postDetailsModal"
+                        >
+                            Ver Detalles
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    }
+
+    function getFilteredMarketplacePosts() {
+        const searchValue = (marketplaceSearch?.value || '').trim().toLowerCase();
+        const selectedCategory = marketplaceCategoryFilter?.value || 'all';
+        const selectedStatus = marketplaceStatusFilter?.value || 'all';
+
+        return allMarketplacePosts.filter((post) => {
+            const matchesSearch =
+                searchValue === '' ||
+                post.title.toLowerCase().includes(searchValue) ||
+                post.description.toLowerCase().includes(searchValue) ||
+                post.category.toLowerCase().includes(searchValue) ||
+                post.condition.toLowerCase().includes(searchValue) ||
+                post.seller.toLowerCase().includes(searchValue);
+
+            const matchesCategory =
+                selectedCategory === 'all' || post.category === selectedCategory;
+
+            const matchesStatus =
+                selectedStatus === 'all' || post.status === selectedStatus;
+
+            return matchesSearch && matchesCategory && matchesStatus;
+        });
+    }
+
+    function renderMarketplacePagination(totalItems) {
+        if (!marketplacePagination) return;
+
+        const totalPages = Math.max(1, Math.ceil(totalItems / POSTS_PER_PAGE));
+        marketplacePagination.innerHTML = '';
+
+        const prevDisabled = currentMarketplacePage === 1 ? 'disabled' : '';
+        marketplacePagination.insertAdjacentHTML('beforeend', `
+        <li class="page-item ${prevDisabled}">
+            <button class="page-link" type="button" data-page="prev" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </button>
+        </li>
+    `);
+
+        for (let page = 1; page <= totalPages; page++) {
+            const activeClass = page === currentMarketplacePage ? 'active' : '';
+            marketplacePagination.insertAdjacentHTML('beforeend', `
+            <li class="page-item ${activeClass}">
+                <button class="page-link" type="button" data-page="${page}">${page}</button>
+            </li>
+        `);
+        }
+
+        const nextDisabled = currentMarketplacePage === totalPages ? 'disabled' : '';
+        marketplacePagination.insertAdjacentHTML('beforeend', `
+        <li class="page-item ${nextDisabled}">
+            <button class="page-link" type="button" data-page="next" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </button>
+        </li>
+    `);
+
+        marketplacePagination.querySelectorAll('.page-link').forEach((button) => {
+            button.addEventListener('click', () => {
+                const action = button.dataset.page;
+                const maxPage = totalPages;
+
+                if (action === 'prev' && currentMarketplacePage > 1) {
+                    currentMarketplacePage -= 1;
+                } else if (action === 'next' && currentMarketplacePage < maxPage) {
+                    currentMarketplacePage += 1;
+                } else if (!isNaN(Number(action))) {
+                    currentMarketplacePage = Number(action);
+                }
+
+                renderMarketplace();
+            });
+        });
+    }
+
+    function renderMarketplace() {
+        if (!marketplaceCardsContainer) return;
+
+        const filteredPosts = getFilteredMarketplacePosts();
+        const totalPages = Math.max(1, Math.ceil(filteredPosts.length / POSTS_PER_PAGE));
+
+        if (currentMarketplacePage > totalPages) {
+            currentMarketplacePage = totalPages;
+        }
+
+        const start = (currentMarketplacePage - 1) * POSTS_PER_PAGE;
+        const end = start + POSTS_PER_PAGE;
+        const paginatedPosts = filteredPosts.slice(start, end);
+
+        marketplaceCardsContainer.querySelectorAll('.marketplace-card').forEach((card) => card.remove());
+
+        if (marketplaceEmptyState) {
+            marketplaceEmptyState.classList.toggle('d-none', filteredPosts.length !== 0);
+        }
+
+        paginatedPosts.forEach((post) => {
+            marketplaceCardsContainer.insertAdjacentHTML('beforeend', createMarketplaceCardHTML(post));
+        });
+
+        renderMarketplacePagination(filteredPosts.length);
+    }
+
+    function resetCreatePostLocalState() {
+        if (createPostForm) {
+            createPostForm.reset();
+        }
+
+        selectedPostImages = [];
+        isCreatePostDirty = false;
+        allowCreatePostClose = false;
+
+        if (imagePreviewContainer) {
+            imagePreviewContainer.innerHTML = '';
+        }
+
+        if (postImage) {
+            postImage.value = '';
+        }
+
+        resetCreatePostValidation();
+        updatePublishButtonState();
+    }
+
+    if (marketplaceSearch) {
+        marketplaceSearch.addEventListener('input', () => {
+            currentMarketplacePage = 1;
+            renderMarketplace();
+        });
+    }
+
+    if (marketplaceCategoryFilter) {
+        marketplaceCategoryFilter.addEventListener('change', () => {
+            currentMarketplacePage = 1;
+            renderMarketplace();
+        });
+    }
+
+    if (marketplaceStatusFilter) {
+        marketplaceStatusFilter.addEventListener('change', () => {
+            currentMarketplacePage = 1;
+            renderMarketplace();
+        });
+    }
+
+    renderMarketplace();
+
     // Post validation
     const createPostForm = document.getElementById('createPostForm');
     const publishBtn = document.getElementById('publishBtn');
@@ -907,7 +1335,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            createPostForm.submit();
+            const newPost = createMarketplacePostObject();
+            allMarketplacePosts.unshift(newPost);
+            saveMarketplacePosts(allMarketplacePosts);
+
+            currentMarketplacePage = 1;
+            renderMarketplace();
+
+            const createModalInstance = bootstrap.Modal.getOrCreateInstance(createPostModal);
+            allowCreatePostClose = true;
+            createModalInstance.hide();
+
+            resetCreatePostLocalState();
         });
     }
 
@@ -976,7 +1415,7 @@ document.addEventListener('DOMContentLoaded', () => {
         field.addEventListener('change', updateCreatePostDirtyState);
     });
 
-// Modal open / close behavior
+// Modal open & close behavior
     if (createPostModal) {
         createPostModal.addEventListener('show.bs.modal', () => {
             resetCreatePostValidation();
@@ -1039,6 +1478,268 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const modal = bootstrap.Modal.getOrCreateInstance(createPostModal);
             modal.hide();
+        });
+    }
+
+    //Reporting
+    const reportUserForm = document.getElementById('reportUserForm');
+    const reportReason = document.getElementById('reportReason');
+    const reportReasonError = document.getElementById('reportReasonError');
+    const reportDescription = document.getElementById('reportDescription');
+    const reportDescriptionError = document.getElementById('reportDescriptionError');
+    const submitReportBtn = document.getElementById('submitReportBtn');
+
+    function validateReportReason(showError = true) {
+        if (!reportReason) return true;
+
+        const isValid = !!reportReason.value;
+
+        if (showError) {
+            if (!isValid) {
+                reportReason.classList.add('is-invalid');
+            } else {
+                reportReason.classList.remove('is-invalid');
+            }
+        }
+
+        return isValid;
+    }
+
+    function validateReportDescription(showError = true) {
+        if (!reportDescription || !reportDescriptionError) return true;
+
+        const value = reportDescription.value.trim();
+
+        if (showError) {
+            reportDescription.classList.remove('is-invalid');
+            reportDescriptionError.textContent = '';
+        }
+
+        if (!value) {
+            if (showError) {
+                reportDescription.classList.add('is-invalid');
+                reportDescriptionError.textContent = 'La descripción es obligatoria.';
+            }
+            return false;
+        }
+
+        if (value.length < 10) {
+            if (showError) {
+                reportDescription.classList.add('is-invalid');
+                reportDescriptionError.textContent = 'La descripción debe tener al menos 10 caracteres.';
+            }
+            return false;
+        }
+
+        if (value.length > 500) {
+            if (showError) {
+                reportDescription.classList.add('is-invalid');
+                reportDescriptionError.textContent = 'La descripción no puede exceder 500 caracteres.';
+            }
+            return false;
+        }
+
+        if (!allowedTextRegex.test(value)) {
+            if (showError) {
+                reportDescription.classList.add('is-invalid');
+                reportDescriptionError.textContent = 'Solo se permiten letras, números, espacios, punto, coma y guion.';
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    function updateReportButtonState() {
+        if (!submitReportBtn) return;
+
+        const isReady =
+            validateReportReason(false) &&
+            validateReportDescription(false);
+
+        submitReportBtn.disabled = !isReady;
+    }
+
+    if (reportReason) {
+        reportReason.addEventListener('change', () => {
+            validateReportReason(true);
+            updateReportButtonState();
+        });
+    }
+
+    if (reportDescription) {
+        reportDescription.addEventListener('input', () => {
+            reportDescription.value = reportDescription.value.slice(0, 500);
+
+            if (reportDescription.value.trim() === '') {
+                reportDescription.classList.remove('is-invalid');
+                reportDescriptionError.textContent = '';
+            } else {
+                validateReportDescription(true);
+            }
+
+            updateReportButtonState();
+        });
+    }
+
+    if (submitReportBtn && reportUserForm) {
+        submitReportBtn.addEventListener('click', () => {
+            const isReasonValid = validateReportReason(true);
+            const isDescriptionValid = validateReportDescription(true);
+
+            if (!isReasonValid || !isDescriptionValid) {
+                updateReportButtonState();
+                return;
+            }
+
+            reportUserForm.submit();
+        });
+    }
+
+    updateReportButtonState();
+
+    const reportUserModal = document.getElementById('reportUserModal');
+    const cancelReportBtn = document.getElementById('cancelReportBtn');
+    const closeReportModalBtn = document.getElementById('closeReportModalBtn');
+    const cancelReportConfirmModal = document.getElementById('cancelReportConfirmModal');
+    const confirmCancelReport = document.getElementById('confirmCancelReport');
+
+    let isReportDirty = false;
+    let allowReportClose = false;
+
+    function resetReportValidation() {
+        if (reportReason) {
+            reportReason.classList.remove('is-invalid');
+        }
+
+        if (reportDescription) {
+            reportDescription.classList.remove('is-invalid');
+        }
+
+        if (reportDescriptionError) {
+            reportDescriptionError.textContent = '';
+        }
+
+        if (reportReasonError) {
+            reportReasonError.textContent = 'Selecciona una razón.';
+        }
+    }
+
+    function resetReportForm() {
+        if (reportUserForm) {
+            reportUserForm.reset();
+        }
+
+        isReportDirty = false;
+        allowReportClose = false;
+
+        resetReportValidation();
+        updateReportButtonState();
+    }
+
+    function updateReportDirtyState() {
+        const hasReason = !!(reportReason && reportReason.value);
+        const hasDescription = !!(reportDescription && reportDescription.value.trim() !=='');
+
+        isReportDirty = hasReason || hasDescription;
+    }
+
+    [reportReason, reportDescription].forEach((field) => {
+        if (!field) return;
+
+        field.addEventListener('input', updateReportDirtyState);
+        field.addEventListener('change', updateReportDirtyState);
+    });
+
+    if (reportUserModal) {
+        reportUserModal.addEventListener('show.bs.modal', () => {
+            resetReportValidation();
+            updateReportButtonState();
+        });
+
+        reportUserModal.addEventListener('hide.bs.modal', (event) => {
+            if (allowReportClose) {
+                return;
+            }
+
+            updateReportDirtyState();
+
+            if (!isReportDirty) {
+                resetReportForm();
+                return;
+            }
+
+            event.preventDefault();
+
+            if (cancelReportConfirmModal) {
+                const confirmModal = bootstrap.Modal.getOrCreateInstance(cancelReportConfirmModal);
+                confirmModal.show();
+            }
+        });
+
+        reportUserModal.addEventListener('hidden.bs.modal', () => {
+            if (allowReportClose) {
+                resetReportForm();
+                allowReportClose = false;
+            }
+        });
+    }
+
+    function tryCloseReportModal() {
+        if (!reportUserModal) return;
+
+        updateReportDirtyState();
+
+        const reportModalInstance = bootstrap.Modal.getOrCreateInstance(reportUserModal);
+
+        if (!isReportDirty) {
+            allowReportClose = true;
+            reportModalInstance.hide();
+
+            if(postDetailsModal){
+                setTimeout(()=> {
+                    const postModalInstance=bootstrap.Modal.getOrCreateInstance(postDetailsModal);
+                    postModalInstance.show()
+                })
+            }
+            return;
+        }
+
+        if (cancelReportConfirmModal) {
+            const confirmModal = bootstrap.Modal.getOrCreateInstance(cancelReportConfirmModal);
+            confirmModal.show();
+        }
+    }
+
+    if (cancelReportBtn) {
+        cancelReportBtn.addEventListener('click', tryCloseReportModal);
+    }
+
+    if (closeReportModalBtn) {
+        closeReportModalBtn.addEventListener('click', (e) =>{
+            e.preventDefault();
+            tryCloseReportModal();
+        })
+    }
+
+    const postDetailsModal = document.getElementById('postDetailsModal');
+
+    if (confirmCancelReport && reportUserModal && cancelReportConfirmModal) {
+        confirmCancelReport.addEventListener('click', () => {
+            allowReportClose = true;
+
+            const confirmModal = bootstrap.Modal.getOrCreateInstance(cancelReportConfirmModal);
+            confirmModal.hide();
+
+            const reportModalInstance = bootstrap.Modal.getOrCreateInstance(reportUserModal);
+            reportModalInstance.hide();
+
+            if (postDetailsModal) {
+                setTimeout(() => {
+                    const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
+                    postModalInstance.show();
+                }, 200);
+            }
         });
     }
 

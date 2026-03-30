@@ -15,6 +15,11 @@ Route::get('/my_profile', function () {
     return view('my_profile');
 })->name('my_profile');
 
+Route::get('/terms_and_conditions', function () {
+    return view('terms_and_conditions');
+})->name('terms_and_conditions');
+
+
 Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
 Route::post('/send-email', [EmailController::class, 'sendEmail']);
 
@@ -39,8 +44,12 @@ Route::get('/kinemarket', function () {
 })->name('kinemarket');
 
 Route::get('/marketplace_management', function () {
-    return view('marketplace_management');
+    return view('/marketplace_management.reports_management');
 })->name('marketplace_management');
+
+Route::get('/marketplace_management.admin_marketplace', function () {
+    return view('/marketplace_management.admin_marketplace');
+})->name('marketplace_management.admin_marketplace');
 
 Route::get('/access_logs', function () {
     return view('access_logs');
