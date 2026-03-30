@@ -7,6 +7,7 @@ use App\Http\Controllers\EquipmentController;
 Route::get('/', function () {
     return view('login');
 });
+
 Route::get('/welcome', function () {
     return view('welcome');
 });
@@ -15,12 +16,14 @@ Route::get('/my_profile', function () {
     return view('my_profile');
 })->name('my_profile');
 
+//Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
 
-// Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
 Route::get('/kinventory', [EquipmentController::class, 'kinventory'])
     ->name('kinventory');
+
 Route::post('/kinventory/borrow', [EquipmentController::class, 'borrow'])
     ->name('kinventory.borrow');
+
 Route::post('/send-email', [EmailController::class, 'sendEmail']);
 
 Route::post('/cart/add', [EquipmentController::class, 'addToCart'])->name('cart.add');
@@ -49,9 +52,17 @@ Route::delete('/equipment/{id}', [EquipmentController::class, 'destroy'])
 Route::put('/equipment/{id}', [EquipmentController::class, 'update'])
     ->name('equipment.update');
 
-Route::get('/kinemercado', function () {
-    return view('kinemercado');
-})->name('kinemercado');
+Route::get('/inventory_management/borrows', function () {
+    return view('inventory_management.borrows');
+})->name('inventory_management.borrows');
+
+Route::get('/inventory_management/inventory_statistics', function () {
+    return view('inventory_management.inventory_statistics');
+})->name('inventory_management.inventory_statistics');
+
+Route::get('/kinemarket', function () {
+    return view('kinemarket');
+})->name('kinemarket');
 
 Route::get('/marketplace_management', function () {
     return view('marketplace_management');
@@ -65,6 +76,9 @@ Route::get('/facility_management', function () {
     return view('facility_management');
 })->name('facility_management');
 
+Route::get('/my_messages', function () {
+    return view('my_messages');
+})->name('my_messages');
 
 /*Route::get('/kinemercado/reportar_usuario', function () {
     return view('kinemercado');

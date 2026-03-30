@@ -4,7 +4,7 @@
 
         {{-- Back button --}}
         <div class="mb-4">
-            <a href="{{ route('kinemercado') }}" class="btn btn-outline-secondary rounded-3 px-4">
+            <a href="{{ route('kinemarket') }}" class="btn btn-outline-secondary rounded-3 px-4">
                 <i class="bi bi-arrow-left me-2"></i> Volver al Kinemercado
             </a>
         </div>

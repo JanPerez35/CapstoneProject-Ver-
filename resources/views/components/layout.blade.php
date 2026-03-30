@@ -14,8 +14,8 @@
     <!--Webpage Header-->
     <header class="d-flex flex-wrap align-items-center justify-content-between py-2 px-2 border-bottom bg-light">
 
-        <!-- Left-side -->
-        <a href="/kinemercado"
+        <!-- Left-side of the Header -->
+        <a href="/kinemarket"
            class="d-flex align-items-center mb-2 mb-md-0 text-decoration-none">
 
             <img src="/images/kines_logo.png"
@@ -27,19 +27,27 @@
         </a>
 
         <div class="d-flex align-items-center text-end">
-        <ul class="nav nav-pills align-items-center">
+        <ul class="nav nav-pills align-items-center d-flex gap-3">
             <li class="nav-item">
                 <a href="{{ route('my_profile') }}"
-                   class="btn btn-outline {{ request()->routeIs('my_profile') ? 'btn-success' : 'btn-outline-success' }} btn-md mx-3">
+                   class="btn btn-outline {{ request()->routeIs('my_profile') ? 'btn-success' : 'btn-outline-success' }} btn-md">
                     <i class="bi bi-person-fill"></i>
                     Mi Perfil
                 </a>
             </li>
 
             <li class="nav-item">
+                <a href="{{route('my_messages')}}"
+                   class="btn btn-outline {{request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success'}} btn-md">
+                    <i class="bi bi-chat-left-text"></i>
+                    Mi Chats
+                </a>
+            </li>
+
+            <li class="nav-item">
                 <button
                     type="button"
-                    class="btn btn-outline-success position-relative mx-3"
+                    class="btn btn-outline-success position-relative"
                     data-bs-toggle="modal"
                     data-bs-target="#cartModal"
                 >
@@ -52,7 +60,8 @@
             </li>
 
             <li class="nav-item">
-                <a href="/" class="btn btn-success">
+                <a href="/"
+                   class="btn btn-success">
                     <i class="bi bi-box-arrow-right"></i>
                     Cerrar Sesión
                 </a>
@@ -327,11 +336,12 @@
 
 </div>
 
+<!--Webpage Footer-->
 <footer class="bg-light text-dark mt-5 pt-4 border-top">
     <div class="container">
         <div class="row text-start align-items-start">
 
-            <!--The first column-->
+            <!--The first column of the footer-->
             <div class="col-md-4 mb-3">
                 <h5 class="d-flex align-items-center mb-2">
                 <i class="bi bi-question-circle me-2 text-success"></i>
@@ -354,6 +364,7 @@
                 </p>
             </div>
 
+            <!--The second column of the footer-->
             <div class="col-md-4 mb-3">
                 <h5>Departamento de Kinesiología</h5>
                 <p class="text-muted mb-0 d-flex">
@@ -366,6 +377,7 @@
                 </p>
             </div>
 
+            <!--The third column of the footer-->
             <div class="col-md-4 mb-3">
                 <h5 class="mb-2">Contactos Adicionales</h5>
 
@@ -393,11 +405,11 @@
                 © 2026 MAIKINE - Portal del Departamento de Kinesiología | Colegio de Artes y Ciencias | Recinto Universitario de Mayagüez |<br> Universidad de Puerto Rico.
                 Todos los derechos reservados.
             </p>
-            <a href="" class="text-success d-block mb-1">
-                Terminos y Condiciones
+            <a href="{{route('kinemarket')}}" class="text-success d-block mb-1">
+                Términos y Condiciones
             </a>
             <small class="text-muted">
-                Sistema exclusivo para comunidad de UPRM
+                Sistema exclusivo para la comunidad de UPRM
             </small>
         </div>
     </div>

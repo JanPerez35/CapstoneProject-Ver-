@@ -6,8 +6,8 @@
 
 <div class="mb-4">
     <h1 class="fw-bold" >Bienvenido al Kinventario</h1>
-    <p> Aqui podras pedir prestado equipo deportivo
-    directamente del departamento de Kinesiologia.
+    <p>Aquí podrás pedir prestado equipo deportivo
+        directamente del departamento de Kinesiología.
     </p>
 {{--    <p class="fw-bolder text-danger"> *IMPORTANTE: Usted es--}}
 {{--        responsable de entregar el equipo en la misma  condición  en la que se le fue entregado. <br>--}}

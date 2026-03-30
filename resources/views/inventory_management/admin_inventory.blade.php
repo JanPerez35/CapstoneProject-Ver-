@@ -13,17 +13,17 @@
 
         {{-- Internal nav --}}
         <div class="d-flex flex-wrap gap-2 mb-4">
-            <a href="#"
+            <a href="{{ route('inventory_management.borrows') }}"
                class="btn btn-outline-success px-4 fw-semibold">
                 Préstamos
             </a>
 
-            <a href="#"
+            <a href="{{ route('inventory_management.inventory_statistics') }}"
                class="btn btn-outline-success px-4 fw-semibold">
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
 
-            <a href="#"
+            <a href="{{ route('inventory_management') }}"
                class="btn btn-success px-4 fw-semibold">
                 Inventario Administrativo
             </a>
@@ -52,7 +52,7 @@
         {{-- Cards --}}
         <div class="row g-4" id="inventoryCards">
 
-            <!-- <div class="col-md-6 col-lg-4 inventory-card-wrapper">
+            <div class="col-md-6 col-lg-4 inventory-card-wrapper">
                 <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
                     <img
                         src="{{ asset('images/kinventory_images/Baloncesto.jpg') }}"
@@ -121,188 +121,8 @@
                         </div>
                     </div>
                 </div>
-            </div> -->
-                @forelse($items as $item)
-                    <div class="col-md-6 col-lg-4 inventory-card-wrapper">
-                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
-                            <img
-                                src="{{ $item->equipment_photo_url ? asset('storage/' . $item->equipment_photo_url) : asset('images/kinventory_images/default.jpg') }}"
-                                class="card-img-top"
-                                alt="{{ $item->description ?? $item->category }}"
-                                style="height: 220px; object-fit: contain; object-position: center;"
-                            >
-
-                            <div class="card-body d-flex flex-column">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="card-title mb-0 fw-bold inventory-item-name">
-                                        {{ $item->description }}
-                                    </h5>
-
-                                    <span
-                                        class="badge rounded-0 inventory-status-badge"
-                                        style="background-color: {{ $item->available_quantity > 0 ? '#6FC21F' : '#dc3545' }}; color:white;"
-                                    >
-                                        {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
-                                    </span>
-                                </div>
-
-                                <div class="small mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Cantidad Total:</span>
-                                        <strong class="inventory-total">{{ $item->quantity }}</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Cantidad Disponible:</span>
-                                        <strong class="text-success inventory-available">{{ $item->available_quantity }}</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Ubicación:</span>
-                                        <strong class="inventory-location">{{ $item->location }}</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Categoría:</span>
-                                        <strong class="inventory-category">{{ $item->category }}</strong>
-                                    </div>
-                                </div>
-
-                                <div class="mt-auto d-grid gap-3">
-                                    <button
-                                        type="button"
-                                        class="btn btn-outline-warning"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#editItemModal{{ $item->id }}"
-                                    >
-                                        Editar
-                                    </button>
-
-                                    <form action="{{ route('equipment.destroy', $item->id) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger">
-                                            <i class="bi bi-trash me-1"></i> Eliminar Item
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal fade" id="editItemModal{{ $item->id }}" tabindex="-1" aria-labelledby="editItemModalLabel{{ $item->id }}" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content rounded-4 border-0 shadow">
-                                <div class="modal-header border-0 pb-0">
-                                    <div>
-                                        <h4 class="modal-title fw-bold" id="editItemModalLabel{{ $item->id }}">Editar Item</h4>
-                                        <p class="text-muted mb-0">Actualiza la información del equipo</p>
-                                    </div>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                </div>
-
-                                <div class="modal-body">
-                                    <form method="POST" action="{{ route('equipment.update', $item->id) }}" enctype="multipart/form-data">
-                                        @csrf
-                                        @method('PUT')
-
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Nombre / Descripción*</label>
-                                            <input
-                                                type="text"
-                                                name="description"
-                                                class="form-control form-control-lg"
-                                                value="{{ $item->description }}"
-                                                required
-                                            >
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Categoría*</label>
-                                            <input 
-                                                type="text"
-                                                name="category"
-                                                class="form-control form-control-lg"
-                                                list="categoryOptions"
-                                                placeholder="Selecciona o escribe una categoría"
-                                                required
-                                            >
-
-                                            <datalist id="categoryOptions">
-                                                @foreach($categories as $category)
-                                                    <option value="{{ $category }}">
-                                                @endforeach
-                                            </datalist>
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Cantidad Total*</label>
-                                            <input
-                                                type="number"
-                                                name="quantity"
-                                                class="form-control form-control-lg"
-                                                min="1"
-                                                value="{{ $item->quantity }}"
-                                                required
-                                            >
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Cantidad Disponible*</label>
-                                            <input
-                                                type="number"
-                                                name="available_quantity"
-                                                class="form-control form-control-lg"
-                                                min="0"
-                                                value="{{ $item->available_quantity }}"
-                                                required
-                                            >
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Ubicación*</label>
-                                            <input
-                                                type="text"
-                                                name="location"
-                                                class="form-control form-control-lg"
-                                                value="{{ $item->location }}"
-                                                required
-                                            >
-                                        </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold">Nueva Imagen (opcional)</label>
-                                            <input
-                                                type="file"
-                                                name="image"
-                                                class="form-control"
-                                                accept=".jpg,.jpeg,image/jpeg"
-                                            >
-                                        </div>
-
-                                        <div class="modal-footer border-0 px-0 pb-0">
-                                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                                Cancelar
-                                            </button>
-                                            <button type="submit" class="btn btn-warning">
-                                                Guardar cambios
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="col-12">
-                        <div class="alert alert-info rounded-4 shadow-sm">
-                            No hay items en el inventario todavía.
-                        </div>
-                    </div>
-                @endforelse
             </div>
 
-            {{-- Pagination --}}
-            <div class="mt-4 d-flex justify-content-center">
-                {{ $items->links('pagination::bootstrap-5') }}
-            </div>
         </div>
     </div>
 
@@ -321,17 +141,13 @@
                 </div>
 
                 <div class="modal-body">
-                    <form id="addItemForm"
-                        method="POST"
-                        action="{{ route('inventory.store') }}"
-                        enctype="multipart/form-data">
-                    @csrf
+                    <form id="addItemForm" novalidate>
                         <div class="mb-3">
                             <label for="nombre_item" class="form-label fw-semibold">Nombre del Item*</label>
                             <input
                                 type="text"
                                 id="nombre_item"
-                                name="description"
+                                name="nombre_item"
                                 class="form-control form-control-lg"
                                 placeholder="Ejemplo. Bola de Volibol"
                                 required
@@ -340,27 +156,29 @@
 
                         <div class="mb-3">
                             <label for="categoria" class="form-label fw-semibold">Categoría*</label>
-                            <input 
-                                type="text"
-                                name="category"
-                                class="form-control form-control-lg"
-                                list="categoryOptions"
-                                placeholder="Selecciona o escribe una categoría"
+                            <select
+                                id="categoria"
+                                name="categoria"
+                                class="form-select form-select-lg"
                                 required
                             >
-
-                            <datalist id="categoryOptions">
-                                @foreach($categories as $category)
-                                    <option value="{{ $category }}">
-                                @endforeach
-                            </datalist>
+                                <option value="" selected disabled>Selecciona una categoría</option>
+                                <option value="Baloncesto">Baloncesto</option>
+                                <option value="Tenis">Tenis</option>
+                                <option value="Fútbol">Fútbol</option>
+                                <option value="Deporte Recreativo">Deporte Recreativo</option>
+                                <option value="Volibol">Volibol</option>
+                                <option value="Levantamiento de Pesas">Levantamiento de Pesas</option>
+                                <option value="Otros">Otros</option>
+                            </select>
                         </div>
+
                         <div class="mb-3">
                             <label for="cantidad_total" class="form-label fw-semibold">Cantidad Total*</label>
                             <input
                                 type="number"
                                 id="cantidad_total"
-                                name="quantity"
+                                name="cantidad_total"
                                 class="form-control form-control-lg"
                                 min="1"
                                 placeholder="Ej. 10"
@@ -373,7 +191,7 @@
                             <input
                                 type="number"
                                 id="cantidad_disponible"
-                                name="available_quantity"
+                                name="cantidad_disponible"
                                 class="form-control form-control-lg"
                                 min="0"
                                 placeholder="Ej. 8"
@@ -386,7 +204,7 @@
                             <input
                                 type="text"
                                 id="ubicacion"
-                                name="location"
+                                name="ubicacion"
                                 class="form-control form-control-lg"
                                 placeholder="Ej. Almacén A"
                                 required
@@ -398,7 +216,7 @@
                             <input
                                 type="file"
                                 id="imagen"
-                                name="image"
+                                name="imagen"
                                 class="form-control"
                                 accept=".jpg,.jpeg,image/jpeg"
                                 required
@@ -697,176 +515,176 @@
                 reader.readAsDataURL(file);
             });
 
-            // addItemForm.addEventListener('submit', function (e) {
-            //     e.preventDefault();
+            addItemForm.addEventListener('submit', function (e) {
+                e.preventDefault();
 
-            //     clearAllInvalid();
+                clearAllInvalid();
 
-            //     const nombre = nombreInput.value.trim();
-            //     const categoria = categoriaInput.value;
-            //     const cantidadTotal = cantidadTotalInput.value;
-            //     const cantidadDisponible = cantidadDisponibleInput.value;
-            //     const ubicacion = ubicacionInput.value.trim();
-            //     const file = imageInput.files[0];
+                const nombre = nombreInput.value.trim();
+                const categoria = categoriaInput.value;
+                const cantidadTotal = cantidadTotalInput.value;
+                const cantidadDisponible = cantidadDisponibleInput.value;
+                const ubicacion = ubicacionInput.value.trim();
+                const file = imageInput.files[0];
 
-            //     let hasError = false;
+                let hasError = false;
 
-            //     if (!nombre) {
-            //         markInvalid(nombreInput);
-            //         hasError = true;
-            //     }
+                if (!nombre) {
+                    markInvalid(nombreInput);
+                    hasError = true;
+                }
 
-            //     if (!categoria) {
-            //         markInvalid(categoriaInput);
-            //         hasError = true;
-            //     }
+                if (!categoria) {
+                    markInvalid(categoriaInput);
+                    hasError = true;
+                }
 
-            //     if (!cantidadTotal || Number(cantidadTotal) < 1) {
-            //         markInvalid(cantidadTotalInput);
-            //         hasError = true;
-            //     }
+                if (!cantidadTotal || Number(cantidadTotal) < 1) {
+                    markInvalid(cantidadTotalInput);
+                    hasError = true;
+                }
 
-            //     if (cantidadDisponible === '' || Number(cantidadDisponible) < 0) {
-            //         markInvalid(cantidadDisponibleInput);
-            //         hasError = true;
-            //     }
+                if (cantidadDisponible === '' || Number(cantidadDisponible) < 0) {
+                    markInvalid(cantidadDisponibleInput);
+                    hasError = true;
+                }
 
-            //     if (
-            //         cantidadTotal &&
-            //         cantidadDisponible !== '' &&
-            //         Number(cantidadDisponible) > Number(cantidadTotal)
-            //     ) {
-            //         markInvalid(cantidadDisponibleInput);
-            //         markInvalid(cantidadTotalInput);
-            //         hasError = true;
-            //     }
+                if (
+                    cantidadTotal &&
+                    cantidadDisponible !== '' &&
+                    Number(cantidadDisponible) > Number(cantidadTotal)
+                ) {
+                    markInvalid(cantidadDisponibleInput);
+                    markInvalid(cantidadTotalInput);
+                    hasError = true;
+                }
 
-            //     if (!ubicacion) {
-            //         markInvalid(ubicacionInput);
-            //         hasError = true;
-            //     }
+                if (!ubicacion) {
+                    markInvalid(ubicacionInput);
+                    hasError = true;
+                }
 
-            //     if (!file) {
-            //         markInvalid(imageInput);
-            //         imageError.textContent = 'Debes subir una imagen.';
-            //         imageError.classList.remove('d-none');
-            //         hasError = true;
-            //     }
+                if (!file) {
+                    markInvalid(imageInput);
+                    imageError.textContent = 'Debes subir una imagen.';
+                    imageError.classList.remove('d-none');
+                    hasError = true;
+                }
 
-            //     if (hasError) {
-            //         return;
-            //     }
+                if (hasError) {
+                    return;
+                }
 
-            //     const allowedTypes = ['image/jpeg'];
-            //     const maxSize = 2 * 1024 * 1024;
+                const allowedTypes = ['image/jpeg'];
+                const maxSize = 2 * 1024 * 1024;
 
-            //     if (!allowedTypes.includes(file.type)) {
-            //         markInvalid(imageInput);
-            //         imageError.textContent = 'Solo se permiten archivos JPG o JPEG.';
-            //         imageError.classList.remove('d-none');
-            //         return;
-            //     }
+                if (!allowedTypes.includes(file.type)) {
+                    markInvalid(imageInput);
+                    imageError.textContent = 'Solo se permiten archivos JPG o JPEG.';
+                    imageError.classList.remove('d-none');
+                    return;
+                }
 
-            //     if (file.size > maxSize) {
-            //         markInvalid(imageInput);
-            //         imageError.textContent = 'La imagen no puede exceder 2 MB.';
-            //         imageError.classList.remove('d-none');
-            //         return;
-            //     }
+                if (file.size > maxSize) {
+                    markInvalid(imageInput);
+                    imageError.textContent = 'La imagen no puede exceder 2 MB.';
+                    imageError.classList.remove('d-none');
+                    return;
+                }
 
-            //     const imageUrl = URL.createObjectURL(file);
-            //     const statusText = Number(cantidadDisponible) > 0 ? 'Disponible' : 'No disponible';
-            //     const statusColor = Number(cantidadDisponible) > 0 ? '#6FC21F' : '#dc3545';
+                const imageUrl = URL.createObjectURL(file);
+                const statusText = Number(cantidadDisponible) > 0 ? 'Disponible' : 'No disponible';
+                const statusColor = Number(cantidadDisponible) > 0 ? '#6FC21F' : '#dc3545';
 
-            //     const cardHtml = `
-            //         <div class="col-md-6 col-lg-4 inventory-card-wrapper">
-            //             <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
-            //                 <img
-            //                     src="${imageUrl}"
-            //                     class="card-img-top"
-            //                     alt="${nombre}"
-            //                     style="height: 220px; object-fit: cover; object-position: center;"
-            //                 >
+                const cardHtml = `
+                    <div class="col-md-6 col-lg-4 inventory-card-wrapper">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
+                            <img
+                                src="${imageUrl}"
+                                class="card-img-top"
+                                alt="${nombre}"
+                                style="height: 220px; object-fit: cover; object-position: center;"
+                            >
 
-            //                 <div class="card-body d-flex flex-column">
-            //                     <div class="d-flex justify-content-between align-items-start mb-2">
-            //                         <h5 class="card-title mb-0 fw-bold inventory-item-name">${nombre}</h5>
-            //                         <span class="badge rounded-0 inventory-status-badge" style="background-color:${statusColor}; color:white;">
-            //                             ${statusText}
-            //                         </span>
-            //                     </div>
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0 fw-bold inventory-item-name">${nombre}</h5>
+                                    <span class="badge rounded-0 inventory-status-badge" style="background-color:${statusColor}; color:white;">
+                                        ${statusText}
+                                    </span>
+                                </div>
 
-            //                     <p class="text-muted small mb-3 inventory-description">
-            //                         Item agregado manualmente al inventario.
-            //                     </p>
+                                <p class="text-muted small mb-3 inventory-description">
+                                    Item agregado manualmente al inventario.
+                                </p>
 
-            //                     <div class="small mb-3">
-            //                         <div class="d-flex justify-content-between">
-            //                             <span class="text-muted">Cantidad Total:</span>
-            //                             <strong class="inventory-total">${cantidadTotal}</strong>
-            //                         </div>
-            //                         <div class="d-flex justify-content-between">
-            //                             <span class="text-muted">Cantidad Disponible:</span>
-            //                             <strong class="text-success inventory-available">${cantidadDisponible}</strong>
-            //                         </div>
-            //                         <div class="d-flex justify-content-between">
-            //                             <span class="text-muted">Ubicación:</span>
-            //                             <strong class="inventory-location">${ubicacion}</strong>
-            //                         </div>
-            //                         <div class="d-flex justify-content-between">
-            //                             <span class="text-muted">Categoría:</span>
-            //                             <strong class="inventory-category">${categoria}</strong>
-            //                         </div>
-            //                     </div>
+                                <div class="small mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Cantidad Total:</span>
+                                        <strong class="inventory-total">${cantidadTotal}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Cantidad Disponible:</span>
+                                        <strong class="text-success inventory-available">${cantidadDisponible}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Ubicación:</span>
+                                        <strong class="inventory-location">${ubicacion}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Categoría:</span>
+                                        <strong class="inventory-category">${categoria}</strong>
+                                    </div>
+                                </div>
 
-            //                     <div class="mt-auto d-grid gap-3">
-            //                         <div>
-            //                             <div class="small text-muted mb-1">Editar Cantidad Total</div>
-            //                             <div class="d-flex align-items-center justify-content-between gap-2">
-            //                                 <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-decrease">-</button>
-            //                                 <span class="fw-bold inventory-total-control">${cantidadTotal}</span>
-            //                                 <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-increase">+</button>
-            //                             </div>
-            //                         </div>
+                                <div class="mt-auto d-grid gap-3">
+                                    <div>
+                                        <div class="small text-muted mb-1">Editar Cantidad Total</div>
+                                        <div class="d-flex align-items-center justify-content-between gap-2">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-decrease">-</button>
+                                            <span class="fw-bold inventory-total-control">${cantidadTotal}</span>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-increase">+</button>
+                                        </div>
+                                    </div>
 
-            //                         <div>
-            //                             <div class="small text-muted mb-1">Editar Cantidad Disponible</div>
-            //                             <div class="d-flex align-items-center justify-content-between gap-2">
-            //                                 <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-decrease">-</button>
-            //                                 <span class="fw-bold inventory-available-control">${cantidadDisponible}</span>
-            //                                 <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-increase">+</button>
-            //                             </div>
-            //                         </div>
+                                    <div>
+                                        <div class="small text-muted mb-1">Editar Cantidad Disponible</div>
+                                        <div class="d-flex align-items-center justify-content-between gap-2">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-decrease">-</button>
+                                            <span class="fw-bold inventory-available-control">${cantidadDisponible}</span>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-increase">+</button>
+                                        </div>
+                                    </div>
 
-            //                         <button
-            //                             type="button"
-            //                             class="btn btn-danger open-delete-item-modal"
-            //                             data-item-name="${nombre}"
-            //                         >
-            //                             <i class="bi bi-trash me-1"></i> Eliminar Item
-            //                         </button>
-            //                     </div>
-            //                 </div>
-            //             </div>
-            //         </div>
-            //     `;
+                                    <button
+                                        type="button"
+                                        class="btn btn-danger open-delete-item-modal"
+                                        data-item-name="${nombre}"
+                                    >
+                                        <i class="bi bi-trash me-1"></i> Eliminar Item
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
 
-            //     inventoryCards.insertAdjacentHTML('beforeend', cardHtml);
+                inventoryCards.insertAdjacentHTML('beforeend', cardHtml);
 
-            //     const modalInstance = window.bootstrap.Modal.getOrCreateInstance(addItemModal);
-            //     modalInstance.hide();
+                const modalInstance = window.bootstrap.Modal.getOrCreateInstance(addItemModal);
+                modalInstance.hide();
 
-            //     addItemForm.reset();
-            //     clearAllInvalid();
-            //     resetImageState();
+                addItemForm.reset();
+                clearAllInvalid();
+                resetImageState();
 
-            //     attachInventoryCardEvents();
+                attachInventoryCardEvents();
 
-            //     setTimeout(() => {
-            //         const toastInstance = window.bootstrap.Toast.getOrCreateInstance(inventoryToast);
-            //         toastInstance.show();
-            //     }, 250);
-            // });
+                setTimeout(() => {
+                    const toastInstance = window.bootstrap.Toast.getOrCreateInstance(inventoryToast);
+                    toastInstance.show();
+                }, 250);
+            });
 
             if (confirmDeleteInventoryItem) {
                 confirmDeleteInventoryItem.addEventListener('click', function () {

@@ -1,6 +1,5 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import "bootstrap-icons/font/bootstrap-icons.css";
-@import "bootstrap-icons/font/bootstrap-icons.css";
 
 .search-group {
     border: 2px solid #212529;
@@ -67,22 +66,6 @@
     color: red !important;
 }
 
-.carousel-image-box {
-    height: 500px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f8f9fa;
-}
-
-.carousel-image {
-    max-height: 100%;
-    max-width: 100%;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-}
-
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
     filter: invert(1);
@@ -104,3 +87,87 @@
 .pagination .page-link:hover {
     color: #145c32;
 }
+.post-details-body {
+    max-height: 85vh;
+    overflow-y: auto;
+    padding-bottom: 2rem;
+}
+
+.post-carousel-inner {
+    height: 340px;
+    min-height: 340px;
+    max-height: 340px;
+    background: #f8f9fa;
+    overflow: hidden;
+}
+
+.post-carousel-item {
+    height: 340px;
+}
+
+.post-carousel-item .carousel-image-box {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background-color: #f8f9fa;
+}
+
+.post-carousel-img {
+    display: block !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+}
+
+.rating-stars {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.rating-star {
+    cursor: pointer;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.rating-star:hover {
+    transform: scale(1.15);
+}
+
+
+.rating-star.bi-star-fill {
+    color: #ffc107;
+}
+
+.modal-body {
+    padding-bottom: 1.5rem;
+}
+
+#createPostModal .modal-content,
+#postDetailsModal .modal-content,
+#reportUserModal .modal-content {
+    max-height: 92vh;
+}
+
+#createPostModal .modal-body,
+#postDetailsModal .modal-body,
+#reportUserModal .modal-body {
+    overflow-y: auto;
+}
+
+.report-warning-icon {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+#cancelReportConfirmModal .modal-content {
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+}
+
