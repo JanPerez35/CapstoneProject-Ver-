@@ -7,11 +7,24 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Equipment;
 use App\Models\Lending;
 use App\Models\LendingItem;
-
+use App\Models\ActivityLog;
 
 class EquipmentController extends Controller
 {
-    public function index()
+
+private function logActivity($action, $comment = null)
+{
+    ActivityLog::create([
+        'user_id' => 1, // temporary
+        'role' => 'admin', // adjust if needed
+        'action' => $action,
+        'ip_address' => request()->ip(),
+        'comment' => $comment,
+        'created_at' => now(),
+    ]);
+}
+
+public function index()
 {
     
     $items = Equipment::paginate(18);
@@ -165,6 +178,12 @@ public function borrow(Request $request)
     });
 
     return redirect()->route('kinventory')->with('success', 'Equipo solicitado correctamente.');
+
+    $this->logActivity(
+    'Solicitud de Préstamo',
+    'Solicitud creada para equipo ID ' . $validated['equipment_id']
+    );
+
 }
 
 public function addToCart(Request $request)
@@ -295,6 +314,11 @@ public function checkoutCart(Request $request)
         }
     });
 
+    $this->logActivity(
+    'Creó solicitud',
+    'Solicitud de préstamo creada desde carrito'
+    );
+
     session()->forget('cart');
 
     return redirect()->route('kinventory')
@@ -338,6 +362,11 @@ public function approveRequest($id)
         $lending->save();
     });
 
+    $this->logActivity(
+    'Aprobó solicitud',
+    'Solicitud ID ' . $lending->id . ' aprobada'
+    );
+
     return redirect()->route('inventory_management.borrows')
         ->with('success', 'Solicitud aprobada correctamente.');
 }
@@ -355,6 +384,11 @@ public function rejectRequest($id)
         $lending->status = 'rejected';
         $lending->save();
     });
+
+    $this->logActivity(
+    'Rechazó solicitud',
+    'Solicitud ID ' . $lending->id . ' rechazada'
+    );
 
     return redirect()->route('inventory_management.borrows')
         ->with('success', 'Solicitud denegada correctamente.');
@@ -379,8 +413,22 @@ public function markReturned($id)
         $lending->save();
     });
 
+    $this->logActivity(
+    'Devolución de equipo',
+    'Solicitud ID ' . $lending->id . ' marcada como devuelta'
+    );
+
     return redirect()->route('inventory_management.borrows')
         ->with('success', 'Equipo marcado como devuelto.');
+}
+
+public function accessLogs()
+{
+    $logs = ActivityLog::with('user')
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+
+    return view('access_logs', compact('logs'));
 }
 
 }

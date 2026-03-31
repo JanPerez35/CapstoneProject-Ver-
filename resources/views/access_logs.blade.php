@@ -84,14 +84,24 @@
                     </thead>
                     <tbody>
                     <!-- Call for data later -->
-                    <tr>
-                        <td class="px-4 py-3">2026-03-30 20:15:42</td>
-                        <td class="px-4 py-3">Melanie Rivera</td>
-                        <td class="py-3 text-center align-middle">
-                            <div class="d-flex justify-content-center align-items-center h-100">
-                            <span class="badge px-3 py-2" style="background-color:#6FC21F; color:white;">Usuario</span>
-                            </div>
-                        </td>
+                    <tbody>
+                        @foreach($logs as $log)
+                        <tr>
+                            <td class="px-4 py-3">{{ $log->created_at }}</td>
+                            <td class="px-4 py-3">
+                                {{ trim(($log->user->first_name ?? '') . ' ' . ($log->user->last_name ?? '')) ?: 'Usuario' }}
+                            </td>
+                            <td class="py-3 text-center align-middle">
+                                <span class="badge px-3 py-2" style="background-color:#6FC21F; color:white;">
+                                    {{ ucfirst($log->role) }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">{{ $log->action }}</td>
+                            <td class="px-4 py-3">{{ $log->ip_address }}</td>
+                            <td class="px-4 py-3">{{ $log->comment }}</td>
+                        </tr>
+                        @endforeach
+                        </tbody>
                         <td class="px-4 py-3">Inicio de Sesión</td>
                         <td class="px-4 py-3">2001:0db8:85a3:0000:0000:8a2e:0370:7334</td>
                         <td class="px-4 py-3">Acceso exitoso al sistema</td>

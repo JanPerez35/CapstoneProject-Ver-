@@ -89,9 +89,12 @@ Route::get('/marketplace_management.admin_marketplace', function () {
     return view('/marketplace_management.admin_marketplace');
 })->name('marketplace_management.admin_marketplace');
 
-Route::get('/access_logs', function () {
-    return view('access_logs');
-})->name('access_logs');
+// Route::get('/access_logs', function () {
+//     return view('access_logs');
+// })->name('access_logs');
+
+Route::get('/access_logs', [EquipmentController::class, 'accessLogs'])
+    ->name('access_logs');
 
 Route::get('/facility_management', function () {
     return view('facility_management');
