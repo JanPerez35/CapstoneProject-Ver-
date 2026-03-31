@@ -12,6 +12,12 @@
 
         {{-- Internal nav --}}
         <div class="d-flex flex-wrap gap-2 mb-4">
+
+            <a href="{{ route('inventory_management') }}"
+               class="btn btn-outline-success px-4 fw-semibold">
+                Inventario Administrativo
+            </a>
+
             <a href="{{ route('inventory_management.borrows') }}"
                class="btn btn-success px-4 fw-semibold">
                 Préstamos
@@ -22,10 +28,7 @@
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
 
-            <a href="{{ route('inventory_management') }}"
-               class="btn btn-outline-success px-4 fw-semibold">
-                Inventario Administrativo
-            </a>
+
         </div>
 
         {{-- Title --}}
@@ -87,115 +90,77 @@
                             <h5 class="fw-bold mt-3">No hay solicitudes pendientes</h5>
                             <p class="text-muted mb-0">No hay casos especiales por revisar con esos filtros.</p>
                         </div>
+                            @forelse($pending as $lending)
+                                <div class="borrow-request pending-request card border rounded-4 shadow-sm">
+                                    <div class="card-body p-4">
+                                        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                                            <div class="flex-grow-1">
 
-                        <div id="pendingRequestsList" class="p-4 d-grid gap-3">
-                            {{-- Special pending 1 --}}
-                            <div class="borrow-request pending-request card border rounded-4 shadow-sm"
-                                 data-date="2026-04-10"
-                                 data-type="special"
-                                 data-status="pending"
-                                 data-search="raqueta de tenis juan perez almacén b caso especial 10/04/2026 12/04/2026">
-                                <div class="card-body p-4">
-                                    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                                                <h5 class="fw-bold mb-0">Raqueta de Tenis</h5>
-                                                <span class="badge text-bg-warning rounded-0">Caso Especial</span>
-                                                <span class="badge text-bg-light border text-dark rounded-0 special-status-label">Pendiente de aprobación</span>
-                                            </div>
+                                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                                    <h5 class="fw-bold mb-0">
+                                                        {{ $lending->items->first()->equipment->description ?? 'Equipo' }}
+                                                    </h5>
 
-                                            <div class="row g-3 small mb-3">
-                                                <div class="col-md-4">
-                                                    <div><span class="text-muted">Solicitante:</span> <strong>Juan Pérez</strong></div>
-                                                    <div><span class="text-muted">Cantidad:</span> <strong>1</strong></div>
+                                                    @if($lending->flag)
+                                                        <span class="badge text-bg-warning rounded-0">Caso Especial</span>
+                                                    @endif
+
+                                                    <span class="badge text-bg-light border text-dark rounded-0">
+                                                        Pendiente de aprobación
+                                                    </span>
                                                 </div>
 
-                                                <div class="col-md-4">
-                                                    <div><span class="text-muted">Fecha de recogida:</span> <strong>10/04/2026</strong></div>
-                                                    <div><span class="text-muted">Hora:</span> <strong>10:30 AM</strong></div>
+                                                <div class="row g-3 small mb-3">
+                                                    <div class="col-md-4">
+                                                        <div><span class="text-muted">Usuario:</span> <strong>{{ $lending->user->first_name ?? 'N/A' }} {{ $lending->user->last_name ?? '' }}</strong></div>
+                                                        <div><span class="text-muted">Cantidad:</span> 
+                                                            <strong>{{ $lending->items->sum('quantity') }}</strong>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="col-md-4">
+                                                        <div><span class="text-muted">Recogida:</span> <strong>{{ $lending->start_time }}</strong></div>
+                                                    </div>
+
+                                                    <div class="col-md-4">
+                                                        <div><span class="text-muted">Devolución:</span> <strong>{{ $lending->end_time }}</strong></div>
+                                                    </div>
                                                 </div>
 
-                                                <div class="col-md-4">
-                                                    <div><span class="text-muted">Ubicación:</span> <strong>Almacén B</strong></div>
-                                                    <div><span class="text-muted">Devolución propuesta:</span> <strong>12/04/2026</strong></div>
-                                                </div>
+                                                @if($lending->special_reason)
+                                                    <div class="alert alert-warning rounded-4 mb-0 py-2">
+                                                        <strong>Razón:</strong> {{ $lending->special_reason }}
+                                                    </div>
+                                                @endif
                                             </div>
 
-                                            <div class="alert alert-warning rounded-4 mb-0 py-2">
-                                                <strong>Razón:</strong> Necesita el equipo para práctica interuniversitaria durante todo el fin de semana.
-                                            </div>
-                                        </div>
+                                            <div class="d-flex flex-column justify-content-center gap-2" style="min-width: 190px;">
+                                                <form method="POST" action="{{ route('inventory_management.requests.approve', $lending->id) }}">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-success">
+                                                        Aprobar
+                                                    </button>
+                                                </form>
 
-                                        <div class="d-flex flex-column justify-content-center gap-2" style="min-width: 190px;">
-                                            <button type="button" class="btn btn-success approve-special-btn">
-                                                <i class="bi bi-check-circle me-1"></i>
-                                                Aprobar
-                                            </button>
-
-                                            <button type="button" class="btn btn-outline-danger deny-special-btn">
-                                                <i class="bi bi-x-circle me-1"></i>
-                                                Denegar
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Special pending 2 --}}
-                            <div class="borrow-request pending-request card border rounded-4 shadow-sm"
-                                 data-date="2026-04-11"
-                                 data-type="special"
-                                 data-status="pending"
-                                 data-search="bandas elásticas luis rosado almacén c caso especial 11/04/2026 13/04/2026">
-                                <div class="card-body p-4">
-                                    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                                                <h5 class="fw-bold mb-0">Bandas Elásticas</h5>
-                                                <span class="badge text-bg-warning rounded-0">Caso Especial</span>
-                                                <span class="badge text-bg-light border text-dark rounded-0 special-status-label">Pendiente de aprobación</span>
+                                                <form method="POST" action="{{ route('inventory_management.requests.reject', $lending->id) }}">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-outline-danger">
+                                                        Denegar
+                                                    </button>
+                                                </form>
                                             </div>
 
-                                            <div class="row g-3 small mb-3">
-                                                <div class="col-md-4">
-                                                    <div><span class="text-muted">Solicitante:</span> <strong>Luis Rosado</strong></div>
-                                                    <div><span class="text-muted">Cantidad:</span> <strong>3</strong></div>
-                                                </div>
-
-                                                <div class="col-md-4">
-                                                    <div><span class="text-muted">Fecha de recogida:</span> <strong>11/04/2026</strong></div>
-                                                    <div><span class="text-muted">Hora:</span> <strong>11:00 AM</strong></div>
-                                                </div>
-
-                                                <div class="col-md-4">
-                                                    <div><span class="text-muted">Ubicación:</span> <strong>Almacén C</strong></div>
-                                                    <div><span class="text-muted">Devolución propuesta:</span> <strong>13/04/2026</strong></div>
-                                                </div>
-                                            </div>
-
-                                            <div class="alert alert-warning rounded-4 mb-0 py-2">
-                                                <strong>Razón:</strong> Uso en actividad especial del departamento fuera del tiempo regular de devolución.
-                                            </div>
-                                        </div>
-
-                                        <div class="d-flex flex-column justify-content-center gap-2" style="min-width: 190px;">
-                                            <button type="button" class="btn btn-success approve-special-btn">
-                                                <i class="bi bi-check-circle me-1"></i>
-                                                Aprobar
-                                            </button>
-
-                                            <button type="button" class="btn btn-outline-danger deny-special-btn">
-                                                <i class="bi bi-x-circle me-1"></i>
-                                                Denegar
-                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            @empty
+                                <div class="text-center py-4 text-muted">
+                                    No hay solicitudes pendientes.
+                                </div>
+                            @endforelse
                         </div>
                     </div>
                 </div>
-            </div>
 
             {{-- RIGHT: Active approved requests --}}
             <div class="col-lg-6">
@@ -213,96 +178,35 @@
                             <h5 class="fw-bold mt-3">No hay solicitudes activas</h5>
                             <p class="text-muted mb-0">No hay solicitudes aprobadas para mostrar con esos filtros.</p>
                         </div>
+                            @forelse($approved as $lending)
+                                <div class="borrow-request active-request card border rounded-4 shadow-sm">
+                                    <div class="card-body p-4">
 
-                        <div id="activeRequestsList" class="p-4 d-grid gap-3">
-                            {{-- Normal active 1 --}}
-                            <div class="borrow-request active-request card border rounded-4 shadow-sm"
-                                 data-date="2026-04-10"
-                                 data-type="normal"
-                                 data-status="active"
-                                 data-search="balón de baloncesto carla rivera almacén a 10/04/2026">
-                                <div class="card-body p-4">
-                                    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                                                <h5 class="fw-bold mb-0">Balón de Baloncesto</h5>
-                                                <span class="badge text-bg-success rounded-0">Normal</span>
-                                                <span class="badge text-bg-light border text-dark rounded-0">Pendiente de entrega</span>
-                                            </div>
+                                        <h5 class="fw-bold mb-2">
+                                            {{ $lending->items->first()->equipment->description ?? 'Equipo' }}
+                                        </h5>
 
-                                            <div class="row g-3 small">
-                                                <div class="col-md-4">
-                                                    <div><span class="text-muted">Solicitante:</span> <strong>Carla Rivera</strong></div>
-                                                    <div><span class="text-muted">Cantidad:</span> <strong>2</strong></div>
-                                                </div>
+                                        <p><strong>Cantidad:</strong> {{ $lending->items->sum('quantity') }}</p>
+                                        <strong>
+                                            {{ $lending->user 
+                                                ? $lending->user->first_name . ' ' . $lending->user->last_name 
+                                                : 'Usuario desconocido' }}
+                                        </strong>
 
-                                                <div class="col-md-4">
-                                                    <div><span class="text-muted">Fecha de recogida:</span> <strong>10/04/2026</strong></div>
-                                                    <div><span class="text-muted">Hora:</span> <strong>9:00 AM</strong></div>
-                                                </div>
-
-                                                <div class="col-md-4">
-                                                    <div><span class="text-muted">Ubicación:</span> <strong>Almacén A</strong></div>
-                                                    <div><span class="text-muted">Regla:</span> <strong>Devolución en 24 horas</strong></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="d-flex flex-column justify-content-center gap-2" style="min-width: 210px;">
-                                            <button type="button" class="btn btn-outline-success mark-returned-btn">
-                                                <i class="bi bi-box-arrow-in-left me-1"></i>
+                                        <form method="POST" action="{{ route('inventory_management.requests.return', $lending->id) }}">
+                                            @csrf
+                                            <button class="btn btn-outline-success">
                                                 Marcar como devuelto
                                             </button>
-                                        </div>
+                                        </form>
+
                                     </div>
                                 </div>
-                            </div>
-
-                            {{-- Normal active 2 --}}
-                            <div class="borrow-request active-request card border rounded-4 shadow-sm"
-                                 data-date="2026-04-11"
-                                 data-type="normal"
-                                 data-status="active"
-                                 data-search="mancuernas ana torres sala de equipo a 11/04/2026">
-                                <div class="card-body p-4">
-                                    <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                                                <h5 class="fw-bold mb-0">Mancuernas</h5>
-                                                <span class="badge text-bg-success rounded-0">Normal</span>
-                                                <span class="badge text-bg-light border text-dark rounded-0">Pendiente de entrega</span>
-                                            </div>
-
-                                            <div class="row g-3 small">
-                                                <div class="col-md-4">
-                                                    <div><span class="text-muted">Solicitante:</span> <strong>Ana Torres</strong></div>
-                                                    <div><span class="text-muted">Cantidad:</span> <strong>4</strong></div>
-                                                </div>
-
-                                                <div class="col-md-4">
-                                                    <div><span class="text-muted">Fecha de recogida:</span> <strong>11/04/2026</strong></div>
-                                                    <div><span class="text-muted">Hora:</span> <strong>8:30 AM</strong></div>
-                                                </div>
-
-                                                <div class="col-md-4">
-                                                    <div><span class="text-muted">Ubicación:</span> <strong>Sala de Equipo A</strong></div>
-                                                    <div><span class="text-muted">Regla:</span> <strong>Devolución en 24 horas</strong></div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="d-flex flex-column justify-content-center gap-2" style="min-width: 210px;">
-                                            <button type="button" class="btn btn-outline-success mark-returned-btn">
-                                                <i class="bi bi-box-arrow-in-left me-1"></i>
-                                                Marcar como devuelto
-                                            </button>
-                                        </div>
-                                    </div>
+                            @empty
+                                <div class="text-center py-4 text-muted">
+                                    No hay solicitudes activas.
                                 </div>
-                            </div>
-
-                            {{-- Approved special requests will be appended here --}}
-                        </div>
+                            @endforelse
                     </div>
                 </div>
             </div>
@@ -337,32 +241,73 @@
 
     {{-- Toasts --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
-        <div id="approveToast" class="toast text-bg-success border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
+
+        <!-- APPROVE (verde suave) -->
+        <div id="approveToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: auto; max-width: fit-content;">
+
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Caso especial aprobado correctamente.
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="background-color: transparent; border: none; transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
-        <div id="denyToast" class="toast text-bg-danger border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
+        <!-- DENY (rojo suave) -->
+        <div id="denyToast"
+             class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: auto; max-width: fit-content;">
+
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Caso especial denegado.
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="background-color: transparent; border: none; transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
-        <div id="returnedToast" class="toast text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
+        <!-- RETURNED (verde suave) -->
+        <div id="returnedToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: auto; max-width: fit-content;">
+
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Equipo ha sido devuelto.
                 </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="background-color: transparent; border: none; transform: scale(0.8);">
+                </button>
             </div>
         </div>
+
     </div>
 
     <script>

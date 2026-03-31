@@ -17,4 +17,10 @@ class Equipment extends Model
         'equipment_photo_url',
         'stats',
     ];
+
+    public function lendingItems(){
+
+    return $this->hasMany(LendingItem::class, 'equipment_id');
+    
+    }
 }

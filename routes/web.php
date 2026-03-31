@@ -24,6 +24,12 @@ Route::get('/kinventory', [EquipmentController::class, 'kinventory'])
 Route::post('/kinventory/borrow', [EquipmentController::class, 'borrow'])
     ->name('kinventory.borrow');
 
+Route::get('/terms_and_conditions', function () {
+    return view('terms_and_conditions');
+})->name('terms_and_conditions');
+
+
+// Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
 Route::post('/send-email', [EmailController::class, 'sendEmail']);
 
 Route::post('/cart/add', [EquipmentController::class, 'addToCart'])->name('cart.add');
@@ -52,9 +58,20 @@ Route::delete('/equipment/{id}', [EquipmentController::class, 'destroy'])
 Route::put('/equipment/{id}', [EquipmentController::class, 'update'])
     ->name('equipment.update');
 
-Route::get('/inventory_management/borrows', function () {
-    return view('inventory_management.borrows');
-})->name('inventory_management.borrows');
+Route::get('/inventory_management/borrows', [EquipmentController::class, 'borrows'])
+    ->name('inventory_management.borrows');
+
+Route::post('/inventory_management/requests/{id}/approve', [EquipmentController::class, 'approveRequest'])
+    ->name('inventory_management.requests.approve');
+
+Route::post('/inventory_management/requests/{id}/reject', [EquipmentController::class, 'rejectRequest'])
+    ->name('inventory_management.requests.reject');
+
+Route::post('/inventory_management/requests/{id}/return', [EquipmentController::class, 'markReturned'])
+    ->name('inventory_management.requests.return');
+
+Route::post('/inventory_management/requests/{id}/return', [EquipmentController::class, 'markReturned'])
+    ->name('inventory_management.requests.return');
 
 Route::get('/inventory_management/inventory_statistics', function () {
     return view('inventory_management.inventory_statistics');
@@ -65,8 +82,12 @@ Route::get('/kinemarket', function () {
 })->name('kinemarket');
 
 Route::get('/marketplace_management', function () {
-    return view('marketplace_management');
+    return view('/marketplace_management.reports_management');
 })->name('marketplace_management');
+
+Route::get('/marketplace_management.admin_marketplace', function () {
+    return view('/marketplace_management.admin_marketplace');
+})->name('marketplace_management.admin_marketplace');
 
 Route::get('/access_logs', function () {
     return view('access_logs');

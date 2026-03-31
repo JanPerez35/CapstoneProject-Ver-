@@ -341,24 +341,62 @@
 
     {{-- Toasts --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
-        <div id="roleToast" class="toast text-bg-success border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">Rol actualizado correctamente.</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+        <div id="roleToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: auto; max-width: fit-content;">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
+                    Rol actualizado correctamente.
+                </div>
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="background-color: transparent; border: none; transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
-        <div id="banToast" class="toast text-bg-danger border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">La cuenta ha sido baneada.</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+        <div id="banToast"
+             class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: auto; max-width: fit-content;">
+
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
+                    La cuenta ha sido baneada.
+                </div>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="background-color: transparent; border: none; transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
-        <div id="unbanToast" class="toast text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">La cuenta ha sido desbaneada.</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+        <div id="unbanToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: auto; max-width: fit-content;">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
+                    La cuenta ha sido desbaneada.
+                </div>
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="background-color: transparent; border: none; transform: scale(0.8);">
+                </button>
             </div>
         </div>
     </div>

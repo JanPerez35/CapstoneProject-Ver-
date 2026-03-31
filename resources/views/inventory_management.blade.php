@@ -1,4 +1,4 @@
-<x-layout title="Gestión de Inventario">
+<!-- <!-- <x-layout title="Gestión de Inventario">
     <x-navbar></x-navbar>
 
     <div class="container py-4">
@@ -122,7 +122,7 @@
                     </div>
                 </div>
             </div> -->
-                @forelse($items as $item)
+                <!-- @forelse($items as $item)
                     <div class="col-md-6 col-lg-4 inventory-card-wrapper">
                         <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
                             <img
@@ -695,9 +695,9 @@
                     previewWrapper.classList.remove('d-none');
                 };
                 reader.readAsDataURL(file);
-            });
+            }); --> -->
 
-            // addItemForm.addEventListener('submit', function (e) {
+            <!-- // addItemForm.addEventListener('submit', function (e) {
             //     e.preventDefault();
 
             //     clearAllInvalid();
@@ -866,9 +866,9 @@
             //         const toastInstance = window.bootstrap.Toast.getOrCreateInstance(inventoryToast);
             //         toastInstance.show();
             //     }, 250);
-            // });
+            // }); -->
 
-            if (confirmDeleteInventoryItem) {
+            <!-- if (confirmDeleteInventoryItem) {
                 confirmDeleteInventoryItem.addEventListener('click', function () {
                     if (inventoryCardToDelete) {
                         inventoryCardToDelete.remove();
@@ -888,4 +888,4 @@
             attachInventoryCardEvents();
         });
     </script>
-</x-layout>
+</x-layout> --> -->

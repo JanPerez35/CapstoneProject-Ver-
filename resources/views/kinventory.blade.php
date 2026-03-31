@@ -30,37 +30,47 @@
 @endif
 
 </div>
-        <div class="row mb-4 g-3">
-            <div class="col-md-8">
-                <div class="input-group search-group">
-        <span class="input-group-text bg-white border-0">
-            <i class="bi bi-search"></i>
-        </span>
+            <form method="GET" action="{{ route('kinventory') }}" class="row mb-4 g-3">
+                <div class="col-md-8">
+                    <div class="input-group search-group">
+                        <span class="input-group-text bg-white border-0">
+                            <i class="bi bi-search"></i>
+                        </span>
 
-                    <input
-                        type="text"
-                        class="form-control border-0"
-                        placeholder="Buscar equipo deportivo..."
-                    >
+                        <input
+                            type="text"
+                            name="search"
+                            class="form-control border-0"
+                            placeholder="Buscar equipo deportivo..."
+                            value="{{ request('search') }}"
+                        >
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <select class="form-select border-2 border-dark">
-                    <option>Todas las categorías</option>
-                    <option>Baloncesto</option>
-                    <option>Tenis</option>
-                    <option>Fútbol</option>
-                    <option>Deporte Recreativo</option>
-                    <option>Volibol</option>
-                    <option>Levantamiento de Pesas</option>
-                    <option>Otros</option>
-                </select>
-            </div>
-        </div>
+
+                <div class="col-md-4">
+                    <select name="category" class="form-select border-2 border-dark" onchange="this.form.submit()">
+                        <option value="">Todas las categorías</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>
+                                {{ $cat }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-12 d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        Buscar
+                    </button>
+
+                    <a href="{{ route('kinventory') }}" class="btn btn-outline-secondary">
+                        Limpiar filtros
+                    </a>
+                </div>
+            </form>
 
 {{--        okay this will be some sort of card grid, It will be filled when the cards are actually available--}}
         <div class="row g-4">
-            <div class="row g-4">
                 @forelse($items as $item)
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
@@ -121,6 +131,11 @@
                 @endforelse
             </div>
 
+            @if ($items->hasPages())
+                <div class="mt-4 d-flex justify-content-center">
+                    {{ $items->links('pagination::bootstrap-5') }}
+                </div>
+            @endif
 
         </div>
 

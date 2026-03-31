@@ -13,14 +13,16 @@ class EquipmentController extends Controller
 {
     public function index()
 {
+    
     $items = Equipment::paginate(18);
 
-    $categories = Equipment::select('category')
-        ->distinct()
-        ->orderBy('category')
-        ->pluck('category');
+    $categories = Equipment::
+    select('category')
+    ->distinct()
+    ->pluck('category');
 
-    return view('inventory_management', compact('items', 'categories'));
+    return view('inventory_management.admin_inventory', compact('items', 'categories'));
+
 }
 
 public function update(Request $request, $id)
@@ -101,11 +103,30 @@ public function destroy($id)
         ->with('success', 'Item eliminado correctamente');
 }
 
-public function kinventory()
+public function kinventory(Request $request)
 {
-    $items = Equipment::where('available_quantity', '>', 0)->get();
+    $search = $request->input('search');
+    $category = $request->input('category');
 
-    return view('kinventory', compact('items'));
+    $query = Equipment::query();
+
+    if ($search) {
+        $query->where('description', 'like', '%' . $search . '%');
+    }
+
+    if ($category) {
+        $query->where('category', $category);
+    }
+
+    $items = $query->paginate(18)->withQueryString();
+
+    $categories = Equipment::select('category')
+        ->whereNotNull('category')
+        ->distinct()
+        ->orderBy('category')
+        ->pluck('category');
+
+    return view('kinventory', compact('items', 'categories', 'search', 'category'));
 }
 
 public function borrow(Request $request)
@@ -239,18 +260,18 @@ public function checkoutCart(Request $request)
         ? $validated['return_date'] . ' 15:00:00'
         : $validated['pickup_date'] . ' 15:00:00';
 
-    $finalCommentary = $isSpecialCase
-        ? $validated['special_reason']
-        : ($validated['commentary'] ?? null);
+    $status = $isSpecialCase ? 'pending' : 'approved';
+    $itemStatus = $isSpecialCase ? 'pending' : 'approved';
 
-    DB::transaction(function () use ($cart, $startDateTime, $endDateTime, $isSpecialCase, $finalCommentary) {
+    DB::transaction(function () use ($cart, $startDateTime, $endDateTime, $isSpecialCase, $validated, $status, $itemStatus) {
         $lending = Lending::create([
-            'user_id' => 1, // replace later with authenticated user
-            'commentary' => $finalCommentary,
+            'user_id' => 1,
+            'commentary' => $validated['commentary'] ?? null,
+            'special_reason' => $isSpecialCase ? $validated['special_reason'] : null,
             'start_time' => $startDateTime,
             'end_time' => $endDateTime,
             'flag' => $isSpecialCase,
-            'status' => 'active',
+            'status' => $status,
         ]);
 
         foreach ($cart as $cartItem) {
@@ -264,11 +285,13 @@ public function checkoutCart(Request $request)
                 'lending_id' => $lending->id,
                 'equipment_id' => $equipment->id,
                 'quantity' => $cartItem['quantity'],
-                'item_status' => 'borrowed',
+                'item_status' => $itemStatus,
             ]);
 
-            $equipment->available_quantity -= $cartItem['quantity'];
-            $equipment->save();
+            if (!$isSpecialCase) {
+                $equipment->available_quantity -= $cartItem['quantity'];
+                $equipment->save();
+            }
         }
     });
 
@@ -276,6 +299,88 @@ public function checkoutCart(Request $request)
 
     return redirect()->route('kinventory')
         ->with('success', 'Solicitud de préstamo realizada correctamente.');
+}
+
+public function borrows()
+{
+    $pending = Lending::with('items.equipment', 'user')
+        ->where('flag', true)
+        ->where('status', 'pending')
+        ->get();
+
+    $approved = Lending::with('items.equipment', 'user')
+        ->where('status', 'approved')
+        ->get();
+
+    return view('inventory_management.borrows', compact('pending', 'approved'));
+}
+
+public function approveRequest($id)
+{
+    $lending = Lending::with('items')->findOrFail($id);
+
+    DB::transaction(function () use ($lending) {
+        foreach ($lending->items as $item) {
+            $equipment = Equipment::lockForUpdate()->findOrFail($item->equipment_id);
+
+            if ($item->quantity > $equipment->available_quantity) {
+                throw new \Exception('No hay suficiente inventario para aprobar esta solicitud.');
+            }
+
+            $equipment->available_quantity -= $item->quantity;
+            $equipment->save();
+
+            $item->item_status = 'approved';
+            $item->save();
+        }
+
+        $lending->status = 'approved';
+        $lending->save();
+    });
+
+    return redirect()->route('inventory_management.borrows')
+        ->with('success', 'Solicitud aprobada correctamente.');
+}
+
+public function rejectRequest($id)
+{
+    $lending = Lending::with('items')->findOrFail($id);
+
+    DB::transaction(function () use ($lending) {
+        foreach ($lending->items as $item) {
+            $item->item_status = 'rejected';
+            $item->save();
+        }
+
+        $lending->status = 'rejected';
+        $lending->save();
+    });
+
+    return redirect()->route('inventory_management.borrows')
+        ->with('success', 'Solicitud denegada correctamente.');
+}
+
+public function markReturned($id)
+{
+    $lending = Lending::with('items')->findOrFail($id);
+
+    DB::transaction(function () use ($lending) {
+        foreach ($lending->items as $item) {
+            $equipment = Equipment::lockForUpdate()->findOrFail($item->equipment_id);
+
+            $equipment->available_quantity += $item->quantity;
+            $equipment->save();
+
+            $item->item_status = 'returned';
+            $item->save();
+        }
+
+        $lending->status = 'returned';
+        $lending->save();
+    });
+
+    return redirect()->route('inventory_management.borrows')
+        ->with('success', 'Equipo marcado como devuelto.');
 }
 
 }
