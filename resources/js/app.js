@@ -33,14 +33,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitLoanRequest = document.getElementById('submitLoanRequest');
     const submitToastEl = document.getElementById('submitToast');
 
-    const loanFullName = document.getElementById('loanFullName');
     const loanPickupDate = document.getElementById('loanPickupDate');
     const pickupTimeBlock = document.getElementById('pickupTimeBlock');
 
     const returnDate = document.getElementById('returnDate');
     const specialReason = document.getElementById('specialReason');
 
-    const loanFullNameError = document.getElementById('loanFullNameError');
+    const loanTermsCheck = document.getElementById('loanTermsCheck');
+    const loanTermsError = document.getElementById('loanTermsError');
+
     const loanPickupDateError = document.getElementById('loanPickupDateError');
     const pickupTimeBlockError = document.getElementById('pickupTimeBlockError');
     const returnDateError = document.getElementById('returnDateError');
@@ -189,53 +190,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function clearLoanValidation() {
-            clearLoanFieldError(loanFullName, loanFullNameError);
+            clearLoanFieldError(loanTermsCheck, loanTermsError);
             clearLoanFieldError(loanPickupDate, loanPickupDateError);
             clearLoanFieldError(pickupTimeBlock, pickupTimeBlockError);
             clearLoanFieldError(returnDate, returnDateError);
             clearLoanFieldError(specialReason, specialReasonError);
-        }
-
-        function validateLoanFullNameField(showError = true) {
-            const name = loanFullName?.value.trim() || '';
-
-            if (showError) {
-                clearLoanFieldError(loanFullName, loanFullNameError);
-            }
-
-            if (!name) {
-                if (showError) {
-                    setLoanFieldError(loanFullName, loanFullNameError, 'El nombre completo es obligatorio.');
-                }
-                return false;
-            }
-
-            if (name.length < 5) {
-                if (showError) {
-                    setLoanFieldError(loanFullName, loanFullNameError, 'El nombre debe tener al menos 5 caracteres.');
-                }
-                return false;
-            }
-
-            if (name.length > 80) {
-                if (showError) {
-                    setLoanFieldError(loanFullName, loanFullNameError, 'El nombre no puede exceder 80 caracteres.');
-                }
-                return false;
-            }
-
-            if (!loanAllowedTextRegex.test(name)) {
-                if (showError) {
-                    setLoanFieldError(
-                        loanFullName,
-                        loanFullNameError,
-                        'Solo se permiten letras, números, espacios, punto, coma y guion.'
-                    );
-                }
-                return false;
-            }
-
-            return true;
         }
 
         function validateSpecialReasonField(showError = true) {
@@ -277,8 +236,29 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         }
 
+        function validateLoanTermsField(showError = true) {
+            const isValid = !!loanTermsCheck?.checked;
+
+            if (showError) {
+                clearLoanFieldError(loanTermsCheck, loanTermsError);
+            }
+
+            if (!isValid) {
+                if (showError) {
+                    setLoanFieldError(
+                        loanTermsCheck,
+                        loanTermsError,
+                        'Debes aceptar los términos y condiciones.'
+                    );
+                }
+                return false;
+            }
+
+            return true;
+        }
+
         function resetLoanForm() {
-            if (loanFullName) loanFullName.value = '';
+            if (loanTermsCheck) loanTermsCheck.checked = false;
             if (loanPickupDate) loanPickupDate.value = '';
             if (pickupTimeBlock) pickupTimeBlock.value = '';
             if (returnDate) returnDate.value = '';
@@ -303,16 +283,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let hasError = false;
 
-            const name = loanFullName?.value.trim();
             const pickupDateValue = loanPickupDate?.value;
             const pickupTime = pickupTimeBlock?.value;
             const isSpecialCase = specialCaseCheck?.checked;
             const returnVal = returnDate?.value;
             const reason = specialReason?.value.trim();
 
-            if (!validateLoanFullNameField(showErrors)) {
+            if (!validateLoanTermsField(showErrors)) {
                 hasError = true;
             }
+
 
             if (!pickupDateValue) {
                 if (showErrors) {
@@ -602,13 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        if (loanFullName) {
-            loanFullName.addEventListener('input', () => {
-                loanFullName.value = loanFullName.value.slice(0, 80);
-                validateLoanFullNameField(true);
-                updateLoanSubmitButtonState();
-            });
-        }
+
 
         if (pickupTimeBlock) {
             pickupTimeBlock.addEventListener('change', () => {
@@ -617,6 +591,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+
+        if (loanTermsCheck) {
+            loanTermsCheck.addEventListener('change', () => {
+                clearLoanFieldError(loanTermsCheck, loanTermsError);
+                updateLoanSubmitButtonState();
+            });
+        }
 
         if (specialReason) {
             specialReason.addEventListener('input', () => {
@@ -627,20 +608,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
-        if (submitLoanRequest && submitToastEl && cartModal) {
+        if (submitLoanRequest) {
             const submitToast = bootstrap.Toast.getOrCreateInstance(submitToastEl);
+            let isSubmitting = false;
+            submitLoanRequest.addEventListener('click', async () => {
 
-            submitLoanRequest.addEventListener('click', () => {
+                //  BLOQUEO ANTI-SPAM
+                if (isSubmitting) return;
+                isSubmitting = true;
+
+                submitLoanRequest.disabled = true;
+                submitLoanRequest.innerHTML = 'Enviando...';
+
                 const isValid = validateLoanForm(true);
 
                 if (!isValid) {
-                    updateLoanSubmitButtonState();
+                    isSubmitting = false;
+                    submitLoanRequest.disabled = false;
+                    submitLoanRequest.innerHTML = 'Enviar Solicitud';
                     return;
                 }
 
-                if (cart.length === 0) {
-                    updateLoanSubmitButtonState();
-                    return;
+                //  Send Email here!
+                try {
+                    fetch('/send-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            email: 'jan.perez21@upr.edu',
+                            subject: 'Solicitud enviada',
+                            message: 'Tu solicitud fue enviada correctamente.'
+                        })
+                    });
+                } catch (error) {
+                    console.error('Error sending email:', error);
                 }
 
                 const cartModalInstance = bootstrap.Modal.getOrCreateInstance(cartModal);
@@ -654,7 +658,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     submitToast.show();
                 }, 250);
-            });
+
+                setTimeout(() => {
+                    submitLoanRequest.disabled = false;
+                    submitLoanRequest.innerHTML = 'Enviar Solicitud';
+                    isSubmitting = false;
+                }, 2000);            });
+
+
+
+
         }
 
 

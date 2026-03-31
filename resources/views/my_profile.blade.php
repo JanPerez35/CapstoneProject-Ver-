@@ -1,15 +1,16 @@
 <x-layout title="Mi Perfil">
+    <x-navbar></x-navbar>
 
     <div class="container py-4">
 
         {{-- Back button --}}
-        <div class="mb-4">
+{{--        <div class="mb-4">--}}
 
-            <a href="{{ url()->previous() != url()->current() ? url()->previous() : route('kinemarket') }}"
-               class="btn btn-outline-secondary rounded-3 px-4">
-                <i class="bi bi-arrow-left me-2"></i> Volver
-            </a>
-        </div>
+{{--            <a href="{{ url()->previous() != url()->current() ? url()->previous() : route('kinemarket') }}"--}}
+{{--               class="btn btn-outline-secondary rounded-3 px-4">--}}
+{{--                <i class="bi bi-arrow-left me-2"></i> Volver--}}
+{{--            </a>--}}
+{{--        </div>--}}
 
         {{-- Profile summary card --}}
         <div class="card border-0 shadow-sm rounded-4 mb-4">
@@ -76,20 +77,6 @@
                 </button>
             </li>
 
-            <li class="nav-item" role="presentation">
-                <button
-                    class="btn btn-outline-success rounded-3 px-4 py-2"
-                    id="reviews-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#reviews-pane"
-                    type="button"
-                    role="tab"
-                    aria-controls="reviews-pane"
-                    aria-selected="false"
-                >
-                    <i class="bi bi-star me-2"></i> Reseñas (4)
-                </button>
-            </li>
 
             <li class="nav-item" role="presentation">
                 <button
@@ -156,7 +143,7 @@
                                 <div class="mt-auto d-grid">
                                     <button
                                         type="button"
-                                        class="btn btn-outline-danger rounded-3 open-delete-post-modal"
+                                        class="btn btn-danger rounded-3 open-delete-post-modal"
                                         data-post-title="Baloncesto - Spalding"
                                     >
                                         Borrar
@@ -169,44 +156,6 @@
                 </div>
             </div>
 
-            {{-- Reviews tab --}}
-            <div class="tab-pane fade" id="reviews-pane" role="tabpanel" aria-labelledby="reviews-tab">
-                <div class="card border-0 shadow-sm rounded-4">
-                    <div class="card-body p-4">
-                        <h2 class="fw-bold mb-4">Reseñas recibidas</h2>
-
-                        <div class="border rounded-4 p-4 mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h5 class="fw-bold mb-0">María López</h5>
-                                <span class="text-warning">
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                </span>
-                            </div>
-                            <p class="text-muted mb-2">“Muy responsable y amable. La entrega fue rápida.”</p>
-                            <small class="text-muted">Hace 3 días</small>
-                        </div>
-
-                        <div class="border rounded-4 p-4 mb-3">
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <h5 class="fw-bold mb-0">Carlos Rivera</h5>
-                                <span class="text-warning">
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-fill"></i>
-                                    <i class="bi bi-star-half"></i>
-                                </span>
-                            </div>
-                            <p class="text-muted mb-2">“Producto tal y como se describía en la publicación.”</p>
-                            <small class="text-muted">Hace 1 semana</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             {{-- Requests tab --}}
             <div class="tab-pane fade" id="requests-pane" role="tabpanel" aria-labelledby="requests-tab">
@@ -214,35 +163,54 @@
                     <div class="card-body p-4">
                         <h2 class="fw-bold mb-4">Solicitudes de Artículos</h2>
 
+                        {{-- Pendiente --}}
                         <div class="border rounded-4 p-4 mb-3">
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div>
                                     <h5 class="fw-bold mb-1">Nike Zapatos de Baloncesto</h5>
-                                    <p class="text-muted mb-0">Solicitado por: Ana Pérez</p>
+                                    <p class="text-muted mb-0">Solicitado: 03/10/2026</p>
                                 </div>
                                 <span class="badge bg-warning text-dark rounded-0 px-3 py-2">Pendiente</span>
                             </div>
                         </div>
 
+                        {{-- Aprobada --}}
                         <div class="border rounded-4 p-4 mb-3">
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div>
                                     <h5 class="fw-bold mb-1">Cuica para saltar</h5>
-                                    <p class="text-muted mb-0">Solicitado por: José Morales</p>
+                                    <p class="text-muted mb-0">Solicitado: 02/25/2026</p>
                                 </div>
                                 <span class="badge bg-success rounded-0 px-3 py-2">Aprobada</span>
                             </div>
                         </div>
 
-                        <div class="border rounded-4 p-4">
+                        {{-- Rechazada --}}
+                        <div class="border rounded-4 p-4 mb-3">
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div>
                                     <h5 class="fw-bold mb-1">Camisa deportiva</h5>
-                                    <p class="text-muted mb-0">Solicitado por: Laura Sánchez</p>
+                                    <p class="text-muted mb-0">Solicitado: 02/20/2026</p>
                                 </div>
                                 <span class="badge bg-danger rounded-0 px-3 py-2">Rechazada</span>
                             </div>
                         </div>
+
+                        {{-- NUEVO: Finalizado (devuelto) --}}
+                        <div class="border rounded-4 p-4">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <h5 class="fw-bold mb-1">Mancuernas Ajustables</h5>
+                                    <p class="text-muted mb-0">Solicitado: 01/15/2026</p>
+                                    <p class="text-muted mb-0">Devuelto: 01/22/2026</p>
+                                </div>
+                                <span class="badge rounded-0 px-3 py-2"
+                                      style="background-color:#e5e7eb; color:#374151;">
+                        Finalizado
+                    </span>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>

@@ -6,6 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{$title}}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -40,7 +41,7 @@
                     <a href="{{route('my_messages')}}"
                        class="btn btn-outline {{request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success'}} btn-md">
                         <i class="bi bi-chat-left-text"></i>
-                        Mi Chats
+                        Mis Chats
                     </a>
                 </li>
 
@@ -145,22 +146,6 @@
                         </p>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="loanFullName" class="form-label fw-semibold">
-                            Nombre Completo <span class="text-danger">*</span>
-                        </label>
-                        <input
-                            type="text"
-                            class="form-control form-control-lg"
-                            id="loanFullName"
-                            placeholder="Tu nombre"
-                            minlength="5"
-                            maxlength="80"
-                            required
-                        >
-                        <div class="form-text">Entre 5 y 80 caracteres.</div>
-                        <div class="invalid-feedback d-block" id="loanFullNameError"></div>
-                    </div>
 
                     <div class="mb-3">
                         <label for="loanPickupDate" class="form-label fw-semibold">
@@ -244,6 +229,49 @@
                             <strong><i class="bi bi-exclamation-circle me-2"></i>Caso Especial:</strong>
                             Tus solicitudes requerirán aprobación manual del administrador de inventario.
                         </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    {{-- Términos y condiciones obligatorios --}}
+                    <div class="border rounded-4 p-4 bg-light-subtle">
+                        <h5 class="fw-bold text-secondary mb-3">
+                            <i class="bi bi-file-earmark-text me-2"></i>
+                            Términos y Condiciones
+                        </h5>
+
+                        <p class="text-muted mb-3">
+                            Antes de enviar la solicitud, debes aceptar los términos y condiciones del préstamo.
+                        </p>
+
+                        <div class="form-check mb-2">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="loanTermsCheck"
+                                required
+                            >
+                            <label class="form-check-label fw-semibold" for="loanTermsCheck">
+                                He leído y acepto los términos y condiciones del préstamo.
+                            </label>
+                        </div>
+
+                        <div class="invalid-feedback d-block" id="loanTermsError"></div>
+
+                        <p class="text-danger fw-semibold mb-2 mt-3">
+                            No puedes cancelar el pedido una vez lo hagas.
+                        </p>
+
+                        <p class="text-muted mb-2">
+                            De tener algún inconveniente, contacta al administrador del inventario
+                            <a href="mailto:orlando.cruz@upr.edu" class="text-success text-decoration-none fw-semibold">
+                                orlando.cruz@upr.edu
+                            </a>.
+                        </p>
+
+                        <p class="text-muted mb-0">
+                            Esta información también está disponible en el footer de la página.
+                        </p>
                     </div>
                 </div>
             </div>

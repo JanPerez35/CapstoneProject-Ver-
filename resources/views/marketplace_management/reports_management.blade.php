@@ -39,7 +39,7 @@
                 <div class="row g-3">
                     <div class="col-md-3">
                         <label for="filterReason" class="form-label fw-semibold">Razón</label>
-                        <select id="filterReason" class="form-select">
+                        <select id="filterReason" class="form-select border-2 border-dark">
                             <option value="">Todas las razones</option>
                             <option value="Fraude o estafa">Fraude o estafa</option>
                             <option value="Información falsa">Información falsa</option>
@@ -54,7 +54,7 @@
                         <input
                             type="text"
                             id="filterReportedBy"
-                            class="form-control"
+                            class="form-control border-2 border-dark"
                             placeholder="Buscar usuario"
                             autocomplete="off"
                         >
@@ -65,7 +65,7 @@
                         <input
                             type="text"
                             id="filterSeller"
-                            class="form-control"
+                            class="form-control border-2 border-dark"
                             placeholder="Buscar vendedor"
                             autocomplete="off"
                         >
@@ -76,7 +76,7 @@
                         <input
                             type="date"
                             id="filterDate"
-                            class="form-control"
+                            class="form-control border-2 border-dark"
                         >
                     </div>
                 </div>

@@ -27,8 +27,6 @@
                class="btn btn-outline-success px-4 fw-semibold">
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
-
-
         </div>
 
         {{-- Title --}}
@@ -45,28 +43,28 @@
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-body p-4">
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-4">
-                        <label for="borrowDateFilter" class="form-label fw-semibold">Ver pedidos por día</label>
-                        <input type="date" id="borrowDateFilter" class="form-control form-control-lg">
+                    <div class="col-md-7">
+                        <label for="borrowSearch" class="form-label fw-semibold">Buscar solicitud</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-2 border-dark border-end-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input
+                                type="text"
+                                id="borrowSearch"
+                                class="form-control form-control-md border-2 border-dark border-start-0"
+                                placeholder="Buscar por equipo, usuario, ubicación o fecha (dd/mm/yyyy)"
+                            >
+                        </div>
                     </div>
 
                     <div class="col-md-5">
-                        <label for="borrowSearch" class="form-label fw-semibold">Buscar solicitud</label>
+                        <label for="borrowDateFilter" class="form-label fw-semibold">Ver pedidos por día</label>
                         <input
-                            type="text"
-                            id="borrowSearch"
-                            class="form-control form-control-lg"
-                            placeholder="Buscar por equipo, usuario, ubicación o fecha (dd/mm/yyyy)"
+                            type="date"
+                            id="borrowDateFilter"
+                            class="form-control form-control-md border-2 border-dark"
                         >
-                    </div>
-
-                    <div class="col-md-3">
-                        <label for="borrowTypeFilter" class="form-label fw-semibold">Tipo</label>
-                        <select id="borrowTypeFilter" class="form-select form-select-lg">
-                            <option value="all" selected>Todas</option>
-                            <option value="normal">Normales</option>
-                            <option value="special">Casos especiales</option>
-                        </select>
                     </div>
                 </div>
             </div>
@@ -199,6 +197,7 @@
                     </div>
                 </div>
             </div>
+
 
             {{-- RIGHT: Active approved requests --}}
             <div class="col-lg-6">
@@ -341,7 +340,6 @@
     {{-- Toasts --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
 
-        <!-- APPROVE (verde suave) -->
         <div id="approveToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert"
@@ -363,7 +361,6 @@
             </div>
         </div>
 
-        <!-- DENY (rojo suave) -->
         <div id="denyToast"
              class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
              role="alert"
@@ -385,7 +382,6 @@
             </div>
         </div>
 
-        <!-- RETURNED (verde suave) -->
         <div id="returnedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
              role="alert"
@@ -413,7 +409,6 @@
         document.addEventListener('DOMContentLoaded', function () {
             const borrowDateFilter = document.getElementById('borrowDateFilter');
             const borrowSearch = document.getElementById('borrowSearch');
-            const borrowTypeFilter = document.getElementById('borrowTypeFilter');
 
             const pendingRequestsCount = document.getElementById('pendingRequestsCount');
             const activeRequestsCount = document.getElementById('activeRequestsCount');
@@ -452,34 +447,33 @@
                 const activeVisible = [...document.querySelectorAll('.active-request')]
                     .filter(card => !card.classList.contains('d-none'));
 
-                pendingRequestsCount.textContent = pendingVisible.length;
-                activeRequestsCount.textContent = activeVisible.length;
+                if (pendingRequestsCount) pendingRequestsCount.textContent = pendingVisible.length;
+                if (activeRequestsCount) activeRequestsCount.textContent = activeVisible.length;
 
                 pendingEmptyState.classList.toggle('d-none', pendingVisible.length !== 0);
                 activeEmptyState.classList.toggle('d-none', activeVisible.length !== 0);
 
-                if (borrowDateFilter.value) {
-                    selectedDateLabel.textContent = formatDateToDMY(borrowDateFilter.value);
-                } else {
-                    selectedDateLabel.textContent = 'Todos los días';
+                if (selectedDateLabel) {
+                    if (borrowDateFilter.value) {
+                        selectedDateLabel.textContent = formatDateToDMY(borrowDateFilter.value);
+                    } else {
+                        selectedDateLabel.textContent = 'Todos los días';
+                    }
                 }
             }
 
             function filterRequests() {
                 const selectedDate = borrowDateFilter.value;
                 const searchValue = borrowSearch.value.trim().toLowerCase();
-                const selectedType = borrowTypeFilter.value;
 
                 getAllRequests().forEach(card => {
                     const cardDate = card.dataset.date;
-                    const cardType = card.dataset.type;
                     const cardSearch = card.dataset.search.toLowerCase();
 
                     const matchesDate = !selectedDate || cardDate === selectedDate;
                     const matchesSearch = !searchValue || cardSearch.includes(searchValue);
-                    const matchesType = selectedType === 'all' || cardType === selectedType;
 
-                    card.classList.toggle('d-none', !(matchesDate && matchesSearch && matchesType));
+                    card.classList.toggle('d-none', !(matchesDate && matchesSearch));
                 });
 
                 updateCounters();
@@ -579,7 +573,6 @@
 
             borrowDateFilter.addEventListener('change', filterRequests);
             borrowSearch.addEventListener('input', filterRequests);
-            borrowTypeFilter.addEventListener('change', filterRequests);
 
             attachApproveDenyEvents();
             attachReturnEvents();

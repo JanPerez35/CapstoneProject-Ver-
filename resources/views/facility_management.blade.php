@@ -73,7 +73,7 @@
 
                     <div class="col-md-4 col-lg-3">
                         <label for="reportType" class="form-label fw-semibold">Tipo de reporte</label>
-                        <select id="reportType" name="report_type" class="form-select form-select-lg">
+                        <select id="reportType" name="report_type" class="form-select form-select-lg border-2 border-dark">
                             <option value="monthly" selected>Mensual</option>
                             <option value="annual">Anual</option>
                         </select>
@@ -81,7 +81,7 @@
 
                     <div class="col-md-4 col-lg-3" id="monthFilterWrapper">
                         <label for="reportMonth" class="form-label fw-semibold">Mes</label>
-                        <select id="reportMonth" name="report_month" class="form-select form-select-lg">
+                        <select id="reportMonth" name="report_month" class="form-select form-select-lg border-2 border-dark">
                             <option value="1">Enero</option>
                             <option value="2">Febrero</option>
                             <option value="3" selected>Marzo</option>
@@ -99,7 +99,7 @@
 
                     <div class="col-md-4 col-lg-3">
                         <label for="reportYear" class="form-label fw-semibold">Año</label>
-                        <select id="reportYear" name="report_year" class="form-select form-select-lg">
+                        <select id="reportYear" name="report_year" class="form-select form-select-lg border-2 border-dark">
                             <option value="2024" selected>2024</option>
                             <option value="2025">2025</option>
                             <option value="2026">2026</option>
@@ -108,7 +108,7 @@
 
                     <div class="col-md-12 col-lg-3">
                         <label for="filterClassroom" class="form-label fw-semibold">Salón</label>
-                        <select id="filterClassroom" name="filter_classroom" class="form-select form-select-lg">
+                        <select id="filterClassroom" name="filter_classroom" class="form-select form-select-lg border-2 border-dark">
                             <option value="all" selected>Todos los salones</option>
                             <option value="Cancha CM">Cancha CM</option>
                             <option value="Lateral 1">Lateral 1</option>

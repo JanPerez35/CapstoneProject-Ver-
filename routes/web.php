@@ -21,6 +21,7 @@ Route::get('/terms_and_conditions', function () {
 
 
 Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
+
 Route::post('/send-email', [EmailController::class, 'sendEmail']);
 
 Route::get('/search_user', function () {
@@ -64,3 +65,15 @@ Route::get('/my_messages', function () {
 })->name('my_messages');
 
 require __DIR__ . '\saml2.php';
+
+//Mailing Work in Progress
+Route::get('/test-email', function () {
+    Mail::to('jan.perez21@upr.edu')->send(
+        new \App\Mail\GenericMail(
+            'TEST',
+            'Esto es una prueba'
+        )
+    );
+
+    return 'sent';
+});

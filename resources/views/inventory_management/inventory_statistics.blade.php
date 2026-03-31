@@ -59,7 +59,7 @@
                 <form id="reportFilterForm" class="row g-3 align-items-end">
                     <div class="col-md-4">
                         <label for="reportType" class="form-label fw-semibold">Tipo de reporte</label>
-                        <select id="reportType" class="form-select form-select-lg">
+                        <select id="reportType" class="form-select form-select-lg border-2 border-dark">
                             <option value="monthly" selected>Mensual</option>
                             <option value="annual">Anual</option>
                         </select>
@@ -67,7 +67,7 @@
 
                     <div class="col-md-4" id="monthFilterWrapper">
                         <label for="reportMonth" class="form-label fw-semibold">Mes</label>
-                        <select id="reportMonth" class="form-select form-select-lg">
+                        <select id="reportMonth" class="form-select form-select-lg border-2 border-dark">
                             <option value="1">Enero</option>
                             <option value="2">Febrero</option>
                             <option value="3">Marzo</option>
@@ -85,7 +85,7 @@
 
                     <div class="col-md-4">
                         <label for="reportYear" class="form-label fw-semibold">Año</label>
-                        <select id="reportYear" class="form-select form-select-lg">
+                        <select id="reportYear" class="form-select form-select-lg border-2 border-dark">
                             <option value="2023">2023</option>
                             <option value="2024" selected>2024</option>
                             <option value="2025">2025</option>
