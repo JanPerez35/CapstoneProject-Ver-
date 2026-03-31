@@ -1,5 +1,5 @@
-<x-layout>
-    <x-navbar>
+<x-layout title="Kinventario">
+<x-navbar>
     </x-navbar>
 
     <div class= "container py-4">

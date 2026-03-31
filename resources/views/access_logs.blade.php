@@ -1,5 +1,5 @@
-<x-layout>
-    <x-navbar></x-navbar>
+<x-layout title="Registros de Acceso">
+<x-navbar></x-navbar>
 
 
     <div class="container-fluid py-4 px-4">
