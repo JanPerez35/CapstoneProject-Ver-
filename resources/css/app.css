@@ -158,3 +158,32 @@
     box-shadow: 0 20px 60px rgba(0,0,0,0.35);
 }
 
+.rating-stars {
+    position: relative;
+    display: inline-block;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.rating-stars-base,
+.rating-stars-fill {
+    display: flex;
+    gap: 2px;
+}
+
+.rating-stars-base {
+    color: #d5d5d5;
+}
+
+.rating-stars-fill {
+    color: #f4b400;
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    width: calc((var(--rating) / 5) * 100%);
+}
+.user-role-badge {
+    border-radius: 0 !important;
+}

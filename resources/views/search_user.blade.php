@@ -22,7 +22,7 @@
                             <input
                                 type="text"
                                 id="userSearchInput"
-                                class="form-control border-start-0 rounded-end-4"
+                                class="form-control border-start-0"
                                 placeholder="Buscar por nombre o correo..."
                             >
                         </div>
@@ -30,7 +30,7 @@
 
                     <div class="col-lg-6">
                         <label for="roleFilterSelect" class="form-label fw-semibold">Filtrar por Rol</label>
-                        <select id="roleFilterSelect" class="form-select rounded-4">
+                        <select id="roleFilterSelect" class="form-select rounded-0">
                             <option value="all" selected>Todos los Roles</option>
                             <option value="Usuario">Usuario</option>
                             <option value="Admin Super">Admin Super</option>
@@ -44,7 +44,7 @@
         </div>
 
         {{-- Empty state --}}
-        <div id="usersEmptyState" class="card border-0 shadow-sm rounded-4 d-none">
+        <div id="usersEmptyState" class="card border-0 shadow-sm rounded-0 d-none">
             <div class="card-body py-5 text-center">
                 <i class="bi bi-people fs-1 text-muted"></i>
                 <h4 class="fw-bold mt-3">No se encontraron usuarios</h4>
@@ -67,7 +67,7 @@
                             <div class="d-flex align-items-start gap-2">
                                 <div class="bg-light rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
                                      style="width: 40px; height: 40px;">
-                                    <i class="bi bi-mortarboard"></i>
+                                    <i class="bi bi-person-fill"></i>
                                 </div>
 
                                 <div>
@@ -77,8 +77,8 @@
                                             John Davis
                                         </a>
 
-                                        <span class="badge rounded-pill user-role-badge bg-primary-subtle text-primary-emphasis px-2 py-1 small">
-                                            <i class="bi bi-box-seam me-1"></i> Usuario
+                                        <span class="badge user-role-badge bg-primary-subtle text-primary-emphasis px-2 py-1 small">
+                                            Usuario
                                         </span>
                                     </div>
 
@@ -90,7 +90,7 @@
 
                         <div class="col-lg-3">
                             <label class="form-label fw-semibold small mb-1">Cambiar Rol</label>
-                            <select class="form-select rounded-4 role-select">
+                            <select class="form-select rounded-0 role-select">
                                 <option selected>Usuario</option>
                                 <option>Admin Super</option>
                                 <option>Admin Inventario</option>
@@ -102,7 +102,7 @@
                         <div class="col-lg-2">
                             <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                             <div class="d-flex flex-column gap-2">
-                                <span class="badge bg-success user-status-badge align-self-start px-2 py-1 rounded-3">Activo</span>
+                                <span class="badge bg-success user-status-badge align-self-start px-2 py-1 rounded-0">Activo</span>
 
                                 <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
                                     <i class="bi bi-ban me-1"></i>
@@ -126,8 +126,7 @@
                             <div class="d-flex align-items-start gap-2">
                                 <div class="bg-light rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
                                      style="width: 40px; height: 40px;">
-                                    <i class="bi bi-mortarboard"></i>
-                                </div>
+                                    <i class="bi bi-person-fill"></i>                                </div>
 
                                 <div>
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
@@ -136,8 +135,8 @@
                                             Sarah Chen
                                         </a>
 
-                                        <span class="badge rounded-pill user-role-badge bg-primary-subtle text-primary-emphasis px-2 py-1 small">
-                                            <i class="bi bi-box-seam me-1"></i> Usuario
+                                        <span class="badge user-role-badge bg-primary-subtle text-primary-emphasis px-2 py-1 small">
+                                          Usuario
                                         </span>
                                     </div>
 
@@ -149,7 +148,7 @@
 
                         <div class="col-lg-3">
                             <label class="form-label fw-semibold small mb-1">Cambiar Rol</label>
-                            <select class="form-select rounded-4 role-select">
+                            <select class="form-select rounded-0 role-select">
                                 <option selected>Usuario</option>
                                 <option>Admin Super</option>
                                 <option>Admin Inventario</option>
@@ -161,7 +160,7 @@
                         <div class="col-lg-2">
                             <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                             <div class="d-flex flex-column gap-2">
-                                <span class="badge bg-success user-status-badge align-self-start px-2 py-1 rounded-3">Activo</span>
+                                <span class="badge bg-success user-status-badge align-self-start px-2 py-1 rounded-0">Activo</span>
 
                                 <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
                                     <i class="bi bi-ban me-1"></i>
@@ -185,9 +184,7 @@
                             <div class="d-flex align-items-start gap-2">
                                 <div class="bg-light rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
                                      style="width: 40px; height: 40px;">
-                                    <i class="bi bi-mortarboard"></i>
-                                </div>
-
+                                    <i class="bi bi-person-fill"></i>                                </div>
                                 <div>
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                                         <a href="{{ route('my_profile') }}"
@@ -195,8 +192,8 @@
                                             Mike Johnson
                                         </a>
 
-                                        <span class="badge rounded-pill user-role-badge bg-success-subtle text-success-emphasis px-2 py-1 small">
-                                            <i class="bi bi-box-seam me-1"></i> Admin Inventario
+                                        <span class="badge user-role-badge bg-success-subtle text-success-emphasis px-2 py-1 small">
+                                             Admin Inventario
                                         </span>
                                     </div>
 
@@ -208,7 +205,7 @@
 
                         <div class="col-lg-3">
                             <label class="form-label fw-semibold small mb-1">Cambiar Rol</label>
-                            <select class="form-select rounded-4 role-select">
+                            <select class="form-select rounded-0 role-select">
                                 <option>Usuario</option>
                                 <option>Admin Super</option>
                                 <option selected>Admin Inventario</option>
@@ -220,7 +217,7 @@
                         <div class="col-lg-2">
                             <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                             <div class="d-flex flex-column gap-2">
-                                <span class="badge bg-success user-status-badge align-self-start px-2 py-1 rounded-3">Activo</span>
+                                <span class="badge bg-success user-status-badge align-self-start px-2 py-1 rounded-0">Activo</span>
 
                                 <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
                                     <i class="bi bi-ban me-1"></i>
@@ -244,8 +241,7 @@
                             <div class="d-flex align-items-start gap-2">
                                 <div class="bg-light rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
                                      style="width: 40px; height: 40px;">
-                                    <i class="bi bi-mortarboard"></i>
-                                </div>
+                                    <i class="bi bi-person-fill"></i>                                </div>
 
                                 <div>
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
@@ -254,8 +250,8 @@
                                             Laura Gómez
                                         </a>
 
-                                        <span class="badge rounded-pill user-role-badge bg-warning-subtle text-warning-emphasis px-2 py-1 small">
-                                            <i class="bi bi-box-seam me-1"></i> Admin Mercado
+                                        <span class="badge user-role-badge bg-warning-subtle text-warning-emphasis px-2 py-1 small">
+                                            Admin Mercado
                                         </span>
                                     </div>
 
@@ -267,7 +263,7 @@
 
                         <div class="col-lg-3">
                             <label class="form-label fw-semibold small mb-1">Cambiar Rol</label>
-                            <select class="form-select rounded-4 role-select">
+                            <select class="form-select rounded-0 role-select">
                                 <option>Usuario</option>
                                 <option>Admin Super</option>
                                 <option>Admin Inventario</option>
@@ -280,7 +276,7 @@
                         <div class="col-lg-2">
                             <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                             <div class="d-flex flex-column gap-2">
-                                <span class="badge bg-danger user-status-badge align-self-start px-2 py-1 rounded-3">Baneado</span>
+                                <span class="badge bg-danger user-status-badge align-self-start px-2 py-1 rounded-0">Baneado</span>
 
                                 <button type="button" class="btn btn-outline-success rounded-3 ban-toggle-btn btn-sm">
                                     <i class="bi bi-arrow-counterclockwise me-1"></i>
@@ -499,8 +495,8 @@
                 card.dataset.role = newRole;
                 select.dataset.previousValue = newRole;
 
-                badge.className = `badge rounded-pill user-role-badge px-2 py-1 small ${getRoleBadgeClass(newRole)}`;
-                badge.innerHTML = `<i class="bi bi-box-seam me-1"></i> ${newRole}`;
+                badge.className = `badge user-role-badge px-2 py-1 small ${getRoleBadgeClass(newRole)}`;
+                badge.innerHTML = ` ${newRole}`;
 
                 const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmRoleModal);
                 modalInstance.hide();
@@ -551,9 +547,9 @@
                 if (currentStatus === 'Activo') {
                     card.dataset.status = 'Baneado';
                     statusBadge.textContent = 'Baneado';
-                    statusBadge.className = 'badge bg-danger user-status-badge align-self-start px-2 py-1 rounded-3';
+                    statusBadge.className = 'badge bg-danger user-status-badge align-self-start px-2 py-1 rounded-0';
 
-                    button.className = 'btn btn-outline-success rounded-3 ban-toggle-btn btn-sm';
+                    button.className = 'btn btn-outline-success rounded-0 ban-toggle-btn btn-sm';
                     button.innerHTML = '<i class="bi bi-arrow-counterclockwise me-1"></i> Desbanear';
 
                     const toast = window.bootstrap.Toast.getOrCreateInstance(banToastEl);
@@ -561,7 +557,7 @@
                 } else {
                     card.dataset.status = 'Activo';
                     statusBadge.textContent = 'Activo';
-                    statusBadge.className = 'badge bg-success user-status-badge align-self-start px-2 py-1 rounded-3';
+                    statusBadge.className = 'badge bg-success user-status-badge align-self-start px-2 py-1 rounded-0';
 
                     button.className = 'btn btn-danger rounded-3 ban-toggle-btn btn-sm';
                     button.innerHTML = '<i class="bi bi-ban me-1"></i> Banear';

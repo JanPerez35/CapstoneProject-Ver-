@@ -377,7 +377,10 @@
                 © 2026 MAIKINE - Portal del Departamento de Kinesiología | Colegio de Artes y Ciencias | Recinto Universitario de Mayagüez |<br> Universidad de Puerto Rico.
                 Todos los derechos reservados.
             </p>
-            <a href="{{route('kinemarket')}}" class="text-success d-block mb-1">
+            <a href="#"
+               class="text-success d-block mb-1"
+               data-bs-toggle="modal"
+               data-bs-target="#termsModal">
                 Términos y Condiciones
             </a>
             <small class="text-muted">
@@ -386,5 +389,47 @@
         </div>
     </div>
 </footer>
+
+{{-- Modal Términos y Condiciones --}}
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <h4 class="modal-title fw-bold" id="termsModalLabel">Términos y Condiciones</h4>
+                    <p class="text-muted mb-0">
+                        Lee los términos y condiciones que aceptaste al usar el sistema.
+                    </p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-body pt-3">
+                <div class="border rounded-4 overflow-hidden" style="height: 75vh;">
+                    <iframe
+                        src="{{ asset('documents/terms_conditions.pdf') }}"
+                        width="100%"
+                        height="100%"
+                        style="border: 0;"
+                        title="Términos y Condiciones PDF">
+                    </iframe>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 pt-0">
+                <a href="{{ asset('documents/terms_conditions.pdf') }}"
+                   target="_blank"
+                   class="btn btn-outline-success">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>
+                    Abrir en otra pestaña
+                </a>
+
+                <button type="button" class="btn btn-success" data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

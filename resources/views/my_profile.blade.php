@@ -4,8 +4,10 @@
 
         {{-- Back button --}}
         <div class="mb-4">
-            <a href="{{ route('kinemarket') }}" class="btn btn-outline-secondary rounded-3 px-4">
-                <i class="bi bi-arrow-left me-2"></i> Volver al Kinemercado
+
+            <a href="{{ url()->previous() != url()->current() ? url()->previous() : route('kinemarket') }}"
+               class="btn btn-outline-secondary rounded-3 px-4">
+                <i class="bi bi-arrow-left me-2"></i> Volver
             </a>
         </div>
 
@@ -16,32 +18,90 @@
                     <div>
                         <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
                             <h1 class="fw-bold mb-0">Usuario Actual (Aquí dirá el nombre)</h1>
-                            <span class="badge bg-success-subtle text-success border rounded-0 px-3 py-2">Tu Perfil</span>
-                            <span class="badge bg-primary rounded-0 px-3 py-2">Usuario</span>
+                            <span class="bg-primary-subtle text-primary-emphasis fw-semibold rounded-0 px-2 py-1">
+                                Usuario
+                            </span>
                         </div>
-
                         <p class="text-muted fs-4 mb-0">Miembro de MAIKINE</p>
+
+                        {{-- Rating del usuario --}}
+                        @php
+                            $userRating = 4.3;
+                            $reviewCount = 8;
+                        @endphp
+
+                        <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
+                            <span class="text-muted fw-medium">Calificación:</span>
+
+                            <div class="rating-stars" style="--rating: {{ $userRating }};">
+                                <div class="rating-stars-base">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                </div>
+
+                                <div class="rating-stars-fill">
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                    <i class="bi bi-star-fill"></i>
+                                </div>
+                            </div>
+
+                            <span class="fw-bold">{{ number_format($userRating, 1) }}</span>
+                            <span class="text-muted">({{ $reviewCount }})</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- Section tabs --}}
-        <ul class="nav nav-pills gap-3 mb-4 flex-wrap" id="profileTabs" role="tablist">
+        <ul class="nav w-100 flex-wrap gap-2 mb-4" id="profileTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="btn btn-light rounded-pill px-4 py-2 active" id="posts-tab" data-bs-toggle="tab" data-bs-target="#posts-pane" type="button" role="tab">
+                <button
+                    class="btn btn-success rounded-3 px-4 py-2 active"
+                    id="posts-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#posts-pane"
+                    type="button"
+                    role="tab"
+                    aria-controls="posts-pane"
+                    aria-selected="true"
+                >
                     <i class="bi bi-bag me-2"></i> Publicaciones (3)
                 </button>
             </li>
 
             <li class="nav-item" role="presentation">
-                <button class="btn btn-light rounded-pill px-4 py-2" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews-pane" type="button" role="tab">
+                <button
+                    class="btn btn-outline-success rounded-3 px-4 py-2"
+                    id="reviews-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#reviews-pane"
+                    type="button"
+                    role="tab"
+                    aria-controls="reviews-pane"
+                    aria-selected="false"
+                >
                     <i class="bi bi-star me-2"></i> Reseñas (4)
                 </button>
             </li>
 
             <li class="nav-item" role="presentation">
-                <button class="btn btn-light rounded-pill px-4 py-2" id="requests-tab" data-bs-toggle="tab" data-bs-target="#requests-pane" type="button" role="tab">
+                <button
+                    class="btn btn-outline-success rounded-3 px-4 py-2"
+                    id="requests-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#requests-pane"
+                    type="button"
+                    role="tab"
+                    aria-controls="requests-pane"
+                    aria-selected="false"
+                >
                     <i class="bi bi-clipboard-check me-2"></i> Solicitudes de Artículos
                 </button>
             </li>
@@ -221,5 +281,23 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const profileTabButtons = document.querySelectorAll('#profileTabs button');
+
+            profileTabButtons.forEach((button) => {
+                button.addEventListener('shown.bs.tab', function (event) {
+                    profileTabButtons.forEach((btn) => {
+                        btn.classList.remove('btn-success');
+                        btn.classList.add('btn-outline-success');
+                    });
+
+                    event.target.classList.remove('btn-outline-success');
+                    event.target.classList.add('btn-success');
+                });
+            });
+        });
+    </script>
 
 </x-layout>
