@@ -73,9 +73,11 @@ Route::post('/inventory_management/requests/{id}/return', [EquipmentController::
 Route::post('/inventory_management/requests/{id}/return', [EquipmentController::class, 'markReturned'])
     ->name('inventory_management.requests.return');
 
-Route::get('/inventory_management/inventory_statistics', function () {
-    return view('inventory_management.inventory_statistics');
-})->name('inventory_management.inventory_statistics');
+Route::get('/inventory_management/inventory_statistics', [EquipmentController::class, 'statistics'])
+    ->name('inventory_management.inventory_statistics');
+
+Route::get('/inventory_management/inventory_statistics/export', [EquipmentController::class, 'exportStatistics'])
+    ->name('inventory_management.inventory_statistics.export');
 
 Route::get('/kinemarket', function () {
     return view('kinemarket');

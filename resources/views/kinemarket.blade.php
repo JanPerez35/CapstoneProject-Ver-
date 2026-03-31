@@ -60,7 +60,7 @@
                                 <small class="text-muted d-block fst-italic">
                                     Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
                                 </small>
-                                <div class="invalid-feedback" id="postTitleError"></div>
+                                <div class="invalid-feedback d-block" id="postTitleError"></div>
                             </div>
 
                             <div class="mb-3">
@@ -79,7 +79,7 @@
                                     Si escribes una descripción, debe tener entre 10 y 1000 caracteres.
                                     Solo letras, números espacios, punto, coma y guion.
                                 </small>
-                                <div class="invalid-feedback" id="postDescriptionError"></div>
+                                <div class="invalid-feedback d-block" id="postDescriptionError"></div>
                             </div>
 
                             <div class="row">
@@ -97,7 +97,7 @@
                                     <small class="text-muted d-block fst-italic">
                                         Solo números decimales validos.
                                     </small>
-                                    <div class="invalid-feedback" id="postPriceError"></div>
+                                    <div class="invalid-feedback d-block" id="postPriceError"></div>
                                 </div>
 
                                 <div class="col-md-6 mb-3">
@@ -490,7 +490,7 @@
                                 <small class="text-muted d-block fst-italic">
                                     Entre 10 y 500 caracteres. Solo letras, números, espacios, punto, coma y guion.
                                 </small>
-                                <div class="invalid-feedback" id="reportDescriptionError"></div>
+                                <div class="invalid-feedback d-block" id="reportDescriptionError"></div>
                             </div>
 
                             <div class="alert alert-warning rounded-4 mb-0">

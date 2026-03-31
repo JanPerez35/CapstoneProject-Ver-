@@ -30,6 +30,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const returnDateError = document.getElementById('returnDateError');
     const specialReasonError = document.getElementById('specialReasonError');
 
+    // Cart UI references (cart is managed server-side; these prevent ReferenceErrors)
+    const cartCount = document.getElementById('cartCount');
+    const cartItemsContainer = document.getElementById('cartItemsContainer');
+    const cartToastEl = document.getElementById('cartToast');
+    const cartToastMessage = document.getElementById('cartToastMessage');
+    const cartModal = document.getElementById('cartModal');
+    const submitLoanRequest = document.getElementById('submitLoanRequest');
+    const submitToastEl = document.getElementById('submitToast');
+    const loanDetailsSection = document.getElementById('loanDetailsSection');
+    const emptyCartSection = document.getElementById('emptyCartSection');
+    const cartFooterActions = document.getElementById('cartFooterActions');
+    let cart = [];
+
     const hasBorrowModal =
         borrowModal &&
         borrowModalText &&
