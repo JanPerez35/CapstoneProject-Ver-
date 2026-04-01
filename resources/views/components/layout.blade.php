@@ -6,6 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{$title}}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -40,7 +41,7 @@
                     <a href="{{route('my_messages')}}"
                        class="btn btn-outline {{request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success'}} btn-md">
                         <i class="bi bi-chat-left-text"></i>
-                        Mi Chats
+                        Mis Chats
                     </a>
                 </li>
 
@@ -75,10 +76,11 @@
 
 {{-- Global Cart Modal --}}
 <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
         <div class="modal-content rounded-4 border-0 shadow">
 
-            <form method="POST" action="{{ route('cart.checkout') }}">
+            <form method="POST" action="{{ route('cart.checkout') }}"
+                  class="d-flex flex-column flex-grow-1 overflow-hidden">
                 @csrf
 
                 @if ($errors->any())

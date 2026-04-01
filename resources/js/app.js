@@ -24,7 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const returnDate = document.getElementById('return_date') || document.getElementById('returnDate');
     const specialReason = document.getElementById('special_reason') || document.getElementById('specialReason');
 
-    const loanFullNameError = document.getElementById('loanFullNameError');
+    const loanTermsCheck = document.getElementById('loanTermsCheck');
+    const loanTermsError = document.getElementById('loanTermsError');
+
     const loanPickupDateError = document.getElementById('loanPickupDateError');
     const pickupTimeBlockError = document.getElementById('pickupTimeBlockError');
     const returnDateError = document.getElementById('returnDateError');
@@ -366,7 +368,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 cartFooterActions.classList.add('d-none');
             }
         }
-
         updateLoanSubmitButtonState();
     }
 

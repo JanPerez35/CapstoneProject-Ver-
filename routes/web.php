@@ -115,3 +115,15 @@ Route::get('/kinemercado/mensaje', function () {
 })->name('kinemercado_mensaje');
 
 require __DIR__.'\saml2.php';
+
+//Mailing Work in Progress
+Route::get('/test-email', function () {
+    Mail::to('jan.perez21@upr.edu')->send(
+        new \App\Mail\GenericMail(
+            'TEST',
+            'Esto es una prueba'
+        )
+    );
+
+    return 'sent';
+});

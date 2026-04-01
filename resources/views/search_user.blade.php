@@ -14,15 +14,15 @@
             <div class="card-body p-3">
                 <div class="row g-3">
                     <div class="col-lg-6">
-                        <label for="userSearchInput" class="form-label fw-semibold">Buscar Usuarios</label>
+                        <label for="userSearchInput" class="form-label fw-semibold border-2 border-dark">Buscar Usuarios</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 rounded-start-4">
+                            <span class="input-group-text bg-white border-end-0 rounded-start-3 border-2 border-dark">
                                 <i class="bi bi-search"></i>
                             </span>
                             <input
                                 type="text"
                                 id="userSearchInput"
-                                class="form-control border-start-0"
+                                class="form-control border-start-0 border-2 border-dark"
                                 placeholder="Buscar por nombre o correo..."
                             >
                         </div>
@@ -30,7 +30,7 @@
 
                     <div class="col-lg-6">
                         <label for="roleFilterSelect" class="form-label fw-semibold">Filtrar por Rol</label>
-                        <select id="roleFilterSelect" class="form-select rounded-0">
+                        <select id="roleFilterSelect" class="form-select rounded-3 border-2 border-dark">
                             <option value="all" selected>Todos los Roles</option>
                             <option value="Usuario">Usuario</option>
                             <option value="Admin Super">Admin Super</option>
@@ -83,7 +83,6 @@
                                     </div>
 
                                     <div class="text-muted small">john.davis@university.edu</div>
-                                    <div class="text-muted small">Miembro desde 1/14/2024</div>
                                 </div>
                             </div>
                         </div>
@@ -141,7 +140,6 @@
                                     </div>
 
                                     <div class="text-muted small">sarah.chen@university.edu</div>
-                                    <div class="text-muted small">Miembro desde 2/19/2024</div>
                                 </div>
                             </div>
                         </div>
@@ -198,7 +196,6 @@
                                     </div>
 
                                     <div class="text-muted small">mike.johnson@university.edu</div>
-                                    <div class="text-muted small">Miembro desde 3/08/2023</div>
                                 </div>
                             </div>
                         </div>
@@ -256,7 +253,6 @@
                                     </div>
 
                                     <div class="text-muted small">laura.gomez@university.edu</div>
-                                    <div class="text-muted small">Miembro desde 5/21/2023</div>
                                 </div>
                             </div>
                         </div>
@@ -279,7 +275,7 @@
                                 <span class="badge bg-danger user-status-badge align-self-start px-2 py-1 rounded-0">Baneado</span>
 
                                 <button type="button" class="btn btn-outline-success rounded-3 ban-toggle-btn btn-sm">
-                                    <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                    <i class="bi bi-arrow-counterclockwise rounded-3 me-1"></i>
                                     Desbanear
                                 </button>
                             </div>
@@ -549,7 +545,7 @@
                     statusBadge.textContent = 'Baneado';
                     statusBadge.className = 'badge bg-danger user-status-badge align-self-start px-2 py-1 rounded-0';
 
-                    button.className = 'btn btn-outline-success rounded-0 ban-toggle-btn btn-sm';
+                    button.className = 'btn btn-outline-success rounded-3 ban-toggle-btn btn-sm';
                     button.innerHTML = '<i class="bi bi-arrow-counterclockwise me-1"></i> Desbanear';
 
                     const toast = window.bootstrap.Toast.getOrCreateInstance(banToastEl);
