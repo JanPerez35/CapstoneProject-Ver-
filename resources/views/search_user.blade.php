@@ -3,7 +3,7 @@
 
     <div class="container py-4">
         <div class="mb-4">
-            <h1 class="fw-bold">Buscar Usuarios</h1>
+            <h1 class="fw-bold rounded-2">Buscar Usuarios</h1>
             <p class="text-muted mb-0">
                 Buscar usuarios y ver sus perfiles, administrar roles y banear/desbanear cuentas
             </p>
@@ -13,16 +13,19 @@
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-body p-3">
                 <div class="row g-3">
+
                     <div class="col-lg-6">
-                        <label for="userSearchInput" class="form-label fw-semibold border-2 border-dark">Buscar Usuarios</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0 rounded-start-3 border-2 border-dark">
-                                <i class="bi bi-search"></i>
-                            </span>
+                        <label for="userSearchInput" class="form-label fw-semibold">Buscar Usuarios</label>
+
+                        <div class="input-group search-group">
+        <span class="input-group-text bg-white border-0">
+            <i class="bi bi-search"></i>
+        </span>
+
                             <input
                                 type="text"
                                 id="userSearchInput"
-                                class="form-control border-start-0 border-2 border-dark"
+                                class="form-control border-0"
                                 placeholder="Buscar por nombre o correo..."
                             >
                         </div>

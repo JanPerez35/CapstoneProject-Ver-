@@ -45,14 +45,16 @@
                 <div class="row g-3 align-items-end">
                     <div class="col-md-7">
                         <label for="borrowSearch" class="form-label fw-semibold">Buscar solicitud</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-2 border-dark border-end-0">
-                                <i class="bi bi-search"></i>
-                            </span>
+
+                        <div class="input-group search-group">
+        <span class="input-group-text bg-white border-0">
+            <i class="bi bi-search"></i>
+        </span>
+
                             <input
                                 type="text"
                                 id="borrowSearch"
-                                class="form-control form-control-md border-2 border-dark border-start-0"
+                                class="form-control border-0"
                                 placeholder="Buscar por equipo, usuario, ubicación o fecha (dd/mm/yyyy)"
                             >
                         </div>

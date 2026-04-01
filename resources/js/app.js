@@ -610,41 +610,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (submitLoanRequest) {
             const submitToast = bootstrap.Toast.getOrCreateInstance(submitToastEl);
-            let isSubmitting = false;
-            submitLoanRequest.addEventListener('click', async () => {
 
-                //  BLOQUEO ANTI-SPAM
-                if (isSubmitting) return;
-                isSubmitting = true;
-
-                submitLoanRequest.disabled = true;
-                submitLoanRequest.innerHTML = 'Enviando...';
-
+            submitLoanRequest.addEventListener('click',() => {
                 const isValid = validateLoanForm(true);
 
                 if (!isValid) {
-                    isSubmitting = false;
-                    submitLoanRequest.disabled = false;
-                    submitLoanRequest.innerHTML = 'Enviar Solicitud';
+                    updateLoanSubmitButtonState();
                     return;
-                }
-
-                //  Send Email here!
-                try {
-                    fetch('/send-email', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify({
-                            email: 'jan.perez21@upr.edu',
-                            subject: 'Solicitud enviada',
-                            message: 'Tu solicitud fue enviada correctamente.'
-                        })
-                    });
-                } catch (error) {
-                    console.error('Error sending email:', error);
                 }
 
                 const cartModalInstance = bootstrap.Modal.getOrCreateInstance(cartModal);
@@ -659,14 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     submitToast.show();
                 }, 250);
 
-                setTimeout(() => {
-                    submitLoanRequest.disabled = false;
-                    submitLoanRequest.innerHTML = 'Enviar Solicitud';
-                    isSubmitting = false;
-                }, 2000);            });
-
-
-
+            });
 
         }
 

@@ -8,7 +8,7 @@ class EmailService
 {
     public function send($email, $subject, $message)
     {
-        Mail::to($email)->send(
+        Mail::to($email)->queue(
             new GenericMail($subject, $message)
         );
     }

@@ -34,7 +34,7 @@
             </div>
             <div class="col-md-4">
                 <select class="form-select border-2 border-dark">
-                    <option>Todas las categorías</option>
+                    <option>Todos los Deportes</option>
                     <option>Baloncesto</option>
                     <option>Tenis</option>
                     <option>Fútbol</option>

@@ -13,11 +13,11 @@
 
         {{-- Internal nav --}}
         <div class="d-flex flex-wrap gap-2 mb-4">
-
             <a href="{{ route('inventory_management') }}"
                class="btn btn-success px-4 fw-semibold">
                 Inventario Administrativo
             </a>
+
             <a href="{{ route('inventory_management.borrows') }}"
                class="btn btn-outline-success px-4 fw-semibold">
                 Préstamos
@@ -27,8 +27,6 @@
                class="btn btn-outline-success px-4 fw-semibold">
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
-
-
         </div>
 
         {{-- Section heading + button --}}
@@ -49,6 +47,40 @@
                 <i class="bi bi-plus-lg"></i>
                 Agregar Item
             </button>
+        </div>
+
+        {{-- Buscar + filtrar --}}
+        <div class="row mb-4 g-3">
+            <div class="col-md-8">
+                <div class="input-group search-group">
+                    <span class="input-group-text bg-white border-0">
+                        <i class="bi bi-search"></i>
+                    </span>
+
+                    <input
+                        type="text"
+                        id="inventorySearch"
+                        class="form-control border-0"
+                        placeholder="Buscar equipo deportivo..."
+                    >
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <select
+                    id="inventoryCategoryFilter"
+                    class="form-select border-2 border-dark"
+                >
+                    <option value="">Todos los Deportes</option>
+                    <option value="Baloncesto">Baloncesto</option>
+                    <option value="Tenis">Tenis</option>
+                    <option value="Fútbol">Fútbol</option>
+                    <option value="Deporte Recreativo">Deporte Recreativo</option>
+                    <option value="Volibol">Volibol</option>
+                    <option value="Levantamiento de Pesas">Levantamiento de Pesas</option>
+                    <option value="Otros">Otros</option>
+                </select>
+            </div>
         </div>
 
         {{-- Cards --}}
@@ -126,6 +158,10 @@
             </div>
 
         </div>
+
+        <div id="inventoryEmptyState" class="text-center text-muted py-5 d-none">
+            No se encontraron items con ese filtro.
+        </div>
     </div>
 
     {{-- Modal Agregar Item --}}
@@ -169,7 +205,8 @@
                         <div class="mb-3">
                             <label for="categoria" class="form-label fw-semibold">
                                 Categoría<span class="text-danger">*</span>
-                            </label>                            <select
+                            </label>
+                            <select
                                 id="categoria"
                                 name="categoria"
                                 class="form-select form-select-lg"
@@ -185,7 +222,6 @@
                                 <option value="Otros">Otros</option>
                             </select>
                             <div class="invalid-feedback d-block" id="categoriaError"></div>
-
                         </div>
 
                         <div class="mb-3">
@@ -210,7 +246,8 @@
                         <div class="mb-3">
                             <label for="cantidad_disponible" class="form-label fw-semibold">
                                 Cantidad Disponible<span class="text-danger">*</span>
-                            </label>                            <input
+                            </label>
+                            <input
                                 type="number"
                                 id="cantidad_disponible"
                                 name="cantidad_disponible"
@@ -229,18 +266,18 @@
                             <label for="ubicacion" class="form-label fw-semibold">
                                 Ubicación<span class="text-danger">*</span>
                             </label>
-                            <select
+                            <input
+                                type="text"
                                 id="ubicacion"
                                 name="ubicacion"
-                                class="form-select form-select-lg"
+                                class="form-control form-control-lg"
+                                placeholder="Ejemplo. Almacén A"
+                                maxlength="100"
                                 required
                             >
-                                <option value="" selected disabled>Selecciona una ubicación</option>
-                                <option value="Almacén A">Almacén A</option>
-                                <option value="Almacén B">Almacén B</option>
-                                <option value="Almacén C">Almacén C</option>
-                                <option value="Almacén D">Almacén D</option>
-                            </select>
+                            <div class="form-text">
+                                Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                            </div>
                             <div class="invalid-feedback d-block" id="ubicacionError"></div>
                         </div>
 
@@ -268,6 +305,7 @@
                         </small>
 
                         <div class="invalid-feedback d-block" id="imageError"></div>
+
                         <div class="mb-3 d-none" id="previewWrapper">
                             <label class="form-label fw-semibold">Vista previa</label>
                             <img
@@ -320,17 +358,13 @@
     </div>
 
     {{-- Toasts --}}
-    {{-- Toasts --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
-
-        <!-- SUCCESS (Agregar item) -->
         <div id="inventoryToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
              style="width: auto; max-width: fit-content;">
-
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Item añadido correctamente
@@ -345,14 +379,12 @@
             </div>
         </div>
 
-        <!--  ERROR (Eliminar item) -->
         <div id="inventoryDeleteToast"
              class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
              style="width: auto; max-width: fit-content;">
-
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Item eliminado del inventario
@@ -366,22 +398,24 @@
                 </button>
             </div>
         </div>
-
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const addItemForm = document.getElementById('addItemForm');
+
             const nombreInput = document.getElementById('nombre_item');
             const categoriaInput = document.getElementById('categoria');
             const cantidadTotalInput = document.getElementById('cantidad_total');
             const cantidadDisponibleInput = document.getElementById('cantidad_disponible');
             const ubicacionInput = document.getElementById('ubicacion');
             const imageInput = document.getElementById('imagen');
+
             const imageError = document.getElementById('imageError');
             const previewWrapper = document.getElementById('previewWrapper');
             const imagePreview = document.getElementById('imagePreview');
             const addItemModal = document.getElementById('addItemModal');
+
             const inventoryToast = document.getElementById('inventoryToast');
             const inventoryDeleteToast = document.getElementById('inventoryDeleteToast');
 
@@ -397,35 +431,23 @@
             const confirmDeleteInventoryItem = document.getElementById('confirmDeleteInventoryItem');
 
             const inventoryCards = document.getElementById('inventoryCards');
+            const inventorySearch = document.getElementById('inventorySearch');
+            const inventoryCategoryFilter = document.getElementById('inventoryCategoryFilter');
+            const inventoryEmptyState = document.getElementById('inventoryEmptyState');
 
             let inventoryCardToDelete = null;
 
             const inventoryAllowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
             const maxImageSize = 2 * 1024 * 1024;
 
-            const requiredFields = [
-                nombreInput,
-                categoriaInput,
-                cantidadTotalInput,
-                cantidadDisponibleInput,
-                ubicacionInput,
-                imageInput
-            ];
-
             function setFieldError(field, errorElement, message) {
-                if (!field) return;
                 field.classList.add('is-invalid');
-                if (errorElement) {
-                    errorElement.textContent = message;
-                }
+                errorElement.textContent = message;
             }
 
             function clearFieldError(field, errorElement) {
-                if (!field) return;
                 field.classList.remove('is-invalid');
-                if (errorElement) {
-                    errorElement.textContent = '';
-                }
+                errorElement.textContent = '';
             }
 
             function clearAllInvalid() {
@@ -444,34 +466,42 @@
                 imagePreview.src = '';
             }
 
-            function validateNombreItem(showError = true) {
-                const value = nombreInput.value.trim();
+            function validateTextField(field, errorElement, fieldLabel, showError = true) {
+                const value = field.value.trim();
 
                 if (showError) {
-                    clearFieldError(nombreInput, nombreItemError);
+                    clearFieldError(field, errorElement);
                 }
 
                 if (!value) {
-                    if (showError) setFieldError(nombreInput, nombreItemError, 'El nombre del item es obligatorio.');
+                    if (showError) setFieldError(field, errorElement, `La ${fieldLabel} es obligatoria.`);
                     return false;
                 }
 
                 if (value.length < 5) {
-                    if (showError) setFieldError(nombreInput, nombreItemError, 'El nombre debe tener al menos 5 caracteres.');
+                    if (showError) setFieldError(field, errorElement, `La ${fieldLabel} debe tener al menos 5 caracteres.`);
                     return false;
                 }
 
                 if (value.length > 100) {
-                    if (showError) setFieldError(nombreInput, nombreItemError, 'El nombre no puede exceder 100 caracteres.');
+                    if (showError) setFieldError(field, errorElement, `La ${fieldLabel} no puede exceder 100 caracteres.`);
                     return false;
                 }
 
                 if (!inventoryAllowedTextRegex.test(value)) {
-                    if (showError) setFieldError(nombreInput, nombreItemError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+                    if (showError) setFieldError(field, errorElement, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
                     return false;
                 }
 
                 return true;
+            }
+
+            function validateNombreItem(showError = true) {
+                return validateTextField(nombreInput, nombreItemError, 'nombre del item', showError);
+            }
+
+            function validateUbicacion(showError = true) {
+                return validateTextField(ubicacionInput, ubicacionError, 'ubicación', showError);
             }
 
             function validateCategoria(showError = true) {
@@ -534,20 +564,6 @@
                 return true;
             }
 
-            function validateUbicacion(showError = true) {
-                const isValid = !!ubicacionInput.value;
-
-                if (showError) {
-                    if (!isValid) {
-                        setFieldError(ubicacionInput, ubicacionError, 'Debes seleccionar una ubicación.');
-                    } else {
-                        clearFieldError(ubicacionInput, ubicacionError);
-                    }
-                }
-
-                return isValid;
-            }
-
             function validateImage(showError = true) {
                 const file = imageInput.files[0];
 
@@ -602,6 +618,31 @@
                     badge.style.backgroundColor = '#dc3545';
                     badge.style.color = 'white';
                 }
+            }
+
+            function filterInventoryCards() {
+                const searchValue = inventorySearch.value.trim().toLowerCase();
+                const categoryValue = inventoryCategoryFilter.value.trim().toLowerCase();
+
+                const cards = inventoryCards.querySelectorAll('.inventory-card-wrapper');
+                let visibleCount = 0;
+
+                cards.forEach((card) => {
+                    const itemName = card.querySelector('.inventory-item-name')?.textContent.toLowerCase() || '';
+                    const itemCategory = card.querySelector('.inventory-category')?.textContent.toLowerCase() || '';
+
+                    const matchesSearch = !searchValue || itemName.includes(searchValue);
+                    const matchesCategory = !categoryValue || itemCategory === categoryValue;
+
+                    if (matchesSearch && matchesCategory) {
+                        card.classList.remove('d-none');
+                        visibleCount++;
+                    } else {
+                        card.classList.add('d-none');
+                    }
+                });
+
+                inventoryEmptyState.classList.toggle('d-none', visibleCount > 0);
             }
 
             function attachInventoryCardEvents() {
@@ -700,14 +741,12 @@
             imageInput.addEventListener('change', function () {
                 const file = imageInput.files[0];
 
-
                 resetImageState();
 
                 if (!file) {
                     updateAddItemButtonState();
                     return;
                 }
-
 
                 if (file.type !== 'image/jpeg') {
                     setFieldError(imageInput, imageError, 'Solo se permiten archivos JPG o JPEG.');
@@ -721,12 +760,11 @@
                     return;
                 }
 
-
                 const reader = new FileReader();
 
                 reader.onload = function (e) {
                     imagePreview.src = e.target.result;
-                    previewWrapper.classList.remove('d-none'); // 👈 CLAVE
+                    previewWrapper.classList.remove('d-none');
                 };
 
                 reader.readAsDataURL(file);
@@ -757,37 +795,14 @@
                 updateAddItemButtonState();
             });
 
-            ubicacionInput.addEventListener('change', function () {
+            ubicacionInput.addEventListener('input', function () {
+                ubicacionInput.value = ubicacionInput.value.slice(0, 100);
                 validateUbicacion(true);
                 updateAddItemButtonState();
             });
 
-            nombreInput.addEventListener('input', function () {
-                nombreInput.value = nombreInput.value.slice(0, 100);
-                validateNombreItem(true);
-                updateAddItemButtonState();
-            });
-
-            categoriaInput.addEventListener('change', function () {
-                validateCategoria(true);
-                updateAddItemButtonState();
-            });
-
-            cantidadTotalInput.addEventListener('input', function () {
-                validateCantidadTotal(true);
-                validateCantidadDisponible(true);
-                updateAddItemButtonState();
-            });
-
-            cantidadDisponibleInput.addEventListener('input', function () {
-                validateCantidadDisponible(true);
-                updateAddItemButtonState();
-            });
-
-            ubicacionInput.addEventListener('change', function () {
-                validateUbicacion(true);
-                updateAddItemButtonState();
-            });
+            inventorySearch.addEventListener('input', filterInventoryCards);
+            inventoryCategoryFilter.addEventListener('change', filterInventoryCards);
 
             addItemForm.addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -815,7 +830,7 @@
                 const categoria = categoriaInput.value;
                 const cantidadTotal = cantidadTotalInput.value;
                 const cantidadDisponible = cantidadDisponibleInput.value;
-                const ubicacion = ubicacionInput.value;
+                const ubicacion = ubicacionInput.value.trim();
                 const file = imageInput.files[0];
 
                 const imageUrl = URL.createObjectURL(file);
@@ -823,77 +838,77 @@
                 const statusColor = Number(cantidadDisponible) > 0 ? '#6FC21F' : '#dc3545';
 
                 const cardHtml = `
-        <div class="col-md-6 col-lg-4 inventory-card-wrapper">
-            <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
-                <img
-                    src="${imageUrl}"
-                    class="card-img-top"
-                    alt="${nombre}"
-                    style="height: 220px; object-fit: cover; object-position: center;"
-                >
+                    <div class="col-md-6 col-lg-4 inventory-card-wrapper">
+                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
+                            <img
+                                src="${imageUrl}"
+                                class="card-img-top"
+                                alt="${nombre}"
+                                style="height: 220px; object-fit: cover; object-position: center;"
+                            >
 
-                <div class="card-body d-flex flex-column">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title mb-0 fw-bold inventory-item-name">${nombre}</h5>
-                        <span class="badge rounded-0 inventory-status-badge" style="background-color:${statusColor}; color:white;">
-                            ${statusText}
-                        </span>
-                    </div>
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0 fw-bold inventory-item-name">${nombre}</h5>
+                                    <span class="badge rounded-0 inventory-status-badge" style="background-color:${statusColor}; color:white;">
+                                        ${statusText}
+                                    </span>
+                                </div>
 
-                    <p class="text-muted small mb-3 inventory-description">
-                        Item agregado manualmente al inventario.
-                    </p>
+                                <p class="text-muted small mb-3 inventory-description">
+                                    Item agregado manualmente al inventario.
+                                </p>
 
-                    <div class="small mb-3">
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Cantidad Total:</span>
-                            <strong class="inventory-total">${cantidadTotal}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Cantidad Disponible:</span>
-                            <strong class="text-success inventory-available">${cantidadDisponible}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Ubicación:</span>
-                            <strong class="inventory-location">${ubicacion}</strong>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span class="text-muted">Categoría:</span>
-                            <strong class="inventory-category">${categoria}</strong>
-                        </div>
-                    </div>
+                                <div class="small mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Cantidad Total:</span>
+                                        <strong class="inventory-total">${cantidadTotal}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Cantidad Disponible:</span>
+                                        <strong class="text-success inventory-available">${cantidadDisponible}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Ubicación:</span>
+                                        <strong class="inventory-location">${ubicacion}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Categoría:</span>
+                                        <strong class="inventory-category">${categoria}</strong>
+                                    </div>
+                                </div>
 
-                    <div class="mt-auto d-grid gap-3">
-                        <div>
-                            <div class="small text-muted mb-1">Editar Cantidad Total</div>
-                            <div class="d-flex align-items-center justify-content-between gap-2">
-                                <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-decrease">-</button>
-                                <span class="fw-bold inventory-total-control">${cantidadTotal}</span>
-                                <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-increase">+</button>
+                                <div class="mt-auto d-grid gap-3">
+                                    <div>
+                                        <div class="small text-muted mb-1">Editar Cantidad Total</div>
+                                        <div class="d-flex align-items-center justify-content-between gap-2">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-decrease">-</button>
+                                            <span class="fw-bold inventory-total-control">${cantidadTotal}</span>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-increase">+</button>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div class="small text-muted mb-1">Editar Cantidad Disponible</div>
+                                        <div class="d-flex align-items-center justify-content-between gap-2">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-decrease">-</button>
+                                            <span class="fw-bold inventory-available-control">${cantidadDisponible}</span>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-increase">+</button>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-danger open-delete-item-modal"
+                                        data-item-name="${nombre}"
+                                    >
+                                        <i class="bi bi-trash me-1"></i> Eliminar Item
+                                    </button>
+                                </div>
                             </div>
                         </div>
-
-                        <div>
-                            <div class="small text-muted mb-1">Editar Cantidad Disponible</div>
-                            <div class="d-flex align-items-center justify-content-between gap-2">
-                                <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-decrease">-</button>
-                                <span class="fw-bold inventory-available-control">${cantidadDisponible}</span>
-                                <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-increase">+</button>
-                            </div>
-                        </div>
-
-                        <button
-                            type="button"
-                            class="btn btn-danger open-delete-item-modal"
-                            data-item-name="${nombre}"
-                        >
-                            <i class="bi bi-trash me-1"></i> Eliminar Item
-                        </button>
                     </div>
-                </div>
-            </div>
-        </div>
-    `;
+                `;
 
                 inventoryCards.insertAdjacentHTML('beforeend', cardHtml);
 
@@ -906,6 +921,7 @@
                 updateAddItemButtonState();
 
                 attachInventoryCardEvents();
+                filterInventoryCards();
 
                 setTimeout(() => {
                     const toastInstance = window.bootstrap.Toast.getOrCreateInstance(inventoryToast);
@@ -923,6 +939,8 @@
                     const modalInstance = window.bootstrap.Modal.getOrCreateInstance(deleteInventoryItemModal);
                     modalInstance.hide();
 
+                    filterInventoryCards();
+
                     setTimeout(() => {
                         const deleteToastInstance = window.bootstrap.Toast.getOrCreateInstance(inventoryDeleteToast);
                         deleteToastInstance.show();
@@ -932,6 +950,7 @@
 
             attachInventoryCardEvents();
             updateAddItemButtonState();
+            filterInventoryCards();
         });
     </script>
 </x-layout>

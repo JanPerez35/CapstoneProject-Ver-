@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmailController;
+use Illuminate\Support\Facades\Mail;
+
 
 Route::get('/', function () {
     return view('login');
@@ -21,7 +23,6 @@ Route::get('/terms_and_conditions', function () {
 
 
 Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
-
 Route::post('/send-email', [EmailController::class, 'sendEmail']);
 
 Route::get('/search_user', function () {
@@ -66,14 +67,8 @@ Route::get('/my_messages', function () {
 
 require __DIR__ . '\saml2.php';
 
-//Mailing Work in Progress
-Route::get('/test-email', function () {
-    Mail::to('jan.perez21@upr.edu')->send(
-        new \App\Mail\GenericMail(
-            'TEST',
-            'Esto es una prueba'
-        )
-    );
-
-    return 'sent';
-});
+// Temporary routes until user tables are connected
+Route::get('/test-email/request-approved', [EmailController::class, 'requestApproved']);
+Route::get('/test-email/request-denied', [EmailController::class, 'requestDenied']);
+Route::get('/test-email/user-banned', [EmailController::class, 'userBanned']);
+Route::get('/test-email/unread-messages-reminder', [EmailController::class, 'unreadMessagesReminder']);
