@@ -168,18 +168,27 @@
     <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
-                <div class="modal-header border-0 pb-0">
-                    <div>
-                        <h4 class="modal-title fw-bold" id="addItemModalLabel">Agregar Nuevo Item</h4>
-                        <p class="text-muted mb-0">
+
+                <div class="modal-header border-0 pb-0 align-items-start">
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="modal-title fw-bold mb-0" id="addItemModalLabel">
+                                Agregar Nuevo Item
+                            </h4>
+
+                            <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+
+                        <p class="text-muted mt-2 mb-0">
                             Completa la información del nuevo equipo
                         </p>
+
                         <p class="mt-2 mb-0 text-muted">
                             <span class="text-danger">*</span> Campos requeridos
                         </p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
+
 
                 <div class="modal-body">
                     <form id="addItemForm" novalidate>

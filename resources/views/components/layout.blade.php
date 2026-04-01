@@ -78,13 +78,23 @@
 <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content rounded-4 border-0 shadow">
-            <div class="modal-header border-0 pb-0">
-                <div>
-                    <h3 class="modal-title fw-bold mb-1" id="cartModalLabel">Carrito de Préstamos</h3>
-                    <p class="text-muted mb-0">Revisa tu selección y completa los detalles del préstamo</p>
+
+            <div class="modal-header border-0 pb-0 align-items-start">
+                <div class="w-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="modal-title fw-bold mb-0" id="cartModalLabel">
+                            Carrito de Préstamos
+                        </h3>
+
+                        <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <p class="text-muted mt-2 mb-0">
+                        Revisa tu selección y completa los detalles del préstamo
+                    </p>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
+
 
             <div class="modal-body pt-3">
                 <div class="mb-4">
@@ -422,14 +432,21 @@
 <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content rounded-4 border-0 shadow">
-            <div class="modal-header border-0 pb-0">
-                <div>
-                    <h4 class="modal-title fw-bold" id="termsModalLabel">Términos y Condiciones</h4>
-                    <p class="text-muted mb-0">
+
+            <div class="modal-header border-0 pb-0 align-items-start">
+                <div class="w-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="modal-title fw-bold mb-0" id="termsModalLabel">
+                            Términos y Condiciones
+                        </h4>
+
+                        <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <p class="text-muted mt-2 mb-0">
                         Lee los términos y condiciones que aceptaste al usar el sistema.
                     </p>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
 
             <div class="modal-body pt-3">

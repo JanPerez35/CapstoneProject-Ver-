@@ -47,9 +47,9 @@
                         <label for="borrowSearch" class="form-label fw-semibold">Buscar solicitud</label>
 
                         <div class="input-group search-group">
-        <span class="input-group-text bg-white border-0">
-            <i class="bi bi-search"></i>
-        </span>
+                            <span class="input-group-text bg-white border-0">
+                                <i class="bi bi-search"></i>
+                            </span>
 
                             <input
                                 type="text"
@@ -129,7 +129,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="d-flex flex-column justify-content-center gap-2" style="min-width: 190px;">
+                                        <div class="d-flex flex-column justify-content-center gap-2 request-actions" style="min-width: 190px;">
                                             <button type="button" class="btn btn-success approve-special-btn">
                                                 <i class="bi bi-check-circle me-1"></i>
                                                 Aprobar
@@ -181,7 +181,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="d-flex flex-column justify-content-center gap-2" style="min-width: 190px;">
+                                        <div class="d-flex flex-column justify-content-center gap-2 request-actions" style="min-width: 190px;">
                                             <button type="button" class="btn btn-success approve-special-btn">
                                                 <i class="bi bi-check-circle me-1"></i>
                                                 Aprobar
@@ -252,7 +252,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="d-flex flex-column justify-content-center gap-2" style="min-width: 210px;">
+                                        <div class="d-flex flex-column justify-content-center gap-2 request-actions" style="min-width: 210px;">
                                             <button type="button" class="btn btn-outline-success mark-returned-btn">
                                                 <i class="bi bi-box-arrow-in-left me-1"></i>
                                                 Marcar como devuelto
@@ -295,7 +295,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="d-flex flex-column justify-content-center gap-2" style="min-width: 210px;">
+                                        <div class="d-flex flex-column justify-content-center gap-2 request-actions" style="min-width: 210px;">
                                             <button type="button" class="btn btn-outline-success mark-returned-btn">
                                                 <i class="bi bi-box-arrow-in-left me-1"></i>
                                                 Marcar como devuelto
@@ -317,14 +317,20 @@
     <div class="modal fade" id="returnConfirmModal" tabindex="-1" aria-labelledby="returnConfirmModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
-                <div class="modal-header border-0 pb-0">
-                    <div>
-                        <h4 class="modal-title fw-bold" id="returnConfirmModalLabel">Confirmar devolución</h4>
-                        <p class="text-muted mb-0" id="returnConfirmText">
+                <div class="modal-header border-0 pb-0 align-items-start">
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="modal-title fw-bold mb-0" id="returnConfirmModalLabel">
+                                Confirmar devolución
+                            </h4>
+
+                            <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+
+                        <p class="text-muted mt-2 mb-0" id="returnConfirmText">
                             ¿Confirmas que se devolvió el equipo?
                         </p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
                 <div class="modal-footer border-0 pt-2">
@@ -333,6 +339,38 @@
                     </button>
                     <button type="button" class="btn btn-success" id="confirmReturnBtn">
                         Sí, confirmar devolución
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Deny confirmation modal --}}
+    <div class="modal fade" id="denyConfirmModal" tabindex="-1" aria-labelledby="denyConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 pb-0 align-items-start">
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="modal-title fw-bold mb-0" id="denyConfirmModalLabel">
+                                Denegar préstamo
+                            </h4>
+
+                            <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+
+                        <p class="text-muted mt-2 mb-0" id="denyConfirmText">
+                            ¿Seguro que quieres denegar el préstamo?
+                        </p>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 pt-2">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmDenyBtn">
+                        Sí, denegar préstamo
                     </button>
                 </div>
             </div>
@@ -430,7 +468,12 @@
             const returnConfirmText = document.getElementById('returnConfirmText');
             const confirmReturnBtn = document.getElementById('confirmReturnBtn');
 
+            const denyConfirmModal = document.getElementById('denyConfirmModal');
+            const denyConfirmText = document.getElementById('denyConfirmText');
+            const confirmDenyBtn = document.getElementById('confirmDenyBtn');
+
             let requestToRemove = null;
+            let requestToDeny = null;
 
             function formatDateToDMY(dateString) {
                 if (!dateString) return '';
@@ -496,7 +539,7 @@
                             statusLabel.className = 'badge text-bg-light border text-success rounded-0 special-status-label';
                         }
 
-                        const actions = button.closest('.d-flex.flex-column');
+                        const actions = card.querySelector('.request-actions');
                         if (actions) {
                             actions.innerHTML = `
                                 <button type="button" class="btn btn-outline-success mark-returned-btn">
@@ -527,12 +570,13 @@
 
                     button.addEventListener('click', function () {
                         const card = button.closest('.borrow-request');
-                        card.remove();
+                        const itemName = card.querySelector('h5')?.textContent?.trim() || 'este préstamo';
 
-                        const toast = window.bootstrap.Toast.getOrCreateInstance(denyToastEl);
-                        toast.show();
+                        requestToDeny = card;
+                        denyConfirmText.textContent = `¿Seguro que quieres denegar el préstamo de "${itemName}"?`;
 
-                        filterRequests();
+                        const modalInstance = window.bootstrap.Modal.getOrCreateInstance(denyConfirmModal);
+                        modalInstance.show();
                     });
                 });
             }
@@ -567,6 +611,23 @@
                     modalInstance.hide();
 
                     const toast = window.bootstrap.Toast.getOrCreateInstance(returnedToastEl);
+                    toast.show();
+
+                    filterRequests();
+                });
+            }
+
+            if (confirmDenyBtn) {
+                confirmDenyBtn.addEventListener('click', function () {
+                    if (requestToDeny) {
+                        requestToDeny.remove();
+                        requestToDeny = null;
+                    }
+
+                    const modalInstance = window.bootstrap.Modal.getOrCreateInstance(denyConfirmModal);
+                    modalInstance.hide();
+
+                    const toast = window.bootstrap.Toast.getOrCreateInstance(denyToastEl);
                     toast.show();
 
                     filterRequests();

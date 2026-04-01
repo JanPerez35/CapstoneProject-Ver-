@@ -18,10 +18,9 @@
                         <label for="userSearchInput" class="form-label fw-semibold">Buscar Usuarios</label>
 
                         <div class="input-group search-group">
-        <span class="input-group-text bg-white border-0">
-            <i class="bi bi-search"></i>
-        </span>
-
+                            <span class="input-group-text bg-white border-0">
+                                <i class="bi bi-search"></i>
+                            </span>
                             <input
                                 type="text"
                                 id="userSearchInput"
@@ -128,7 +127,8 @@
                             <div class="d-flex align-items-start gap-2">
                                 <div class="bg-light rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
                                      style="width: 40px; height: 40px;">
-                                    <i class="bi bi-person-fill"></i>                                </div>
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
 
                                 <div>
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
@@ -185,7 +185,8 @@
                             <div class="d-flex align-items-start gap-2">
                                 <div class="bg-light rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
                                      style="width: 40px; height: 40px;">
-                                    <i class="bi bi-person-fill"></i>                                </div>
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
                                 <div>
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                                         <a href="{{ route('my_profile') }}"
@@ -241,7 +242,8 @@
                             <div class="d-flex align-items-start gap-2">
                                 <div class="bg-light rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
                                      style="width: 40px; height: 40px;">
-                                    <i class="bi bi-person-fill"></i>                                </div>
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
 
                                 <div>
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
@@ -294,14 +296,20 @@
     <div class="modal fade" id="confirmRoleModal" tabindex="-1" aria-labelledby="confirmRoleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
-                <div class="modal-header border-0 pb-0">
-                    <div>
-                        <h4 class="modal-title fw-bold" id="confirmRoleModalLabel">Confirmar cambio de rol</h4>
-                        <p class="text-muted mb-0" id="confirmRoleText">
+                <div class="modal-header border-0 pb-0 align-items-start">
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="modal-title fw-bold mb-0" id="confirmRoleModalLabel">
+                                Confirmar cambio de rol
+                            </h4>
+
+                            <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+
+                        <p class="text-muted mt-2 mb-0" id="confirmRoleText">
                             ¿Deseas cambiar el rol de este usuario?
                         </p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
                 <div class="modal-footer border-0 pt-2">
@@ -316,14 +324,20 @@
     <div class="modal fade" id="confirmBanModal" tabindex="-1" aria-labelledby="confirmBanModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
-                <div class="modal-header border-0 pb-0">
-                    <div>
-                        <h4 class="modal-title fw-bold" id="confirmBanModalLabel">Confirmar acción</h4>
-                        <p class="text-muted mb-0" id="confirmBanText">
+                <div class="modal-header border-0 pb-0 align-items-start">
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="modal-title fw-bold mb-0" id="confirmBanModalLabel">
+                                Confirmar acción
+                            </h4>
+
+                            <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+
+                        <p class="text-muted mt-2 mb-0" id="confirmBanText">
                             ¿Estás seguro de realizar esta acción?
                         </p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
                 <div class="modal-footer border-0 pt-2">
