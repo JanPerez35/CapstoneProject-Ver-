@@ -238,10 +238,9 @@
                                 class="form-control form-control-lg"
                                 id="specialReason"
                                 rows="4"
-                                maxlength="500"
                                 placeholder="Explica por qué necesitas el equipo por más tiempo"
                             ></textarea>
-                            <div class="form-text">Máximo 500 caracteres.</div>
+                            <div class="form-text">Mínimo 10 caracteres Máximo 500 caracteres.</div>
                             <div class="invalid-feedback d-block" id="specialReasonError"></div>
                         </div>
 

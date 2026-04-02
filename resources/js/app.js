@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const borrowQuantity = document.getElementById('borrowQuantity');
     const confirmAddToCart = document.getElementById('confirmAddToCart');
 
+    const borrowQuantityError = document.getElementById('borrowQuantityError');
+
     const loanDetailsSection = document.getElementById('loanDetailsSection');
     const emptyCartSection = document.getElementById('emptyCartSection');
     const cartFooterActions = document.getElementById('cartFooterActions');
@@ -197,6 +199,26 @@ document.addEventListener('DOMContentLoaded', () => {
             clearLoanFieldError(specialReason, specialReasonError);
         }
 
+        function setBorrowQuantityError(message) {
+            if (borrowQuantity) {
+                borrowQuantity.classList.add('is-invalid');
+            }
+
+            if (borrowQuantityError) {
+                borrowQuantityError.textContent = message;
+            }
+        }
+
+        function clearBorrowQuantityError() {
+            if (borrowQuantity) {
+                borrowQuantity.classList.remove('is-invalid');
+            }
+
+            if (borrowQuantityError) {
+                borrowQuantityError.textContent = '';
+            }
+        }
+
         function validateSpecialReasonField(showError = true) {
             const reason = specialReason?.value.trim() || '';
 
@@ -210,14 +232,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!reason) {
                 if (showError) {
-                    setLoanFieldError(specialReason, specialReasonError, 'La razón del caso especial es obligatoria.');
-                }
-                return false;
-            }
-
-            if (reason.length > 500) {
-                if (showError) {
-                    setLoanFieldError(specialReason, specialReasonError, 'La razón no puede exceder 500 caracteres.');
+                    setLoanFieldError(
+                        specialReason,
+                        specialReasonError,
+                        'La razón del caso especial es obligatoria.'
+                    );
                 }
                 return false;
             }
@@ -227,7 +246,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     setLoanFieldError(
                         specialReason,
                         specialReasonError,
-                        'Solo se permiten letras, números, espacios, punto, coma y guion.'
+                        'La razón contiene caracteres no permitidos. Solo se permiten letras, números, espacios, punto, coma y guion.'
+                    );
+                }
+                return false;
+            }
+
+            if (reason.length < 10) {
+                if (showError) {
+                    setLoanFieldError(
+                        specialReason,
+                        specialReasonError,
+                        'La razón debe tener al menos 10 caracteres.'
+                    );
+                }
+                return false;
+            }
+
+            if (reason.length > 500) {
+                if (showError) {
+                    setLoanFieldError(
+                        specialReason,
+                        specialReasonError,
+                        'La razón no puede exceder 500 caracteres.'
                     );
                 }
                 return false;
@@ -235,6 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             return true;
         }
+
 
         function validateLoanTermsField(showError = true) {
             const isValid = !!loanTermsCheck?.checked;
@@ -341,29 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                if (!reason) {
-                    if (showErrors) {
-                        setLoanFieldError(specialReason, specialReasonError, 'La razón del caso especial es obligatoria.');
-                    }
-                    hasError = true;
-                } else if (reason.length < 10) {
-                    if (showErrors) {
-                        setLoanFieldError(specialReason, specialReasonError, 'La razón debe tener al menos 10 caracteres.');
-                    }
-                    hasError = true;
-                } else if (reason.length > 500) {
-                    if (showErrors) {
-                        setLoanFieldError(specialReason, specialReasonError, 'La razón no puede exceder 500 caracteres.');
-                    }
-                    hasError = true;
-                } else if (!loanAllowedTextRegex.test(reason)) {
-                    if (showErrors) {
-                        setLoanFieldError(
-                            specialReason,
-                            specialReasonError,
-                            'Solo se permiten letras, números, espacios, punto, coma y guion.'
-                        );
-                    }
+                if (!validateSpecialReasonField(showErrors)) {
                     hasError = true;
                 }
 
@@ -393,10 +413,19 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.increase-cart-item').forEach((button) => {
                 button.addEventListener('click', () => {
                     const index = parseInt(button.dataset.index, 10);
+                    const errorEl = document.querySelector(`.cart-item-error[data-index="${index}"]`);
+
+                    if (errorEl) {
+                        errorEl.textContent = '';
+                    }
 
                     if (cart[index].quantity < cart[index].stock) {
                         cart[index].quantity += 1;
                         updateCartUI();
+                    } else {
+                        if (errorEl) {
+                            errorEl.textContent = `No puedes pedir más de la cantidad disponible (${cart[index].stock}).`;
+                        }
                     }
                 });
             });
@@ -404,6 +433,11 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.decrease-cart-item').forEach((button) => {
                 button.addEventListener('click', () => {
                     const index = parseInt(button.dataset.index, 10);
+                    const errorEl = document.querySelector(`.cart-item-error[data-index="${index}"]`);
+
+                    if (errorEl) {
+                        errorEl.textContent = '';
+                    }
 
                     if (cart[index].quantity > 1) {
                         cart[index].quantity -= 1;
@@ -436,18 +470,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
 
                 <div class="col-3">
-                    <div class="d-flex justify-content-center align-items-center gap-3">
-                        <button class="btn btn-outline-secondary btn-sm decrease-cart-item" data-index="${index}">
-                            -
-                        </button>
+    <div class="d-flex flex-column align-items-center">
+        <div class="d-flex justify-content-center align-items-center gap-3">
+            <button class="btn btn-outline-secondary btn-sm decrease-cart-item" data-index="${index}">
+                -
+            </button>
 
-                        <span class="fw-bold fs-6">${item.quantity}</span>
+            <span class="fw-bold fs-6">${item.quantity}</span>
 
-                        <button class="btn btn-outline-secondary btn-sm increase-cart-item" data-index="${index}">
-                            +
-                        </button>
-                    </div>
-                </div>
+            <button class="btn btn-outline-secondary btn-sm increase-cart-item" data-index="${index}">
+                +
+            </button>
+        </div>
+
+        <div
+            class="text-danger small mt-2 cart-item-error text-center"
+            data-index="${index}"
+            style="min-height: 20px;"
+        ></div>
+    </div>
+</div>
 
                 <div class="col-3 text-center">
                     <button class="btn btn-link text-danger p-0 remove-cart-item" data-index="${index}">
@@ -475,29 +517,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     borrowQuantity.value = 1;
                     borrowQuantity.min = 1;
-                    borrowQuantity.max = currentItem.stock;
+                    clearBorrowQuantityError();
                 });
             });
 
             borrowQuantity.addEventListener('input', () => {
+                clearBorrowQuantityError();
+
+                if (borrowQuantity.value === '') {
+                    return;
+                }
+
                 let value = parseInt(borrowQuantity.value, 10);
 
                 if (isNaN(value) || value < 1) {
-                    value = 1;
+                    setBorrowQuantityError('Debes pedir al menos 1 unidad.');
+                    borrowQuantity.value = 1;
+                    return;
                 }
 
                 if (value > currentItem.stock) {
-                    value = currentItem.stock;
+                    borrowQuantity.value = currentItem.stock;
+
+                    setBorrowQuantityError(
+                        `No puedes pedir más de la cantidad disponible (${currentItem.stock}).`
+                    );
+                    return;
                 }
 
                 borrowQuantity.value = value;
             });
 
             confirmAddToCart.addEventListener('click', () => {
+                clearBorrowQuantityError();
+
                 const quantity = parseInt(borrowQuantity.value, 10);
 
-                if (isNaN(quantity) || quantity < 1 || quantity > currentItem.stock) {
-                    borrowQuantity.value = 1;
+                if (isNaN(quantity) || quantity < 1) {
+                    setBorrowQuantityError('Debes pedir al menos 1 unidad.');
+                    return;
+                }
+
+                if (quantity > currentItem.stock) {
+                    setBorrowQuantityError(
+                        `No puedes pedir más de la cantidad disponible (${currentItem.stock}).`
+                    );
                     return;
                 }
 
@@ -516,6 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
+                clearBorrowQuantityError();
                 updateCartUI();
 
                 cartToastMessage.textContent = `${currentItem.name} agregado al carrito`;
@@ -601,12 +666,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (specialReason) {
             specialReason.addEventListener('input', () => {
-                specialReason.value = specialReason.value.slice(0, 500);
-                clearLoanFieldError(specialReason, specialReasonError);
+                let value = specialReason.value;
+
+                // Si se pasa de 500, cortar y mostrar error
+                if (value.length > 500) {
+                    specialReason.value = value.slice(0, 500);
+
+                    setLoanFieldError(
+                        specialReason,
+                        specialReasonError,
+                        'La razón no puede exceder 500 caracteres.'
+                    );
+                } else {
+                    // validar normalmente (caracteres + mínimo)
+                    validateSpecialReasonField(true);
+                }
+
                 updateLoanSubmitButtonState();
             });
         }
-
 
         if (submitLoanRequest) {
             const submitToast = bootstrap.Toast.getOrCreateInstance(submitToastEl);
