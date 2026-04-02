@@ -202,6 +202,10 @@
             </div>
         </div>
 
+        <nav class="mt-4" aria-label="Paginación de reportes">
+            <ul class="pagination justify-content-center" id="reportsPagination"></ul>
+        </nav>
+
         <!--Modal to resolve report-->
         <div class="modal fade" id="resolveReportModal" tabindex="-1" aria-labelledby="resolveReportModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -385,6 +389,10 @@
 
     <!--Validate Functionality and Filters-->
     <script>
+
+        const REPORTS_PER_PAGE = 10;
+        let currentReportsPage = 1;
+
         document.addEventListener('DOMContentLoaded', () => {
             const $ = (id) => document.getElementById(id);
             const rows = () => document.querySelectorAll('#reportsTable tbody tr');
@@ -428,6 +436,7 @@
 
                 reportsTable: $('reportsTable'),
                 emptyState: $('reportsEmptyState'),
+                reportsPagination: $('reportsPagination'),
             };
 
             const toastIds = {
@@ -453,24 +462,74 @@
             const normalize = (text) => text.toLowerCase().trim();
 
 
-            function updateEmptyState() {
-                const totalRows = rows().length;
-                const visibleRows = [...rows()].filter((row) => row.style.display !== 'none').length;
-                const shouldShowEmpty = totalRows === 0 || visibleRows === 0;
-
-                els.emptyState.classList.toggle('d-none', !shouldShowEmpty);
-                els.reportsTable.classList.toggle('d-none', shouldShowEmpty);
-            }
-
             function markResolved(row) {
                 if (!row) return;
                 const reportId = row.dataset.reportId || '';
                 if (reportId) resolvedReports.add(reportId);
                 row.remove();
-                updateEmptyState();
+                renderReports();
             }
 
             function applyFilters() {
+                currentReportsPage = 1;
+                renderReports();
+            }
+
+            function renderLocalPagination(container, currentPage, totalItems, itemsPerPage, onPageChange) {
+                if (!container) return;
+
+                const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+
+                if (totalItems <= 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                let paginationHTML = '';
+
+                paginationHTML += `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <button type="button" class="page-link" data-page="prev">&laquo;</button>
+        </li>
+    `;
+
+                for (let page = 1; page <= totalPages; page++) {
+                    paginationHTML += `
+            <li class="page-item ${page === currentPage ? 'active' : ''}">
+                <button type="button" class="page-link" data-page="${page}">${page}</button>
+            </li>
+        `;
+                }
+
+                paginationHTML += `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <button type="button" class="page-link" data-page="next">&raquo;</button>
+        </li>
+    `;
+
+                container.innerHTML = paginationHTML;
+
+                container.querySelectorAll('.page-link').forEach((button) => {
+                    button.addEventListener('click', () => {
+                        const action = button.dataset.page;
+                        let newPage = currentPage;
+
+                        if (action === 'prev' && currentPage > 1) {
+                            newPage = currentPage - 1;
+                        } else if (action === 'next' && currentPage < totalPages) {
+                            newPage = currentPage + 1;
+                        } else if (!isNaN(action)) {
+                            newPage = Number(action);
+                        }
+
+                        if (newPage !== currentPage) {
+                            onPageChange(newPage);
+                        }
+                    });
+                });
+            }
+
+            function getFilteredRows() {
                 const filters = {
                     reason: normalize(els.filterReason.value),
                     reportedBy: normalize(els.filterReportedBy.value),
@@ -478,11 +537,10 @@
                     date: formatDateForDisplay(els.filterDate.value)
                 };
 
-                rows().forEach((row) => {
+                return [...rows()].filter((row) => {
                     const reportId = row.dataset.reportId || '';
                     if (reportId && resolvedReports.has(reportId)) {
-                        row.remove();
-                        return;
+                        return false;
                     }
 
                     const values = {
@@ -492,16 +550,51 @@
                         date: row.cells[3].textContent.trim()
                     };
 
-                    const visible =
+                    return (
                         (!filters.reason || values.reason === filters.reason) &&
                         (!filters.reportedBy || values.reportedBy.includes(filters.reportedBy)) &&
                         (!filters.seller || values.seller.includes(filters.seller)) &&
-                        (!filters.date || values.date === filters.date);
+                        (!filters.date || values.date === filters.date)
+                    );
+                });
+            }
 
-                    row.style.display = visible ? '' : 'none';
+            function renderReports() {
+                const allRows = [...rows()];
+                const filteredRows = getFilteredRows();
+
+                const totalPages = Math.max(1, Math.ceil(filteredRows.length / REPORTS_PER_PAGE));
+
+                if (currentReportsPage > totalPages) {
+                    currentReportsPage = totalPages;
+                }
+
+                const start = (currentReportsPage - 1) * REPORTS_PER_PAGE;
+                const end = start + REPORTS_PER_PAGE;
+                const paginatedRows = filteredRows.slice(start, end);
+
+                allRows.forEach((row) => {
+                    row.style.display = 'none';
                 });
 
-                updateEmptyState();
+                paginatedRows.forEach((row) => {
+                    row.style.display = '';
+                });
+
+                const shouldShowEmpty = filteredRows.length === 0;
+                els.emptyState.classList.toggle('d-none', !shouldShowEmpty);
+                els.reportsTable.classList.toggle('d-none', shouldShowEmpty);
+
+                renderLocalPagination(
+                    els.reportsPagination,
+                    currentReportsPage,
+                    filteredRows.length,
+                    REPORTS_PER_PAGE,
+                    (page) => {
+                        currentReportsPage = page;
+                        renderReports();
+                    }
+                );
             }
 
             function bindNameInput(input) {
@@ -628,7 +721,7 @@
             bindModalReset(els.deleteModal, 'delete');
             bindModalReset(els.banModal, 'ban');
 
-            updateEmptyState();
+            renderReports();
         });
     </script>
 </x-layout>

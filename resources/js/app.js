@@ -719,6 +719,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const postDetailsModal = document.getElementById('postDetailsModal');
     const submitSellerRatingBtn = document.getElementById('submitSellerRatingBtn');
     const ratingSentToastEl = document.getElementById('ratingSentToast');
+
+    //Access log Pagination
+    const accessLogsTableBody = document.querySelector('table tbody');
+    const accessLogsPagination = document.getElementById('accessLogsPagination');
+
+    const ACCESS_LOGS_PER_PAGE = 10;
+    let currentAccessLogsPage = 1;
+
+    function renderAccessLogs() {
+        if (!accessLogsTableBody || !accessLogsPagination) return;
+
+        const rows = Array.from(accessLogsTableBody.querySelectorAll('tr'));
+        const totalPages = Math.max(1, Math.ceil(rows.length / ACCESS_LOGS_PER_PAGE));
+
+        if (currentAccessLogsPage > totalPages) {
+            currentAccessLogsPage = totalPages;
+        }
+
+        const start = (currentAccessLogsPage - 1) * ACCESS_LOGS_PER_PAGE;
+        const end = start + ACCESS_LOGS_PER_PAGE;
+
+        rows.forEach((row, index) => {
+            row.classList.toggle('d-none', index < start || index >= end);
+        });
+
+        renderPagination({
+            container: accessLogsPagination,
+            currentPage: currentAccessLogsPage,
+            totalItems: rows.length,
+            itemsPerPage: ACCESS_LOGS_PER_PAGE,
+            onPageChange: (page) => {
+                currentAccessLogsPage = page;
+                renderAccessLogs();
+            }
+        });
+    }
+
+    renderAccessLogs();
+
     const ratingSentToast = ratingSentToastEl
         ? bootstrap.Toast.getOrCreateInstance(ratingSentToastEl)
         : null;
@@ -1081,60 +1120,62 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    function renderMarketplacePagination(totalItems) {
-        if (!marketplacePagination) return;
+    function renderPagination({
+                                  container,
+                                  currentPage,
+                                  totalItems,
+                                  itemsPerPage,
+                                  onPageChange
+                              }) {
+        if (!container) return;
 
+        const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
 
-        const totalPages = Math.max(1, Math.ceil(totalItems / POSTS_PER_PAGE));
-
+        if (totalItems <= 0) {
+            container.innerHTML = '';
+            return;
+        }
 
         let paginationHTML = '';
 
-
-        const prevDisabled = currentMarketplacePage === 1 ? 'disabled' : '';
         paginationHTML += `
-       <li class="page-item ${prevDisabled}">
-           <button class="page-link" data-page="prev">&laquo;</button>
-       </li>
-   `;
-
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <button type="button" class="page-link" data-page="prev">&laquo;</button>
+        </li>
+    `;
 
         for (let page = 1; page <= totalPages; page++) {
-            const activeClass = page === currentMarketplacePage ? 'active' : '';
             paginationHTML += `
-           <li class="page-item ${activeClass}">
-               <button class="page-link" data-page="${page}">${page}</button>
-           </li>
-       `;
+            <li class="page-item ${page === currentPage ? 'active' : ''}">
+                <button type="button" class="page-link" data-page="${page}">${page}</button>
+            </li>
+        `;
         }
 
-
-        const nextDisabled = currentMarketplacePage === totalPages ? 'disabled' : '';
         paginationHTML += `
-       <li class="page-item ${nextDisabled}">
-           <button class="page-link" data-page="next">&raquo;</button>
-       </li>
-   `;
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <button type="button" class="page-link" data-page="next">&raquo;</button>
+        </li>
+    `;
 
+        container.innerHTML = paginationHTML;
 
-        marketplacePagination.innerHTML = paginationHTML;
-
-
-        marketplacePagination.querySelectorAll('.page-link').forEach((button) => {
+        container.querySelectorAll('.page-link').forEach((button) => {
             button.addEventListener('click', () => {
                 const action = button.dataset.page;
+                let newPage = currentPage;
 
-
-                if (action === 'prev' && currentMarketplacePage > 1) {
-                    currentMarketplacePage--;
-                } else if (action === 'next' && currentMarketplacePage < totalPages) {
-                    currentMarketplacePage++;
+                if (action === 'prev' && currentPage > 1) {
+                    newPage = currentPage - 1;
+                } else if (action === 'next' && currentPage < totalPages) {
+                    newPage = currentPage + 1;
                 } else if (!isNaN(action)) {
-                    currentMarketplacePage = Number(action);
+                    newPage = Number(action);
                 }
 
-
-                renderMarketplace();
+                if (newPage !== currentPage) {
+                    onPageChange(newPage);
+                }
             });
         });
     }
@@ -1171,7 +1212,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
 
-        renderMarketplacePagination(filteredPosts.length);
+        renderPagination({
+            container: marketplacePagination,
+            currentPage: currentMarketplacePage,
+            totalItems: filteredPosts.length,
+            itemsPerPage: POSTS_PER_PAGE,
+            onPageChange: (page) => {
+                currentMarketplacePage = page;
+                renderMarketplace();
+            }
+        });
         attachMarketplaceDeleteEvents();
         attachMarketplaceDetailsEvents();
     }
