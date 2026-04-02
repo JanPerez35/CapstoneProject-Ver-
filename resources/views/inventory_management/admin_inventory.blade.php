@@ -202,7 +202,6 @@
                                 name="nombre_item"
                                 class="form-control form-control-lg"
                                 placeholder="Ejemplo. Bola de Volibol"
-                                maxlength="100"
                                 required
                             >
                             <div class="form-text">
@@ -281,7 +280,7 @@
                                 name="ubicacion"
                                 class="form-control form-control-lg"
                                 placeholder="Ejemplo. Almacén A"
-                                maxlength="100"
+
                                 required
                             >
                             <div class="form-text">
@@ -483,22 +482,34 @@
                 }
 
                 if (!value) {
-                    if (showError) setFieldError(field, errorElement, `La ${fieldLabel} es obligatoria.`);
-                    return false;
-                }
-
-                if (value.length < 5) {
-                    if (showError) setFieldError(field, errorElement, `La ${fieldLabel} debe tener al menos 5 caracteres.`);
-                    return false;
-                }
-
-                if (value.length > 100) {
-                    if (showError) setFieldError(field, errorElement, `La ${fieldLabel} no puede exceder 100 caracteres.`);
+                    if (showError) {
+                        setFieldError(field, errorElement, `La ${fieldLabel} es obligatoria.`);
+                    }
                     return false;
                 }
 
                 if (!inventoryAllowedTextRegex.test(value)) {
-                    if (showError) setFieldError(field, errorElement, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+                    if (showError) {
+                        setFieldError(
+                            field,
+                            errorElement,
+                            `La ${fieldLabel} contiene caracteres no permitidos. Solo se permiten letras, números, espacios, punto, coma y guion.`
+                        );
+                    }
+                    return false;
+                }
+
+                if (value.length < 5) {
+                    if (showError) {
+                        setFieldError(field, errorElement, `La ${fieldLabel} debe tener al menos 5 caracteres.`);
+                    }
+                    return false;
+                }
+
+                if (value.length > 100) {
+                    if (showError) {
+                        setFieldError(field, errorElement, `La ${fieldLabel} no puede exceder 100 caracteres.`);
+                    }
                     return false;
                 }
 
@@ -783,8 +794,20 @@
             });
 
             nombreInput.addEventListener('input', function () {
-                nombreInput.value = nombreInput.value.slice(0, 100);
-                validateNombreItem(true);
+                const value = nombreInput.value;
+
+                if (value.length > 100) {
+                    nombreInput.value = value.slice(0, 100);
+
+                    setFieldError(
+                        nombreInput,
+                        nombreItemError,
+                        'El nombre del item no puede exceder 100 caracteres.'
+                    );
+                } else {
+                    validateNombreItem(true);
+                }
+
                 updateAddItemButtonState();
             });
 
@@ -805,8 +828,20 @@
             });
 
             ubicacionInput.addEventListener('input', function () {
-                ubicacionInput.value = ubicacionInput.value.slice(0, 100);
-                validateUbicacion(true);
+                const value = ubicacionInput.value;
+
+                if (value.length > 100) {
+                    ubicacionInput.value = value.slice(0, 100);
+
+                    setFieldError(
+                        ubicacionInput,
+                        ubicacionError,
+                        'La ubicación no puede exceder 100 caracteres.'
+                    );
+                } else {
+                    validateUbicacion(true);
+                }
+
                 updateAddItemButtonState();
             });
 
