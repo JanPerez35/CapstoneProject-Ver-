@@ -11,32 +11,43 @@
             </p>
         </div>
 
-        <!--These are the nagivations-->
-        <div class="d-flex flex-wrap gap-2 mb-4">
-            <a href="{{ route('marketplace_management') }}"
-               class="btn btn-success px-4 fw-semibold">
-                <i class="bi bi-flag-fill me-1"></i>Reportes
-            </a>
-
-            <a href="{{ route('marketplace_management.admin_marketplace') }}"
-               class="btn btn-outline-success px-4 fw-semibold">
-                Mercado Administrativo
-            </a>
-        </div>
-
-        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-            <div>
-                <h2 class="fw-bold mb-1">Reportes</h2>
-                <p class="text-muted mb-0">
-                    Revisa reportes, banear usuarios, borrar publicaciones o marcar reportes resueltos.
-                </p>
-            </div>
-        </div>
-
         <!--Filter and searches-->
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-body p-4">
                 <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="filterReportedBy" class="form-label fw-semibold">Reportado por</label>
+                        <div class="input-group search-group">
+                            <span class="input-group-text bg-white border-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+
+                        <input
+                            type="text"
+                            id="filterReportedBy"
+                            class="form-control border-0"
+                            placeholder="Buscar usuario..."
+                            autocomplete="off"
+                        >
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="filterSeller" class="form-label fw-semibold">Vendedor</label>
+                        <div class="input-group search-group">
+                            <span class="input-group-text bg-white border-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+                        <input
+                            type="text"
+                            id="filterSeller"
+                            class="form-control border-0"
+                            placeholder="Buscar vendedor..."
+                            autocomplete="off"
+                        >
+                        </div>
+                    </div>
+
                     <div class="col-md-3">
                         <label for="filterReason" class="form-label fw-semibold">Razón</label>
                         <select id="filterReason" class="form-select border-2 border-dark">
@@ -47,28 +58,6 @@
                             <option value="Contenido inapropiado">Contenido inapropiado</option>
                             <option value="Otro">Otro</option>
                         </select>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label for="filterReportedBy" class="form-label fw-semibold">Reportado por</label>
-                        <input
-                            type="text"
-                            id="filterReportedBy"
-                            class="form-control border-2 border-dark"
-                            placeholder="Buscar usuario"
-                            autocomplete="off"
-                        >
-                    </div>
-
-                    <div class="col-md-3">
-                        <label for="filterSeller" class="form-label fw-semibold">Vendedor</label>
-                        <input
-                            type="text"
-                            id="filterSeller"
-                            class="form-control border-2 border-dark"
-                            placeholder="Buscar vendedor"
-                            autocomplete="off"
-                        >
                     </div>
 
                     <div class="col-md-3">
@@ -120,15 +109,41 @@
             </div>
         </div>
 
+       <!--Potential Backend Connection-->
+        @php
+            $reports = $reports ?? [
+                [
+                    'report_id' => 'report-001',
+                    'post_id' => 'post-101',
+                    'seller_id' => 'user-301',
+                    'reported_by' => 'María González',
+                    'seller' => 'Maria Ruth',
+                    'reason' => 'Fraude o estafa',
+                    'reported_date' => '03-16-2026',
+                    'description' => 'Esto es claramente una estafa. Pide pago fuera de la plataforma y no acepta reunirse en persona.',
+                ],
+                [
+                    'report_id' => 'report-002',
+                    'post_id' => 'post-102',
+                    'seller_id' => 'user-302',
+                    'reported_by' => 'Carlos Rodríguez',
+                    'seller' => 'Maria Ruth',
+                    'reason' => 'Información falsa',
+                    'reported_date' => '03-17-2026',
+                    'description' => 'Publicación sospechosa con precio irrazonable. El vendedor no tiene historial y las fotos parecen ser de internet.',
+                ],
+            ];
+        @endphp
+
         <!--Reports table-->
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
             <div class="table-fit-wrapper">
                 <table class="table align-middle mb-0 reports-table" id="reportsTable">
                     <thead class="table-light">
                     <tr>
-                        <th>Razón</th>
                         <th>Reportado por</th>
                         <th>Vendedor</th>
+                        <th>Razón</th>
                         <th>Fecha Reportada</th>
                         <th>Descripción</th>
 
@@ -148,39 +163,40 @@
                     </thead>
 
                     <tbody>
-                    <tr data-report-id="report-001" data-post-id="post-101" data-seller-id="user-301">
-                        <td>Fraude o estafa</td>
-                        <td>María González</td>
-                        <td>Maria Ruth</td>
-                        <td>2026-03-16</td>
-                        <td class="report-description-cell">
-                            Esto es claramente una estafa. Pide pago fuera de la plataforma y no acepta reunirse en persona.
-                        </td>
-                        <td class="text-center action-col"><input class="form-check-input action-checkbox action-view prominent-checkbox" type="checkbox"></td>
-                        <td class="text-center action-col"><input class="form-check-input action-checkbox action-resolve prominent-checkbox" type="checkbox"></td>
-                        <td class="text-center action-col"><input class="form-check-input action-checkbox action-delete-post prominent-checkbox" type="checkbox"></td>
-                        <td class="text-center action-col"><input class="form-check-input action-checkbox action-ban-user prominent-checkbox" type="checkbox"></td>
-                    </tr>
-
-                    <tr data-report-id="report-002" data-post-id="post-102" data-seller-id="user-302">
-                        <td>Información falsa</td>
-                        <td>Carlos Rodríguez</td>
-                        <td>Maria Ruth</td>
-                        <td>2026-03-17</td>
-                        <td class="report-description-cell">
-                            Publicación sospechosa con precio irrazonable. El vendedor no tiene historial y las fotos parecen ser de internet.
-                        </td>
-                        <td class="text-center action-col"><input class="form-check-input action-checkbox action-view prominent-checkbox" type="checkbox"></td>
-                        <td class="text-center action-col"><input class="form-check-input action-checkbox action-resolve prominent-checkbox" type="checkbox"></td>
-                        <td class="text-center action-col"><input class="form-check-input action-checkbox action-delete-post prominent-checkbox" type="checkbox"></td>
-                        <td class="text-center action-col"><input class="form-check-input action-checkbox action-ban-user prominent-checkbox" type="checkbox"></td>
-                    </tr>
+                    @forelse ($reports as $report)
+                        <tr
+                            data-report-id="{{ $report['report_id'] }}"
+                            data-post-id="{{ $report['post_id'] }}"
+                            data-seller-id="{{ $report['seller_id'] }}"
+                        >
+                            <td>{{ $report['reported_by'] }}</td>
+                            <td>{{ $report['seller'] }}</td>
+                            <td>{{ $report['reason'] }}</td>
+                            <td>{{ $report['reported_date'] }}</td>
+                            <td class="report-description-cell">
+                                {{ $report['description'] }}
+                            </td>
+                            <td class="text-center action-col">
+                                <input class="form-check-input action-checkbox action-view prominent-checkbox" type="checkbox">
+                            </td>
+                            <td class="text-center action-col">
+                                <input class="form-check-input action-checkbox action-resolve prominent-checkbox" type="checkbox">
+                            </td>
+                            <td class="text-center action-col">
+                                <input class="form-check-input action-checkbox action-delete-post prominent-checkbox" type="checkbox">
+                            </td>
+                            <td class="text-center action-col">
+                                <input class="form-check-input action-checkbox action-ban-user prominent-checkbox" type="checkbox">
+                            </td>
+                        </tr>
+                    @empty
+                    @endforelse
                     </tbody>
                 </table>
 
                 <div id="reportsEmptyState" class="reports-empty-state d-none">
-                    <div class="py-5 text-center">
-                        <h4 class="fw-bold mb-0">Nada para reportar</h4>
+                    <div class="border rounded-4 p-4 text-center bg-light">
+                        <h5 class="fw-bold mb-2">Nada para reportar</h5>
                     </div>
                 </div>
             </div>
@@ -246,7 +262,7 @@
             </div>
         </div>
 
-        {{-- Toasts --}}
+        <!-- Toasts Notifications -->
         <div class="toast-container position-fixed bottom-0 start-0 p-3">
             <div id="resolveToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" style="width: auto; max-width: fit-content;">
                 <div class="d-flex align-items-center">
@@ -367,15 +383,34 @@
         }
     </style>
 
-    <!--Validate Functionality-->
+    <!--Validate Functionality and Filters-->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const $ = (id) => document.getElementById(id);
             const rows = () => document.querySelectorAll('#reportsTable tbody tr');
             const resolvedReports = new Set();
 
-            const allowedNameCharRegex = /^[A-Za-zÁÉÍÓÚáéíóúüÑñ\s]$/;
-            const allowedNameTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúüÑñ\s]*$/;
+            const allowedSearchCharRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]$/;
+
+            function sanitizeSearchValue(value) {
+                return [...value]
+                    .filter((char) => allowedSearchCharRegex.test(char))
+                    .join('');
+            }
+
+            function capitalizeWords(value) {
+                return value
+                    .toLowerCase()
+                    .replace(/\s+/g, ' ')
+                    .replace(/^\s+/, '')
+                    .replace(/\b([a-záéíóúñ])/g, (match) => match.toUpperCase());
+            }
+
+            function formatDateForDisplay(dateValue) {
+                if (!dateValue) return '';
+                const [year, month, day] = dateValue.split('-');
+                return `${month}-${day}-${year}`;
+            }
 
             const els = {
                 filterReason: $('filterReason'),
@@ -417,9 +452,6 @@
 
             const normalize = (text) => text.toLowerCase().trim();
 
-            function sanitizeNameWithRegex(value) {
-                return [...value].filter((char) => allowedNameCharRegex.test(char)).join('');
-            }
 
             function updateEmptyState() {
                 const totalRows = rows().length;
@@ -443,7 +475,7 @@
                     reason: normalize(els.filterReason.value),
                     reportedBy: normalize(els.filterReportedBy.value),
                     seller: normalize(els.filterSeller.value),
-                    date: els.filterDate.value
+                    date: formatDateForDisplay(els.filterDate.value)
                 };
 
                 rows().forEach((row) => {
@@ -454,9 +486,9 @@
                     }
 
                     const values = {
-                        reason: normalize(row.cells[0].textContent),
-                        reportedBy: normalize(row.cells[1].textContent),
-                        seller: normalize(row.cells[2].textContent),
+                        reportedBy: normalize(row.cells[0].textContent),
+                        seller: normalize(row.cells[1].textContent),
+                        reason: normalize(row.cells[2].textContent),
                         date: row.cells[3].textContent.trim()
                     };
 
@@ -480,30 +512,42 @@
                     ];
 
                     if (allowedControlKeys.includes(event.key) || event.ctrlKey || event.metaKey) return;
-                    if (!allowedNameCharRegex.test(event.key)) event.preventDefault();
+                    if (!allowedSearchCharRegex.test(event.key)) event.preventDefault();
                 });
 
                 input.addEventListener('input', () => {
-                    if (!allowedNameTextRegex.test(input.value)) {
-                        input.value = sanitizeNameWithRegex(input.value);
+                    let cleanValue = sanitizeSearchValue(input.value);
+                    cleanValue = capitalizeWords(cleanValue);
+
+                    if (input.value !== cleanValue) {
+                        const cursorPos = input.selectionStart;
+                        input.value = cleanValue;
+                        input.setSelectionRange(cursorPos, cursorPos);
                     }
+
                     applyFilters();
                 });
 
                 input.addEventListener('paste', (event) => {
                     event.preventDefault();
+
                     const pasted = (event.clipboardData || window.clipboardData).getData('text');
-                    const clean = sanitizeNameWithRegex(pasted);
+                    const clean = capitalizeWords(sanitizeSearchValue(pasted));
+
                     const start = input.selectionStart;
                     const end = input.selectionEnd;
 
-                    input.value = input.value.slice(0, start) + clean + input.value.slice(end);
+                    const newValue = input.value.slice(0, start) + clean + input.value.slice(end);
+                    input.value = capitalizeWords(sanitizeSearchValue(newValue));
 
-                    if (!allowedNameTextRegex.test(input.value)) {
-                        input.value = sanitizeNameWithRegex(input.value);
-                    }
+                    const newCursor = start + clean.length;
+                    input.setSelectionRange(newCursor, newCursor);
 
-                    input.setSelectionRange(start + clean.length, start + clean.length);
+                    applyFilters();
+                });
+
+                input.addEventListener('blur', () => {
+                    input.value = capitalizeWords(sanitizeSearchValue(input.value));
                     applyFilters();
                 });
             }
