@@ -94,15 +94,13 @@
 }
 
 .post-carousel-inner {
-    height: 340px;
-    min-height: 340px;
-    max-height: 340px;
+    height: 320px;
     background: #f8f9fa;
     overflow: hidden;
 }
 
 .post-carousel-item {
-    height: 340px;
+    height: 320px;
 }
 
 .post-carousel-item .carousel-image-box {
@@ -111,16 +109,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
-    background-color: #f8f9fa;
+    padding: 0;
 }
 
 .post-carousel-img {
-    display: block !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
-    width: auto !important;
-    height: auto !important;
+    width: 75% !important;
+    height: 75% !important;
     object-fit: contain !important;
 }
 
@@ -144,27 +138,113 @@
     color: #ffc107;
 }
 
+.rating-star.bi-star-half {
+    color: #ffc107;
+}
+
 .modal-body {
     padding-bottom: 1.5rem;
+}
+
+#createPostModal .modal-dialog,
+#postDetailsModal .modal-dialog,
+#reportUserModal .modal-dialog {
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
 }
 
 #createPostModal .modal-content,
 #postDetailsModal .modal-content,
 #reportUserModal .modal-content {
-    max-height: 92vh;
+    max-height: calc(100vh - 2.5rem);
+    overflow: hidden;
+}
+
+#createPostModal .modal-header,
+#postDetailsModal .modal-header,
+#reportUserModal .modal-header {
+    padding-top: 1.5rem !important;
+    padding-right: 1.5rem !important;
+    padding-left: 1.5rem !important;
+    padding-bottom: 0.75rem !important;
 }
 
 #createPostModal .modal-body,
 #postDetailsModal .modal-body,
 #reportUserModal .modal-body {
     overflow-y: auto;
+    overflow-x: hidden;
+    padding-top: 0.75rem !important;
+    padding-right: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+    padding-left: 1.5rem !important;
+    scrollbar-gutter: stable;
+}
+
+#createPostModal .modal-footer,
+#postDetailsModal .modal-footer,
+#reportUserModal .modal-footer {
+    padding-top: 0.75rem !important;
+    padding-right: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+    padding-left: 1.5rem !important;
+}
+
+.post-details-body {
+    max-height: none;
+    padding-bottom: 1.5rem !important;
 }
 
 .report-warning-icon {
-    width: 42px;
-    height: 42px;
+    width: 28px;
+    height: 28px;
     object-fit: contain;
     flex-shrink: 0;
+}
+
+#createPostModal .input-group-text {
+    background: white;
+    border-right: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+#createPostModal #postPrice {
+    border-left: 0;
+}
+
+
+#createPostModal #postPrice:focus {
+    box-shadow: none;
+}
+
+
+#createPostModal #postPriceGroup .input-group-text,
+#createPostModal #postPriceGroup .form-control {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+}
+
+
+#createPostModal #postPriceGroup.is-invalid .input-group-text,
+#createPostModal #postPriceGroup.is-invalid .form-control {
+    border-color: var(--bs-danger) !important;
+}
+
+
+#createPostModal #postPriceGroup.is-invalid .input-group-text {
+    color: var(--bs-danger);
+    background-color: #fff;
+    border-right: 0 !important;
+}
+
+
+#createPostModal #postPriceGroup.is-invalid .form-control {
+    border-left: 0 !important;
+}
+
+#createPostModal #postPriceError {
+    display: block;
+    margin-top: 0.35rem;
 }
 
 #cancelReportConfirmModal .modal-content {
@@ -200,3 +280,32 @@
 .user-role-badge {
     border-radius: 0 !important;
 }
+
+.pagination .page-link {
+    color: #198754;
+}
+
+
+.pagination .page-item.active .page-link {
+    background-color: #198754;
+    border-color: #198754;
+    color: white;
+}
+
+
+.pagination .page-link:hover {
+    color: white;
+    background-color: #198754;
+    border-color: #198754;
+}
+
+
+.marketplace-rating-stars {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    position: static;
+    font-size: inherit;
+    line-height: 1;
+}
+

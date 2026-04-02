@@ -26,3 +26,8 @@ Thumbs.db
 !storage/app/public/
 !storage/app/public/equipment_photos/
 !storage/app/public/equipment_photos/**
+# SSL / mkcert
+*.key
+*.pem
+certs/
+*.p12

@@ -221,6 +221,10 @@
         </div>
     </div>
 
+    <nav class="mt-4" aria-label="Paginación de costos">
+        <ul class="pagination justify-content-center" id="facilityCostPagination"></ul>
+    </nav>
+
     <!--Configuration button function-->
     <div class="modal fade" id="configureRatesModal" tabindex="-1" aria-labelledby="configureRatesModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-xl modal-dialog-centered">
@@ -785,6 +789,24 @@
         @csrf
         @method('DELETE')
     </form>
+    <div id="downloadToast"
+         class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true"
+         style="width:auto; max-width:fit-content;">
+        <div class="d-flex align-items-center">
+            <div class="toast-body fw-semibold pe-1">
+                Tu documento se descargará en unos instantes.
+            </div>
+            <button type="button"
+                    class="btn-close p-0 ms-1 me-2"
+                    data-bs-dismiss="toast"
+                    aria-label="Cerrar"
+                    style="transform:scale(0.8);"></button>
+        </div>
+    </div>
+
     <style>
         .service-option-card {
             border: 1px solid #dee2e6;
@@ -919,6 +941,15 @@
         document.addEventListener('DOMContentLoaded', () => {
             const $ = (id) => document.getElementById(id);
 
+            const downloadCsvBtn = $('downloadCsvBtn');
+            const downloadPdfBtn = $('downloadPdfBtn');
+            const downloadToastEl = $('downloadToast');
+
+
+            const FACILITY_COSTS_PER_PAGE = 10;
+            let currentFacilityCostsPage = 1;
+            const facilityCostPagination = $('facilityCostPagination');
+
             const classroomIds = ['Cancha CM', 'Lateral 1', 'Lateral 2', 'CM 201', 'CM 202', 'CM 203', 'CM 204', 'CM 210'];
             const academicRooms = ['CM 201', 'CM 202', 'CM 203', 'CM 204', 'CM 210'];
             const lateralRooms = ['Lateral 1', 'Lateral 2'];
@@ -992,6 +1023,7 @@
                 ratesSaved: bootstrap.Toast.getOrCreateInstance($('ratesSavedToast'), { delay: 2500 }),
                 rentalSaved: bootstrap.Toast.getOrCreateInstance($('rentalSavedToast'), { delay: 2500 }),
                 deleteEntry: bootstrap.Toast.getOrCreateInstance($('deleteEntryToast'), { delay: 2500 }),
+                download: bootstrap.Toast.getOrCreateInstance($('downloadToast'), { delay: 2500 }),
             };
 
             let selectedDeleteUrl = null;
@@ -1283,16 +1315,148 @@
                 monthFilterWrapper.classList.toggle('d-none', reportType.value !== 'monthly');
             }
 
+            function renderLocalPagination(container, currentPage, totalItems, itemsPerPage, onPageChange) {
+                if (!container) return;
+
+                const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+
+                if (totalItems <= 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                let paginationHTML = '';
+
+                paginationHTML += `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+            <button type="button" class="page-link" data-page="prev">&laquo;</button>
+        </li>
+    `;
+
+                for (let page = 1; page <= totalPages; page++) {
+                    paginationHTML += `
+            <li class="page-item ${page === currentPage ? 'active' : ''}">
+                <button type="button" class="page-link" data-page="${page}">${page}</button>
+            </li>
+        `;
+                }
+
+                paginationHTML += `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+            <button type="button" class="page-link" data-page="next">&raquo;</button>
+        </li>
+    `;
+
+                container.innerHTML = paginationHTML;
+
+                container.querySelectorAll('.page-link').forEach((button) => {
+                    button.addEventListener('click', () => {
+                        const action = button.dataset.page;
+                        let newPage = currentPage;
+
+                        if (action === 'prev' && currentPage > 1) {
+                            newPage = currentPage - 1;
+                        } else if (action === 'next' && currentPage < totalPages) {
+                            newPage = currentPage + 1;
+                        } else if (!isNaN(action)) {
+                            newPage = Number(action);
+                        }
+
+                        if (newPage !== currentPage) {
+                            onPageChange(newPage);
+                        }
+                    });
+                });
+            }
+
+            function triggerFacilityDownload(type) {
+                toasts.download.show();
+
+                const selectedType = reportType.value === 'annual' ? 'anual' : 'mensual';
+                const selectedYear = reportYear.value;
+                const selectedMonth = reportMonth.options[reportMonth.selectedIndex]?.text || '';
+                const selectedClassroom = filterClassroom.options[filterClassroom.selectedIndex]?.text || 'Todos los salones';
+
+                const visibleRows = getVisibleFacilityRows();
+
+                let content = '';
+
+                if (type === 'csv') {
+                    const headers = ['Fecha', 'Salón', 'Hora', 'Periodo', 'Servicios', 'Total'];
+
+                    const rows = visibleRows.map((row) => {
+                        const fecha = row.cells[0]?.textContent.trim() || '';
+                        const salon = row.cells[1]?.textContent.trim() || '';
+                        const hora = row.cells[2]?.textContent.trim() || '';
+                        const periodo = row.cells[3]?.textContent.trim() || '';
+                        const servicios = [...row.cells[4].querySelectorAll('.service-badge-table')]
+                            .map((badge) => badge.textContent.trim())
+                            .join(' | ');
+                        const total = row.cells[5]?.textContent.trim() || '';
+
+                        return [fecha, salon, hora, periodo, servicios, total].join(',');
+                    });
+
+                    content = [headers.join(','), ...rows].join('\n');
+                } else {
+                    const rowsText = visibleRows.map((row, index) => {
+                        const fecha = row.cells[0]?.textContent.trim() || '';
+                        const salon = row.cells[1]?.textContent.trim() || '';
+                        const hora = row.cells[2]?.textContent.trim() || '';
+                        const periodo = row.cells[3]?.textContent.trim() || '';
+                        const servicios = [...row.cells[4].querySelectorAll('.service-badge-table')]
+                            .map((badge) => badge.textContent.trim())
+                            .join(', ');
+                        const total = row.cells[5]?.textContent.trim() || '';
+
+                        return `${index + 1}. ${fecha} | ${salon} | ${hora} | ${periodo} | ${servicios} | ${total}`;
+                    }).join('\n');
+
+                    content =
+                        `REPORTE DE COSTOS DE FACILIDAD
+Tipo: ${selectedType}
+${selectedType === 'mensual' ? 'Mes: ' + selectedMonth : ''}
+Año: ${selectedYear}
+Salón: ${selectedClassroom}
+Total estimado del período: ${facilityCostGrandTotal.textContent.trim()}
+
+REGISTROS:
+${rowsText || 'No hay registros visibles para exportar.'}`;
+                }
+
+                const blob = new Blob(
+                    [content],
+                    { type: type === 'csv' ? 'text/csv;charset=utf-8;' : 'application/pdf' }
+                );
+
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+
+                link.href = url;
+                link.download = type === 'csv'
+                    ? `reporte_costos_facilidad_${selectedType}_${selectedYear}.csv`
+                    : `reporte_costos_facilidad_${selectedType}_${selectedYear}.pdf`;
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+
+            function getVisibleFacilityRows() {
+                return [...facilityCostTableBody.querySelectorAll('tr')]
+                    .filter((row) => row.style.display !== 'none');
+            }
+
             function applyTableFilters() {
                 const type = reportType.value;
                 const month = reportMonth.value;
                 const year = reportYear.value;
                 const classroom = filterClassroom.value;
 
-                let visibleRows = 0;
-                let totalAmount = 0;
+                const allRows = [...facilityCostTableBody.querySelectorAll('tr')];
 
-                [...facilityCostTableBody.querySelectorAll('tr')].forEach((row) => {
+                const filteredRows = allRows.filter((row) => {
                     const rowMonth = row.dataset.month;
                     const rowYear = row.dataset.year;
                     const rowClassroom = row.dataset.classroom;
@@ -1302,20 +1466,49 @@
                         : (rowYear === year && rowMonth === month);
 
                     const matchesClassroom = classroom === 'all' ? true : rowClassroom === classroom;
-                    const shouldShow = matchesType && matchesClassroom;
 
-                    row.style.display = shouldShow ? '' : 'none';
-
-                    if (shouldShow) {
-                        visibleRows += 1;
-                        totalAmount += parseMoney(row.querySelector('td:nth-child(6)').textContent);
-                    }
+                    return matchesType && matchesClassroom;
                 });
 
+                const totalPages = Math.max(1, Math.ceil(filteredRows.length / FACILITY_COSTS_PER_PAGE));
+
+                if (currentFacilityCostsPage > totalPages) {
+                    currentFacilityCostsPage = totalPages;
+                }
+
+                const start = (currentFacilityCostsPage - 1) * FACILITY_COSTS_PER_PAGE;
+                const end = start + FACILITY_COSTS_PER_PAGE;
+                const paginatedRows = filteredRows.slice(start, end);
+
+                allRows.forEach((row) => {
+                    row.style.display = 'none';
+                });
+
+                paginatedRows.forEach((row) => {
+                    row.style.display = '';
+                });
+
+                const totalAmount = filteredRows.reduce((sum, row) => {
+                    const amountCell = row.querySelector('td:nth-child(6)');
+                    return sum + parseMoney(amountCell.textContent);
+                }, 0);
+
                 facilityCostGrandTotal.textContent = formatMoney(totalAmount);
-                const hasRows = visibleRows > 0;
+
+                const hasRows = filteredRows.length > 0;
                 facilityCostTable.classList.toggle('d-none', !hasRows);
                 facilityCostEmptyState.classList.toggle('d-none', hasRows);
+
+                renderLocalPagination(
+                    facilityCostPagination,
+                    currentFacilityCostsPage,
+                    filteredRows.length,
+                    FACILITY_COSTS_PER_PAGE,
+                    (page) => {
+                        currentFacilityCostsPage = page;
+                        applyTableFilters();
+                    }
+                );
             }
 
             function createServiceBadges(services) {
@@ -1381,6 +1574,11 @@
 
             //     facilityCostTableBody.appendChild(row);
             //     bindDeleteButtons();
+            //     applyTableFilters();
+            // }
+            //     facilityCostTableBody.appendChild(row);
+            //     bindDeleteButtons();
+            //     currentFacilityCostsPage = 1;
             //     applyTableFilters();
             // }
 
@@ -1533,6 +1731,7 @@
 
             [reportType, reportMonth, reportYear, filterClassroom].forEach((el) => {
                 el.addEventListener('change', () => {
+                    currentFacilityCostsPage = 1;
                     toggleMonthFilter();
                     $('facilityCostFilterForm').submit();
                 });
@@ -1616,6 +1815,14 @@
             resetConfigureFormState();
             resetRentalFormState();
             applyTableFilters();
+
+            downloadCsvBtn.addEventListener('click', () => {
+                triggerFacilityDownload('csv');
+            });
+
+            downloadPdfBtn.addEventListener('click', () => {
+                triggerFacilityDownload('pdf');
+            });
         });
     </script>
 </x-layout>

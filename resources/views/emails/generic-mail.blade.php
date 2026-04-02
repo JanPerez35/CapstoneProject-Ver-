@@ -11,6 +11,6 @@
 
 <p>{{ $messageText }}</p>
 
-<p>Honestamente,<br>Equipo MAIKINE</p>
+<p>Atentamente,<br>Equipo MAIKINE</p>
 </body>
 </html>

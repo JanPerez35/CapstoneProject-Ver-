@@ -3,11 +3,17 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\GenericMail;
+use App\Services\EmailService;
 
 class EmailController extends Controller
 {
+    protected $emailService;
+
+    public function __construct(EmailService $emailService)
+    {
+        $this->emailService = $emailService;
+    }
+
     public function showForm()
     {
         return view('kinventory');
@@ -15,10 +21,8 @@ class EmailController extends Controller
 
     public function sendEmail(Request $request)
     {
-        // Obtener datos del JSON
         $data = $request->all();
 
-        // Validación simple (compatible con fetch)
         if (
             !isset($data['email']) ||
             !isset($data['subject']) ||
@@ -30,17 +34,59 @@ class EmailController extends Controller
             ], 400);
         }
 
-        // Enviar email
-        Mail::to($data['email'])->queue(
-            new GenericMail(
-                $data['subject'],
-                $data['message']
-            )
+        $this->emailService->send(
+            $data['email'],
+            $data['subject'],
+            $data['message']
         );
 
         return response()->json([
             'success' => true,
             'message' => 'Email enviado correctamente'
         ]);
+    }
+
+    public function requestApproved()
+    {
+        $this->emailService->send(
+            'jan.perez21@upr.edu',
+            'Solicitud de item aprobada',
+            'Tu solicitud de equipo deportivo fue aprobada satisfactoriamente. Por favor entra a tu perfíl de MAIKINE para más detalles.'
+        );
+
+        return 'Correo de solicitud aprobada enviado.';
+    }
+
+    public function requestDenied()
+    {
+        $this->emailService->send(
+            'jan.perez21@upr.edu',
+            'Solicitud de item denegada',
+            'Tu solicitud de equipo deportivo fue denegada. Por favor entra a tu perfíl de MAIKINE para más detalles. De tener alguna duda comuniquese con el administrador de inventario (inventario@upr.edu). '
+        );
+
+        return 'Correo de solicitud especial denegada enviado.';
+    }
+
+    public function userBanned()
+    {
+        $this->emailService->send(
+            'jan.perez21@upr.edu',
+            'Cuenta suspendida',
+            'Tu cuenta ha sido suspendida de la plataforma. Si entiendes que esto fue un error, comunícate con el super administrador (administrador@upr.edu).'
+        );
+
+        return 'Correo de cuenta suspendida enviado.';
+    }
+
+    public function unreadMessagesReminder()
+    {
+        $this->emailService->send(
+            'jan.perez21@upr.edu',
+            'Puede que tengas mensajes sin leer',
+            'Hola, puede que tengas mensajes sin leer en MAIKINE. Entra a la plataforma para revisarlos.'
+        );
+
+        return 'Correo de recordatorio de mensajes sin leer enviado.';
     }
 }

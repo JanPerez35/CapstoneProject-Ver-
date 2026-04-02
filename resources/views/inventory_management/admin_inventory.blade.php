@@ -49,6 +49,40 @@
             </button>
         </div>
 
+        {{-- Buscar + filtrar --}}
+        <div class="row mb-4 g-3">
+            <div class="col-md-8">
+                <div class="input-group search-group">
+                    <span class="input-group-text bg-white border-0">
+                        <i class="bi bi-search"></i>
+                    </span>
+
+                    <input
+                        type="text"
+                        id="inventorySearch"
+                        class="form-control border-0"
+                        placeholder="Buscar equipo deportivo..."
+                    >
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <select
+                    id="inventoryCategoryFilter"
+                    class="form-select border-2 border-dark"
+                >
+                    <option value="">Todos los Deportes</option>
+                    <option value="Baloncesto">Baloncesto</option>
+                    <option value="Tenis">Tenis</option>
+                    <option value="Fútbol">Fútbol</option>
+                    <option value="Deporte Recreativo">Deporte Recreativo</option>
+                    <option value="Volibol">Volibol</option>
+                    <option value="Levantamiento de Pesas">Levantamiento de Pesas</option>
+                    <option value="Otros">Otros</option>
+                </select>
+            </div>
+        </div>
+
         {{-- Cards --}}
         <div class="row g-4" id="inventoryCards">
             @forelse($items as $item)
@@ -228,6 +262,10 @@
         <div class="mt-4 d-flex justify-content-center">
             {{ $items->links('pagination::bootstrap-5') }}
         </div>
+
+        <div id="inventoryEmptyState" class="text-center text-muted py-5 d-none">
+            No se encontraron items con ese filtro.
+        </div>
     </div>
 
     {{-- Shared datalist --}}
@@ -241,18 +279,27 @@
     <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
-                <div class="modal-header border-0 pb-0">
-                    <div>
-                        <h4 class="modal-title fw-bold" id="addItemModalLabel">Agregar Nuevo Item</h4>
-                        <p class="text-muted mb-0">
+
+                <div class="modal-header border-0 pb-0 align-items-start">
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="modal-title fw-bold mb-0" id="addItemModalLabel">
+                                Agregar Nuevo Item
+                            </h4>
+
+                            <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+
+                        <p class="text-muted mt-2 mb-0">
                             Completa la información del nuevo equipo
                         </p>
+
                         <p class="mt-2 mb-0 text-muted">
                             <span class="text-danger">*</span> Campos requeridos
                         </p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
+
 
                 <div class="modal-body">
                     <form id="addItemForm"
@@ -343,9 +390,24 @@
                                 id="ubicacion"
                                 name="location"
                                 class="form-control form-control-lg"
-                                placeholder="Ej. Almacén A"
+                                list="locationOptions"
+                                placeholder="Selecciona o escribe una ubicación"
+                                maxlength="100"
                                 required
                             >
+                            <datalist id="locationOptions">
+                                <option value="CM-104/Almacén A">
+                                <option value="CM-104/Almacén B">
+                                <option value="CM-104">
+                                <option value="CM-101">
+                                <option value="CM-213">
+                                <option value="CM-B13">
+                                <option value="CM-115">
+                                <option value="CM-210">
+                            </datalist>
+                            <div class="form-text">
+                                Puedes seleccionar una ubicación existente o escribir una nueva.
+                            </div>
                             <div class="invalid-feedback d-block" id="ubicacionError"></div>
                         </div>
 
@@ -399,7 +461,34 @@
         </div>
     </div>
 
-    {{-- Toast --}}
+    {{-- Modal Eliminar Item --}}
+    <div class="modal fade" id="deleteInventoryItemModal" tabindex="-1" aria-labelledby="deleteInventoryItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h4 class="modal-title fw-bold" id="deleteInventoryItemModalLabel">Eliminar Item</h4>
+                        <p class="text-muted mb-0" id="deleteInventoryItemText">
+                            ¿Seguro que deseas eliminar este item?
+                        </p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-footer border-0 pt-2">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteInventoryItem">
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Toasts --}}
+    {{-- Toasts --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
         <div id="inventoryToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
@@ -407,7 +496,6 @@
              aria-live="assertive"
              aria-atomic="true"
              style="width: auto; max-width: fit-content;">
-
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Item añadido correctamente
@@ -421,20 +509,46 @@
                 </button>
             </div>
         </div>
+
+        <!--  ERROR (Eliminar item) -->
+        <div id="inventoryDeleteToast"
+             class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: auto; max-width: fit-content;">
+
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
+                    Item eliminado del inventario
+                </div>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="background-color: transparent; border: none; transform: scale(0.8);">
+                </button>
+            </div>
+        </div>
+
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const addItemForm = document.getElementById('addItemForm');
+
             const nombreInput = document.getElementById('nombre_item');
             const categoriaInput = document.getElementById('categoria');
             const cantidadTotalInput = document.getElementById('cantidad_total');
             const cantidadDisponibleInput = document.getElementById('cantidad_disponible');
             const ubicacionInput = document.getElementById('ubicacion');
             const imageInput = document.getElementById('imagen');
+
             const imageError = document.getElementById('imageError');
             const previewWrapper = document.getElementById('previewWrapper');
             const imagePreview = document.getElementById('imagePreview');
+            const addItemModal = document.getElementById('addItemModal');
             const inventoryToast = document.getElementById('inventoryToast');
             const submitAddItemBtn = document.getElementById('submitAddItemBtn');
 
@@ -444,23 +558,25 @@
             const cantidadDisponibleError = document.getElementById('cantidadDisponibleError');
             const ubicacionError = document.getElementById('ubicacionError');
 
+            const deleteInventoryItemModal = document.getElementById('deleteInventoryItemModal');
+            const deleteInventoryItemText = document.getElementById('deleteInventoryItemText');
+            const confirmDeleteInventoryItem = document.getElementById('confirmDeleteInventoryItem');
+
+            const inventoryCards = document.getElementById('inventoryCards');
+
+            let inventoryCardToDelete = null;
+
             const inventoryAllowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
             const maxImageSize = 2 * 1024 * 1024;
 
             function setFieldError(field, errorElement, message) {
-                if (!field) return;
                 field.classList.add('is-invalid');
-                if (errorElement) {
-                    errorElement.textContent = message;
-                }
+                errorElement.textContent = message;
             }
 
             function clearFieldError(field, errorElement) {
-                if (!field) return;
                 field.classList.remove('is-invalid');
-                if (errorElement) {
-                    errorElement.textContent = '';
-                }
+                errorElement.textContent = '';
             }
 
             function clearAllInvalid() {
@@ -479,32 +595,42 @@
                 imagePreview.src = '';
             }
 
-            function validateNombreItem(showError = true) {
-                const value = nombreInput.value.trim();
+            function validateTextField(field, errorElement, fieldLabel, showError = true) {
+                const value = field.value.trim();
 
-                if (showError) clearFieldError(nombreInput, nombreItemError);
+                if (showError) {
+                    clearFieldError(nombreInput, nombreItemError);
+                }
 
                 if (!value) {
-                    if (showError) setFieldError(nombreInput, nombreItemError, 'El nombre del item es obligatorio.');
+                    if (showError) setFieldError(field, errorElement, `La ${fieldLabel} es obligatoria.`);
                     return false;
                 }
 
                 if (value.length < 5) {
-                    if (showError) setFieldError(nombreInput, nombreItemError, 'El nombre debe tener al menos 5 caracteres.');
+                    if (showError) setFieldError(field, errorElement, `La ${fieldLabel} debe tener al menos 5 caracteres.`);
                     return false;
                 }
 
                 if (value.length > 100) {
-                    if (showError) setFieldError(nombreInput, nombreItemError, 'El nombre no puede exceder 100 caracteres.');
+                    if (showError) setFieldError(field, errorElement, `La ${fieldLabel} no puede exceder 100 caracteres.`);
                     return false;
                 }
 
                 if (!inventoryAllowedTextRegex.test(value)) {
-                    if (showError) setFieldError(nombreInput, nombreItemError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+                    if (showError) setFieldError(field, errorElement, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
                     return false;
                 }
 
                 return true;
+            }
+
+            function validateNombreItem(showError = true) {
+                return validateTextField(nombreInput, nombreItemError, 'nombre del item', showError);
+            }
+
+            function validateUbicacion(showError = true) {
+                return validateTextField(ubicacionInput, ubicacionError, 'ubicación', showError);
             }
 
             function validateCategoria(showError = true) {
@@ -565,12 +691,11 @@
             }
 
             function validateUbicacion(showError = true) {
-                const value = ubicacionInput.value.trim();
-                const isValid = !!value;
+                const isValid = !!ubicacionInput.value;
 
                 if (showError) {
                     if (!isValid) {
-                        setFieldError(ubicacionInput, ubicacionError, 'La ubicación es obligatoria.');
+                        setFieldError(ubicacionInput, ubicacionError, 'Debes seleccionar una ubicación.');
                     } else {
                         clearFieldError(ubicacionInput, ubicacionError);
                     }
@@ -614,8 +739,122 @@
                 submitAddItemBtn.disabled = !isReady;
             }
 
+            function updateStatusBadge(cardWrapper) {
+                const availableText = cardWrapper.querySelector('.inventory-available');
+                const badge = cardWrapper.querySelector('.inventory-status-badge');
+
+                if (!availableText || !badge) return;
+
+                const available = parseInt(availableText.textContent, 10);
+
+                if (available > 0) {
+                    badge.textContent = 'Disponible';
+                    badge.style.backgroundColor = '#6FC21F';
+                    badge.style.color = 'white';
+                } else {
+                    badge.textContent = 'No disponible';
+                    badge.style.backgroundColor = '#dc3545';
+                    badge.style.color = 'white';
+                }
+            }
+
+            function attachInventoryCardEvents() {
+                document.querySelectorAll('.inventory-card-wrapper').forEach((cardWrapper) => {
+                    const totalDecreaseBtn = cardWrapper.querySelector('.inventory-total-decrease');
+                    const totalIncreaseBtn = cardWrapper.querySelector('.inventory-total-increase');
+                    const availableDecreaseBtn = cardWrapper.querySelector('.inventory-available-decrease');
+                    const availableIncreaseBtn = cardWrapper.querySelector('.inventory-available-increase');
+
+                    const totalText = cardWrapper.querySelector('.inventory-total');
+                    const availableText = cardWrapper.querySelector('.inventory-available');
+                    const totalControlText = cardWrapper.querySelector('.inventory-total-control');
+                    const availableControlText = cardWrapper.querySelector('.inventory-available-control');
+
+                    const deleteBtn = cardWrapper.querySelector('.open-delete-item-modal');
+
+                    if (totalDecreaseBtn && totalText && totalControlText && availableText && availableControlText) {
+                        totalDecreaseBtn.onclick = function () {
+                            let currentTotal = parseInt(totalText.textContent, 10);
+                            let currentAvailable = parseInt(availableText.textContent, 10);
+
+                            if (currentTotal > 1) {
+                                currentTotal -= 1;
+
+                                if (currentAvailable > currentTotal) {
+                                    currentAvailable = currentTotal;
+                                }
+
+                                totalText.textContent = currentTotal;
+                                totalControlText.textContent = currentTotal;
+                                availableText.textContent = currentAvailable;
+                                availableControlText.textContent = currentAvailable;
+
+                                updateStatusBadge(cardWrapper);
+                            }
+                        };
+                    }
+
+                    if (totalIncreaseBtn && totalText && totalControlText) {
+                        totalIncreaseBtn.onclick = function () {
+                            let currentTotal = parseInt(totalText.textContent, 10);
+                            currentTotal += 1;
+
+                            totalText.textContent = currentTotal;
+                            totalControlText.textContent = currentTotal;
+
+                            updateStatusBadge(cardWrapper);
+                        };
+                    }
+
+                    if (availableDecreaseBtn && availableText && availableControlText) {
+                        availableDecreaseBtn.onclick = function () {
+                            let currentAvailable = parseInt(availableText.textContent, 10);
+
+                            if (currentAvailable > 0) {
+                                currentAvailable -= 1;
+                                availableText.textContent = currentAvailable;
+                                availableControlText.textContent = currentAvailable;
+
+                                updateStatusBadge(cardWrapper);
+                            }
+                        };
+                    }
+
+                    if (availableIncreaseBtn && availableText && availableControlText && totalText) {
+                        availableIncreaseBtn.onclick = function () {
+                            let currentAvailable = parseInt(availableText.textContent, 10);
+                            const currentTotal = parseInt(totalText.textContent, 10);
+
+                            if (currentAvailable < currentTotal) {
+                                currentAvailable += 1;
+                                availableText.textContent = currentAvailable;
+                                availableControlText.textContent = currentAvailable;
+
+                                updateStatusBadge(cardWrapper);
+                            }
+                        };
+                    }
+
+                    if (deleteBtn) {
+                        deleteBtn.onclick = function () {
+                            inventoryCardToDelete = cardWrapper;
+
+                            const itemName = deleteBtn.dataset.itemName || 'este item';
+                            deleteInventoryItemText.textContent = `¿Seguro que deseas eliminar "${itemName}" del inventario?`;
+
+                            const modalInstance = window.bootstrap.Modal.getOrCreateInstance(deleteInventoryItemModal);
+                            modalInstance.show();
+                        };
+                    }
+
+                    updateStatusBadge(cardWrapper);
+                });
+            }
+
             imageInput.addEventListener('change', function () {
                 const file = imageInput.files[0];
+
+
                 resetImageState();
 
                 if (!file) {
@@ -657,6 +896,12 @@
                 updateAddItemButtonState();
             });
 
+            ubicacionInput.addEventListener('input', function () {
+                ubicacionInput.value = ubicacionInput.value.slice(0, 100);
+                validateUbicacion(true);
+                updateAddItemButtonState();
+            });
+
             categoriaInput.addEventListener('change', function () {
                 validateCategoria(true);
                 updateAddItemButtonState();
@@ -670,11 +915,6 @@
 
             cantidadDisponibleInput.addEventListener('input', function () {
                 validateCantidadDisponible(true);
-                updateAddItemButtonState();
-            });
-
-            ubicacionInput.addEventListener('input', function () {
-                validateUbicacion(true);
                 updateAddItemButtonState();
             });
 
@@ -696,16 +936,168 @@
                 ) {
                     e.preventDefault();
                     updateAddItemButtonState();
+                    return;
                 }
+
+                submitAddItemBtn.disabled = true;
             });
 
-            @if(session('success'))
-                const toastInstance = window.bootstrap.Toast.getOrCreateInstance(inventoryToast);
-                toastInstance.show();
-            @endif
+    //         addItemForm.addEventListener('submit', function (e) {
+    //             const isNombreValid = validateNombreItem(true);
+    //             const isCategoriaValid = validateCategoria(true);
+    //             const isCantidadTotalValid = validateCantidadTotal(true);
+    //             const isCantidadDisponibleValid = validateCantidadDisponible(true);
+    //             const isUbicacionValid = validateUbicacion(true);
+    //             const isImageValid = validateImage(true);
 
-            clearAllInvalid();
+    //             if (
+    //                 !isNombreValid ||
+    //                 !isCategoriaValid ||
+    //                 !isCantidadTotalValid ||
+    //                 !isCantidadDisponibleValid ||
+    //                 !isUbicacionValid ||
+    //                 !isImageValid
+    //             ) {
+    //                 e.preventDefault();
+    //                 updateAddItemButtonState();
+    //                 return;
+    //             }
+
+    //             const nombre = nombreInput.value.trim();
+    //             const categoria = categoriaInput.value;
+    //             const cantidadTotal = cantidadTotalInput.value;
+    //             const cantidadDisponible = cantidadDisponibleInput.value;
+    //             const ubicacion = ubicacionInput.value;
+    //             const file = imageInput.files[0];
+
+    //             const imageUrl = URL.createObjectURL(file);
+    //             const statusText = Number(cantidadDisponible) > 0 ? 'Disponible' : 'No disponible';
+    //             const statusColor = Number(cantidadDisponible) > 0 ? '#6FC21F' : '#dc3545';
+
+    //             const cardHtml = `
+    //     <div class="col-md-6 col-lg-4 inventory-card-wrapper">
+    //         <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
+    //             <img
+    //                 src="${imageUrl}"
+    //                 class="card-img-top"
+    //                 alt="${nombre}"
+    //                 style="height: 220px; object-fit: cover; object-position: center;"
+    //             >
+
+    //             <div class="card-body d-flex flex-column">
+    //                 <div class="d-flex justify-content-between align-items-start mb-2">
+    //                     <h5 class="card-title mb-0 fw-bold inventory-item-name">${nombre}</h5>
+    //                     <span class="badge rounded-0 inventory-status-badge" style="background-color:${statusColor}; color:white;">
+    //                         ${statusText}
+    //                     </span>
+    //                 </div>
+
+    //                 <p class="text-muted small mb-3 inventory-description">
+    //                     Item agregado manualmente al inventario.
+    //                 </p>
+
+    //                 <div class="small mb-3">
+    //                     <div class="d-flex justify-content-between">
+    //                         <span class="text-muted">Cantidad Total:</span>
+    //                         <strong class="inventory-total">${cantidadTotal}</strong>
+    //                     </div>
+    //                     <div class="d-flex justify-content-between">
+    //                         <span class="text-muted">Cantidad Disponible:</span>
+    //                         <strong class="text-success inventory-available">${cantidadDisponible}</strong>
+    //                     </div>
+    //                     <div class="d-flex justify-content-between">
+    //                         <span class="text-muted">Ubicación:</span>
+    //                         <strong class="inventory-location">${ubicacion}</strong>
+    //                     </div>
+    //                     <div class="d-flex justify-content-between">
+    //                         <span class="text-muted">Categoría:</span>
+    //                         <strong class="inventory-category">${categoria}</strong>
+    //                     </div>
+    //                 </div>
+
+    //                 <div class="mt-auto d-grid gap-3">
+    //                     <div>
+    //                         <div class="small text-muted mb-1">Editar Cantidad Total</div>
+    //                         <div class="d-flex align-items-center justify-content-between gap-2">
+    //                             <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-decrease">-</button>
+    //                             <span class="fw-bold inventory-total-control">${cantidadTotal}</span>
+    //                             <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-increase">+</button>
+    //                         </div>
+    //                     </div>
+
+    //                     <div>
+    //                         <div class="small text-muted mb-1">Editar Cantidad Disponible</div>
+    //                         <div class="d-flex align-items-center justify-content-between gap-2">
+    //                             <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-decrease">-</button>
+    //                             <span class="fw-bold inventory-available-control">${cantidadDisponible}</span>
+    //                             <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-increase">+</button>
+    //                         </div>
+    //                     </div>
+
+    //                     <button
+    //                         type="button"
+    //                         class="btn btn-danger open-delete-item-modal"
+    //                         data-item-name="${nombre}"
+    //                     >
+    //                         <i class="bi bi-trash me-1"></i> Eliminar Item
+    //                     </button>
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     </div>
+    // `;
+
+    //             inventoryCards.insertAdjacentHTML('beforeend', cardHtml);
+
+    //             const modalInstance = window.bootstrap.Modal.getOrCreateInstance(addItemModal);
+    //             modalInstance.hide();
+
+    //             addItemForm.reset();
+    //             clearAllInvalid();
+    //             resetImageState();
+    //             updateAddItemButtonState();
+
+    //             attachInventoryCardEvents();
+
+    //             setTimeout(() => {
+    //                 const toastInstance = window.bootstrap.Toast.getOrCreateInstance(inventoryToast);
+    //                 toastInstance.show();
+    //             }, 250);
+    //         });
+
+            if (confirmDeleteInventoryItem) {
+                confirmDeleteInventoryItem.addEventListener('click', function () {
+                    if (inventoryCardToDelete) {
+                        inventoryCardToDelete.remove();
+                        inventoryCardToDelete = null;
+                    }
+
+                    const modalInstance = window.bootstrap.Modal.getOrCreateInstance(deleteInventoryItemModal);
+                    modalInstance.hide();
+
+                    setTimeout(() => {
+                        const deleteToastInstance = window.bootstrap.Toast.getOrCreateInstance(inventoryDeleteToast);
+                        deleteToastInstance.show();
+                    }, 250);
+                });
+            }
+
+            attachInventoryCardEvents();
             updateAddItemButtonState();
+            // filterInventoryCards();
         });
     </script>
+
+    @if(session('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const inventoryToast = document.getElementById('inventoryToast');
+            if (inventoryToast) {
+                const toastInstance = bootstrap.Toast.getOrCreateInstance(inventoryToast);
+                toastInstance.show();
+            }
+        });
+    </script>
+    @endif
+
 </x-layout>

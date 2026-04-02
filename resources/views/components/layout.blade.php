@@ -1,6 +1,21 @@
 @props([
     'title' => 'MAIKINE'
 ])
+    <!--Potential backend bridge-->
+@php
+    $currentUser = auth()->user();
+
+    $currentUserName = $currentUser?->name ?? 'Usuario';
+    $currentUserRole = $currentUser?->role ?? 'rol';
+    $superAdminUser = $superAdminUser ?? null;
+    $inventoryAdminUser = $inventoryAdminUser ?? null;
+    $marketAdminUser = $marketAdminUser ?? null;
+
+    $superAdminEmail = $superAdminUser?->email ?? 'superadmin@uprm.edu';
+    $inventoryAdminEmail = $inventoryAdminUser?->email ?? 'inventario@uprm.edu';
+    $marketAdminEmail = $marketAdminUser?->email ?? 'mercado@uprm.edu';
+@endphp
+
     <!doctype html>
 <html lang="en">
 <head>
@@ -27,7 +42,11 @@
             <span class="fs-3 fw-bold text-success m-0">MAIKINE</span>
         </a>
 
-        <div class="d-flex align-items-center text-end">
+        <div class="d-flex align-items-center gap-3 text-end">
+            <div clas="text-end me-2">
+                <div class="fw-sembold">{{ $currentUserName }}</div>
+                <small class="text-muted">{{ $currentUserRole }}</small>
+            </div>
             <ul class="nav nav-pills align-items-center d-flex gap-3">
                 <li class="nav-item">
                     <a href="{{ route('my_profile') }}"
@@ -98,14 +117,19 @@
                         <h3 class="modal-title fw-bold mb-1" id="cartModalLabel">Carrito de Préstamos</h3>
                         <p class="text-muted mb-0">Revisa tu selección y completa los detalles del préstamo</p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
-
                 <div class="modal-body pt-3">
                     <div class="mb-4">
                         <h4 class="fw-bold mb-3">
                             Equipos Seleccionados ({{ count($cart) }} ítems)
                         </h4>
+            </div>
+
+
+            <div class="modal-body pt-3">
+                <div class="mb-4">
+                    <h4 class="fw-bold mb-3">Equipos Seleccionados (<span id="cartItemCountLabel">0</span> ítems)</h4>
 
                         <div class="border rounded-4 overflow-hidden">
                             <div class="row g-0 px-3 py-3 fw-semibold border-bottom bg-light">
@@ -367,8 +391,8 @@
 
                 <p class="mb-1">
                     <i class="bi bi-envelope text-muted"></i>
-                    <a href="mailto:superadmin@uprm.edu" class="text-success text-decoration-none">
-                        superadmin@uprm.edu
+                    <a href="mailto:{{ $superAdminEmail }}" class="text-success text-decoration-none">
+                        {{ $superAdminEmail }}
                     </a>
                 </p>
 
@@ -397,15 +421,15 @@
 
                 <p class="mb-1">
                     <b>Kinventario</b><br>
-                    <a href="mailto:inventario@kinesiologia.edu" class="text-success text-decoration-none">
-                        inventario@uprm.edu
+                    <a href="mailto:{{ $inventoryAdminEmail }}" class="text-success text-decoration-none">
+                        {{ $inventoryAdminEmail }}
                     </a>
                 </p>
 
                 <p>
                     <b>Kinemercado</b><br>
-                    <a href="mailto:mercado@kinesiologia.edu" class="text-success text-decoration-none">
-                        mercado@uprm.edu
+                    <a href="mailto:{{ $marketAdminEmail }}" class="text-success text-decoration-none">
+                        {{ $marketAdminEmail }}
                     </a>
                 </p>
             </div>
@@ -436,14 +460,21 @@
 <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content rounded-4 border-0 shadow">
-            <div class="modal-header border-0 pb-0">
-                <div>
-                    <h4 class="modal-title fw-bold" id="termsModalLabel">Términos y Condiciones</h4>
-                    <p class="text-muted mb-0">
+
+            <div class="modal-header border-0 pb-0 align-items-start">
+                <div class="w-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="modal-title fw-bold mb-0" id="termsModalLabel">
+                            Términos y Condiciones
+                        </h4>
+
+                        <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <p class="text-muted mt-2 mb-0">
                         Lee los términos y condiciones que aceptaste al usar el sistema.
                     </p>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
 
             <div class="modal-body pt-3">
