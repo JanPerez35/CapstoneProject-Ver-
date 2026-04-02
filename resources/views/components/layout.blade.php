@@ -1,6 +1,21 @@
 @props([
     'title' => 'MAIKINE'
 ])
+    <!--Potential backend bridge-->
+@php
+    $currentUser = auth()->user();
+
+    $currentUserName = $currentUser?->name ?? 'Usuario';
+    $currentUserRole = $currentUser?->role ?? 'rol';
+    $superAdminUser = $superAdminUser ?? null;
+    $inventoryAdminUser = $inventoryAdminUser ?? null;
+    $marketAdminUser = $marketAdminUser ?? null;
+
+    $superAdminEmail = $superAdminUser?->email ?? 'superadmin@uprm.edu';
+    $inventoryAdminEmail = $inventoryAdminUser?->email ?? 'inventario@uprm.edu';
+    $marketAdminEmail = $marketAdminUser?->email ?? 'mercado@uprm.edu';
+@endphp
+
     <!doctype html>
 <html lang="en">
 <head>
@@ -27,7 +42,11 @@
             <span class="fs-3 fw-bold text-success m-0">MAIKINE</span>
         </a>
 
-        <div class="d-flex align-items-center text-end">
+        <div class="d-flex align-items-center gap-3 text-end">
+            <div clas="text-end me-2">
+                <div class="fw-sembold">{{ $currentUserName }}</div>
+                <small class="text-muted">{{ $currentUserRole }}</small>
+            </div>
             <ul class="nav nav-pills align-items-center d-flex gap-3">
                 <li class="nav-item">
                     <a href="{{ route('my_profile') }}"
@@ -362,8 +381,8 @@
 
                 <p class="mb-1">
                     <i class="bi bi-envelope text-muted"></i>
-                    <a href="mailto:superadmin@uprm.edu" class="text-success text-decoration-none">
-                        superadmin@uprm.edu
+                    <a href="mailto:{{ $superAdminEmail }}" class="text-success text-decoration-none">
+                        {{ $superAdminEmail }}
                     </a>
                 </p>
 
@@ -392,15 +411,15 @@
 
                 <p class="mb-1">
                     <b>Kinventario</b><br>
-                    <a href="mailto:inventario@kinesiologia.edu" class="text-success text-decoration-none">
-                        inventario@uprm.edu
+                    <a href="mailto:{{ $inventoryAdminEmail }}" class="text-success text-decoration-none">
+                        {{ $inventoryAdminEmail }}
                     </a>
                 </p>
 
                 <p>
                     <b>Kinemercado</b><br>
-                    <a href="mailto:mercado@kinesiologia.edu" class="text-success text-decoration-none">
-                        mercado@uprm.edu
+                    <a href="mailto:{{ $marketAdminEmail }}" class="text-success text-decoration-none">
+                        {{ $marketAdminEmail }}
                     </a>
                 </p>
             </div>

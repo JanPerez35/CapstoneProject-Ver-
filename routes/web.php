@@ -49,10 +49,6 @@ Route::get('/marketplace_management', function () {
     return view('/marketplace_management.reports_management');
 })->name('marketplace_management');
 
-Route::get('/marketplace_management.admin_marketplace', function () {
-    return view('/marketplace_management.admin_marketplace');
-})->name('marketplace_management.admin_marketplace');
-
 Route::get('/access_logs', function () {
     return view('access_logs');
 })->name('access_logs');
