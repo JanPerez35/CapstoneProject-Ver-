@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('facility_costs', function (Blueprint $table) {
             $table->id();
 
-            $table->integer('classroom_id')->unique();
+            $table->string('classroom_name')->unique();
 
             $table->decimal('supply_cost', 10, 2);
             $table->decimal('electricity_cost', 10, 2);

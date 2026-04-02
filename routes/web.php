@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EquipmentController;
+use App\Http\Controllers\FacilityCostController;
 
 Route::get('/', function () {
     return view('login');
@@ -98,9 +99,9 @@ Route::get('/marketplace_management.admin_marketplace', function () {
 Route::get('/access_logs', [EquipmentController::class, 'accessLogs'])
     ->name('access_logs');
 
-Route::get('/facility_management', function () {
-    return view('facility_management');
-})->name('facility_management');
+// Route::get('/facility_management', function () {
+//     return view('facility_management');
+// })->name('facility_management');
 
 Route::get('/my_messages', function () {
     return view('my_messages');
@@ -113,6 +114,14 @@ Route::get('/my_messages', function () {
 Route::get('/kinemercado/mensaje', function () {
     return view('kinemercado_mensaje');
 })->name('kinemercado_mensaje');
+
+Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management');
+Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])->name('facility.rates.save');
+Route::post('/facility/events', [FacilityCostController::class, 'storeEvent'])->name('facility.events.store');
+Route::delete('/facility/events/{item}', [FacilityCostController::class, 'destroy'])->name('facility.events.destroy');
+
+Route::get('/facility_management/export/csv', [FacilityCostController::class, 'exportCsv'])->name('facility.export.csv');
+Route::get('/facility_management/export/pdf', [FacilityCostController::class, 'exportPdf'])->name('facility.export.pdf');
 
 require __DIR__.'\saml2.php';
 

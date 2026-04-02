@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             EquipmentSeeder::class,
+            FacilityCostSeeder::class,
         ]);
     }
 }

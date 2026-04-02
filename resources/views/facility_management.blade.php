@@ -46,78 +46,77 @@
                 Agregar Evento
             </button>
 
-            <button
-                type="button"
+            <a
+                href="{{ route('facility.export.csv', request()->query()) }}"
                 id="downloadCsvBtn"
                 class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
             >
                 <i class="bi bi-download"></i>
                 Exportar a CSV
-            </button>
+            </a>
 
-            <button
-                type="button"
+            <a
+                href="{{ route('facility.export.pdf', request()->query()) }}"
                 id="downloadPdfBtn"
                 class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
             >
                 <i class="bi bi-download"></i>
                 Exportar a PDF
+            </a>
             </button>
+
         </div>
 
         <!--Filters-->
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-body p-4">
-                <form id="facilityCostFilterForm" class="row g-3 align-items-end">
+                <form id="facilityCostFilterForm" method="GET" action="{{ route('facility_management') }}" class="row g-3 align-items-end">
                     @csrf
 
                     <div class="col-md-4 col-lg-3">
                         <label for="reportType" class="form-label fw-semibold">Tipo de reporte</label>
                         <select id="reportType" name="report_type" class="form-select form-select-lg border-2 border-dark">
-                            <option value="monthly" selected>Mensual</option>
-                            <option value="annual">Anual</option>
+                            <option value="monthly" {{ ($reportType ?? 'monthly') === 'monthly' ? 'selected' : '' }}>Mensual</option>
+                            <option value="annual" {{ ($reportType ?? 'monthly') === 'annual' ? 'selected' : '' }}>Anual</option>
                         </select>
                     </div>
 
                     <div class="col-md-4 col-lg-3" id="monthFilterWrapper">
                         <label for="reportMonth" class="form-label fw-semibold">Mes</label>
                         <select id="reportMonth" name="report_month" class="form-select form-select-lg border-2 border-dark">
-                            <option value="1">Enero</option>
-                            <option value="2">Febrero</option>
-                            <option value="3" selected>Marzo</option>
-                            <option value="4">Abril</option>
-                            <option value="5">Mayo</option>
-                            <option value="6">Junio</option>
-                            <option value="7">Julio</option>
-                            <option value="8">Agosto</option>
-                            <option value="9">Septiembre</option>
-                            <option value="10">Octubre</option>
-                            <option value="11">Noviembre</option>
-                            <option value="12">Diciembre</option>
+                            <option value="1" {{ ($reportMonth ?? now()->month) == 1 ? 'selected' : '' }}>Enero</option>
+                            <option value="2" {{ ($reportMonth ?? now()->month) == 2 ? 'selected' : '' }}>Febrero</option>
+                            <option value="3" {{ ($reportMonth ?? now()->month) == 3 ? 'selected' : '' }}>Marzo</option>
+                            <option value="4" {{ ($reportMonth ?? now()->month) == 4 ? 'selected' : '' }}>Abril</option>
+                            <option value="5" {{ ($reportMonth ?? now()->month) == 5 ? 'selected' : '' }}>Mayo</option>
+                            <option value="6" {{ ($reportMonth ?? now()->month) == 6 ? 'selected' : '' }}>Junio</option>
+                            <option value="7" {{ ($reportMonth ?? now()->month) == 7 ? 'selected' : '' }}>Julio</option>
+                            <option value="8" {{ ($reportMonth ?? now()->month) == 8 ? 'selected' : '' }}>Agosto</option>
+                            <option value="9" {{ ($reportMonth ?? now()->month) == 9 ? 'selected' : '' }}>Septiembre</option>
+                            <option value="10" {{ ($reportMonth ?? now()->month) == 10 ? 'selected' : '' }}>Octubre</option>
+                            <option value="11" {{ ($reportMonth ?? now()->month) == 11 ? 'selected' : '' }}>Noviembre</option>
+                            <option value="12" {{ ($reportMonth ?? now()->month) == 12 ? 'selected' : '' }}>Diciembre</option>
                         </select>
                     </div>
 
                     <div class="col-md-4 col-lg-3">
                         <label for="reportYear" class="form-label fw-semibold">Año</label>
                         <select id="reportYear" name="report_year" class="form-select form-select-lg border-2 border-dark">
-                            <option value="2024" selected>2024</option>
-                            <option value="2025">2025</option>
-                            <option value="2026">2026</option>
+                            <option value="2024" {{ ($reportYear ?? now()->year) == 2024 ? 'selected' : '' }}>2024</option>
+                            <option value="2025" {{ ($reportYear ?? now()->year) == 2025 ? 'selected' : '' }}>2025</option>
+                            <option value="2026" {{ ($reportYear ?? now()->year) == 2026 ? 'selected' : '' }}>2026</option>
                         </select>
                     </div>
 
                     <div class="col-md-12 col-lg-3">
                         <label for="filterClassroom" class="form-label fw-semibold">Salón</label>
                         <select id="filterClassroom" name="filter_classroom" class="form-select form-select-lg border-2 border-dark">
-                            <option value="all" selected>Todos los salones</option>
-                            <option value="Cancha CM">Cancha CM</option>
-                            <option value="Lateral 1">Lateral 1</option>
-                            <option value="Lateral 2">Lateral 2</option>
-                            <option value="CM 201">CM 201</option>
-                            <option value="CM 202">CM 202</option>
-                            <option value="CM 203">CM 203</option>
-                            <option value="CM 204">CM 204</option>
-                            <option value="CM 210">CM 210</option>
+                            <option value="all" {{ ($filterClassroom ?? 'all') === 'all' ? 'selected' : '' }}>Todos los salones</option>
+                            @foreach ($facilityCosts as $cost)
+                                <option value="{{ $cost->classroom_name }}" {{ ($filterClassroom ?? 'all') === $cost->classroom_name ? 'selected' : '' }}>
+                                    {{ $cost->classroom_name }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                 </form>
@@ -146,68 +145,69 @@
                     </thead>
 
                     <tbody id="facilityCostTableBody">
-                    <tr
-                        data-entry-id="cost-row-001"
-                        data-date="2024-03-05"
-                        data-month="3"
-                        data-year="2024"
-                        data-classroom="CM 202"
-                    >
-                        <td>5 mar 2024</td>
-                        <td>CM 202</td>
-                        <td>09:00 AM - 11:00 AM</td>
-                        <td>Laborable</td>
-                        <td>
-                            <span class="badge rounded-0 px-3 py-2 me-2 mb-1 service-badge-table">Utilidades</span>
-                            <span class="badge rounded-0 px-3 py-2 me-2 mb-1 service-badge-table">Electricidad</span>
-                        </td>
-                        <td class="text-end fw-semibold">$134.25</td>
-                        <td class="text-center">
-                            <button
-                                type="button"
-                                class="btn btn-sm btn-outline-danger delete-cost-row-btn"
-                                data-entry-id="cost-row-001"
-                                data-bs-toggle="modal"
-                                data-bs-target="#deleteCostEntryModal"
+                        @forelse ($items as $item)
+                            <tr
+                                data-entry-id="cost-row-{{ $item->id }}"
+                                data-date="{{ \Carbon\Carbon::parse($item->event_date)->format('Y-m-d') }}"
+                                data-month="{{ \Carbon\Carbon::parse($item->event_date)->format('n') }}"
+                                data-year="{{ \Carbon\Carbon::parse($item->event_date)->format('Y') }}"
+                                data-classroom="{{ $item->facilityCost->classroom_name }}"
                             >
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-
-                    <tr
-                        data-entry-id="cost-row-002"
-                        data-date="2024-03-09"
-                        data-month="3"
-                        data-year="2024"
-                        data-classroom="Cancha CM"
-                    >
-                        <td>9 mar 2024</td>
-                        <td>Cancha CM</td>
-                        <td>06:00 PM - 10:00 PM</td>
-                        <td>No laborable sábado</td>
-                        <td>
-                            <span class="badge rounded-0 px-3 py-2 me-2 mb-1 service-badge-table">Agua</span>
-                        </td>
-                        <td class="text-end fw-semibold">$3535.60</td>
-                        <td class="text-center">
-                            <button
-                                type="button"
-                                class="btn btn-sm btn-outline-danger delete-cost-row-btn"
-                                data-entry-id="cost-row-002"
-                                data-bs-toggle="modal"
-                                data-bs-target="#deleteCostEntryModal"
-                            >
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
+                                <td>{{ \Carbon\Carbon::parse($item->event_date)->translatedFormat('j M Y') }}</td>
+                                <td>{{ $item->facilityCost->classroom_name }}</td>
+                                <td>
+                                    {{ \Carbon\Carbon::parse($item->start_time)->format('h:i A') }}
+                                    -
+                                    {{ \Carbon\Carbon::parse($item->end_time)->format('h:i A') }}
+                                </td>
+                                <td>
+                                    @if ($item->period_type === 'laborable')
+                                        Laborable
+                                    @elseif ($item->period_type === 'no_laborable_sabado')
+                                        No laborable sábado
+                                    @elseif ($item->period_type === 'no_laborable_domingo_festivo')
+                                        No laborable domingo o festivo
+                                    @else
+                                        {{ $item->period_type }}
+                                    @endif
+                                </td>
+                                <td>
+                                    @foreach (($item->services ?? []) as $service)
+                                        <span class="badge rounded-0 px-3 py-2 me-2 mb-1 service-badge-table">
+                                            @if ($service === 'utilidades')
+                                                Utilidades
+                                            @elseif ($service === 'electricidad')
+                                                Electricidad
+                                            @elseif ($service === 'agua')
+                                                Agua
+                                            @else
+                                                {{ ucfirst($service) }}
+                                            @endif
+                                        </span>
+                                    @endforeach
+                                </td>
+                                <td class="text-end fw-semibold">${{ number_format($item->calculated_cost, 2) }}</td>
+                                <td class="text-center">
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-danger delete-cost-row-btn"
+                                        data-entry-id="{{ $item->id }}"
+                                        data-delete-url="{{ route('facility.events.destroy', $item->id) }}"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteCostEntryModal"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        @empty
+                        @endforelse
                     </tbody>
 
                     <tfoot class="table-light">
                     <tr>
                         <th colspan="5" class="fw-bold">Total estimado del período</th>
-                        <th class="text-end fw-bold" id="facilityCostGrandTotal">$3669.85</th>
+                        <th class="text-end fw-bold" id="facilityCostGrandTotal">${{ number_format($grandTotal, 2) }}</th>
                         <th></th>
                     </tr>
                     </tfoot>
@@ -240,7 +240,7 @@
 
                 <div class="modal-body pt-3 modal-scroll-safe">
                     <div class="scroll-edge-pad">
-                        <form id="configureRatesForm" novalidate>
+                        <form id="configureRatesForm" method="POST" action="{{ route('facility.rates.save') }}" novalidate>
                             @csrf
 
                             <div class="mb-4">
@@ -264,10 +264,17 @@
                                 </div>
 
                                 <div class="row g-2" id="configClassroomGroup">
-                                    @foreach (['Cancha CM','Lateral 1','Lateral 2','CM 201','CM 202','CM 203','CM 204','CM 210'] as $salon)
+                                    @foreach ($facilityCosts as $cost)
+                                        @php $salon = $cost->classroom_name; @endphp
                                         <div class="col-md-3">
                                             <label class="multi-classroom-card" for="cfg{{ str_replace(' ', '', $salon) }}">
-                                                <input class="form-check-input config-classroom-check" type="checkbox" id="cfg{{ str_replace(' ', '', $salon) }}" value="{{ $salon }}">
+                                                <input
+                                                    class="form-check-input config-classroom-check"
+                                                    type="checkbox"
+                                                    id="cfg{{ str_replace(' ', '', $salon) }}"
+                                                    name="classrooms[]"
+                                                    value="{{ $salon }}"
+                                                >
                                                 <span>{{ $salon }}</span>
                                             </label>
                                         </div>
@@ -282,10 +289,10 @@
 
                                 <div class="row g-3">
                                     @foreach ([
-                                        ['id' => 'configAreaSalon', 'label' => 'Área del salón', 'name' => 'area_salon', 'help' => 'Costo base por pie cuadrado.'],
-                                        ['id' => 'configUtilidades', 'label' => 'Utilidades', 'name' => 'utilidades'],
-                                        ['id' => 'configElectricidad', 'label' => 'Electricidad', 'name' => 'electricidad'],
-                                        ['id' => 'configAgua', 'label' => 'Agua', 'name' => 'agua'],
+                                        ['id' => 'configAreaSalon', 'label' => 'Área del salón', 'name' => 'classroom_space', 'help' => 'Costo base por pie cuadrado.'],
+                                        ['id' => 'configUtilidades', 'label' => 'Utilidades', 'name' => 'supply_cost'],
+                                        ['id' => 'configElectricidad', 'label' => 'Electricidad', 'name' => 'electricity_cost'],
+                                        ['id' => 'configAgua', 'label' => 'Agua', 'name' => 'water_cost'],
                                     ] as $campo)
                                         <div class="col-md-3">
                                             <div class="service-option-card">
@@ -351,22 +358,112 @@
                                                 <h6 class="fw-bold mb-2">{{ $periodo['titulo'] }}</h6>
                                                 <p class="text-muted small mb-3">{{ $periodo['texto'] }}</p>
 
-                                                <label for="configDiaria{{ $periodo['sufijo'] }}" class="form-label fw-semibold">Diario <span class="text-danger">*</span></label>
+                                                <label for="configDiaria{{ $periodo['sufijo'] }}" class="form-label fw-semibold">
+                                                    Diario <span class="text-danger">*</span>
+                                                </label>
                                                 <div class="input-group input-group-lg mb-3">
                                                     <span class="input-group-text">$</span>
-                                                    <input type="text" class="form-control money-input" id="configDiaria{{ $periodo['sufijo'] }}" name="diaria_{{ $periodo['sufijo'] }}" value="{{ $periodo['diario'] }}" required>
+
+                                                    @if ($periodo['sufijo'] == '1')
+                                                        <input
+                                                            type="text"
+                                                            class="form-control money-input"
+                                                            id="configDiaria1"
+                                                            name="daily_cost_1"
+                                                            value="{{ $periodo['diario'] }}"
+                                                            required
+                                                        >
+                                                    @elseif ($periodo['sufijo'] == '2')
+                                                        <input
+                                                            type="text"
+                                                            class="form-control money-input"
+                                                            id="configDiaria2"
+                                                            name="daily_cost_2"
+                                                            value="{{ $periodo['diario'] }}"
+                                                            required
+                                                        >
+                                                    @else
+                                                        <input
+                                                            type="text"
+                                                            class="form-control money-input"
+                                                            id="configDiaria3"
+                                                            name="daily_cost_3"
+                                                            value="{{ $periodo['diario'] }}"
+                                                            required
+                                                        >
+                                                    @endif
                                                 </div>
 
-                                                <label for="configSemanal{{ $periodo['sufijo'] }}" class="form-label fw-semibold">Semanal <span class="text-danger">*</span></label>
+                                                <label for="configSemanal{{ $periodo['sufijo'] }}" class="form-label fw-semibold">
+                                                    Semanal <span class="text-danger">*</span>
+                                                </label>
                                                 <div class="input-group input-group-lg mb-3">
                                                     <span class="input-group-text">$</span>
-                                                    <input type="text" class="form-control money-input" id="configSemanal{{ $periodo['sufijo'] }}" name="semanal_{{ $periodo['sufijo'] }}" value="{{ $periodo['semanal'] }}" required>
+
+                                                    @if ($periodo['sufijo'] == '1')
+                                                        <input
+                                                            type="text"
+                                                            class="form-control money-input"
+                                                            id="configSemanal1"
+                                                            name="weekly_cost_1"
+                                                            value="{{ $periodo['semanal'] }}"
+                                                            required
+                                                        >
+                                                    @elseif ($periodo['sufijo'] == '2')
+                                                        <input
+                                                            type="text"
+                                                            class="form-control money-input"
+                                                            id="configSemanal2"
+                                                            name="weekly_cost_2"
+                                                            value="{{ $periodo['semanal'] }}"
+                                                            required
+                                                        >
+                                                    @else
+                                                        <input
+                                                            type="text"
+                                                            class="form-control money-input"
+                                                            id="configSemanal3"
+                                                            name="weekly_cost_3"
+                                                            value="{{ $periodo['semanal'] }}"
+                                                            required
+                                                        >
+                                                    @endif
                                                 </div>
 
-                                                <label for="configMensual{{ $periodo['sufijo'] }}" class="form-label fw-semibold">Mensual <span class="text-danger">*</span></label>
+                                                <label for="configMensual{{ $periodo['sufijo'] }}" class="form-label fw-semibold">
+                                                    Mensual <span class="text-danger">*</span>
+                                                </label>
                                                 <div class="input-group input-group-lg">
                                                     <span class="input-group-text">$</span>
-                                                    <input type="text" class="form-control money-input" id="configMensual{{ $periodo['sufijo'] }}" name="mensual_{{ $periodo['sufijo'] }}" value="{{ $periodo['mensual'] }}" required>
+
+                                                    @if ($periodo['sufijo'] == '1')
+                                                        <input
+                                                            type="text"
+                                                            class="form-control money-input"
+                                                            id="configMensual1"
+                                                            name="monthly_cost_1"
+                                                            value="{{ $periodo['mensual'] }}"
+                                                            required
+                                                        >
+                                                    @elseif ($periodo['sufijo'] == '2')
+                                                        <input
+                                                            type="text"
+                                                            class="form-control money-input"
+                                                            id="configMensual2"
+                                                            name="monthly_cost_2"
+                                                            value="{{ $periodo['mensual'] }}"
+                                                            required
+                                                        >
+                                                    @else
+                                                        <input
+                                                            type="text"
+                                                            class="form-control money-input"
+                                                            id="configMensual3"
+                                                            name="monthly_cost_3"
+                                                            value="{{ $periodo['mensual'] }}"
+                                                            required
+                                                        >
+                                                    @endif
                                                 </div>
                                             </div>
                                         </div>
@@ -430,7 +527,7 @@
                 </div>
 
                 <div class="modal-body pt-3">
-                    <form id="addRentalForm" novalidate>
+                    <form id="addRentalForm" method="POST" action="{{ route('facility.events.store') }}" novalidate>
                         @csrf
 
                         <div class="row g-3 mb-3">
@@ -440,7 +537,8 @@
                                 </label>
                                 <select id="rentalClassroom" name="salon" class="form-select form-select-lg" required>
                                     <option value="" selected disabled>Seleccionar salón</option>
-                                    @foreach (['Cancha CM','Lateral 1','Lateral 2','CM 201','CM 202','CM 203','CM 204','CM 210'] as $salon)
+                                    @foreach ($facilityCosts as $cost)
+                                        @php $salon = $cost->classroom_name; @endphp
                                         <option value="{{ $salon }}">{{ $salon }}</option>
                                     @endforeach
                                 </select>
@@ -594,7 +692,9 @@
 
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-outline-secondary px-4 rental-cancel-btn">Cancelar</button>
-                    <button type="button" class="btn btn-success px-4" id="saveRentalBtn" disabled>Guardar Evento</button>
+                    <button type="submit" form="addRentalForm" class="btn btn-success px-4" id="saveRentalBtn" disabled>
+                        Guardar Evento
+                    </button>
                 </div>
             </div>
         </div>
@@ -681,7 +781,10 @@
             </div>
         </div>
     </div>
-
+    <form id="deleteCostEntryForm" method="POST" class="d-none">
+        @csrf
+        @method('DELETE')
+    </form>
     <style>
         .service-option-card {
             border: 1px solid #dee2e6;
@@ -891,21 +994,34 @@
                 deleteEntry: bootstrap.Toast.getOrCreateInstance($('deleteEntryToast'), { delay: 2500 }),
             };
 
-            let selectedRowToDelete = null;
-            let nextEntryId = 3;
+            let selectedDeleteUrl = null;
+            // let nextEntryId = 3;
             let configureDirty = false;
             let rentalDirty = false;
 
-            const tarifasPorSalon = {
-                'Cancha CM': { area: 12082.00, utilidades: 0.00, electricidad: 0.00, agua: 0.00, diaria1: 0.21, semanal1: 0.86, mensual1: 2.74, diaria2: 0.26, semanal2: 1.03, mensual2: 3.29, diaria3: 0.31, semanal3: 0.00, mensual3: 0.00 },
-                'Lateral 1': { area: 4706.00, utilidades: 0.00, electricidad: 0.00, agua: 0.00, diaria1: 0.21, semanal1: 0.86, mensual1: 2.74, diaria2: 0.26, semanal2: 1.03, mensual2: 3.29, diaria3: 0.31, semanal3: 0.00, mensual3: 0.00 },
-                'Lateral 2': { area: 4706.00, utilidades: 0.00, electricidad: 0.00, agua: 0.00, diaria1: 0.21, semanal1: 0.86, mensual1: 2.74, diaria2: 0.26, semanal2: 1.03, mensual2: 3.29, diaria3: 0.31, semanal3: 0.00, mensual3: 0.00 },
-                'CM 201': { area: 568.00, utilidades: 0.00, electricidad: 0.00, agua: 0.00, diaria1: 0.21, semanal1: 0.86, mensual1: 2.74, diaria2: 0.26, semanal2: 1.03, mensual2: 3.29, diaria3: 0.31, semanal3: 0.00, mensual3: 0.00 },
-                'CM 202': { area: 564.00, utilidades: 0.00, electricidad: 0.00, agua: 0.00, diaria1: 0.21, semanal1: 0.86, mensual1: 2.74, diaria2: 0.26, semanal2: 1.03, mensual2: 3.29, diaria3: 0.31, semanal3: 0.00, mensual3: 0.00 },
-                'CM 203': { area: 564.00, utilidades: 0.00, electricidad: 0.00, agua: 0.00, diaria1: 0.21, semanal1: 0.86, mensual1: 2.74, diaria2: 0.26, semanal2: 1.03, mensual2: 3.29, diaria3: 0.31, semanal3: 0.00, mensual3: 0.00 },
-                'CM 204': { area: 568.00, utilidades: 0.00, electricidad: 0.00, agua: 0.00, diaria1: 0.21, semanal1: 0.86, mensual1: 2.74, diaria2: 0.26, semanal2: 1.03, mensual2: 3.29, diaria3: 0.31, semanal3: 0.00, mensual3: 0.00 },
-                'CM 210': { area: 820.00, utilidades: 0.00, electricidad: 0.00, agua: 0.00, diaria1: 0.21, semanal1: 0.86, mensual1: 2.74, diaria2: 0.26, semanal2: 1.03, mensual2: 3.29, diaria3: 0.31, semanal3: 0.00, mensual3: 0.00 },
-            };
+            @php
+                $tarifasPorSalon = $facilityCosts->mapWithKeys(function ($cost) {
+                    return [
+                        $cost->classroom_name => [
+                            'area' => (float) $cost->classroom_space,
+                            'utilidades' => (float) $cost->supply_cost,
+                            'electricidad' => (float) $cost->electricity_cost,
+                            'agua' => (float) $cost->water_cost,
+                            'diaria1' => (float) $cost->daily_cost_1,
+                            'semanal1' => (float) $cost->weekly_cost_1,
+                            'mensual1' => (float) $cost->monthly_cost_1,
+                            'diaria2' => (float) $cost->daily_cost_2,
+                            'semanal2' => (float) $cost->weekly_cost_2,
+                            'mensual2' => (float) $cost->monthly_cost_2,
+                            'diaria3' => (float) $cost->daily_cost_3,
+                            'semanal3' => (float) $cost->weekly_cost_3,
+                            'mensual3' => (float) $cost->monthly_cost_3,
+                        ],
+                    ];
+                })->toArray();
+            @endphp
+
+            const tarifasPorSalon = @json($tarifasPorSalon);
 
             const formatMoney = (value) => Number(value).toLocaleString('en-US', {
                 style: 'currency',
@@ -1220,58 +1336,58 @@
                 return `${String(hour).padStart(2, '0')}:${minuteStr} ${suffix}`;
             }
 
-            function appendRentalRow() {
-                const classroomId = rentalClassroom.value;
-                const eventDate = rentalDate.value;
-                const startTime = rentalStartTime.value;
-                const endTime = rentalEndTime.value;
-                const periodLabel = periodLabelFromValue(rentalPeriodType.value);
+            // function appendRentalRow() {
+            //     const classroomId = rentalClassroom.value;
+            //     const eventDate = rentalDate.value;
+            //     const startTime = rentalStartTime.value;
+            //     const endTime = rentalEndTime.value;
+            //     const periodLabel = periodLabelFromValue(rentalPeriodType.value);
 
-                const services = [];
-                if (rentalUtilities.checked) services.push('Utilidades');
-                if (rentalElectricity.checked) services.push('Electricidad');
-                if (rentalWater.checked) services.push('Agua');
+            //     const services = [];
+            //     if (rentalUtilities.checked) services.push('Utilidades');
+            //     if (rentalElectricity.checked) services.push('Electricidad');
+            //     if (rentalWater.checked) services.push('Agua');
 
-                const total = calculateRentalEstimate();
-                const rowId = `cost-row-${String(nextEntryId).padStart(3, '0')}`;
-                nextEntryId += 1;
+            //     const total = calculateRentalEstimate();
+            //     // const rowId = `cost-row-${String(nextEntryId).padStart(3, '0')}`;
+            //     // nextEntryId += 1;
 
-                const row = document.createElement('tr');
-                row.dataset.entryId = rowId;
-                row.dataset.date = eventDate;
-                row.dataset.month = String(new Date(`${eventDate}T12:00:00`).getMonth() + 1);
-                row.dataset.year = String(new Date(`${eventDate}T12:00:00`).getFullYear());
-                row.dataset.classroom = classroomId;
+            //     const row = document.createElement('tr');
+            //     row.dataset.entryId = rowId;
+            //     row.dataset.date = eventDate;
+            //     row.dataset.month = String(new Date(`${eventDate}T12:00:00`).getMonth() + 1);
+            //     row.dataset.year = String(new Date(`${eventDate}T12:00:00`).getFullYear());
+            //     row.dataset.classroom = classroomId;
 
-                row.innerHTML = `
-                    <td>${formatDisplayDate(eventDate)}</td>
-                    <td>${classroomId}</td>
-                    <td>${formatDisplayTime24To12(startTime)} - ${formatDisplayTime24To12(endTime)}</td>
-                    <td>${periodLabel}</td>
-                    <td>${createServiceBadges(services)}</td>
-                    <td class="text-end fw-semibold">${formatMoney(total)}</td>
-                    <td class="text-center">
-                        <button
-                            type="button"
-                            class="btn btn-sm btn-outline-danger delete-cost-row-btn"
-                            data-entry-id="${rowId}"
-                            data-bs-toggle="modal"
-                            data-bs-target="#deleteCostEntryModal"
-                        >
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                `;
+            //     row.innerHTML = `
+            //         <td>${formatDisplayDate(eventDate)}</td>
+            //         <td>${classroomId}</td>
+            //         <td>${formatDisplayTime24To12(startTime)} - ${formatDisplayTime24To12(endTime)}</td>
+            //         <td>${periodLabel}</td>
+            //         <td>${createServiceBadges(services)}</td>
+            //         <td class="text-end fw-semibold">${formatMoney(total)}</td>
+            //         <td class="text-center">
+            //             <button
+            //                 type="button"
+            //                 class="btn btn-sm btn-outline-danger delete-cost-row-btn"
+            //                 data-entry-id="${rowId}"
+            //                 data-bs-toggle="modal"
+            //                 data-bs-target="#deleteCostEntryModal"
+            //             >
+            //                 <i class="bi bi-trash"></i>
+            //             </button>
+            //         </td>
+            //     `;
 
-                facilityCostTableBody.appendChild(row);
-                bindDeleteButtons();
-                applyTableFilters();
-            }
+            //     facilityCostTableBody.appendChild(row);
+            //     bindDeleteButtons();
+            //     applyTableFilters();
+            // }
 
             function bindDeleteButtons() {
                 deleteButtons().forEach((btn) => {
                     btn.onclick = () => {
-                        selectedRowToDelete = btn.closest('tr');
+                        selectedDeleteUrl = btn.dataset.deleteUrl;
                     };
                 });
             }
@@ -1418,39 +1534,22 @@
             [reportType, reportMonth, reportYear, filterClassroom].forEach((el) => {
                 el.addEventListener('change', () => {
                     toggleMonthFilter();
-                    applyTableFilters();
+                    $('facilityCostFilterForm').submit();
                 });
             });
 
             saveRatesBtn.addEventListener('click', () => {
                 configureRatesForm.classList.add('was-validated');
-                if (!isConfigureFormValid()) return updateConfigureSaveState();
 
-                getSelectedClassrooms().forEach((classroomId) => {
-                    tarifasPorSalon[classroomId] = {
-                        area: toNumber(configAreaSalon.value),
-                        utilidades: toNumber(configUtilidades.value),
-                        electricidad: toNumber(configElectricidad.value),
-                        agua: toNumber(configAgua.value),
-                        diaria1: toNumber(configDiaria1.value),
-                        semanal1: toNumber(configSemanal1.value),
-                        mensual1: toNumber(configMensual1.value),
-                        diaria2: toNumber(configDiaria2.value),
-                        semanal2: toNumber(configSemanal2.value),
-                        mensual2: toNumber(configMensual2.value),
-                        diaria3: toNumber(configDiaria3.value),
-                        semanal3: toNumber(configSemanal3.value),
-                        mensual3: toNumber(configMensual3.value),
-                    };
-                });
+                if (!isConfigureFormValid()) {
+                    updateConfigureSaveState();
+                    return;
+                }
 
-                configureDirty = false;
-                calculateRentalEstimate();
-                toasts.ratesSaved.show();
-                bootstrap.Modal.getOrCreateInstance(configureRatesModal).hide();
+                configureRatesForm.submit();
             });
 
-            saveRentalBtn.addEventListener('click', () => {
+            addRentalForm.addEventListener('submit', (e) => {
                 addRentalForm.classList.add('was-validated');
 
                 const responsableOk = validateResponsable(true);
@@ -1459,25 +1558,17 @@
                 toggleServicesError(!servicesOk);
 
                 if (!(isRentalFormValid() && responsableOk && descripcionOk && servicesOk)) {
+                    e.preventDefault();
                     updateRentalSaveState();
-                    return;
                 }
-
-                appendRentalRow();
-                rentalDirty = false;
-                toasts.rentalSaved.show();
-                bootstrap.Modal.getOrCreateInstance(addRentalModal).hide();
-                resetRentalFormState();
             });
 
             confirmDeleteCostEntryBtn.addEventListener('click', () => {
-                if (selectedRowToDelete) {
-                    selectedRowToDelete.remove();
-                    selectedRowToDelete = null;
-                    applyTableFilters();
-                    toasts.deleteEntry.show();
+                if (selectedDeleteUrl) {
+                    const deleteForm = $('deleteCostEntryForm');
+                    deleteForm.action = selectedDeleteUrl;
+                    deleteForm.submit();
                 }
-                bootstrap.Modal.getOrCreateInstance($('deleteCostEntryModal')).hide();
             });
 
             document.querySelectorAll('.configure-cancel-btn, .configure-close-btn').forEach(btn => {
