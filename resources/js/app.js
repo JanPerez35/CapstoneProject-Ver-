@@ -1448,6 +1448,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
+        if (!allowedTextRegex.test(value)) {
+            if (showError) setFieldError(postTitle, postTitleError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+            return false;
+        }
+
 
         if (value.length < 5) {
             if (showError) setFieldError(postTitle, postTitleError, 'El título debe tener al menos 5 caracteres.');
@@ -1457,12 +1462,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (value.length > 100) {
             if (showError) setFieldError(postTitle, postTitleError, 'El título no puede exceder 100 caracteres.');
-            return false;
-        }
-
-
-        if (!allowedTextRegex.test(value)) {
-            if (showError) setFieldError(postTitle, postTitleError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
             return false;
         }
 
@@ -1487,21 +1486,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         }
 
-
-        if (value.length < 10) {
-            if (showError) setFieldError(postDescription, postDescriptionError, 'La descripción debe tener al menos 10 caracteres.');
-            return false;
-        }
-
-
-        if (value.length > 1000) {
-            if (showError) setFieldError(postDescription, postDescriptionError, 'La descripción no puede exceder 1000 caracteres.');
-            return false;
-        }
-
-
         if (!allowedTextRegex.test(value)) {
             if (showError) setFieldError(postDescription, postDescriptionError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+            return false;
+        }
+
+        if (value.length > 500) {
+            if (showError) setFieldError(postDescription, postDescriptionError, 'La descripción no puede exceder 500 caracteres.');
             return false;
         }
 
@@ -1623,7 +1614,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (postTitle) {
         postTitle.addEventListener('input', () => {
-            postTitle.value = postTitle.value.slice(0, 100);
+            const value = postTitle.value;
+
+            if (value.length > 100) {
+                setFieldError(postTitle, postTitleError, 'El título no puede exceder 100 caracteres.');
+            }
+
+            postTitle.value = value.slice(0, 100);
+
             validateTitle(true);
             updatePublishButtonState();
         });
@@ -1632,7 +1630,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (postDescription) {
         postDescription.addEventListener('input', () => {
-            postDescription.value = postDescription.value.slice(0, 1000);
+            const value = postDescription.value;
+
+            if (value.length > 500) {
+                setFieldError(postDescription, postDescriptionError, 'La descripción no puede exceder 500 caracteres.');
+            }
+
+            postDescription.value = value.slice(0, 500);
+
             validateDescription(true);
             updatePublishButtonState();
         });
@@ -2058,6 +2063,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
+        if (!allowedTextRegex.test(value)) {
+            if (showError) {
+                reportDescription.classList.add('is-invalid');
+                reportDescriptionError.textContent = 'Solo se permiten letras, números, espacios, punto, coma y guion.';
+            }
+            return false;
+        }
 
         if (value.length < 10) {
             if (showError) {
@@ -2075,16 +2087,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return false;
         }
-
-
-        if (!allowedTextRegex.test(value)) {
-            if (showError) {
-                reportDescription.classList.add('is-invalid');
-                reportDescriptionError.textContent = 'Solo se permiten letras, números, espacios, punto, coma y guion.';
-            }
-            return false;
-        }
-
 
         return true;
     }
@@ -2110,19 +2112,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
     if (reportDescription) {
         reportDescription.addEventListener('input', () => {
-            reportDescription.value = reportDescription.value.slice(0, 500);
+            const value = reportDescription.value;
 
-
-            if (reportDescription.value.trim() === '') {
-                reportDescription.classList.remove('is-invalid');
-                reportDescriptionError.textContent = '';
-            } else {
-                validateReportDescription(true);
+            if (value.length > 500) {
+                reportDescription.classList.add('is-invalid');
+                reportDescriptionError.textContent = 'La descripción no puede exceder 500 caracteres.';
             }
 
+            reportDescription.value = value.slice(0, 500);
+
+            // 🔥 ALWAYS validate (this fixes your issue)
+            validateReportDescription(true);
 
             updateReportButtonState();
         });

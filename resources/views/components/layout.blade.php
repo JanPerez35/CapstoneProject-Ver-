@@ -42,51 +42,42 @@
             <span class="fs-3 fw-bold text-success m-0">MAIKINE</span>
         </a>
 
-        <div class="d-flex align-items-center gap-3 text-end">
-            <div clas="text-end me-2">
-                <div class="fw-sembold">{{ $currentUserName }}</div>
+        <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2 gap-lg-3">
+
+            <!-- User info -->
+            <div class="text-start text-lg-end">
+                <div class="fw-semibold">{{ $currentUserName }}</div>
                 <small class="text-muted">{{ $currentUserRole }}</small>
             </div>
-            <ul class="nav nav-pills align-items-center d-flex gap-3">
-                <li class="nav-item">
-                    <a href="{{ route('my_profile') }}"
-                       class="btn btn-outline {{ request()->routeIs('my_profile') ? 'btn-success' : 'btn-outline-success' }} btn-md">
-                        <i class="bi bi-person-fill"></i>
-                        Mi Perfil
-                    </a>
-                </li>
 
-                <li class="nav-item">
-                    <a href="{{route('my_messages')}}"
-                       class="btn btn-outline {{request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success'}} btn-md">
-                        <i class="bi bi-chat-left-text"></i>
-                        Mis Chats
-                    </a>
-                </li>
+            <!-- Actions -->
+            <div class="d-flex flex-wrap gap-2 justify-content-start justify-content-lg-end">
+                <a href="{{ route('my_profile') }}"
+                   class="btn {{ request()->routeIs('my_profile') ? 'btn-success' : 'btn-outline-success' }}">
+                    <i class="bi bi-person-fill"></i> Mi Perfil
+                </a>
 
-                <li class="nav-item">
-                    <button
-                        type="button"
-                        class="btn btn-outline-success position-relative"
-                        data-bs-toggle="modal"
-                        data-bs-target="#cartModal"
-                    >
-                        <i class="bi bi-cart3 me-1"></i>
-                        Carrito
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="cartCount">
-                            0
-                        </span>
-                    </button>
-                </li>
+                <a href="{{route('my_messages')}}"
+                   class="btn {{request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success'}}">
+                    <i class="bi bi-chat-left-text"></i> Mis Chats
+                </a>
 
-                <li class="nav-item">
-                    <a href="/"
-                       class="btn btn-success">
-                        <i class="bi bi-box-arrow-right"></i>
-                        Cerrar Sesión
-                    </a>
-                </li>
-            </ul>
+                <button
+                    type="button"
+                    class="btn btn-outline-success position-relative"
+                    data-bs-toggle="modal"
+                    data-bs-target="#cartModal"
+                >
+                    <i class="bi bi-cart3 me-1"></i> Carrito
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none" id="cartCount">
+                0
+            </span>
+                </button>
+
+                <a href="/" class="btn btn-success">
+                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                </a>
+            </div>
         </div>
     </header>
 </div>
