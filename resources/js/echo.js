@@ -1,20 +1,17 @@
 import Echo from 'laravel-echo';
-
 import Pusher from 'pusher-js';
+
 window.Pusher = Pusher;
 
 window.Echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY,
 
-    wsHost: '127.0.0.1',
-    wsPort: 8080,
+    wsHost: import.meta.env.VITE_REVERB_HOST,
+    wsPort: import.meta.env.VITE_REVERB_PORT,
+    wssPort: import.meta.env.VITE_REVERB_PORT,
 
-    forceTLS: false,
-    enabledTransports: ['ws'],
+    forceTLS: import.meta.env.VITE_REVERB_SCHEME === 'https',
+
+    enabledTransports: ['ws', 'wss'],
 });
-
-window.Echo.channel('messages')
-    .listen('MessageSent', (e) => {
-        console.log(e);
-    });
