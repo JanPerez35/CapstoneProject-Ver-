@@ -1,6 +1,7 @@
 <x-layout title="Kinventario">
     <x-navbar>
     </x-navbar>
+    @vite('resources/js/kinventory_validation.js')
 
     <div class= "container py-4">
 
@@ -17,18 +18,14 @@
 
             {{--    </p>--}}
 
-@if(session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-@endif
         </div>
-            <form method="GET" action="{{ route('kinventory') }}" class="row mb-4 g-3">
-                <div class="col-md-8">
-                    <div class="input-group search-group">
-                        <span class="input-group-text bg-white border-0">
-                            <i class="bi bi-search"></i>
-                        </span>
+        <form method="GET" action="{{ route('kinventory') }}" class="mb-5">
+            <div class="row g-3 mb-3 align-items-stretch">
+                <div class="col-lg-10">
+                    <div class="input-group search-group h-100">
+                <span class="input-group-text bg-white border-0">
+                    <i class="bi bi-search"></i>
+                </span>
 
                         <input
                             type="text"
@@ -40,7 +37,15 @@
                     </div>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-lg-2 d-grid">
+                    <button type="submit" class="btn btn-success h-100">
+                        Buscar
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-4">
                     <select name="category" class="form-select border-2 border-dark" onchange="this.form.submit()">
                         <option value="">Todas las categorías</option>
                         @foreach($categories as $cat)
@@ -51,19 +56,16 @@
                     </select>
                 </div>
 
-                <div class="col-12 d-flex gap-2">
-                    <button type="submit" class="btn btn-success">
-                        Buscar
-                    </button>
-
+                <div class="col-md-auto">
                     <a href="{{ route('kinventory') }}" class="btn btn-outline-secondary">
                         Limpiar filtros
                     </a>
                 </div>
-            </form>
+            </div>
+        </form>
 
         {{--        okay this will be some sort of card grid, It will be filled when the cards are actually available--}}
-        <div class="row g-4">
+        <div class="row g-4 mt-2">
                 @forelse($items as $item)
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
@@ -99,6 +101,7 @@
 
                                 <div class="mt-auto d-grid gap-2">
                                     <button
+                                        type="button"
                                         class="btn btn-success open-borrow-modal"
                                         data-item-id="{{ $item->id }}"
                                         data-item-name="{{ $item->description }}"
@@ -117,8 +120,10 @@
                     </div>
                 @empty
                     <div class="col-12">
-                        <div class="alert alert-info">
-                            No hay equipos disponibles.
+                        <div class="text-center py-5">
+                            <p class="fw-semibold fs-3 text-secondary mb-0">
+                                Item no disponible.
+                            </p>
                         </div>
                     </div>
                 @endforelse
@@ -149,7 +154,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
-                <form method="POST" action="{{ route('cart.add') }}">
+                <form method="POST" action="{{ route('cart.add') }}" id="borrowForm" novalidate>
                     @csrf
 
                     <div class="modal-body">
@@ -181,15 +186,15 @@
                                 value="1"
                                 required
                             >
-                        {{-- NUEVO: aquí saldrá el warning en rojo --}}
-                        <div class="invalid-feedback d-block" id="borrowQuantityError"></div>
+                            <div class="invalid-feedback" id="borrowQuantityError"></div>
+                        </div>
                     </div>
 
                     <div class="modal-footer border-0 pt-0">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                             Cancelar
                         </button>
-                        <button type="submit" class="btn btn-success">
+                        <button type="button" class="btn btn-success" id="confirmAddToCart">
                             <i class="bi bi-cart-plus me-1"></i> Añadir al carrito
                         </button>
                     </div>
@@ -200,32 +205,6 @@
 
 </x-layout>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const borrowButtons = document.querySelectorAll('.open-borrow-modal');
-    const borrowEquipmentId = document.getElementById('borrowEquipmentId');
-    const borrowModalText = document.getElementById('borrowModalText');
-    const borrowModalImage = document.getElementById('borrowModalImage');
-    const borrowModalStock = document.getElementById('borrowModalStock');
-    const borrowQuantity = document.getElementById('borrowQuantity');
-
-    borrowButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const itemId = this.dataset.itemId;
-            const itemName = this.dataset.itemName;
-            const itemStock = this.dataset.itemStock;
-            const itemImage = this.dataset.itemImage;
-
-            borrowEquipmentId.value = itemId;
-            borrowModalText.textContent = `Selecciona la cantidad que deseas de "${itemName}"`;
-            borrowModalImage.src = itemImage;
-            borrowModalStock.textContent = itemStock;
-            borrowQuantity.max = itemStock;
-            borrowQuantity.value = 1;
-        });
-    });
-});
-</script>
 
     {{-- Ignore this, this was me testing the email service it is for me to reference later--}}
 {{--<h2>Send Email</h2>--}}

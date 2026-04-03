@@ -7,15 +7,15 @@ window.Chart = Chart;
 window.bootstrap = bootstrap;
 
 document.addEventListener('DOMContentLoaded', () => {
-    const borrowButtons = document.querySelectorAll('.open-borrow-modal');
-    const borrowModal = document.getElementById('borrowModal');
-    const borrowEquipmentId = document.getElementById('borrowEquipmentId');
-    const borrowModalText = document.getElementById('borrowModalText');
-    const borrowModalImage = document.getElementById('borrowModalImage');
-    const borrowModalStock = document.getElementById('borrowModalStock');
-    const borrowQuantity = document.getElementById('borrowQuantity');
-    const confirmAddToCart = document.getElementById('confirmAddToCart');
-    const borrowQuantityError = document.getElementById('borrowQuantityError');
+    // const borrowButtons = document.querySelectorAll('.open-borrow-modal');
+    // const borrowModal = document.getElementById('borrowModal');
+    // const borrowEquipmentId = document.getElementById('borrowEquipmentId');
+    // const borrowModalText = document.getElementById('borrowModalText');
+    // const borrowModalImage = document.getElementById('borrowModalImage');
+    // const borrowModalStock = document.getElementById('borrowModalStock');
+    // const borrowQuantity = document.getElementById('borrowQuantity');
+    // const confirmAddToCart = document.getElementById('confirmAddToCart');
+    // const borrowQuantityError = document.getElementById('borrowQuantityError');
 
     if(!window.useDedicatedLayoutValidation) {
         const specialCaseCheck = document.getElementById('special_case');
@@ -48,13 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
             borrowQuantity &&
             confirmAddToCart;
 
-        let currentItem = {
-            id: null,
-            name: '',
-            stock: 0,
-            image: '',
-            location: 'Sala de Equipo A'
-        };
+        // let currentItem = {
+        //     id: null,
+        //     name: '',
+        //     stock: 0,
+        //     image: '',
+        //     location: 'Sala de Equipo A'
+        // };
 
         const loanAllowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
 
@@ -107,16 +107,23 @@ document.addEventListener('DOMContentLoaded', () => {
             clearLoanFieldError(specialReason, specialReasonError);
         }
 
-        function setBorrowQuantityError(message) {
-            if (borrowQuantity) borrowQuantity.classList.add('is-invalid');
-            if (borrowQuantityError) borrowQuantityError.textContent = message;
-        }
+        // function setBorrowQuantityError(message) {
+        //     if (borrowQuantity) borrowQuantity.classList.add('is-invalid');
+        //
+        //     if (borrowQuantityError) {
+        //         borrowQuantityError.textContent = message;
+        //         borrowQuantityError.style.display = 'block';
+        //     }
+        // }
 
-        function clearBorrowQuantityError() {
-            if (borrowQuantity) borrowQuantity.classList.remove('is-invalid');
-            if (borrowQuantityError) borrowQuantityError.textContent = '';
-        }
-
+        // function clearBorrowQuantityError() {
+        //     if (borrowQuantity) borrowQuantity.classList.remove('is-invalid');
+        //
+        //     if (borrowQuantityError) {
+        //         borrowQuantityError.textContent = '';
+        //         borrowQuantityError.style.display = 'none';
+        //     }
+        // }
         function validateLoanFullNameField(showError = true) {
             if (!loanFullName) return true;
 
@@ -408,77 +415,89 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        if (hasBorrowModal) {
-            borrowButtons.forEach((button) => {
-                button.addEventListener('click', () => {
-                    const itemId = button.dataset.itemId;
-                    currentItem.id = itemId;
-                    currentItem.name = button.dataset.itemName || '';
-                    currentItem.stock = parseInt(button.dataset.itemStock || '1', 10);
-                    currentItem.image = button.dataset.itemImage || '';
-                    currentItem.location = button.dataset.itemLocation || 'Sala de Equipo A';
 
-                    if (borrowEquipmentId) borrowEquipmentId.value = itemId;
-                    borrowModalText.textContent = `Selecciona la cantidad de ${currentItem.name} que deseas`;
-                    borrowModalImage.src = currentItem.image;
-                    borrowModalImage.alt = currentItem.name;
-                    borrowModalStock.textContent = currentItem.stock;
-
-                    borrowQuantity.value = 1;
-                    borrowQuantity.min = 1;
-                    borrowQuantity.max = currentItem.stock;
-
-                    clearBorrowQuantityError();
-                });
-            });
-
-            borrowQuantity.addEventListener('input', () => {
-                clearBorrowQuantityError();
-
-                if (borrowQuantity.value === '') return;
-
-                let value = parseInt(borrowQuantity.value, 10);
-
-                if (isNaN(value) || value < 1) {
-                    borrowQuantity.value = 1;
-                    setBorrowQuantityError('Debes pedir al menos 1 unidad.');
-                    return;
-                }
-
-                if (value > currentItem.stock) {
-                    borrowQuantity.value = currentItem.stock;
-                    setBorrowQuantityError(`No puedes pedir más de la cantidad disponible (${currentItem.stock}).`);
-                    return;
-                }
-
-                borrowQuantity.value = value;
-            });
-
-            confirmAddToCart.addEventListener('click', () => {
-                clearBorrowQuantityError();
-
-                const quantity = parseInt(borrowQuantity.value, 10);
-
-                if (isNaN(quantity) || quantity < 1) {
-                    setBorrowQuantityError('Debes pedir al menos 1 unidad.');
-                    return;
-                }
-
-                if (quantity > currentItem.stock) {
-                    setBorrowQuantityError(`No puedes pedir más de la cantidad disponible (${currentItem.stock}).`);
-                    return;
-                }
-
-                const borrowForm = document.getElementById('borrowForm');
-                if (borrowForm) {
-                    borrowForm.submit();
-                }
-            });
-        }
 
         setMinDates();
         updateLoanSubmitButtonState();
     }
+
+
+    // if (hasBorrowModal) {
+    //     borrowButtons.forEach((button) => {
+    //         button.addEventListener('click', () => {
+    //             const itemId = button.dataset.itemId;
+    //             currentItem.id = itemId;
+    //             currentItem.name = button.dataset.itemName || '';
+    //             currentItem.stock = parseInt(button.dataset.itemStock || '1', 10);
+    //             currentItem.image = button.dataset.itemImage || '';
+    //             currentItem.location = button.dataset.itemLocation || 'Sala de Equipo A';
+    //
+    //             if (borrowEquipmentId) borrowEquipmentId.value = itemId;
+    //             borrowModalText.textContent = `Selecciona la cantidad de ${currentItem.name} que deseas`;
+    //             borrowModalImage.src = currentItem.image;
+    //             borrowModalImage.alt = currentItem.name;
+    //             borrowModalStock.textContent = currentItem.stock;
+    //
+    //             borrowQuantity.value = 1;
+    //             borrowQuantity.min = 1;
+    //             borrowQuantity.removeAttribute('max');
+    //
+    //             clearBorrowQuantityError();
+    //         });
+    //     });
+    //
+    //     borrowQuantity.addEventListener('input', () => {
+    //         clearBorrowQuantityError();
+    //
+    //         if (borrowQuantity.value === '') return;
+    //
+    //         let value = parseInt(borrowQuantity.value, 10);
+    //
+    //         if (isNaN(value) || value < 1) {
+    //             borrowQuantity.value = 1;
+    //             setBorrowQuantityError('Debes pedir al menos 1 unidad.');
+    //             return;
+    //         }
+    //
+    //         if (value > currentItem.stock) {
+    //             setBorrowQuantityError(`No puedes añadir más de ${currentItem.stock} unidades disponibles.`);
+    //             return;
+    //         }
+    //
+    //         borrowQuantity.value = value;
+    //     });
+    //
+    //     borrowQuantity.addEventListener('blur', () => {
+    //         const value = parseInt(borrowQuantity.value, 10);
+    //
+    //         if (value > currentItem.stock) {
+    //             setBorrowQuantityError(`No puedes añadir más de ${currentItem.stock} unidades disponibles.`);
+    //         }
+    //     });
+    //
+    //
+    //     confirmAddToCart.addEventListener('click', () => {
+    //         clearBorrowQuantityError();
+    //
+    //         const quantity = parseInt(borrowQuantity.value, 10);
+    //
+    //         if (isNaN(quantity) || quantity < 1) {
+    //             setBorrowQuantityError('Debes pedir al menos 1 unidad.');
+    //             return;
+    //         }
+    //
+    //         if (quantity > currentItem.stock) {
+    //             setBorrowQuantityError(`No puedes pedir más de la cantidad disponible (${currentItem.stock}).`);
+    //             return;
+    //         }
+    //
+    //         const borrowForm = document.getElementById('borrowForm');
+    //         if (borrowForm) {
+    //             borrowForm.submit();
+    //         }
+    //     });
+    // }
+
     const deletePostModal = document.getElementById('deletePostModal');
     const deletePostModalText = document.getElementById('deletePostModalText');
     const confirmDeletePost = document.getElementById('confirmDeletePost');

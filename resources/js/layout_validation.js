@@ -22,7 +22,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const specialReasonError = document.getElementById('special_reason_error');
     const acceptTermsError = document.getElementById('accept_terms_error');
 
+    const removeCartConfirmModal = document.getElementById('removeCartConfirmModal');
+    const removeCartConfirmText = document.getElementById('removeCartConfirmText');
+    const confirmRemoveCartItem = document.getElementById('confirmRemoveCartItem');
+
     const allowedReasonRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
+
+    let removeCartFormId = null;
 
     function setError(field, errorEl, message) {
         if (field) field.classList.add('is-invalid');
@@ -285,9 +291,47 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function reopenCartModalIfNeeded(bodyEl) {
+        const shouldReopen = bodyEl?.dataset?.reopenCartModal === '1';
+        const cartModalEl = document.getElementById('cartModal');
+
+        if (!shouldReopen || !cartModalEl) return;
+
+        const cartModalInstance = bootstrap.Modal.getOrCreateInstance(cartModalEl);
+        cartModalInstance.show();
+    }
+
+    function attachRemoveCartConfirmEvents() {
+        if (!removeCartConfirmModal || !confirmRemoveCartItem) return;
+
+        document.querySelectorAll('.open-remove-cart-confirm').forEach((button) => {
+            button.addEventListener('click', () => {
+                removeCartFormId = button.dataset.formId || null;
+                const itemName = button.dataset.itemName || 'este item';
+
+                if (removeCartConfirmText) {
+                    removeCartConfirmText.textContent = `¿Estás seguro que quieres remover "${itemName}" del carrito?`;
+                }
+
+                const modalInstance = bootstrap.Modal.getOrCreateInstance(removeCartConfirmModal);
+                modalInstance.show();
+            });
+        });
+
+        confirmRemoveCartItem.addEventListener('click', () => {
+            if (!removeCartFormId) return;
+
+            const formToSubmit = document.getElementById(removeCartFormId);
+            if (!formToSubmit) return;
+
+            formToSubmit.submit();
+        });
+    }
+
     function showGlobalToasts(bodyEl) {
         const cartSuccess = bodyEl?.dataset?.cartSuccess || '';
         const requestSuccess = bodyEl?.dataset?.requestSuccess || '';
+        const cartRemovedSuccess = bodyEl?.dataset?.cartRemovedSuccess || '';
 
         const cartToastEl = document.getElementById('cartToast');
         const cartToastMessage = document.getElementById('cartToastMessage');
@@ -303,6 +347,14 @@ document.addEventListener('DOMContentLoaded', function () {
         if (requestSuccess && submitToastEl && submitToastMessage) {
             submitToastMessage.textContent = requestSuccess;
             bootstrap.Toast.getOrCreateInstance(submitToastEl, { delay: 4000 }).show();
+        }
+
+        const cartRemovedToastEl = document.getElementById('cartRemovedToast');
+        const cartRemovedToastMessage = document.getElementById('cartRemovedToastMessage');
+
+        if (cartRemovedSuccess && cartRemovedToastEl && cartRemovedToastMessage) {
+            cartRemovedToastMessage.textContent = cartRemovedSuccess;
+            bootstrap.Toast.getOrCreateInstance(cartRemovedToastEl, { delay: 3000 }).show();
         }
     }
 
@@ -403,7 +455,9 @@ document.addEventListener('DOMContentLoaded', function () {
     setMinDates();
     toggleSpecialCaseFields();
     attachCartQuantityControls();
+    attachRemoveCartConfirmEvents();
     updateCartBadgeFromRows();
     updateSubmitButtonStateQuietly();
+    reopenCartModalIfNeeded(body);
     showGlobalToasts(body);
 });

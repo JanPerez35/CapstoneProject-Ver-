@@ -276,16 +276,21 @@ public function cart()
     return view('cart.index', compact('cart'));
 }
 
-public function removeFromCart($id)
-{
-    $cart = session()->get('cart', []);
+    public function removeFromCart($id)
+    {
+        $cart = session()->get('cart', []);
 
-    if (isset($cart[$id])) {
-        unset($cart[$id]);
-        session()->put('cart', $cart);
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
+            session()->put('cart', $cart);
+        }
+
+        $shouldReopenCart = !empty($cart);
+
+        return redirect()->back()
+            ->with('cart_removed_success', 'Item removido del carrito correctamente.')
+            ->with('reopen_cart_modal', $shouldReopenCart);
     }
-    return redirect()->back()->with('success', 'Item eliminado del carrito..');
-}
 
     public function checkoutCart(Request $request)
     {
