@@ -1,7 +1,8 @@
 <x-layout title="Kinemercado">
     <x-navbar></x-navbar>
 
-    @vite('resources/js/pages/marketplace-profanity.js')
+    @vite('resources/js/pages/marketplace_profanity.js')
+    @vite('resources/js/pages/marketplace.js')
     <div
         id="marketplaceHome"
         class="container py-4"
@@ -65,7 +66,6 @@
                                     id="postTitle"
                                     placeholder="ej. Baloncesto - Spalding"
                                     minlength="5"
-                                    maxlength="100"
                                     required
                                 >
                                 <small class="text-muted d-block fst-italic">
@@ -85,7 +85,6 @@
                                     id="postDescription"
                                     rows="4"
                                     placeholder="Describe el estado y detalles"
-                                    maxlength="500"
                                 ></textarea>
                                 <small class="text-muted d-block fst-italic">
                                     Si escribes una descripción, debe tener como máximo 500 caracteres.
@@ -129,13 +128,13 @@
                                     </label>
                                     <select class="form-select form-select-lg" id="postCategory" required>
                                         <option value="" selected disabled>Seleccionar</option>
-                                        <option>Baloncesto</option>
-                                        <option>Tenis</option>
-                                        <option>Fútbol</option>
-                                        <option>Deporte Recreativo</option>
-                                        <option>Volibol</option>
-                                        <option>Levantamiento de Pesas</option>
-                                        <option>Otro</option>
+                                        <option value="Baloncesto">Baloncesto</option>
+                                        <option value="Tenis">Tenis</option>
+                                        <option value="Fútbol">Fútbol</option>
+                                        <option value="Deporte Recreativo">Deporte Recreativo</option>
+                                        <option value="Volibol">Volibol</option>
+                                        <option value="Levantamiento de Pesas">Levantamiento de Pesas</option>
+                                        <option  value="Otros">Otros</option>
                                     </select>
                                     <div class="invalid-feedback">Selecciona una categoría.</div>
                                 </div>
@@ -233,7 +232,7 @@
 
         <!-- Search and Filter -->
         <div class="row mb-4 g-3">
-            <div class="col-md-12">
+            <div class="col-md-9">
                 <div class="input-group search-group">
                    <span class="input-group-text bg-white border-0">
                        <i class="bi bi-search"></i>
@@ -247,6 +246,11 @@
                         placeholder="Buscar publicaciones..."
                     >
                 </div>
+            </div>
+            <div class="col-md-3 d-grid">
+                <button type="button" class="btn btn-success" id="searchMarketplaceBtn">
+                    Buscar
+                </button>
             </div>
 
 
@@ -325,7 +329,7 @@
                 <div class="modal-content rounded-4 border-0 shadow overflow-hidden">
                     <div class="modal-header border-0 pt-4 px-4 pb-2 align-items-start position-relative">
                         <div class="pe-5">
-                            <h4 class="modal-title fw-bold mb-1" id="postDetailsModalLabel ">Detalle de la publicación</h4>
+                            <h4 class="modal-title fw-bold mb-1" id="postDetailsModalLabel">Detalle de la publicación</h4>
                             <p class="text-muted mb-0">Detalles de la Publicación</p>
                         </div>
                         <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -505,11 +509,11 @@
                                 </label>
                                 <select class="form-select form-select-lg" id="reportReason" required>
                                     <option value="" selected disabled>Seleccionar una razón</option>
-                                    <option>Fraude o estafa</option>
-                                    <option>Información falsa</option>
-                                    <option>Lenguaje ofensivo</option>
-                                    <option>Contenido inapropiado</option>
-                                    <option>Otro</option>
+                                    <option value="Fraude">Fraude o estafa</option>
+                                    <option value="Información flasa">Información falsa</option>
+                                    <option value="Lengiaje ofensivo">Lenguaje ofensivo</option>
+                                    <option value="Contenido inapropiado">Contenido inapropiado</option>
+                                    <option value="Otros">Otros</option>
                                 </select>
                                 <div class="invalid-feedback" id="reportReasonError">Seleciona una razón.</div>
                             </div>
@@ -525,7 +529,6 @@
                                     rows="4"
                                     placeholder="Proporciona detalles sobre el comportamiento sospechoso..."
                                     minlength="10"
-                                    maxlength="500"
                                     required
                                 ></textarea>
                                 <small class="text-muted d-block fst-italic">
@@ -536,7 +539,7 @@
 
 
                             <div class="alert alert-warning rounded-4 mb-0">
-                                <strong>Nota:</strong> Los reportes son revisados por administradores del mercado.
+                                <strong><i class="bi bi-exclamation-circle me-2"></i>Nota:</strong> Los reportes son revisados por administradores del mercado.
                                 Los reportes falsos pueden resultar en restricciones de cuenta.
                             </div>
                         </form>
@@ -624,7 +627,13 @@
 
 
         <div class="toast-container position-fixed bottom-0 start-0 p-3">
-            <div id="ratingSentToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" style="width: auto; max-width: fit-content;">
+            <div id="ratingSentToast"
+                 class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+                 role="alert"
+                 aria-live="assertive"
+                 aria-atomic="true"
+                 style="width: auto; max-width: fit-content;"
+            >
                 <div class="d-flex align-items-center">
                     <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                         Calificación enviada correctamente.
@@ -634,10 +643,16 @@
             </div>
 
 
-            <div id="reportSentToast" class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" style="width: auto; max-width: fit-content;">
+            <div id="reportSentToast"
+                 class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+                 role="alert"
+                 aria-live="assertive"
+                 aria-atomic="true"
+                 style="width: auto; max-width: fit-content;"
+            >
                 <div class="d-flex align-items-center">
                     <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
-                        Reporte enviado correctamente.
+                        Reporte fue enviado exitosamente.
                     </div>
                     <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar" style="background-color: transparent; border: none; transform: scale(0.8);"></button>
                 </div>
@@ -670,31 +685,28 @@
             >
                 <div class="d-flex">
                     <div class="toast-body fw-semibold">
-                        Publicación creada exitosamente.
+                        Publicación fue creada exitosamente.
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+            <!--Post Deletion Confirmation Toast-->
+            <div id="postDeletedToast"
+                 class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+                 role="alert"
+                 aria-live="assertive"
+                 aria-atomic="true"
+                 style="width: auto; max-width: 300px;"
+            >
+                <div class="d-flex">
+                    <div class="toast-body fw-semibold">
+                        Publicación fue eliminada exitosamente.
                     </div>
                     <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
                 </div>
             </div>
         </div>
     </div>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const clearMarketplaceFiltersBtn = document.getElementById('clearMarketplaceFilters');
 
-                if (clearMarketplaceFiltersBtn) {
-                    clearMarketplaceFiltersBtn.addEventListener('click', function () {
-                        document.getElementById('marketplaceSearch').value = '';
-                        document.getElementById('marketplaceCategoryFilter').value = 'all';
-                        document.getElementById('marketplaceRatingFilter').value = 'all';
-                        document.getElementById('marketplacePriceFilter').value = 'all';
-                        document.getElementById('marketplaceConditionFilter').value = 'all';
-
-                        if (typeof filterMarketplaceItems === 'function') {
-                            filterMarketplaceItems();
-                        }
-                    });
-                }
-            });
-            </script>
 </x-layout>
 

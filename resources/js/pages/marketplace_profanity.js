@@ -1,4 +1,4 @@
-import { findProfanity } from '../utils/profanity-checker';
+import { findProfanity } from '../utils/profanity_checker';
 
 document.addEventListener('DOMContentLoaded', () => {
     const publishBtn = document.getElementById('publishBtn');
@@ -88,16 +88,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return true;
     }
-
-    function hasAnyMarketplaceError() {
-        return (
-            titleBaseError.textContent.trim() !== '' ||
-            descriptionBaseError.textContent.trim() !== '' ||
-            titleProfanityError.textContent.trim() !== '' ||
-            descriptionProfanityError.textContent.trim() !== ''
-        );
-    }
-
     function enforceProfanityPriority() {
         const titleHasProfanity = titleProfanityError.textContent.trim() !== '';
         const descriptionHasProfanity = descriptionProfanityError.textContent.trim() !== '';
@@ -111,8 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
             descriptionBaseError.textContent = '';
             descriptionInput.classList.add('is-invalid');
         }
-
-        publishBtn.disabled = hasAnyMarketplaceError();
     }
 
     function updateProfanityState() {

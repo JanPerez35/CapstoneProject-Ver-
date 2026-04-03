@@ -15,9 +15,6 @@
             <button class="btn btn-success px-4 py-2">
                 <i class="bi bi-box-arrow-in-down me-2"></i>Exportar a CSV
             </button>
-            <button class="btn btn-success px-4 py-2">
-                <i class="bi bi-box-arrow-in-down me-2"></i>Exportar a PDF
-            </button>
         </div>
 
 
@@ -95,8 +92,6 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <!-- Call for data later -->
-                    <tbody>
                         @foreach($logs as $log)
                         <tr>
                             <td class="px-4 py-3">{{ \Carbon\Carbon::parse($log->created_at)->timezone('America/Puerto_Rico')->format('m/d/Y h:i A') }}</td>
@@ -114,11 +109,6 @@
                         </tr>
                         @endforeach
                         </tbody>
-                        <td class="px-4 py-3">Inicio de Sesión</td>
-                        <td class="px-4 py-3">2001:0db8:85a3:0000:0000:8a2e:0370:7334</td>
-                        <td class="px-4 py-3">Acceso exitoso al sistema</td>
-                    </tr>
-                    </tbody>
                 </table>
             </div>
         </div>
