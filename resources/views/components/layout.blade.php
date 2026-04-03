@@ -34,9 +34,12 @@
         'resources/js/layout_validation.js'
     ])
 </head>
-<body data-cart-success="{{ session('cart_success') }}"
-      data-request-success="{{ session('request_success') }}"
-      >
+<body
+    data-cart-success="{{ session('cart_success') }}"
+    data-request-success="{{ session('request_success') }}"
+    data-cart-removed-success="{{ session('cart_removed_success') }}"
+    data-reopen-cart-modal="{{ session('reopen_cart_modal') ? '1' : '0' }}"
+>
 <div class="container-fluid px-0">
     <header class="d-flex flex-wrap align-items-center justify-content-between py-2 px-2 border-bottom bg-light">
 
@@ -208,8 +211,9 @@
                                             <div class="col-3 text-center">
                                                 <button
                                                     type="button"
-                                                    class="btn btn-sm btn-danger"
-                                                    onclick="document.getElementById('remove-cart-item-{{ $item['equipment_id'] }}').submit();"
+                                                    class="btn btn-sm btn-danger open-remove-cart-confirm"
+                                                    data-form-id="remove-cart-item-{{ $item['equipment_id'] }}"
+                                                    data-item-name="{{ $item['description'] ?? 'este artículo' }}"
                                                 >
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -226,18 +230,13 @@
 
                         <div class="mb-4">
                             <h3 class="fw-bold mb-2">Detalles del Préstamo</h3>
-                            <p class="text-muted mb-4">
-                                <span class="text-danger">*</span> Campos requeridos
-                            </p>
 
                             <div class="border rounded-4 p-4 mb-4 bg-light-subtle">
                                 <h5 class="fw-bold text-secondary mb-3">
-                                    <i class="bi bi-exclamation-circle me-2"></i>
                                     Política de Préstamo:
                                 </h5>
 
                                 <p class="mb-2 text-muted">
-                                    <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
                                     Solicitud enviada fuera de horas laborables (8am-1pm) - préstamo disponible desde el siguiente día laborable
                                 </p>
 
@@ -249,6 +248,10 @@
                                     Viernes solo se pueden devolver equipos. Sábados y Domingos no hay servicio.
                                 </p>
                             </div>
+
+                            <p class="text-muted mb-4">
+                                <span class="text-danger">*</span> Campos requeridos
+                            </p>
 
                             <div class="mb-3">
                                 <label for="pickup_date" class="form-label fw-semibold">
@@ -418,10 +421,44 @@
     </form>
 @endforeach
 
+<div class="modal fade" id="removeCartConfirmModal" tabindex="-1" aria-labelledby="removeCartConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <h4 class="modal-title fw-bold" id="removeCartConfirmModalLabel">
+                        Remover del carrito
+                    </h4>
+                    <p class="text-muted mb-0" id="removeCartConfirmText">
+                        ¿Estás seguro que quieres remover este item del carrito?
+                    </p>
+                </div>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Cerrar"></button>
+            </div>
+
+            <div class="modal-footer border-0 pt-0">
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <button type="button"
+                        class="btn btn-danger"
+                        id="confirmRemoveCartItem">
+                    Sí, remover
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="toast-container position-fixed bottom-0 start-0 p-3">
 
-    {{-- Toast: item añadido al carrito --}}
     <div id="cartToast"
          class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
          role="alert"
@@ -444,7 +481,6 @@
         </div>
     </div>
 
-    {{-- Toast: solicitud enviada --}}
     <div id="submitToast"
          class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
          role="alert"
@@ -465,7 +501,30 @@
         </div>
     </div>
 
+    <div id="cartRemovedToast"
+         class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true"
+         style="width: auto; max-width: fit-content;">
+
+        <div class="d-flex align-items-center">
+            <div class="toast-body fw-semibold rounded-0 pe-1"
+                 id="cartRemovedToastMessage">
+                Item removido del carrito correctamente.
+            </div>
+
+            <button type="button"
+                    class="btn-close p-0 ms-1 me-2"
+                    data-bs-dismiss="toast"
+                    aria-label="Cerrar"
+                    style="background-color: transparent; border: none; transform: scale(0.8);">
+            </button>
+        </div>
+    </div>
+
 </div>
+
 <footer class="bg-light text-dark mt-5 pt-4 border-top">
     <div class="container">
         <div class="row text-start align-items-start">

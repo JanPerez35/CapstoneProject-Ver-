@@ -36,9 +36,8 @@
                 <li class="nav-item flex-fill text-center">
                     <a href="{{ route('inventory_management') }}"
                        class="btn w-100
-   {{ request()->routeIs('inventory_management') ? 'btn-success' : 'btn-outline-success' }}">
+       {{ request()->routeIs('inventory_management', 'inventory_management.borrows', 'inventory_management.inventory_statistics') ? 'btn-success' : 'btn-outline-success' }}">
                         <i class="bi bi-boxes"></i>
-
                         Gestión de Inventario
                     </a>
                 </li>

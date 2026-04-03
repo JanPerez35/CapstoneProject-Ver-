@@ -24,36 +24,47 @@ private function logActivity($action, $comment = null)
     ]);
 }
 
-public function index(Request $request)
-{
-    $query = Equipment::query();
+    public function index(Request $request)
+    {
+        $query = Equipment::query();
 
-    // Search filter
-    if ($request->filled('search')) {
-        $search = $request->search;
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
 
-        $query->where(function ($q) use ($search) {
-            $q->where('description', 'like', '%' . $search . '%')
-              ->orWhere('category', 'like', '%' . $search . '%')
-              ->orWhere('location', 'like', '%' . $search . '%');
-        });
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', '%' . $search . '%')
+                    ->orWhere('category', 'like', '%' . $search . '%')
+                    ->orWhere('location', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Category filter
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        // Pagination + keep filters in URL
+        $items = $query->paginate(18)->withQueryString();
+
+        // Categories list
+        $categories = Equipment::select('category')
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+
+        // Locations list
+        $locations = Equipment::select('location')
+            ->whereNotNull('location')
+            ->where('location', '!=', '')
+            ->distinct()
+            ->orderBy('location')
+            ->pluck('location');
+
+        return view('inventory_management.admin_inventory', compact('items', 'categories', 'locations'));
     }
-
-    // Category filter
-    if ($request->filled('category')) {
-        $query->where('category', $request->category);
-    }
-
-    // Pagination + keep filters in URL
-    $items = $query->paginate(18)->withQueryString();
-
-    // Categories list
-    $categories = Equipment::select('category')
-        ->distinct()
-        ->pluck('category');
-
-    return view('inventory_management.admin_inventory', compact('items', 'categories'));
-}
 
 public function update(Request $request, $id)
 {
@@ -276,16 +287,21 @@ public function cart()
     return view('cart.index', compact('cart'));
 }
 
-public function removeFromCart($id)
-{
-    $cart = session()->get('cart', []);
+    public function removeFromCart($id)
+    {
+        $cart = session()->get('cart', []);
 
-    if (isset($cart[$id])) {
-        unset($cart[$id]);
-        session()->put('cart', $cart);
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
+            session()->put('cart', $cart);
+        }
+
+        $shouldReopenCart = !empty($cart);
+
+        return redirect()->back()
+            ->with('cart_removed_success', 'Item removido del carrito correctamente.')
+            ->with('reopen_cart_modal', $shouldReopenCart);
     }
-    return redirect()->back()->with('success', 'Item eliminado del carrito..');
-}
 
     public function checkoutCart(Request $request)
     {

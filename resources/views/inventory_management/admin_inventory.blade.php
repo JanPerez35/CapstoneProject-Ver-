@@ -1,6 +1,8 @@
 <x-layout title="Gestión de Inventario">
     <x-navbar></x-navbar>
 
+    @vite('resources/js/inv_management_validate.js')
+
     <div class="container py-4">
 
         {{-- Header --}}
@@ -50,50 +52,53 @@
         </div>
 
         {{-- Buscar + filtrar --}}
-        <form method="GET" action="{{ route('inventory_management') }}" class="row mb-4 g-3">
+        <form method="GET" action="{{ route('inventory_management') }}" class="mb-4">
+            <div class="row g-3 align-items-stretch mb-3">
+                <div class="col-lg-10">
+                    <div class="input-group search-group h-100">
+                        <span class="input-group-text bg-white border-0">
+                            <i class="bi bi-search"></i>
+                        </span>
 
-            <div class="col-md-8">
-                <div class="input-group search-group">
-                    <span class="input-group-text bg-white border-0">
-                        <i class="bi bi-search"></i>
-                    </span>
+                        <input
+                            type="text"
+                            name="search"
+                            class="form-control border-0"
+                            placeholder="Buscar equipo deportivo..."
+                            value="{{ request('search') }}"
+                        >
+                    </div>
+                </div>
 
-                    <input
-                        type="text"
-                        name="search"
-                        class="form-control border-0"
-                        placeholder="Buscar equipo deportivo..."
-                        value="{{ request('search') }}"
-                    >
+                <div class="col-lg-2 d-grid">
+                    <button type="submit" class="btn btn-success h-100 fw-semibold">
+                        Buscar
+                    </button>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <select
-                    name="category"
-                    class="form-select border-2 border-dark"
-                    onchange="this.form.submit()"
-                >
-                    <option value="">Todas las categorías</option>
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-4">
+                    <select
+                        name="category"
+                        class="form-select border-2 border-dark"
+                    >
+                        <option value="">Todas las categorías</option>
 
-                    @foreach($categories as $cat)
-                        <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>
-                            {{ $cat }}
-                        </option>
-                    @endforeach
-                </select>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>
+                                {{ $cat }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-auto">
+                    <a href="{{ route('inventory_management') }}" class="btn btn-outline-secondary">
+                        Limpiar filtros
+                    </a>
+                </div>
             </div>
-
-            <div class="col-12 d-flex gap-2">
-                <button type="submit" class="btn btn-success">
-                    Buscar
-                </button>
-
-                <a href="{{ route('inventory_management') }}" class="btn btn-outline-secondary">
-                    Limpiar filtros
-                </a>
-            </div>
-
         </form>
 
         {{-- Cards --}}
@@ -144,182 +149,207 @@
                             <div class="mt-auto d-grid gap-3">
                                 <button
                                     type="button"
-                                    class="btn btn-outline-warning"
+                                    class="btn btn-warning w-100 fw-bold"
                                     data-bs-toggle="modal"
                                     data-bs-target="#editItemModal{{ $item->id }}"
                                 >
                                     Editar
                                 </button>
 
-                                <form action="{{ route('equipment.destroy', $item->id) }}" method="POST">
+                                <form action="{{ route('equipment.destroy', $item->id) }}" method="POST" class="d-grid deleteItemForm">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-danger">
-                                        <i class="bi bi-trash me-1"></i> Eliminar Item
+                                    <button type="submit" class="btn btn-danger w-100">
+                                        Eliminar Item
                                     </button>
                                 </form>
                             </div>
                         </div>
                     </div>
                 </div>
-        {{-- Edit Modal --}}
-        <div class="modal fade" id="editItemModal{{ $item->id }}" tabindex="-1" aria-labelledby="editItemModalLabel{{ $item->id }}" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content rounded-4 border-0 shadow">
-                    <div class="modal-header border-0 pb-0">
-                        <div>
-                            <h4 class="modal-title fw-bold" id="editItemModalLabel{{ $item->id }}">Editar Item</h4>
-                            <p class="text-muted mb-0">Actualiza la información del equipo</p>
+
+                {{-- Edit Modal --}}
+                <div class="modal fade" id="editItemModal{{ $item->id }}" tabindex="-1" aria-labelledby="editItemModalLabel{{ $item->id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content rounded-4 border-0 shadow">
+                            <div class="modal-header border-0 pb-0">
+                                <div>
+                                    <h4 class="modal-title fw-bold" id="editItemModalLabel{{ $item->id }}">Editar Item</h4>
+                                    <p class="text-muted mb-0">Actualiza la información del equipo</p>
+                                </div>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            </div>
+
+                            <div class="modal-body">
+                                <form class="editItemForm" method="POST" action="{{ route('equipment.update', $item->id) }}" enctype="multipart/form-data" novalidate>
+                                    @csrf
+                                    @method('PUT')
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            Nombre / Descripción<span class="text-danger">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name="description"
+                                            class="form-control form-control-lg"
+                                            value="{{ $item->description }}"
+                                            placeholder="Ejemplo: Bola de Volibol"
+                                            required
+                                        >
+                                        <div class="form-text">
+                                            Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                        </div>
+                                        <div class="invalid-feedback d-block error-description"></div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            Categoría<span class="text-danger">*</span>
+                                        </label>
+
+                                        <select class="form-select form-select-lg mb-2 edit-category-existing">
+                                            <option value="">Selecciona una categoría existente</option>
+                                            @foreach($categories as $category)
+                                                <option value="{{ $category }}" {{ $item->category === $category ? 'selected' : '' }}>
+                                                    {{ $category }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+
+                                        <input
+                                            type="text"
+                                            class="form-control form-control-lg edit-category-new"
+                                            placeholder="O escribe una categoría nueva"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="category"
+                                            class="edit-category-final"
+                                            value="{{ $item->category }}"
+                                        >
+
+                                        <div class="form-text">
+                                            Entre 5 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
+                                        </div>
+                                        <div class="invalid-feedback d-block error-category"></div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            Ubicación<span class="text-danger">*</span>
+                                        </label>
+
+                                        <select class="form-select form-select-lg mb-2 edit-location-existing">
+                                            <option value="">Selecciona una ubicación existente</option>
+                                            @foreach($locations as $location)
+                                                <option value="{{ $location }}" {{ $item->location === $location ? 'selected' : '' }}>
+                                                    {{ $location }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+
+                                        <input
+                                            type="text"
+                                            class="form-control form-control-lg edit-location-new"
+                                            placeholder="O escribe una ubicación nueva"
+                                        >
+
+                                        <input
+                                            type="hidden"
+                                            name="location"
+                                            class="edit-location-final"
+                                            value="{{ $item->location }}"
+                                        >
+
+                                        <div class="form-text">
+                                            Entre 5 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
+                                        </div>
+                                        <div class="invalid-feedback d-block error-location"></div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            Cantidad Total<span class="text-danger">*</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="quantity"
+                                            class="form-control form-control-lg"
+                                            min="1"
+                                            value="{{ $item->quantity }}"
+                                            placeholder="Ej. 10"
+                                            required
+                                        >
+                                        <div class="form-text">
+                                            Debe ser un número entero mayor o igual a 1.
+                                        </div>
+                                        <div class="invalid-feedback d-block error-quantity"></div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">
+                                            Cantidad Disponible<span class="text-danger">*</span>
+                                        </label>
+                                        <input
+                                            type="number"
+                                            name="available_quantity"
+                                            class="form-control form-control-lg"
+                                            min="0"
+                                            value="{{ $item->available_quantity }}"
+                                            placeholder="Ej. 8"
+                                            required
+                                        >
+                                        <div class="form-text">
+                                            Debe ser un número entero igual o mayor a 0 y no puede exceder la cantidad total.
+                                        </div>
+                                        <div class="invalid-feedback d-block error-available"></div>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <label for="edit_image_{{ $item->id }}" class="form-label fw-semibold">
+                                            Nueva Imagen (opcional)
+                                        </label>
+                                        <input
+                                            type="file"
+                                            class="d-none"
+                                            id="edit_image_{{ $item->id }}"
+                                            name="image"
+                                            accept=".jpg,.jpeg,image/jpeg"
+                                        >
+                                    </div>
+
+                                    <label for="edit_image_{{ $item->id }}" class="form-control form-control-lg text-center py-3" style="cursor:pointer;">
+                                        <i class="bi bi-upload me-2"></i>
+                                        Subir nueva imagen
+                                    </label>
+
+                                    <small class="text-muted d-block fst-italic mt-2">
+                                        Solo 1 imagen permitida. Formato JPEG/JPG. Máximo 2MB.
+                                    </small>
+                                    <div class="invalid-feedback d-block error-image"></div>
+
+                                    <div class="modal-footer border-0 px-0 pb-0">
+                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                            Cancelar
+                                        </button>
+                                        <button type="submit" class="btn btn-warning">
+                                            Guardar cambios
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                    </div>
-
-                    <div class="modal-body">
-                        <form class="editItemForm" method="POST" action="{{ route('equipment.update', $item->id) }}" enctype="multipart/form-data" novalidate>
-                            @csrf
-                            @method('PUT')
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">
-                                    Nombre / Descripción<span class="text-danger">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="description"
-                                    class="form-control form-control-lg"
-                                    value="{{ $item->description }}"
-                                    placeholder="Ejemplo: Bola de Volibol"
-                                    pattern="^[A-Za-z0-9\s\.,\-]{5,100}$"
-                                    title="Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion."
-                                    required
-                                >
-                                <div class="form-text">
-                                    Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
-                                </div>
-                                <div class="invalid-feedback d-block error-description"></div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">
-                                    Categoría<span class="text-danger">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="category"
-                                    class="form-control form-control-lg"
-                                    list="categoryOptions"
-                                    value="{{ $item->category }}"
-                                    placeholder="Selecciona o escribe una categoría"
-                                    pattern="^[A-Za-z0-9\s\.,\-]{3,100}$"
-                                    title="Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion."
-                                    required
-                                >
-                                <div class="form-text">
-                                    Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
-                                </div>
-                                <div class="invalid-feedback d-block error-category"></div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">
-                                    Cantidad Total<span class="text-danger">*</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    name="quantity"
-                                    class="form-control form-control-lg"
-                                    min="1"
-                                    value="{{ $item->quantity }}"
-                                    placeholder="Ej. 10"
-                                    required
-                                >
-                                <div class="form-text">
-                                    Debe ser un número entero mayor o igual a 1.
-                                </div>
-                                <div class="invalid-feedback d-block error-quantity"></div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">
-                                    Cantidad Disponible<span class="text-danger">*</span>
-                                </label>
-                                <input
-                                    type="number"
-                                    name="available_quantity"
-                                    class="form-control form-control-lg"
-                                    min="0"
-                                    value="{{ $item->available_quantity }}"
-                                    placeholder="Ej. 8"
-                                    required
-                                >
-                                <div class="form-text">
-                                    Debe ser un número entero igual o mayor a 0 y no puede exceder la cantidad total.
-                                </div>
-                                <div class="invalid-feedback d-block error-available"></div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">
-                                    Ubicación<span class="text-danger">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="location"
-                                    class="form-control form-control-lg"
-                                    list="locationOptions"
-                                    value="{{ $item->location }}"
-                                    placeholder="Selecciona o escribe una ubicación"
-                                    pattern="^[A-Za-z0-9\s\.,\-\/]{5,100}$"
-                                    title='Entre 5 y 100 caracteres. Se permite "/" para múltiples ubicaciones.'
-                                    required
-                                >
-                                <div class="form-text">
-                                    Entre 5 y 100 caracteres. Puedes usar "/" para múltiples ubicaciones (ej. CM-104/Almacén A).
-                                </div>
-                                <div class="invalid-feedback d-block error-location"></div>
-                            </div>
-
-                            <div class="mb-2">
-                                <label for="edit_image_{{ $item->id }}" class="form-label fw-semibold">
-                                    Nueva Imagen (opcional)
-                                </label>
-                                <input
-                                    type="file"
-                                    class="d-none"
-                                    id="edit_image_{{ $item->id }}"
-                                    name="image"
-                                    accept=".jpg,.jpeg,image/jpeg"
-                                >
-                            </div>
-
-                            <label for="edit_image_{{ $item->id }}" class="form-control form-control-lg text-center py-3" style="cursor:pointer;">
-                                <i class="bi bi-upload me-2"></i>
-                                Subir nueva imagen
-                            </label>
-
-                            <small class="text-muted d-block fst-italic mt-2">
-                                Solo 1 imagen permitida. Formato JPEG/JPG. Máximo 2MB.
-                            </small>
-                            <div class="invalid-feedback d-block error-image"></div>
-
-                            <div class="modal-footer border-0 px-0 pb-0">
-                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                    Cancelar
-                                </button>
-                                <button type="submit" class="btn btn-warning">
-                                    Guardar cambios
-                                </button>
-                            </div>
-                        </form>
                     </div>
                 </div>
-            </div>
-        </div>
 
             @empty
                 <div class="col-12">
-                    <div class="alert alert-info rounded-4 shadow-sm">
-                        No hay items en el inventario todavía.
+                    <div class="text-center py-5">
+                        <p class="fw-semibold fs-3 text-secondary mb-0">
+                            Item no disponible.
+                        </p>
                     </div>
                 </div>
             @endforelse
@@ -334,13 +364,6 @@
             No se encontraron items con ese filtro.
         </div>
     </div>
-
-    {{-- Shared datalist --}}
-    <datalist id="categoryOptions">
-        @foreach($categories as $category)
-            <option value="{{ $category }}">
-        @endforeach
-    </datalist>
 
     {{-- Modal Agregar Item --}}
     <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
@@ -367,12 +390,12 @@
                     </div>
                 </div>
 
-
                 <div class="modal-body">
                     <form id="addItemForm"
                           method="POST"
                           action="{{ route('inventory.store') }}"
-                          enctype="multipart/form-data">
+                          enctype="multipart/form-data"
+                          novalidate>
                         @csrf
 
                         <div class="mb-3">
@@ -384,7 +407,7 @@
                                 id="nombre_item"
                                 name="description"
                                 class="form-control form-control-lg"
-                                placeholder="Ejemplo. Bola de Volibol"
+                                placeholder="Ejemplo: Bola de Volibol"
                                 required
                             >
                             <div class="form-text">
@@ -394,28 +417,244 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="categoria" class="form-label fw-semibold">
+                            <label class="form-label fw-semibold">
                                 Categoría<span class="text-danger">*</span>
                             </label>
+
+                            <select id="categoria_existente" class="form-select form-select-lg mb-2">
+                                <option value="">Selecciona una categoría existente</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category }}">{{ $category }}</option>
+                                @endforeach
+                            </select>
+
                             <input
                                 type="text"
-                                id="categoria"
-                                name="category"
+                                id="categoria_nueva"
                                 class="form-control form-control-lg"
-                                list="categoryOptions"
-                                pattern="^[A-Za-z0-9\s\.,\-]{3,100}$"
-                                title="Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion."
-                                required
+                                placeholder="O escribe una categoría nueva"
                             >
-                            <datalist id="categoryOptions">
-                                @foreach($categories as $category)
-                                    <option value="{{ $category }}">
-                                @endforeach
-                            </datalist>
+
+                            <input type="hidden" id="categoria" name="category">
+
                             <div class="form-text">
-                                Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                Entre 5 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
                             </div>
                             <div class="invalid-feedback d-block" id="categoriaError"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Ubicación<span class="text-danger">*</span>
+                            </label>
+
+                            <select id="ubicacion_existente" class="form-select form-select-lg mb-2">
+                                <option value="">Selecciona una ubicación existente</option>
+                                @foreach($locations as $location)
+                                    <option value="{{ $location }}">{{ $location }}</option>
+                                    document.addEventListener('DOMContentLoaded', function () {
+                                    const borrowDateFilter = document.getElementById('borrowDateFilter');
+                                    const borrowSearch = document.getElementById('borrowSearch');
+
+                                    const pendingEmptyState = document.getElementById('pendingEmptyState');
+                                    const activeEmptyState = document.getElementById('activeEmptyState');
+
+                                    const pendingRequestsList = document.getElementById('pendingRequestsList');
+                                    const activeRequestsList = document.getElementById('activeRequestsList');
+
+                                    const approveToastEl = document.getElementById('approveToast');
+                                    const denyToastEl = document.getElementById('denyToast');
+                                    const returnedToastEl = document.getElementById('returnedToast');
+
+                                    const approveConfirmModalEl = document.getElementById('approveConfirmModal');
+                                    const approveConfirmText = document.getElementById('approveConfirmText');
+                                    const confirmApproveBtn = document.getElementById('confirmApproveBtn');
+
+                                    const denyConfirmModalEl = document.getElementById('denyConfirmModal');
+                                    const denyConfirmText = document.getElementById('denyConfirmText');
+                                    const confirmDenyBtn = document.getElementById('confirmDenyBtn');
+
+                                    const returnConfirmModalEl = document.getElementById('returnConfirmModal');
+                                    const returnConfirmText = document.getElementById('returnConfirmText');
+                                    const confirmReturnBtn = document.getElementById('confirmReturnBtn');
+
+                                    let approveFormToSubmit = null;
+                                    let denyFormToSubmit = null;
+                                    let returnFormToSubmit = null;
+
+                                    function getAllRequests() {
+                                    return document.querySelectorAll('.borrow-request');
+                                    }
+
+                                    function updateEmptyStates() {
+                                    const pendingVisible = [...document.querySelectorAll('.pending-request')]
+                                    .filter(card => !card.classList.contains('d-none'));
+
+                                    const activeVisible = [...document.querySelectorAll('.active-request')]
+                                    .filter(card => !card.classList.contains('d-none'));
+
+                                    if (pendingEmptyState) {
+                                    pendingEmptyState.classList.toggle('d-none', pendingVisible.length !== 0);
+                                    }
+
+                                    if (activeEmptyState) {
+                                    activeEmptyState.classList.toggle('d-none', activeVisible.length !== 0);
+                                    }
+                                    }
+
+                                    function filterRequests() {
+                                    const selectedDate = borrowDateFilter ? borrowDateFilter.value : '';
+                                    const searchValue = borrowSearch ? borrowSearch.value.trim().toLowerCase() : '';
+
+                                    getAllRequests().forEach(card => {
+                                    const cardDate = card.dataset.date || '';
+                                    const cardSearch = (card.dataset.search || '').toLowerCase();
+
+                                    const matchesDate = !selectedDate || cardDate === selectedDate;
+                                    const matchesSearch = !searchValue || cardSearch.includes(searchValue);
+
+                                    card.classList.toggle('d-none', !(matchesDate && matchesSearch));
+                                    });
+
+                                    updateEmptyStates();
+                                    }
+
+                                    function showToast(toastElement) {
+                                    if (!toastElement || !window.bootstrap) return;
+                                    const toast = window.bootstrap.Toast.getOrCreateInstance(toastElement);
+                                    toast.show();
+                                    }
+
+                                    function attachApproveEvents() {
+                                    document.querySelectorAll('.approve-special-btn').forEach(button => {
+                                    if (button.dataset.bound === 'true') return;
+                                    button.dataset.bound = 'true';
+
+                                    button.addEventListener('click', function () {
+                                    const form = button.closest('form');
+                                    const card = button.closest('.borrow-request');
+                                    const itemName = card?.querySelector('h5')?.textContent?.trim() || 'este caso especial';
+
+                                    approveFormToSubmit = form;
+                                    approveConfirmText.textContent = `¿Seguro que quieres aprobar "${itemName}"?`;
+
+                                    const modal = window.bootstrap.Modal.getOrCreateInstance(approveConfirmModalEl);
+                                    modal.show();
+                                    });
+                                    });
+                                    }
+
+                                    function attachDenyEvents() {
+                                    document.querySelectorAll('.deny-special-btn').forEach(button => {
+                                    if (button.dataset.bound === 'true') return;
+                                    button.dataset.bound = 'true';
+
+                                    button.addEventListener('click', function () {
+                                    const form = button.closest('form');
+                                    const card = button.closest('.borrow-request');
+                                    const itemName = card?.querySelector('h5')?.textContent?.trim() || 'este caso especial';
+
+                                    denyFormToSubmit = form;
+                                    denyConfirmText.textContent = `¿Seguro que quieres denegar "${itemName}"?`;
+
+                                    const modal = window.bootstrap.Modal.getOrCreateInstance(denyConfirmModalEl);
+                                    modal.show();
+                                    });
+                                    });
+                                    }
+
+                                    function attachReturnEvents() {
+                                    document.querySelectorAll('.mark-returned-btn').forEach(button => {
+                                    if (button.dataset.bound === 'true') return;
+                                    button.dataset.bound = 'true';
+
+                                    button.addEventListener('click', function () {
+                                    const form = button.closest('form');
+                                    const card = button.closest('.borrow-request');
+                                    const itemName = card?.querySelector('h5')?.textContent?.trim() || 'el equipo';
+
+                                    returnFormToSubmit = form;
+                                    returnConfirmText.textContent = `¿Estás seguro de que "${itemName}" fue devuelto?`;
+
+                                    const modal = window.bootstrap.Modal.getOrCreateInstance(returnConfirmModalEl);
+                                    modal.show();
+                                    });
+                                    });
+                                    }
+
+                                    if (confirmApproveBtn) {
+                                    confirmApproveBtn.addEventListener('click', function () {
+                                    if (!approveFormToSubmit) return;
+
+                                    const modal = window.bootstrap.Modal.getOrCreateInstance(approveConfirmModalEl);
+                                    modal.hide();
+
+                                    showToast(approveToastEl);
+
+                                    setTimeout(() => {
+                                    approveFormToSubmit.submit();
+                                    }, 500);
+                                    });
+                                    }
+
+                                    if (confirmDenyBtn) {
+                                    confirmDenyBtn.addEventListener('click', function () {
+                                    if (!denyFormToSubmit) return;
+
+                                    const modal = window.bootstrap.Modal.getOrCreateInstance(denyConfirmModalEl);
+                                    modal.hide();
+
+                                    showToast(denyToastEl);
+
+                                    setTimeout(() => {
+                                    denyFormToSubmit.submit();
+                                    }, 500);
+                                    });
+                                    }
+
+                                    if (confirmReturnBtn) {
+                                    confirmReturnBtn.addEventListener('click', function () {
+                                    if (!returnFormToSubmit) return;
+
+                                    const modal = window.bootstrap.Modal.getOrCreateInstance(returnConfirmModalEl);
+                                    modal.hide();
+
+                                    showToast(returnedToastEl);
+
+                                    setTimeout(() => {
+                                    returnFormToSubmit.submit();
+                                    }, 500);
+                                    });
+                                    }
+
+                                    if (borrowSearch) {
+                                    borrowSearch.addEventListener('input', filterRequests);
+                                    }
+
+                                    if (borrowDateFilter) {
+                                    borrowDateFilter.addEventListener('change', filterRequests);
+                                    }
+
+                                    attachApproveEvents();
+                                    attachDenyEvents();
+                                    attachReturnEvents();
+                                    updateEmptyStates();
+                                    });@endforeach
+                            </select>
+
+                            <input
+                                type="text"
+                                id="ubicacion_nueva"
+                                class="form-control form-control-lg"
+                                placeholder="O escribe una ubicación nueva"
+                            >
+
+                            <input type="hidden" id="ubicacion" name="location">
+
+                            <div class="form-text">
+                                Entre 5 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
+                            </div>
+                            <div class="invalid-feedback d-block" id="ubicacionError"></div>
                         </div>
 
                         <div class="mb-3">
@@ -454,36 +693,6 @@
                                 Debe ser un número entero igual o mayor a 0 y no puede exceder la cantidad total.
                             </div>
                             <div class="invalid-feedback d-block" id="cantidadDisponibleError"></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="ubicacion" class="form-label fw-semibold">
-                                Ubicación<span class="text-danger">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                id="ubicacion"
-                                name="location"
-                                class="form-control form-control-lg"
-                                list="locationOptions"
-                                pattern="^[A-Za-z0-9\s\.,\-\/]{5,100}$"
-                                title="Entre 5 y 100 caracteres. Se permite '/' para múltiples ubicaciones."
-                                required
-                            >
-                            <datalist id="locationOptions">
-                                <option value="CM-104/Almacén A">
-                                <option value="CM-104/Almacén B">
-                                <option value="CM-104">
-                                <option value="CM-101">
-                                <option value="CM-213">
-                                <option value="CM-B13">
-                                <option value="CM-115">
-                                <option value="CM-210">
-                            </datalist>
-                            <div class="form-text">
-                                Entre 5 y 100 caracteres. Puedes usar "/" para múltiples ubicaciones (ej. CM-104/Almacén A) o Puedes seleccionar una ubicación existente.
-                            </div>
-                            <div class="invalid-feedback d-block" id="ubicacionError"></div>
                         </div>
 
                         <div class="mb-2">
@@ -536,15 +745,15 @@
         </div>
     </div>
 
-    {{-- Modal Eliminar Item --}}
-    <div class="modal fade" id="deleteInventoryItemModal" tabindex="-1" aria-labelledby="deleteInventoryItemModalLabel" aria-hidden="true">
+    {{-- Modal confirmar borrar --}}
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0">
                     <div>
-                        <h4 class="modal-title fw-bold" id="deleteInventoryItemModalLabel">Eliminar Item</h4>
-                        <p class="text-muted mb-0" id="deleteInventoryItemText">
-                            ¿Seguro que deseas eliminar este item?
+                        <h4 class="modal-title fw-bold" id="confirmDeleteModalLabel">Eliminar Item</h4>
+                        <p class="text-muted mb-0" id="confirmDeleteText">
+                            ¿Seguro que quieres borrar este item?
                         </p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -554,8 +763,34 @@
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                         Cancelar
                     </button>
-                    <button type="button" class="btn btn-danger" id="confirmDeleteInventoryItem">
-                        Eliminar
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                        Sí, borrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal confirmar editar --}}
+    <div class="modal fade" id="confirmEditModal" tabindex="-1" aria-labelledby="confirmEditModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h4 class="modal-title fw-bold" id="confirmEditModalLabel">Confirmar edición</h4>
+                        <p class="text-muted mb-0" id="confirmEditText">
+                            ¿Seguro que quieres editar este item?
+                        </p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-footer border-0 pt-2">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-warning" id="confirmEditBtn">
+                        Sí, guardar cambios
                     </button>
                 </div>
             </div>
@@ -563,9 +798,8 @@
     </div>
 
     {{-- Toasts --}}
-    {{-- Toasts --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
-        <div id="inventoryToast"
+        <div id="inventoryAddToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert"
              aria-live="assertive"
@@ -585,17 +819,15 @@
             </div>
         </div>
 
-        <!--  ERROR (Eliminar item) -->
         <div id="inventoryDeleteToast"
-             class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
              style="width: auto; max-width: fit-content;">
-
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
-                    Item eliminado del inventario
+                    Item borrado correctamente
                 </div>
 
                 <button type="button"
@@ -607,674 +839,25 @@
             </div>
         </div>
 
+        <div id="inventoryEditToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: auto; max-width: fit-content;">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
+                    Item editado correctamente
+                </div>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="background-color: transparent; border: none; transform: scale(0.8);">
+                </button>
+            </div>
+        </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const addItemForm = document.getElementById('addItemForm');
-
-            const nombreInput = document.getElementById('nombre_item');
-            const categoriaInput = document.getElementById('categoria');
-            const cantidadTotalInput = document.getElementById('cantidad_total');
-            const cantidadDisponibleInput = document.getElementById('cantidad_disponible');
-            const ubicacionInput = document.getElementById('ubicacion');
-            const imageInput = document.getElementById('imagen');
-
-            const imageError = document.getElementById('imageError');
-            const previewWrapper = document.getElementById('previewWrapper');
-            const imagePreview = document.getElementById('imagePreview');
-            const addItemModal = document.getElementById('addItemModal');
-            const inventoryToast = document.getElementById('inventoryToast');
-            const submitAddItemBtn = document.getElementById('submitAddItemBtn');
-
-            const nombreItemError = document.getElementById('nombreItemError');
-            const categoriaError = document.getElementById('categoriaError');
-            const cantidadTotalError = document.getElementById('cantidadTotalError');
-            const cantidadDisponibleError = document.getElementById('cantidadDisponibleError');
-            const ubicacionError = document.getElementById('ubicacionError');
-
-            const deleteInventoryItemModal = document.getElementById('deleteInventoryItemModal');
-            const deleteInventoryItemText = document.getElementById('deleteInventoryItemText');
-            const confirmDeleteInventoryItem = document.getElementById('confirmDeleteInventoryItem');
-
-            const inventoryCards = document.getElementById('inventoryCards');
-
-            let inventoryCardToDelete = null;
-
-            const inventoryAllowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
-            const maxImageSize = 2 * 1024 * 1024;
-
-            function setFieldError(field, errorElement, message) {
-                field.classList.add('is-invalid');
-                errorElement.textContent = message;
-            }
-
-            function clearFieldError(field, errorElement) {
-                field.classList.remove('is-invalid');
-                errorElement.textContent = '';
-            }
-
-            function clearAllInvalid() {
-                clearFieldError(nombreInput, nombreItemError);
-                clearFieldError(categoriaInput, categoriaError);
-                clearFieldError(cantidadTotalInput, cantidadTotalError);
-                clearFieldError(cantidadDisponibleInput, cantidadDisponibleError);
-                clearFieldError(ubicacionInput, ubicacionError);
-                clearFieldError(imageInput, imageError);
-            }
-
-            function resetImageState() {
-                imageError.textContent = '';
-                imageInput.classList.remove('is-invalid');
-                previewWrapper.classList.add('d-none');
-                imagePreview.src = '';
-            }
-
-            function validateTextField(field, errorElement, fieldLabel, showError = true) {
-                const value = field.value.trim();
-
-                if (showError) {
-                    clearFieldError(nombreInput, nombreItemError);
-                }
-
-                if (!value) {
-                    if (showError) {
-                        setFieldError(field, errorElement, `La ${fieldLabel} es obligatoria.`);
-                    }
-                    return false;
-                }
-
-                if (!inventoryAllowedTextRegex.test(value)) {
-                    if (showError) {
-                        setFieldError(
-                            field,
-                            errorElement,
-                            `La ${fieldLabel} contiene caracteres no permitidos. Solo se permiten letras, números, espacios, punto, coma y guion.`
-                        );
-                    }
-                    return false;
-                }
-
-                if (value.length < 5) {
-                    if (showError) {
-                        setFieldError(field, errorElement, `La ${fieldLabel} debe tener al menos 5 caracteres.`);
-                    }
-                    return false;
-                }
-
-                if (value.length > 100) {
-                    if (showError) {
-                        setFieldError(field, errorElement, `La ${fieldLabel} no puede exceder 100 caracteres.`);
-                    }
-                    return false;
-                }
-
-                return true;
-            }
-
-            function validateNombreItem(showError = true) {
-                return validateTextField(nombreInput, nombreItemError, 'nombre del item', showError);
-            }
-
-            function validateUbicacion(showError = true) {
-                return validateTextField(ubicacionInput, ubicacionError, 'ubicación', showError);
-            }
-
-            function validateCategoria(showError = true) {
-                const value = categoriaInput.value.trim();
-
-                if (showError) clearFieldError(categoriaInput, categoriaError);
-
-                if (!value) {
-                    if (showError) {
-                        setFieldError(categoriaInput, categoriaError, 'La categoría es obligatoria.');
-                    }
-                    return false;
-                }
-
-                if (!/^[A-Za-z0-9\s\.,\-]{3,100}$/.test(value)) {
-                    if (showError) {
-                        setFieldError(
-                            categoriaInput,
-                            categoriaError,
-                            'Formato inválido para categoría. Solo se permiten letras, números, espacios, punto, coma y guion, entre 5 y 100 caracteres.'
-                        );
-                    }
-                    return false;
-                }
-
-                return true;
-            }
-
-            function validateUbicacion(showError = true) {
-                const value = ubicacionInput.value.trim();
-
-                if (showError) clearFieldError(ubicacionInput, ubicacionError);
-
-                if (!value) {
-                    if (showError) {
-                        setFieldError(ubicacionInput, ubicacionError, 'La ubicación es obligatoria.');
-                    }
-                    return false;
-                }
-
-                if (!/^[A-Za-z0-9\s\.,\-\/]{5,100}$/.test(value)) {
-                    if (showError) {
-                        setFieldError(
-                            ubicacionInput,
-                            ubicacionError,
-                            'Formato inválido para ubicación. Solo se permiten letras, números, espacios, punto, coma, guion y "/", entre 5 y 100 caracteres.'
-                        );
-                    }
-                    return false;
-                }
-
-                return true;
-            }
-
-            function validateCantidadTotal(showError = true) {
-                const value = cantidadTotalInput.value.trim();
-
-                if (showError) clearFieldError(cantidadTotalInput, cantidadTotalError);
-
-                if (!value) {
-                    if (showError) setFieldError(cantidadTotalInput, cantidadTotalError, 'La cantidad total es obligatoria.');
-                    return false;
-                }
-
-                if (!Number.isInteger(Number(value)) || Number(value) < 1) {
-                    if (showError) setFieldError(cantidadTotalInput, cantidadTotalError, 'Debe ser un número entero mayor o igual a 1.');
-                    return false;
-                }
-
-                return true;
-            }
-
-            function validateCantidadDisponible(showError = true) {
-                const value = cantidadDisponibleInput.value.trim();
-                const totalValue = cantidadTotalInput.value.trim();
-
-                if (showError) clearFieldError(cantidadDisponibleInput, cantidadDisponibleError);
-
-                if (value === '') {
-                    if (showError) setFieldError(cantidadDisponibleInput, cantidadDisponibleError, 'La cantidad disponible es obligatoria.');
-                    return false;
-                }
-
-                if (!Number.isInteger(Number(value)) || Number(value) < 0) {
-                    if (showError) setFieldError(cantidadDisponibleInput, cantidadDisponibleError, 'Debe ser un número entero igual o mayor a 0.');
-                    return false;
-                }
-
-                if (totalValue !== '' && Number(value) > Number(totalValue)) {
-                    if (showError) setFieldError(cantidadDisponibleInput, cantidadDisponibleError, 'No puede exceder la cantidad total.');
-                    return false;
-                }
-
-                return true;
-            }
-
-            function validateImage(showError = true) {
-                const file = imageInput.files[0];
-
-                if (showError) clearFieldError(imageInput, imageError);
-
-                if (!file) {
-                    if (showError) setFieldError(imageInput, imageError, 'Debes subir una imagen.');
-                    return false;
-                }
-
-                if (file.type !== 'image/jpeg') {
-                    if (showError) setFieldError(imageInput, imageError, 'Solo se permiten archivos JPG o JPEG.');
-                    return false;
-                }
-
-                if (file.size > maxImageSize) {
-                    if (showError) setFieldError(imageInput, imageError, 'La imagen no puede exceder 2 MB.');
-                    return false;
-                }
-
-                return true;
-            }
-
-            function updateAddItemButtonState() {
-                const isReady =
-                    validateNombreItem(false) &&
-                    validateCategoria(false) &&
-                    validateCantidadTotal(false) &&
-                    validateCantidadDisponible(false) &&
-                    validateUbicacion(false) &&
-                    validateImage(false);
-
-                submitAddItemBtn.disabled = !isReady;
-            }
-
-            function updateStatusBadge(cardWrapper) {
-                const availableText = cardWrapper.querySelector('.inventory-available');
-                const badge = cardWrapper.querySelector('.inventory-status-badge');
-
-                if (!availableText || !badge) return;
-
-                const available = parseInt(availableText.textContent, 10);
-
-                if (available > 0) {
-                    badge.textContent = 'Disponible';
-                    badge.style.backgroundColor = '#6FC21F';
-                    badge.style.color = 'white';
-                } else {
-                    badge.textContent = 'No disponible';
-                    badge.style.backgroundColor = '#dc3545';
-                    badge.style.color = 'white';
-                }
-            }
-
-            function attachInventoryCardEvents() {
-                document.querySelectorAll('.inventory-card-wrapper').forEach((cardWrapper) => {
-                    const totalDecreaseBtn = cardWrapper.querySelector('.inventory-total-decrease');
-                    const totalIncreaseBtn = cardWrapper.querySelector('.inventory-total-increase');
-                    const availableDecreaseBtn = cardWrapper.querySelector('.inventory-available-decrease');
-                    const availableIncreaseBtn = cardWrapper.querySelector('.inventory-available-increase');
-
-                    const totalText = cardWrapper.querySelector('.inventory-total');
-                    const availableText = cardWrapper.querySelector('.inventory-available');
-                    const totalControlText = cardWrapper.querySelector('.inventory-total-control');
-                    const availableControlText = cardWrapper.querySelector('.inventory-available-control');
-
-                    const deleteBtn = cardWrapper.querySelector('.open-delete-item-modal');
-
-                    if (totalDecreaseBtn && totalText && totalControlText && availableText && availableControlText) {
-                        totalDecreaseBtn.onclick = function () {
-                            let currentTotal = parseInt(totalText.textContent, 10);
-                            let currentAvailable = parseInt(availableText.textContent, 10);
-
-                            if (currentTotal > 1) {
-                                currentTotal -= 1;
-
-                                if (currentAvailable > currentTotal) {
-                                    currentAvailable = currentTotal;
-                                }
-
-                                totalText.textContent = currentTotal;
-                                totalControlText.textContent = currentTotal;
-                                availableText.textContent = currentAvailable;
-                                availableControlText.textContent = currentAvailable;
-
-                                updateStatusBadge(cardWrapper);
-                            }
-                        };
-                    }
-
-                    if (totalIncreaseBtn && totalText && totalControlText) {
-                        totalIncreaseBtn.onclick = function () {
-                            let currentTotal = parseInt(totalText.textContent, 10);
-                            currentTotal += 1;
-
-                            totalText.textContent = currentTotal;
-                            totalControlText.textContent = currentTotal;
-
-                            updateStatusBadge(cardWrapper);
-                        };
-                    }
-
-                    if (availableDecreaseBtn && availableText && availableControlText) {
-                        availableDecreaseBtn.onclick = function () {
-                            let currentAvailable = parseInt(availableText.textContent, 10);
-
-                            if (currentAvailable > 0) {
-                                currentAvailable -= 1;
-                                availableText.textContent = currentAvailable;
-                                availableControlText.textContent = currentAvailable;
-
-                                updateStatusBadge(cardWrapper);
-                            }
-                        };
-                    }
-
-                    if (availableIncreaseBtn && availableText && availableControlText && totalText) {
-                        availableIncreaseBtn.onclick = function () {
-                            let currentAvailable = parseInt(availableText.textContent, 10);
-                            const currentTotal = parseInt(totalText.textContent, 10);
-
-                            if (currentAvailable < currentTotal) {
-                                currentAvailable += 1;
-                                availableText.textContent = currentAvailable;
-                                availableControlText.textContent = currentAvailable;
-
-                                updateStatusBadge(cardWrapper);
-                            }
-                        };
-                    }
-
-                    if (deleteBtn) {
-                        deleteBtn.onclick = function () {
-                            inventoryCardToDelete = cardWrapper;
-
-                            const itemName = deleteBtn.dataset.itemName || 'este item';
-                            deleteInventoryItemText.textContent = `¿Seguro que deseas eliminar "${itemName}" del inventario?`;
-
-                            const modalInstance = window.bootstrap.Modal.getOrCreateInstance(deleteInventoryItemModal);
-                            modalInstance.show();
-                        };
-                    }
-
-                    updateStatusBadge(cardWrapper);
-                });
-            }
-
-            imageInput.addEventListener('change', function () {
-                const file = imageInput.files[0];
-
-
-                resetImageState();
-
-                if (!file) {
-                    updateAddItemButtonState();
-                    return;
-                }
-
-                if (file.type !== 'image/jpeg') {
-                    setFieldError(imageInput, imageError, 'Solo se permiten archivos JPG o JPEG.');
-                    updateAddItemButtonState();
-                    return;
-                }
-
-                if (file.size > maxImageSize) {
-                    setFieldError(imageInput, imageError, 'La imagen no puede exceder 2 MB.');
-                    updateAddItemButtonState();
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    imagePreview.src = e.target.result;
-                    previewWrapper.classList.remove('d-none');
-                };
-                reader.readAsDataURL(file);
-
-                clearFieldError(imageInput, imageError);
-                updateAddItemButtonState();
-            });
-
-            nombreInput.addEventListener('input', function () {
-                const value = nombreInput.value;
-
-                if (value.length > 100) {
-                    nombreInput.value = value.slice(0, 100);
-
-                    setFieldError(
-                        nombreInput,
-                        nombreItemError,
-                        'El nombre del item no puede exceder 100 caracteres.'
-                    );
-                } else {
-                    validateNombreItem(true);
-                }
-
-                updateAddItemButtonState();
-            });
-
-            categoriaInput.addEventListener('input', function () {
-                validateCategoria(true);
-                updateAddItemButtonState();
-            });
-
-            ubicacionInput.addEventListener('input', function () {
-                ubicacionInput.value = ubicacionInput.value.slice(0, 100);
-                validateUbicacion(true);
-                updateAddItemButtonState();
-            });
-
-            categoriaInput.addEventListener('change', function () {
-                validateCategoria(true);
-                updateAddItemButtonState();
-            });
-
-            cantidadTotalInput.addEventListener('input', function () {
-                validateCantidadTotal(true);
-                validateCantidadDisponible(true);
-                updateAddItemButtonState();
-            });
-
-            cantidadDisponibleInput.addEventListener('input', function () {
-                validateCantidadDisponible(true);
-                updateAddItemButtonState();
-            });
-
-            ubicacionInput.addEventListener('input', function () {
-                const value = ubicacionInput.value;
-
-                if (value.length > 100) {
-                    ubicacionInput.value = value.slice(0, 100);
-
-                    setFieldError(
-                        ubicacionInput,
-                        ubicacionError,
-                        'La ubicación no puede exceder 100 caracteres.'
-                    );
-                } else {
-                    validateUbicacion(true);
-                }
-
-                updateAddItemButtonState();
-            });
-
-            // .addEventListener('input', filterInventoryCards);
-            // inventoryCateinventorySearchgoryFilter.addEventListener('change', filterInventoryCards);
-
-            addItemForm.addEventListener('submit', function (e) {
-                const isNombreValid = validateNombreItem(true);
-                const isCategoriaValid = validateCategoria(true);
-                const isCantidadTotalValid = validateCantidadTotal(true);
-                const isCantidadDisponibleValid = validateCantidadDisponible(true);
-                const isUbicacionValid = validateUbicacion(true);
-                const isImageValid = validateImage(true);
-
-                if (
-                    !isNombreValid ||
-                    !isCategoriaValid ||
-                    !isCantidadTotalValid ||
-                    !isCantidadDisponibleValid ||
-                    !isUbicacionValid ||
-                    !isImageValid
-                ) {
-                    e.preventDefault();
-                    updateAddItemButtonState();
-                    return;
-                }
-
-                submitAddItemBtn.disabled = true;
-            });
-
-            if (confirmDeleteInventoryItem) {
-                confirmDeleteInventoryItem.addEventListener('click', function () {
-                    if (inventoryCardToDelete) {
-                        inventoryCardToDelete.remove();
-                        inventoryCardToDelete = null;
-                    }
-
-                    const modalInstance = window.bootstrap.Modal.getOrCreateInstance(deleteInventoryItemModal);
-                    modalInstance.hide();
-
-                    setTimeout(() => {
-                        const deleteToastInstance = window.bootstrap.Toast.getOrCreateInstance(inventoryDeleteToast);
-                        deleteToastInstance.show();
-                    }, 250);
-                });
-            }
-
-            attachInventoryCardEvents();
-            updateAddItemButtonState();
-            // filterInventoryCards();
-        });
-    </script>
-
-    @if(session('success'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const inventoryToast = document.getElementById('inventoryToast');
-            if (inventoryToast) {
-                const toastInstance = bootstrap.Toast.getOrCreateInstance(inventoryToast);
-                toastInstance.show();
-            }
-        });
-    </script>
-    @endif
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.editItemForm').forEach(form => {
-                const description = form.querySelector('input[name="description"]');
-                const category = form.querySelector('input[name="category"]');
-                const location = form.querySelector('input[name="location"]');
-                const quantity = form.querySelector('input[name="quantity"]');
-                const available = form.querySelector('input[name="available_quantity"]');
-                const image = form.querySelector('input[name="image"]');
-
-                const errorDescription = form.querySelector('.error-description');
-                const errorCategory = form.querySelector('.error-category');
-                const errorLocation = form.querySelector('.error-location');
-                const errorQuantity = form.querySelector('.error-quantity');
-                const errorAvailable = form.querySelector('.error-available');
-                const errorImage = form.querySelector('.error-image');
-
-                function setError(input, errorElement, message) {
-                    input.classList.add('is-invalid');
-                    if (errorElement) errorElement.textContent = message;
-                }
-
-                function clearError(input, errorElement) {
-                    input.classList.remove('is-invalid');
-                    if (errorElement) errorElement.textContent = '';
-                }
-
-                function validateDescription(showError = true) {
-                    const value = description.value.trim();
-
-                    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]{5,100}$/.test(value)) {
-                        if (showError) {
-                            setError(description, errorDescription, 'Formato inválido para descripción.');
-                        }
-                        return false;
-                    }
-
-                    clearError(description, errorDescription);
-                    return true;
-                }
-
-                function validateCategory(showError = true) {
-                    const value = category.value.trim();
-
-                    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]{3,100}$/.test(value)) {
-                        if (showError) {
-                            setError(category, errorCategory, 'Formato inválido para categoría.');
-                        }
-                        return false;
-                    }
-
-                    clearError(category, errorCategory);
-                    return true;
-                }
-
-                function validateLocation(showError = true) {
-                    const value = location.value.trim();
-
-                    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-\/]{5,100}$/.test(value)) {
-                        if (showError) {
-                            setError(location, errorLocation, 'Formato inválido para ubicación.');
-                        }
-                        return false;
-                    }
-
-                    clearError(location, errorLocation);
-                    return true;
-                }
-
-                function validateQuantity(showError = true) {
-                    const value = Number(quantity.value);
-
-                    if (!Number.isInteger(value) || value < 1) {
-                        if (showError) {
-                            setError(quantity, errorQuantity, 'Debe ser mayor o igual a 1.');
-                        }
-                        return false;
-                    }
-
-                    clearError(quantity, errorQuantity);
-                    return true;
-                }
-
-                function validateAvailable(showError = true) {
-                    const qty = Number(quantity.value);
-                    const avail = Number(available.value);
-
-                    if (!Number.isInteger(avail) || avail < 0 || avail > qty) {
-                        if (showError) {
-                            setError(available, errorAvailable, 'Debe ser mayor o igual a 0 y no exceder la cantidad total.');
-                        }
-                        return false;
-                    }
-
-                    clearError(available, errorAvailable);
-                    return true;
-                }
-
-                function validateImage(showError = true) {
-                    if (image.files.length === 0) {
-                        clearError(image, errorImage);
-                        return true; // optional in edit
-                    }
-
-                    const file = image.files[0];
-
-                    if (!['image/jpeg', 'image/jpg'].includes(file.type)) {
-                        if (showError) {
-                            setError(image, errorImage, 'Solo JPG o JPEG.');
-                        }
-                        return false;
-                    }
-
-                    if (file.size > 2 * 1024 * 1024) {
-                        if (showError) {
-                            setError(image, errorImage, 'Máximo 2MB.');
-                        }
-                        return false;
-                    }
-
-                    clearError(image, errorImage);
-                    return true;
-                }
-
-                // Live validation
-                description.addEventListener('input', () => validateDescription(true));
-                category.addEventListener('input', () => validateCategory(true));
-                category.addEventListener('change', () => validateCategory(true));
-                location.addEventListener('input', () => validateLocation(true));
-                location.addEventListener('change', () => validateLocation(true));
-
-                quantity.addEventListener('input', () => {
-                    validateQuantity(true);
-                    validateAvailable(true);
-                });
-
-                available.addEventListener('input', () => validateAvailable(true));
-                image.addEventListener('change', () => validateImage(true));
-
-                // Submit validation
-                form.addEventListener('submit', function (e) {
-                    const valid =
-                        validateDescription(true) &&
-                        validateCategory(true) &&
-                        validateLocation(true) &&
-                        validateQuantity(true) &&
-                        validateAvailable(true) &&
-                        validateImage(true);
-
-                    if (!valid) {
-                        e.preventDefault();
-                    }
-                });
-            });
-        });
-        </script>
 
 </x-layout>
