@@ -22,45 +22,57 @@
 
 
         <!-- Filters and searches -->
-        <div class="row mb-4 g-3">
+        <form method="GET" action="{{ route('access_logs') }}" class="row mb-4 g-3">
             <div class="col-md-6">
                 <div class="input-group search-group">
-                   <span class="input-group-text bg-white border-0">
-                         <i class="bi bi-search"></i>
-                   </span>
+                    <span class="input-group-text bg-white border-0">
+                        <i class="bi bi-search"></i>
+                    </span>
                     <input
                         type="text"
+                        name="search"
                         class="form-control border-0"
                         placeholder="Buscar por usuario, IP o detalles..."
-                        >
-                    </div>
+                        value="{{ request('search') }}"
+                    >
                 </div>
-                <div class="col-lg-3">
-                    <select class="form-select border-2 border-dark">
-                        <option selected>Todos los Roles</option>
-                        <option>Usuario</option>
-                        <option>Administrador de Mercado</option>
-                        <option>Administrador de Inventario</option>
-                        <option>Administrador de Facilidad</option>
-                        <option>Super Administrador</option>
-                    </select>
-                </div>
+            </div>
+
             <div class="col-lg-3">
-                <select class="form-select border-2 border-dark">
-                    <option selected>Todos los Eventos</option>
-                    <option>Inicio de Sesión</option>
-                    <option>Cierre de Sesión</option>
-                    <option>Error de Acceso</option>
-                    <option>Acceso Admin</option>
-                    <option>Ver Mercado</option>
-                    <option>Ver Inventario</option>
-                    <option>Solicitud de Préstamo</option>
-                    <option>Publicación Creada</option>
+                <select name="role" class="form-select border-2 border-dark" onchange="this.form.submit()">
+                    <option value="">Todos los Roles</option>
+                    <option value="usuario" {{ request('role') == 'usuario' ? 'selected' : '' }}>Usuario</option>
+                    <option value="administrador de mercado" {{ request('role') == 'administrador de mercado' ? 'selected' : '' }}>Administrador de Mercado</option>
+                    <option value="administrador de inventario" {{ request('role') == 'administrador de inventario' ? 'selected' : '' }}>Administrador de Inventario</option>
+                    <option value="administrador de facilidad" {{ request('role') == 'administrador de facilidad' ? 'selected' : '' }}>Administrador de Facilidad</option>
+                    <option value="super administrador" {{ request('role') == 'super administrador' ? 'selected' : '' }}>Super Administrador</option>
                 </select>
             </div>
-            </div>
-        </div>
 
+            <div class="col-lg-3">
+                <select name="event" class="form-select border-2 border-dark" onchange="this.form.submit()">
+                    <option value="">Todos los Eventos</option>
+                    <option value="Inicio de Sesión" {{ request('event') == 'Inicio de Sesión' ? 'selected' : '' }}>Inicio de Sesión</option>
+                    <option value="Cierre de Sesión" {{ request('event') == 'Cierre de Sesión' ? 'selected' : '' }}>Cierre de Sesión</option>
+                    <option value="Error de Acceso" {{ request('event') == 'Error de Acceso' ? 'selected' : '' }}>Error de Acceso</option>
+                    <option value="Acceso Admin" {{ request('event') == 'Acceso Admin' ? 'selected' : '' }}>Acceso Admin</option>
+                    <option value="Ver Mercado" {{ request('event') == 'Ver Mercado' ? 'selected' : '' }}>Ver Mercado</option>
+                    <option value="Ver Inventario" {{ request('event') == 'Ver Inventario' ? 'selected' : '' }}>Ver Inventario</option>
+                    <option value="Solicitud de Préstamo" {{ request('event') == 'Solicitud de Préstamo' ? 'selected' : '' }}>Solicitud de Préstamo</option>
+                    <option value="Publicación Creada" {{ request('event') == 'Publicación Creada' ? 'selected' : '' }}>Publicación Creada</option>
+                </select>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    Buscar
+                </button>
+
+                <a href="{{ route('access_logs') }}" class="btn btn-outline-secondary">
+                    Limpiar filtros
+                </a>
+            </div>
+        </form>
 
         <!-- Access log table -->
         <div class="card border rounded-4 shadow-sm overflow-hidden">
@@ -87,7 +99,7 @@
                     <tbody>
                         @foreach($logs as $log)
                         <tr>
-                            <td class="px-4 py-3">{{ $log->created_at }}</td>
+                            <td class="px-4 py-3">{{ \Carbon\Carbon::parse($log->created_at)->timezone('America/Puerto_Rico')->format('m/d/Y h:i A') }}</td>
                             <td class="px-4 py-3">
                                 {{ trim(($log->user->first_name ?? '') . ' ' . ($log->user->last_name ?? '')) ?: 'Usuario' }}
                             </td>
@@ -112,20 +124,10 @@
         </div>
 
     <!--Pagination placeholder-->
-    <nav aria-label="Page navigation example" class="mt-4">
-        <ul class="pagination justify-content-center" id=accessLogsPagination>
-            <li class="page-item disabled">
-                <a class="page-link" href="#" aria-label="Previous">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
-
-            <li class="page-item">
-                <a class="page-link" href="#" aria-label="Next">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
+    @if ($logs->hasPages())
+    <div class="mt-4 d-flex justify-content-center">
+        {{ $logs->links('pagination::bootstrap-5') }}
+    </div>
+@endif
 </x-layout>
 

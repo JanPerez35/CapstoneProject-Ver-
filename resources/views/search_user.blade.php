@@ -43,6 +43,11 @@
                     </div>
                 </div>
             </div>
+                <div class="mt-3 d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary" id="clearUserFilters">
+                        Limpiar filtros
+                    </button>
+                </div>
         </div>
 
         {{-- Empty state --}}
@@ -527,6 +532,20 @@
                     pendingRoleChange = null;
                 }
             });
+
+            const clearUserFiltersBtn = document.getElementById('clearUserFilters');
+
+            if (clearUserFiltersBtn) {
+                clearUserFiltersBtn.addEventListener('click', function () {
+
+                    // Reset inputs
+                    userSearchInput.value = '';
+                    roleFilterSelect.value = 'all';
+
+                    // Re-run filter
+                    filterUsers();
+                });
+            }
 
             document.querySelectorAll('.ban-toggle-btn').forEach(button => {
                 button.addEventListener('click', function () {

@@ -15,10 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const borrowModalStock = document.getElementById('borrowModalStock');
     const borrowQuantity = document.getElementById('borrowQuantity');
     const confirmAddToCart = document.getElementById('confirmAddToCart');
+    const borrowQuantityError = document.getElementById('borrowQuantityError');
 
     const specialCaseCheck = document.getElementById('special_case');
     const specialCaseFields = document.getElementById('specialCaseFields');
     const loanFullName = document.getElementById('loanFullName');
+    const loanFullNameError = document.getElementById('loanFullNameError');
     const loanPickupDate = document.getElementById('pickup_date') || document.getElementById('loanPickupDate');
     const pickupTimeBlock = document.getElementById('pickupTimeBlock');
     const returnDate = document.getElementById('return_date') || document.getElementById('returnDate');
@@ -26,24 +28,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const loanTermsCheck = document.getElementById('loanTermsCheck');
     const loanTermsError = document.getElementById('loanTermsError');
-
     const loanPickupDateError = document.getElementById('loanPickupDateError');
     const pickupTimeBlockError = document.getElementById('pickupTimeBlockError');
     const returnDateError = document.getElementById('returnDateError');
     const specialReasonError = document.getElementById('specialReasonError');
 
-    // Cart UI references (cart is managed server-side; these prevent ReferenceErrors)
-    const cartCount = document.getElementById('cartCount');
-    const cartItemsContainer = document.getElementById('cartItemsContainer');
-    const cartToastEl = document.getElementById('cartToast');
-    const cartToastMessage = document.getElementById('cartToastMessage');
     const cartModal = document.getElementById('cartModal');
+    const checkoutCartForm = document.getElementById('checkoutCartForm');
     const submitLoanRequest = document.getElementById('submitLoanRequest');
     const submitToastEl = document.getElementById('submitToast');
-    const loanDetailsSection = document.getElementById('loanDetailsSection');
-    const emptyCartSection = document.getElementById('emptyCartSection');
-    const cartFooterActions = document.getElementById('cartFooterActions');
-    let cart = [];
 
     const hasBorrowModal =
         borrowModal &&
@@ -53,18 +46,15 @@ document.addEventListener('DOMContentLoaded', () => {
         borrowQuantity &&
         confirmAddToCart;
 
-    const hasCartUI =
-        cartCount &&
-        cartItemsContainer &&
-        cartToastEl &&
-        cartToastMessage;
-
     let currentItem = {
+        id: null,
         name: '',
         stock: 0,
         image: '',
         location: 'Sala de Equipo A'
     };
+
+    const loanAllowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
 
     function toLocalDateString(date) {
         const year = date.getFullYear();
@@ -82,82 +72,70 @@ document.addEventListener('DOMContentLoaded', () => {
     function isBlockedPickupDay(dateString) {
         const date = new Date(`${dateString}T00:00:00`);
         const day = date.getDay();
-        return day === 5 || day === 6 || day === 0;
+        return day === 0 || day === 5 || day === 6;
     }
 
     function setMinDates() {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-
         const minDate = toLocalDateString(tomorrow);
 
         if (loanPickupDate) loanPickupDate.min = minDate;
         if (returnDate) returnDate.min = minDate;
     }
 
-    function updateCartBadge() {
-        if (!cartCount) return;
-        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-        cartCount.textContent = totalItems;
-    }
-
-    function updateCartLabels() {
-        // leave empty if you don't yet have extra cart label elements
-    }
-
     function setLoanFieldError(field, errorElement, message) {
         if (!field) return;
         field.classList.add('is-invalid');
-        if (errorElement) {
-            errorElement.textContent = message;
-        }
+        if (errorElement) errorElement.textContent = message;
     }
 
     function clearLoanFieldError(field, errorElement) {
         if (!field) return;
         field.classList.remove('is-invalid');
-        if (errorElement) {
-            errorElement.textContent = '';
-        }
+        if (errorElement) errorElement.textContent = '';
     }
 
     function clearLoanValidation() {
         clearLoanFieldError(loanFullName, loanFullNameError);
+        clearLoanFieldError(loanTermsCheck, loanTermsError);
         clearLoanFieldError(loanPickupDate, loanPickupDateError);
         clearLoanFieldError(pickupTimeBlock, pickupTimeBlockError);
         clearLoanFieldError(returnDate, returnDateError);
         clearLoanFieldError(specialReason, specialReasonError);
     }
 
-    const loanAllowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
+    function setBorrowQuantityError(message) {
+        if (borrowQuantity) borrowQuantity.classList.add('is-invalid');
+        if (borrowQuantityError) borrowQuantityError.textContent = message;
+    }
+
+    function clearBorrowQuantityError() {
+        if (borrowQuantity) borrowQuantity.classList.remove('is-invalid');
+        if (borrowQuantityError) borrowQuantityError.textContent = '';
+    }
 
     function validateLoanFullNameField(showError = true) {
-        const name = loanFullName?.value.trim() || '';
+        if (!loanFullName) return true;
+
+        const name = loanFullName.value.trim();
 
         if (showError) {
             clearLoanFieldError(loanFullName, loanFullNameError);
         }
 
-        if (!loanFullName) return true;
-
         if (!name) {
-            if (showError) {
-                setLoanFieldError(loanFullName, loanFullNameError, 'El nombre completo es obligatorio.');
-            }
+            if (showError) setLoanFieldError(loanFullName, loanFullNameError, 'El nombre completo es obligatorio.');
             return false;
         }
 
         if (name.length < 5) {
-            if (showError) {
-                setLoanFieldError(loanFullName, loanFullNameError, 'El nombre debe tener al menos 5 caracteres.');
-            }
+            if (showError) setLoanFieldError(loanFullName, loanFullNameError, 'El nombre debe tener al menos 5 caracteres.');
             return false;
         }
 
         if (name.length > 80) {
-            if (showError) {
-                setLoanFieldError(loanFullName, loanFullNameError, 'El nombre no puede exceder 80 caracteres.');
-            }
+            if (showError) setLoanFieldError(loanFullName, loanFullNameError, 'El nombre no puede exceder 80 caracteres.');
             return false;
         }
 
@@ -175,6 +153,70 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
+    function validateLoanTermsField(showError = true) {
+        if (!loanTermsCheck) return true;
+
+        const isValid = loanTermsCheck.checked;
+
+        if (showError) {
+            clearLoanFieldError(loanTermsCheck, loanTermsError);
+        }
+
+        if (!isValid) {
+            if (showError) {
+                setLoanFieldError(loanTermsCheck, loanTermsError, 'Debes aceptar los términos y condiciones.');
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateSpecialReasonField(showError = true) {
+        if (!specialCaseCheck?.checked) return true;
+        if (!specialReason) return true;
+
+        const reason = specialReason.value.trim();
+
+        if (showError) {
+            clearLoanFieldError(specialReason, specialReasonError);
+        }
+
+        if (!reason) {
+            if (showError) {
+                setLoanFieldError(specialReason, specialReasonError, 'La razón del caso especial es obligatoria.');
+            }
+            return false;
+        }
+
+        if (reason.length < 10) {
+            if (showError) {
+                setLoanFieldError(specialReason, specialReasonError, 'La razón debe tener al menos 10 caracteres.');
+            }
+            return false;
+        }
+
+        if (reason.length > 500) {
+            if (showError) {
+                setLoanFieldError(specialReason, specialReasonError, 'La razón no puede exceder 500 caracteres.');
+            }
+            return false;
+        }
+
+        if (!loanAllowedTextRegex.test(reason)) {
+            if (showError) {
+                setLoanFieldError(
+                    specialReason,
+                    specialReasonError,
+                    'Solo se permiten letras, números, espacios, punto, coma y guion.'
+                );
+            }
+            return false;
+        }
+
+        return true;
+    }
+
     function validateLoanForm(showErrors = true) {
         if (showErrors) {
             clearLoanValidation();
@@ -182,13 +224,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let hasError = false;
 
-        const pickupDateValue = loanPickupDate?.value;
-        const pickupTime = pickupTimeBlock?.value;
+        const pickupDateValue = loanPickupDate?.value || '';
+        const pickupTime = pickupTimeBlock?.value || '';
         const isSpecialCase = specialCaseCheck?.checked;
-        const returnVal = returnDate?.value;
-        const reason = specialReason?.value.trim();
+        const returnVal = returnDate?.value || '';
 
         if (loanFullName && !validateLoanFullNameField(showErrors)) {
+            hasError = true;
+        }
+
+        if (!validateLoanTermsField(showErrors)) {
             hasError = true;
         }
 
@@ -239,32 +284,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            if (specialReason && !reason) {
-                if (showErrors) {
-                    setLoanFieldError(specialReason, specialReasonError, 'La razón del caso especial es obligatoria.');
-                }
+            if (!validateSpecialReasonField(showErrors)) {
                 hasError = true;
-            } else if (specialReason && reason) {
-                if (reason.length < 10) {
-                    if (showErrors) {
-                        setLoanFieldError(specialReason, specialReasonError, 'La razón debe tener al menos 10 caracteres.');
-                    }
-                    hasError = true;
-                } else if (reason.length > 500) {
-                    if (showErrors) {
-                        setLoanFieldError(specialReason, specialReasonError, 'La razón no puede exceder 500 caracteres.');
-                    }
-                    hasError = true;
-                } else if (!loanAllowedTextRegex.test(reason)) {
-                    if (showErrors) {
-                        setLoanFieldError(
-                            specialReason,
-                            specialReasonError,
-                            'Solo se permiten letras, números, espacios, punto, coma y guion.'
-                        );
-                    }
-                    hasError = true;
-                }
             }
         }
 
@@ -273,167 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateLoanSubmitButtonState() {
         if (!submitLoanRequest) return;
-        const formIsValid = validateLoanForm(false);
-        const hasItems = cart.length > 0;
-        submitLoanRequest.disabled = !(formIsValid && hasItems);
-    }
-
-    function resetLoanForm() {
-        if (loanFullName) loanFullName.value = '';
-        if (loanPickupDate) loanPickupDate.value = '';
-        if (pickupTimeBlock) pickupTimeBlock.value = '';
-        if (returnDate) returnDate.value = '';
-        if (specialReason) specialReason.value = '';
-
-        clearLoanValidation();
-
-        if (specialCaseCheck) {
-            specialCaseCheck.checked = false;
-        }
-
-        if (specialCaseFields) {
-            specialCaseFields.classList.add('d-none');
-        }
-
-        if (returnDate) returnDate.required = false;
-        if (specialReason) specialReason.required = false;
-
-        updateLoanSubmitButtonState();
-    }
-
-    function renderCart() {
-        if (!cartItemsContainer) return;
-
-        if (cart.length === 0) {
-            cartItemsContainer.innerHTML = '';
-            return;
-        }
-
-        cartItemsContainer.innerHTML = cart.map((item, index) => `
-            <div class="row g-0 align-items-center px-3 py-3 border-bottom">
-                <div class="col-6">
-                    <div class="d-flex align-items-center gap-3">
-                        <img
-                            src="${item.image}"
-                            alt="${item.name}"
-                            style="width: 80px; height: 80px; object-fit: cover; border-radius: 12px;"
-                        >
-                        <div>
-                            <h6 class="fw-bold mb-1">${item.name}</h6>
-                            <p class="text-muted mb-0">${item.location}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-3">
-                    <div class="d-flex justify-content-center align-items-center gap-3">
-                        <button class="btn btn-outline-secondary btn-sm decrease-cart-item" data-index="${index}">-</button>
-                        <span class="fw-bold fs-6">${item.quantity}</span>
-                        <button class="btn btn-outline-secondary btn-sm increase-cart-item" data-index="${index}">+</button>
-                    </div>
-                </div>
-
-                <div class="col-3 text-center">
-                    <button class="btn btn-link text-danger p-0 remove-cart-item" data-index="${index}">
-                        <i class="bi bi-trash-fill fs-5"></i>
-                    </button>
-                </div>
-            </div>
-        `).join('');
-
-        attachCartActionEvents();
-    }
-
-    function updateCartUI() {
-        updateCartBadge();
-        updateCartLabels();
-        renderCart();
-
-        const hasItems = cart.length > 0;
-
-        if (loanDetailsSection && emptyCartSection) {
-            if (hasItems) {
-                loanDetailsSection.classList.remove('d-none');
-                emptyCartSection.classList.add('d-none');
-            } else {
-                loanDetailsSection.classList.add('d-none');
-                emptyCartSection.classList.remove('d-none');
-            }
-        }
-
-        if (cartFooterActions) {
-            if (hasItems) {
-                cartFooterActions.classList.remove('d-none');
-            } else {
-                cartFooterActions.classList.add('d-none');
-            }
-        }
-        updateLoanSubmitButtonState();
-    }
-
-    function attachCartActionEvents() {
-        document.querySelectorAll('.remove-cart-item').forEach((button) => {
-            button.addEventListener('click', () => {
-                const index = parseInt(button.dataset.index, 10);
-                cart.splice(index, 1);
-                updateCartUI();
-            });
-        });
-
-        document.querySelectorAll('.increase-cart-item').forEach((button) => {
-            button.addEventListener('click', () => {
-                const index = parseInt(button.dataset.index, 10);
-
-                if (cart[index].quantity < cart[index].stock) {
-                    cart[index].quantity += 1;
-                    updateCartUI();
-                }
-            });
-        });
-
-        document.querySelectorAll('.decrease-cart-item').forEach((button) => {
-            button.addEventListener('click', () => {
-                const index = parseInt(button.dataset.index, 10);
-
-                if (cart[index].quantity > 1) {
-                    cart[index].quantity -= 1;
-                    updateCartUI();
-                }
-            });
-        });
-    }
-
-    if (hasBorrowModal) {
-        const cartToast = hasCartUI ? bootstrap.Toast.getOrCreateInstance(cartToastEl) : null;
-
-        borrowButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                const itemId = button.dataset.itemId;
-                currentItem.name = button.dataset.itemName || '';
-                currentItem.stock = parseInt(button.dataset.itemStock || '1', 10);
-                currentItem.image = button.dataset.itemImage || '';
-                currentItem.location = button.dataset.itemLocation || 'Sala de Equipo A';
-
-                if (borrowEquipmentId) borrowEquipmentId.value = itemId;
-                borrowModalText.textContent = `Selecciona la cantidad de ${currentItem.name} que deseas`;
-                borrowModalImage.src = currentItem.image;
-                borrowModalImage.alt = currentItem.name;
-                borrowModalStock.textContent = currentItem.stock;
-
-                borrowQuantity.value = 1;
-                borrowQuantity.min = 1;
-                borrowQuantity.max = currentItem.stock;
-            });
-        });
-
-        borrowQuantity.addEventListener('input', () => {
-            let value = parseInt(borrowQuantity.value, 10);
-
-            if (isNaN(value) || value < 1) value = 1;
-            if (value > currentItem.stock) value = currentItem.stock;
-
-            borrowQuantity.value = value;
-        });   
+            const formIsValid = validateLoanForm(false);
+            submitLoanRequest.disabled = !formIsValid;
     }
 
     if (specialCaseCheck && specialCaseFields) {
@@ -460,6 +322,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if (loanFullName) {
+        loanFullName.addEventListener('input', () => {
+            loanFullName.value = loanFullName.value.slice(0, 80);
+            validateLoanFullNameField(true);
+            updateLoanSubmitButtonState();
+        });
+    }
+
+    if (loanTermsCheck) {
+        loanTermsCheck.addEventListener('change', () => {
+            clearLoanFieldError(loanTermsCheck, loanTermsError);
+            updateLoanSubmitButtonState();
+        });
+    }
+
     if (loanPickupDate) {
         loanPickupDate.addEventListener('input', () => {
             clearLoanFieldError(loanPickupDate, loanPickupDateError);
@@ -473,6 +350,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 setLoanFieldError(loanPickupDate, loanPickupDateError, 'No se permiten viernes, sábados ni domingos.');
             }
 
+            updateLoanSubmitButtonState();
+        });
+    }
+
+    if (pickupTimeBlock) {
+        pickupTimeBlock.addEventListener('change', () => {
+            clearLoanFieldError(pickupTimeBlock, pickupTimeBlockError);
             updateLoanSubmitButtonState();
         });
     }
@@ -502,61 +386,96 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (loanFullName) {
-        loanFullName.addEventListener('input', () => {
-            loanFullName.value = loanFullName.value.slice(0, 80);
-            validateLoanFullNameField(true);
-            updateLoanSubmitButtonState();
-        });
-    }
-
-    if (pickupTimeBlock) {
-        pickupTimeBlock.addEventListener('change', () => {
-            clearLoanFieldError(pickupTimeBlock, pickupTimeBlockError);
-            updateLoanSubmitButtonState();
-        });
-    }
-
     if (specialReason) {
         specialReason.addEventListener('input', () => {
             specialReason.value = specialReason.value.slice(0, 500);
-            clearLoanFieldError(specialReason, specialReasonError);
+            validateSpecialReasonField(true);
             updateLoanSubmitButtonState();
         });
     }
 
-    if (submitLoanRequest && submitToastEl && cartModal) {
-        const submitToast = bootstrap.Toast.getOrCreateInstance(submitToastEl);
-
-        submitLoanRequest.addEventListener('click', () => {
+    if (checkoutCartForm && submitLoanRequest) {
+        checkoutCartForm.addEventListener('submit', (e) => {
             const isValid = validateLoanForm(true);
 
             if (!isValid) {
+                e.preventDefault();
                 updateLoanSubmitButtonState();
                 return;
             }
-
-            if (cart.length === 0) {
-                updateLoanSubmitButtonState();
-                return;
-            }
-
-            const cartModalInstance = bootstrap.Modal.getOrCreateInstance(cartModal);
-            cartModalInstance.hide();
-
-            cart = [];
-            updateCartUI();
-            resetLoanForm();
-
-                setTimeout(() => {
-                    submitToast.show();
-                }, 250);
-
-            });
-
-        setMinDates();
-        updateLoanSubmitButtonState();
+        });
     }
+
+    if (hasBorrowModal) {
+        borrowButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const itemId = button.dataset.itemId;
+                currentItem.id = itemId;
+                currentItem.name = button.dataset.itemName || '';
+                currentItem.stock = parseInt(button.dataset.itemStock || '1', 10);
+                currentItem.image = button.dataset.itemImage || '';
+                currentItem.location = button.dataset.itemLocation || 'Sala de Equipo A';
+
+                if (borrowEquipmentId) borrowEquipmentId.value = itemId;
+                borrowModalText.textContent = `Selecciona la cantidad de ${currentItem.name} que deseas`;
+                borrowModalImage.src = currentItem.image;
+                borrowModalImage.alt = currentItem.name;
+                borrowModalStock.textContent = currentItem.stock;
+
+                borrowQuantity.value = 1;
+                borrowQuantity.min = 1;
+                borrowQuantity.max = currentItem.stock;
+
+                clearBorrowQuantityError();
+            });
+        });
+
+        borrowQuantity.addEventListener('input', () => {
+            clearBorrowQuantityError();
+
+            if (borrowQuantity.value === '') return;
+
+            let value = parseInt(borrowQuantity.value, 10);
+
+            if (isNaN(value) || value < 1) {
+                borrowQuantity.value = 1;
+                setBorrowQuantityError('Debes pedir al menos 1 unidad.');
+                return;
+            }
+
+            if (value > currentItem.stock) {
+                borrowQuantity.value = currentItem.stock;
+                setBorrowQuantityError(`No puedes pedir más de la cantidad disponible (${currentItem.stock}).`);
+                return;
+            }
+
+            borrowQuantity.value = value;
+        });
+
+        confirmAddToCart.addEventListener('click', () => {
+            clearBorrowQuantityError();
+
+            const quantity = parseInt(borrowQuantity.value, 10);
+
+            if (isNaN(quantity) || quantity < 1) {
+                setBorrowQuantityError('Debes pedir al menos 1 unidad.');
+                return;
+            }
+
+            if (quantity > currentItem.stock) {
+                setBorrowQuantityError(`No puedes pedir más de la cantidad disponible (${currentItem.stock}).`);
+                return;
+            }
+
+            const borrowForm = document.getElementById('borrowForm');
+            if (borrowForm) {
+                borrowForm.submit();
+            }
+        });
+    }
+
+    setMinDates();
+    updateLoanSubmitButtonState();
 
     const deletePostModal = document.getElementById('deletePostModal');
     const deletePostModalText = document.getElementById('deletePostModalText');
@@ -1365,6 +1284,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
+        if (!allowedTextRegex.test(value)) {
+            if (showError) setFieldError(postTitle, postTitleError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+            return false;
+        }
+
 
         if (value.length < 5) {
             if (showError) setFieldError(postTitle, postTitleError, 'El título debe tener al menos 5 caracteres.');
@@ -1374,12 +1298,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (value.length > 100) {
             if (showError) setFieldError(postTitle, postTitleError, 'El título no puede exceder 100 caracteres.');
-            return false;
-        }
-
-
-        if (!allowedTextRegex.test(value)) {
-            if (showError) setFieldError(postTitle, postTitleError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
             return false;
         }
 
@@ -1404,21 +1322,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         }
 
-
-        if (value.length < 10) {
-            if (showError) setFieldError(postDescription, postDescriptionError, 'La descripción debe tener al menos 10 caracteres.');
-            return false;
-        }
-
-
-        if (value.length > 1000) {
-            if (showError) setFieldError(postDescription, postDescriptionError, 'La descripción no puede exceder 1000 caracteres.');
-            return false;
-        }
-
-
         if (!allowedTextRegex.test(value)) {
             if (showError) setFieldError(postDescription, postDescriptionError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+            return false;
+        }
+
+        if (value.length > 500) {
+            if (showError) setFieldError(postDescription, postDescriptionError, 'La descripción no puede exceder 500 caracteres.');
             return false;
         }
 
@@ -1540,7 +1450,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (postTitle) {
         postTitle.addEventListener('input', () => {
-            postTitle.value = postTitle.value.slice(0, 100);
+            const value = postTitle.value;
+
+            if (value.length > 100) {
+                setFieldError(postTitle, postTitleError, 'El título no puede exceder 100 caracteres.');
+            }
+
+            postTitle.value = value.slice(0, 100);
+
             validateTitle(true);
             updatePublishButtonState();
         });
@@ -1549,7 +1466,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (postDescription) {
         postDescription.addEventListener('input', () => {
-            postDescription.value = postDescription.value.slice(0, 1000);
+            const value = postDescription.value;
+
+            if (value.length > 500) {
+                setFieldError(postDescription, postDescriptionError, 'La descripción no puede exceder 500 caracteres.');
+            }
+
+            postDescription.value = value.slice(0, 500);
+
             validateDescription(true);
             updatePublishButtonState();
         });
@@ -1975,6 +1899,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
+        if (!allowedTextRegex.test(value)) {
+            if (showError) {
+                reportDescription.classList.add('is-invalid');
+                reportDescriptionError.textContent = 'Solo se permiten letras, números, espacios, punto, coma y guion.';
+            }
+            return false;
+        }
 
         if (value.length < 10) {
             if (showError) {
@@ -1992,16 +1923,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return false;
         }
-
-
-        if (!allowedTextRegex.test(value)) {
-            if (showError) {
-                reportDescription.classList.add('is-invalid');
-                reportDescriptionError.textContent = 'Solo se permiten letras, números, espacios, punto, coma y guion.';
-            }
-            return false;
-        }
-
 
         return true;
     }
@@ -2027,19 +1948,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
     if (reportDescription) {
         reportDescription.addEventListener('input', () => {
-            reportDescription.value = reportDescription.value.slice(0, 500);
+            const value = reportDescription.value;
 
-
-            if (reportDescription.value.trim() === '') {
-                reportDescription.classList.remove('is-invalid');
-                reportDescriptionError.textContent = '';
-            } else {
-                validateReportDescription(true);
+            if (value.length > 500) {
+                reportDescription.classList.add('is-invalid');
+                reportDescriptionError.textContent = 'La descripción no puede exceder 500 caracteres.';
             }
 
+            reportDescription.value = value.slice(0, 500);
+
+            // 🔥 ALWAYS validate (this fixes your issue)
+            validateReportDescription(true);
 
             updateReportButtonState();
         });

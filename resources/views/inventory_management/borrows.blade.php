@@ -42,7 +42,7 @@
         {{-- Filters --}}
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-body p-4">
-                <div class="row g-3 align-items-end">
+                <form method="GET" action="{{ route('inventory_management.borrows') }}" class="row g-3 align-items-end">
                     <div class="col-md-7">
                         <label for="borrowSearch" class="form-label fw-semibold">Buscar solicitud</label>
 
@@ -54,8 +54,10 @@
                             <input
                                 type="text"
                                 id="borrowSearch"
+                                name="search"
                                 class="form-control border-0"
-                                placeholder="Buscar por equipo, usuario, ubicación o fecha (dd/mm/yyyy)"
+                                placeholder="Buscar por equipo, usuario, ubicación o fecha"
+                                value="{{ request('search') }}"
                             >
                         </div>
                     </div>
@@ -65,10 +67,22 @@
                         <input
                             type="date"
                             id="borrowDateFilter"
+                            name="date"
                             class="form-control form-control-md border-2 border-dark"
+                            value="{{ request('date') }}"
                         >
                     </div>
-                </div>
+
+                    <div class="col-12 d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            Buscar
+                        </button>
+
+                        <a href="{{ route('inventory_management.borrows') }}" class="btn btn-outline-secondary">
+                            Limpiar filtros
+                        </a>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -119,11 +133,11 @@
                                                     </div>
 
                                                     <div class="col-md-4">
-                                                        <div><span class="text-muted">Recogida:</span> <strong>{{ $lending->start_time }}</strong></div>
+                                                        <div><span class="text-muted">Recogida:</span> <strong>{{ \Carbon\Carbon::parse($lending->start_time)->format('m/d/Y h:i A') }}</strong></div>
                                                     </div>
 
                                                     <div class="col-md-4">
-                                                        <div><span class="text-muted">Devolución:</span> <strong>{{ $lending->end_time }}</strong></div>
+                                                        <div><span class="text-muted">Devolución:</span> <strong>{{ \Carbon\Carbon::parse($lending->end_time)->format('m/d/Y h:i A') }}</strong></div>
                                                     </div>
                                                 </div>
 
@@ -535,8 +549,8 @@
                 });
             }
 
-            borrowDateFilter.addEventListener('change', filterRequests);
-            borrowSearch.addEventListener('input', filterRequests);
+            // borrowDateFilter.addEventListener('change', filterRequests);
+            // borrowSearch.addEventListener('input', filterRequests);
 
             attachApproveDenyEvents();
             attachReturnEvents();

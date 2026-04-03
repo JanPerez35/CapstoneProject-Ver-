@@ -1,35 +1,28 @@
 <x-layout title="Kinventario">
-<x-navbar>
+    <x-navbar>
     </x-navbar>
 
     <div class= "container py-4">
 
-<div class="mb-4">
-    <h1 class="fw-bold" >Bienvenido al Kinventario</h1>
-    <p>Aquí podrás pedir prestado equipo deportivo
-        directamente del departamento de Kinesiología.
-    </p>
-{{--    <p class="fw-bolder text-danger"> *IMPORTANTE: Usted es--}}
-{{--        responsable de entregar el equipo en la misma  condición  en la que se le fue entregado. <br>--}}
-{{--        Al acceder a esta pagina usted acepta los terminos y condiciones, donde--}}
-{{--        se hace totalmente responsable de reemplazar equipo dañado durante--}}
-{{--        el tiempo de prestamo del equipo.--}}
+        <div class="mb-4">
+            <h1 class="fw-bold" >Bienvenido al Kinventario</h1>
+            <p>Aquí podrás pedir prestado equipo deportivo
+                directamente del departamento de Kinesiología.
+            </p>
+            {{--    <p class="fw-bolder text-danger"> *IMPORTANTE: Usted es--}}
+            {{--        responsable de entregar el equipo en la misma  condición  en la que se le fue entregado. <br>--}}
+            {{--        Al acceder a esta pagina usted acepta los terminos y condiciones, donde--}}
+            {{--        se hace totalmente responsable de reemplazar equipo dañado durante--}}
+            {{--        el tiempo de prestamo del equipo.--}}
 
-{{--    </p>--}}
+            {{--    </p>--}}
 
 @if(session('success'))
     <div class="alert alert-success">
         {{ session('success') }}
     </div>
 @endif
-
-@if(session('error'))
-    <div class="alert alert-danger">
-        {{ session('error') }}
-    </div>
-@endif
-
-</div>
+        </div>
             <form method="GET" action="{{ route('kinventory') }}" class="row mb-4 g-3">
                 <div class="col-md-8">
                     <div class="input-group search-group">
@@ -69,7 +62,7 @@
                 </div>
             </form>
 
-{{--        okay this will be some sort of card grid, It will be filled when the cards are actually available--}}
+        {{--        okay this will be some sort of card grid, It will be filled when the cards are actually available--}}
         <div class="row g-4">
                 @forelse($items as $item)
                     <div class="col-md-6 col-lg-4">
@@ -141,7 +134,7 @@
 
 
     </div>
-{{--    here container for cards closes--}}
+    {{--    here container for cards closes--}}
     {{-- Borrow Pop up when someone clicks on a card --}}
     <div class="modal fade" id="borrowModal" tabindex="-1" aria-labelledby="borrowModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -188,7 +181,8 @@
                                 value="1"
                                 required
                             >
-                        </div>
+                        {{-- NUEVO: aquí saldrá el warning en rojo --}}
+                        <div class="invalid-feedback d-block" id="borrowQuantityError"></div>
                     </div>
 
                     <div class="modal-footer border-0 pt-0">

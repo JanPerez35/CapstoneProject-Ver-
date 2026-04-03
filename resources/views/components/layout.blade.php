@@ -42,29 +42,22 @@
             <span class="fs-3 fw-bold text-success m-0">MAIKINE</span>
         </a>
 
-        <div class="d-flex align-items-center gap-3 text-end">
-            <div clas="text-end me-2">
-                <div class="fw-sembold">{{ $currentUserName }}</div>
+        <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2 gap-lg-3">
+
+            <!-- User info -->
+            <div class="text-start text-lg-end">
+                <div class="fw-semibold">{{ $currentUserName }}</div>
                 <small class="text-muted">{{ $currentUserRole }}</small>
             </div>
-            <ul class="nav nav-pills align-items-center d-flex gap-3">
-                <li class="nav-item">
-                    <a href="{{ route('my_profile') }}"
-                       class="btn btn-outline {{ request()->routeIs('my_profile') ? 'btn-success' : 'btn-outline-success' }} btn-md">
-                        <i class="bi bi-person-fill"></i>
-                        Mi Perfil
-                    </a>
-                </li>
 
-                <li class="nav-item">
-                    <a href="{{route('my_messages')}}"
-                       class="btn btn-outline {{request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success'}} btn-md">
-                        <i class="bi bi-chat-left-text"></i>
-                        Mis Chats
-                    </a>
-                </li>
+            <!-- Actions -->
+            <div class="d-flex flex-wrap gap-2 justify-content-start justify-content-lg-end">
+                <a href="{{ route('my_profile') }}"
+                   class="btn {{ request()->routeIs('my_profile') ? 'btn-success' : 'btn-outline-success' }}">
+                    <i class="bi bi-person-fill"></i> Mi Perfil
+                </a>
 
-                <li class="nav-item">
+                <div class="nav-item">
                     <button
                         type="button"
                         class="btn btn-outline-success position-relative"
@@ -78,15 +71,15 @@
                         </span>
                     </button>
                 </li>
+                <a href="{{route('my_messages')}}"
+                   class="btn {{request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success'}}">
+                    <i class="bi bi-chat-left-text"></i> Mis Chats
+                </a>
 
-                <li class="nav-item">
-                    <a href="/"
-                       class="btn btn-success">
-                        <i class="bi bi-box-arrow-right"></i>
-                        Cerrar Sesión
-                    </a>
-                </li>
-            </ul>
+                <a href="/" class="btn btn-success">
+                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                </a>
+            </div>
         </div>
     </header>
 </div>
@@ -119,17 +112,12 @@
                     </div>
                     <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
+                
                 <div class="modal-body pt-3">
                     <div class="mb-4">
                         <h4 class="fw-bold mb-3">
                             Equipos Seleccionados ({{ count($cart) }} ítems)
                         </h4>
-            </div>
-
-
-            <div class="modal-body pt-3">
-                <div class="mb-4">
-                    <h4 class="fw-bold mb-3">Equipos Seleccionados (<span id="cartItemCountLabel">0</span> ítems)</h4>
 
                         <div class="border rounded-4 overflow-hidden">
                             <div class="row g-0 px-3 py-3 fw-semibold border-bottom bg-light">
@@ -311,6 +299,170 @@
                 </div>
             </form>
 
+                <!-- <div id="loanDetailsSection" class="mb-4 d-none">
+                    <h3 class="fw-bold mb-2">Detalles del Préstamo</h3>
+                    <p class="text-muted mb-4">
+                        <span class="text-danger">*</span> Campos requeridos
+                    </p>
+
+                    <div class="border rounded-4 p-4 mb-4 bg-light-subtle">
+                        <h5 class="fw-bold text-secondary mb-3">
+                            <i class="bi bi-exclamation-circle me-2"></i>
+                            Política de Préstamo:
+                        </h5>
+
+                        <p class="mb-2 text-muted">
+                            <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                            Solicitud enviada fuera de horas laborables (8am-1pm) - préstamo disponible desde el siguiente día laborable
+                        </p>
+
+                        <p class="mb-2 fw-bold text-danger">
+                            El equipo debe ser devuelto el mismo día antes de las 3 PM.
+                        </p>
+
+                        <p class="mb-0 fw-bold text-warning-emphasis">
+                            Viernes solo se pueden devolver equipos. Sábados y Domingos no hay servicio.
+                        </p>
+                    </div>
+
+
+                    <div class="mb-3">
+                        <label for="loanPickupDate" class="form-label fw-semibold">
+                            Fecha de Recogida <span class="text-danger">*</span>
+                        </label>
+                        <input
+                            type="date"
+                            class="form-control form-control-lg"
+                            id="loanPickupDate"
+                            required
+                        >
+                        <div class="form-text">Solo días futuros. No se permiten viernes, sábados ni domingos.</div>
+                        <div class="invalid-feedback d-block" id="loanPickupDateError"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="pickupTimeBlock" class="form-label fw-semibold">
+                            Hora de Recogida <span class="text-danger">*</span>
+                        </label>
+                        <select id="pickupTimeBlock" class="form-select form-select-lg" required>
+                            <option value="">Selecciona una hora</option>
+                            <option value="08:00">8:00 AM</option>
+                            <option value="08:30">8:30 AM</option>
+                            <option value="09:00">9:00 AM</option>
+                            <option value="09:30">9:30 AM</option>
+                            <option value="10:00">10:00 AM</option>
+                            <option value="10:30">10:30 AM</option>
+                            <option value="11:00">11:00 AM</option>
+                            <option value="11:30">11:30 AM</option>
+                            <option value="12:00">12:00 PM</option>
+                            <option value="12:30">12:30 PM</option>
+                            <option value="13:00">1:00 PM</option>
+                        </select>
+                        <div class="form-text">Horario disponible entre 8:00 AM y 1:00 PM.</div>
+                        <div class="invalid-feedback d-block" id="pickupTimeBlockError"></div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="specialCaseCheck">
+                        <label class="form-check-label fw-semibold" for="specialCaseCheck">
+                            Caso Especial (Necesito el equipo fuera del horario regular)
+                        </label>
+                    </div>
+
+                    <p class="text-muted ms-4 mb-3">
+                        Los casos especiales requieren aprobación manual del administrador
+                    </p>
+
+                    <div id="specialCaseFields" class="d-none">
+                        <div class="mb-3">
+                            <label for="returnDate" class="form-label fw-semibold">
+                                Fecha de Devolución Propuesta <span class="text-danger">*</span>
+                            </label>
+                            <input
+                                type="date"
+                                class="form-control form-control-lg"
+                                id="returnDate"
+                            >
+                            <div class="form-text">Debe ser una fecha futura.</div>
+                            <div class="invalid-feedback d-block" id="returnDateError"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="specialReason" class="form-label fw-semibold">
+                                Razón del Caso Especial <span class="text-danger">*</span>
+                            </label>
+                            <textarea
+                                class="form-control form-control-lg"
+                                id="specialReason"
+                                rows="4"
+                                placeholder="Explica por qué necesitas el equipo por más tiempo"
+                            ></textarea>
+                            <div class="form-text">Mínimo 10 caracteres Máximo 500 caracteres.</div>
+                            <div class="invalid-feedback d-block" id="specialReasonError"></div>
+                        </div>
+
+                        <div class="alert alert-warning border-warning-subtle rounded-4">
+                            <strong><i class="bi bi-exclamation-circle me-2"></i>Caso Especial:</strong>
+                            Tus solicitudes requerirán aprobación manual del administrador de inventario.
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    {{-- Términos y condiciones obligatorios --}}
+                    <div class="border rounded-4 p-4 bg-light-subtle">
+                        <h5 class="fw-bold text-secondary mb-3">
+                            <i class="bi bi-file-earmark-text me-2"></i>
+                            Términos y Condiciones
+                        </h5>
+
+                        <p class="text-muted mb-3">
+                            Antes de enviar la solicitud, debes aceptar los términos y condiciones del préstamo.
+                        </p>
+
+                        <div class="form-check mb-2">
+                            <input
+                                class="form-check-input"
+                                type="checkbox"
+                                id="loanTermsCheck"
+                                required
+                            >
+                            <label class="form-check-label fw-semibold" for="loanTermsCheck">
+                                He leído y acepto los términos y condiciones del préstamo.
+                            </label>
+                        </div>
+
+                        <div class="invalid-feedback d-block" id="loanTermsError"></div>
+
+                        <p class="text-danger fw-semibold mb-2 mt-3">
+                            No puedes cancelar el pedido una vez lo hagas.
+                        </p>
+
+                        <p class="text-muted mb-2">
+                            De tener algún inconveniente, contacta al administrador del inventario
+                            <a href="mailto:orlando.cruz@upr.edu" class="text-success text-decoration-none fw-semibold">
+                                orlando.cruz@upr.edu
+                            </a>.
+                        </p>
+
+                        <p class="text-muted mb-0">
+                            Esta información también está disponible en el footer de la página.
+                        </p>
+                    </div>
+                </div> -->
+            </div>
+
+            <!-- <div class="modal-footer border-0 pt-0" id="cartFooterActions">
+                <button type="button" class="btn btn-outline-secondary btn-lg" data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-success btn-lg" id="submitLoanRequest" disabled>
+                    <i class="bi bi-check-circle me-1"></i>
+                    Enviar Solicitud (<span id="submitItemCount">0</span> ítem)
+                </button>
+            </div> -->
         </div>
     </div>
 </div>

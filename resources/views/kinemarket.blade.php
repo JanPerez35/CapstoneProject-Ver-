@@ -1,7 +1,7 @@
 <x-layout title="Kinemercado">
     <x-navbar></x-navbar>
 
-
+    @vite('resources/js/pages/marketplace-profanity.js')
     <div
         id="marketplaceHome"
         class="container py-4"
@@ -71,7 +71,8 @@
                                 <small class="text-muted d-block fst-italic">
                                     Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
                                 </small>
-                                <div class="invalid-feedback d-block" id="postTitleError"></div>
+                                <div class="invalid-feedback" id="postTitleError"></div>
+                                <div class="invalid-feedback d-block" id="postTitleProfanityError"></div>
                             </div>
 
 
@@ -84,14 +85,14 @@
                                     id="postDescription"
                                     rows="4"
                                     placeholder="Describe el estado y detalles"
-                                    minlength="10"
-                                    maxlength="1000"
+                                    maxlength="500"
                                 ></textarea>
                                 <small class="text-muted d-block fst-italic">
-                                    Si escribes una descripción, debe tener entre 10 y 1000 caracteres.
+                                    Si escribes una descripción, debe tener como máximo 500 caracteres.
                                     Solo letras, números espacios, punto, coma y guion.
                                 </small>
-                                <div class="invalid-feedback d-block" id="postDescriptionError"></div>
+                                <div class="invalid-feedback" id="postDescriptionError"></div>
+                                <div class="invalid-feedback d-block" id="postDescriptionProfanityError"></div>
                             </div>
 
 
@@ -295,8 +296,12 @@
                     <option value="Justo">Justo</option>
                 </select>
             </div>
+                <div class="col-12 d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary" id="clearMarketplaceFilters">
+                        Limpiar filtros
+                    </button>
+                </div>
         </div>
-
 
         <!-- Card Template for empty search and filter results -->
         <div class="row g-4" id="marketplaceCardsContainer">
@@ -638,7 +643,21 @@
                 </div>
             </div>
 
-
+            <div
+                id="profanityDetectedToast"
+                class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
+                role="alert"
+                aria-live="assertive"
+                aria-atomic="true"
+                style="width: auto; max-width: 360px;"
+            >
+                <div class="d-flex">
+                    <div class="toast-body fw-semibold">
+                        Se detectó lenguaje inapropiado. Revisa los campos marcados.
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+                </div>
+            </div>
         </div>
         <div class="toast-container position-fixed bottom-0 start-0 p-3">
             <div
@@ -658,5 +677,24 @@
             </div>
         </div>
     </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const clearMarketplaceFiltersBtn = document.getElementById('clearMarketplaceFilters');
+
+                if (clearMarketplaceFiltersBtn) {
+                    clearMarketplaceFiltersBtn.addEventListener('click', function () {
+                        document.getElementById('marketplaceSearch').value = '';
+                        document.getElementById('marketplaceCategoryFilter').value = 'all';
+                        document.getElementById('marketplaceRatingFilter').value = 'all';
+                        document.getElementById('marketplacePriceFilter').value = 'all';
+                        document.getElementById('marketplaceConditionFilter').value = 'all';
+
+                        if (typeof filterMarketplaceItems === 'function') {
+                            filterMarketplaceItems();
+                        }
+                    });
+                }
+            });
+            </script>
 </x-layout>
 

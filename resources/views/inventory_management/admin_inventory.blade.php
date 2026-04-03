@@ -50,7 +50,8 @@
         </div>
 
         {{-- Buscar + filtrar --}}
-        <div class="row mb-4 g-3">
+        <form method="GET" action="{{ route('inventory_management') }}" class="row mb-4 g-3">
+
             <div class="col-md-8">
                 <div class="input-group search-group">
                     <span class="input-group-text bg-white border-0">
@@ -59,29 +60,41 @@
 
                     <input
                         type="text"
-                        id="inventorySearch"
+                        name="search"
                         class="form-control border-0"
                         placeholder="Buscar equipo deportivo..."
+                        value="{{ request('search') }}"
                     >
                 </div>
             </div>
 
             <div class="col-md-4">
                 <select
-                    id="inventoryCategoryFilter"
+                    name="category"
                     class="form-select border-2 border-dark"
+                    onchange="this.form.submit()"
                 >
-                    <option value="">Todos los Deportes</option>
-                    <option value="Baloncesto">Baloncesto</option>
-                    <option value="Tenis">Tenis</option>
-                    <option value="Fútbol">Fútbol</option>
-                    <option value="Deporte Recreativo">Deporte Recreativo</option>
-                    <option value="Volibol">Volibol</option>
-                    <option value="Levantamiento de Pesas">Levantamiento de Pesas</option>
-                    <option value="Otros">Otros</option>
+                    <option value="">Todas las categorías</option>
+
+                    @foreach($categories as $cat)
+                        <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>
+                            {{ $cat }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
-        </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button type="submit" class="btn btn-success">
+                    Buscar
+                </button>
+
+                <a href="{{ route('inventory_management') }}" class="btn btn-outline-secondary">
+                    Limpiar filtros
+                </a>
+            </div>
+
+        </form>
 
         {{-- Cards --}}
         <div class="row g-4" id="inventoryCards">
@@ -149,106 +162,160 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- Edit modal --}}
-                <div class="modal fade" id="editItemModal{{ $item->id }}" tabindex="-1" aria-labelledby="editItemModalLabel{{ $item->id }}" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content rounded-4 border-0 shadow">
-                            <div class="modal-header border-0 pb-0">
-                                <div>
-                                    <h4 class="modal-title fw-bold" id="editItemModalLabel{{ $item->id }}">Editar Item</h4>
-                                    <p class="text-muted mb-0">Actualiza la información del equipo</p>
-                                </div>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                            </div>
-
-                            <div class="modal-body">
-                                <form method="POST" action="{{ route('equipment.update', $item->id) }}" enctype="multipart/form-data">
-                                    @csrf
-                                    @method('PUT')
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Nombre / Descripción*</label>
-                                        <input
-                                            type="text"
-                                            name="description"
-                                            class="form-control form-control-lg"
-                                            value="{{ $item->description }}"
-                                            required
-                                        >
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Categoría*</label>
-                                        <input
-                                            type="text"
-                                            name="category"
-                                            class="form-control form-control-lg"
-                                            list="categoryOptions"
-                                            value="{{ $item->category }}"
-                                            placeholder="Selecciona o escribe una categoría"
-                                            required
-                                        >
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Cantidad Total*</label>
-                                        <input
-                                            type="number"
-                                            name="quantity"
-                                            class="form-control form-control-lg"
-                                            min="1"
-                                            value="{{ $item->quantity }}"
-                                            required
-                                        >
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Cantidad Disponible*</label>
-                                        <input
-                                            type="number"
-                                            name="available_quantity"
-                                            class="form-control form-control-lg"
-                                            min="0"
-                                            value="{{ $item->available_quantity }}"
-                                            required
-                                        >
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Ubicación*</label>
-                                        <input
-                                            type="text"
-                                            name="location"
-                                            class="form-control form-control-lg"
-                                            value="{{ $item->location }}"
-                                            required
-                                        >
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Nueva Imagen (opcional)</label>
-                                        <input
-                                            type="file"
-                                            name="image"
-                                            class="form-control"
-                                            accept=".jpg,.jpeg,image/jpeg"
-                                        >
-                                    </div>
-
-                                    <div class="modal-footer border-0 px-0 pb-0">
-                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                                            Cancelar
-                                        </button>
-                                        <button type="submit" class="btn btn-warning">
-                                            Guardar cambios
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+        {{-- Edit Modal --}}
+        <div class="modal fade" id="editItemModal{{ $item->id }}" tabindex="-1" aria-labelledby="editItemModalLabel{{ $item->id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <div class="modal-header border-0 pb-0">
+                        <div>
+                            <h4 class="modal-title fw-bold" id="editItemModalLabel{{ $item->id }}">Editar Item</h4>
+                            <p class="text-muted mb-0">Actualiza la información del equipo</p>
                         </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <form class="editItemForm" method="POST" action="{{ route('equipment.update', $item->id) }}" enctype="multipart/form-data" novalidate>
+                            @csrf
+                            @method('PUT')
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Nombre / Descripción<span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="description"
+                                    class="form-control form-control-lg"
+                                    value="{{ $item->description }}"
+                                    placeholder="Ejemplo: Bola de Volibol"
+                                    pattern="^[A-Za-z0-9\s\.,\-]{5,100}$"
+                                    title="Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion."
+                                    required
+                                >
+                                <div class="form-text">
+                                    Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                </div>
+                                <div class="invalid-feedback d-block error-description"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Categoría<span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="category"
+                                    class="form-control form-control-lg"
+                                    list="categoryOptions"
+                                    value="{{ $item->category }}"
+                                    placeholder="Selecciona o escribe una categoría"
+                                    pattern="^[A-Za-z0-9\s\.,\-]{3,100}$"
+                                    title="Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion."
+                                    required
+                                >
+                                <div class="form-text">
+                                    Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                </div>
+                                <div class="invalid-feedback d-block error-category"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Cantidad Total<span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    name="quantity"
+                                    class="form-control form-control-lg"
+                                    min="1"
+                                    value="{{ $item->quantity }}"
+                                    placeholder="Ej. 10"
+                                    required
+                                >
+                                <div class="form-text">
+                                    Debe ser un número entero mayor o igual a 1.
+                                </div>
+                                <div class="invalid-feedback d-block error-quantity"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Cantidad Disponible<span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    name="available_quantity"
+                                    class="form-control form-control-lg"
+                                    min="0"
+                                    value="{{ $item->available_quantity }}"
+                                    placeholder="Ej. 8"
+                                    required
+                                >
+                                <div class="form-text">
+                                    Debe ser un número entero igual o mayor a 0 y no puede exceder la cantidad total.
+                                </div>
+                                <div class="invalid-feedback d-block error-available"></div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Ubicación<span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    name="location"
+                                    class="form-control form-control-lg"
+                                    list="locationOptions"
+                                    value="{{ $item->location }}"
+                                    placeholder="Selecciona o escribe una ubicación"
+                                    pattern="^[A-Za-z0-9\s\.,\-\/]{5,100}$"
+                                    title='Entre 5 y 100 caracteres. Se permite "/" para múltiples ubicaciones.'
+                                    required
+                                >
+                                <div class="form-text">
+                                    Entre 5 y 100 caracteres. Puedes usar "/" para múltiples ubicaciones (ej. CM-104/Almacén A).
+                                </div>
+                                <div class="invalid-feedback d-block error-location"></div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="edit_image_{{ $item->id }}" class="form-label fw-semibold">
+                                    Nueva Imagen (opcional)
+                                </label>
+                                <input
+                                    type="file"
+                                    class="d-none"
+                                    id="edit_image_{{ $item->id }}"
+                                    name="image"
+                                    accept=".jpg,.jpeg,image/jpeg"
+                                >
+                            </div>
+
+                            <label for="edit_image_{{ $item->id }}" class="form-control form-control-lg text-center py-3" style="cursor:pointer;">
+                                <i class="bi bi-upload me-2"></i>
+                                Subir nueva imagen
+                            </label>
+
+                            <small class="text-muted d-block fst-italic mt-2">
+                                Solo 1 imagen permitida. Formato JPEG/JPG. Máximo 2MB.
+                            </small>
+                            <div class="invalid-feedback d-block error-image"></div>
+
+                            <div class="modal-footer border-0 px-0 pb-0">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="btn btn-warning">
+                                    Guardar cambios
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
+            </div>
+        </div>
+
             @empty
                 <div class="col-12">
                     <div class="alert alert-info rounded-4 shadow-sm">
@@ -318,7 +385,6 @@
                                 name="description"
                                 class="form-control form-control-lg"
                                 placeholder="Ejemplo. Bola de Volibol"
-                                maxlength="100"
                                 required
                             >
                             <div class="form-text">
@@ -337,9 +403,18 @@
                                 name="category"
                                 class="form-control form-control-lg"
                                 list="categoryOptions"
-                                placeholder="Selecciona o escribe una categoría"
+                                pattern="^[A-Za-z0-9\s\.,\-]{3,100}$"
+                                title="Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion."
                                 required
                             >
+                            <datalist id="categoryOptions">
+                                @foreach($categories as $category)
+                                    <option value="{{ $category }}">
+                                @endforeach
+                            </datalist>
+                            <div class="form-text">
+                                Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                            </div>
                             <div class="invalid-feedback d-block" id="categoriaError"></div>
                         </div>
 
@@ -391,8 +466,8 @@
                                 name="location"
                                 class="form-control form-control-lg"
                                 list="locationOptions"
-                                placeholder="Selecciona o escribe una ubicación"
-                                maxlength="100"
+                                pattern="^[A-Za-z0-9\s\.,\-\/]{5,100}$"
+                                title="Entre 5 y 100 caracteres. Se permite '/' para múltiples ubicaciones."
                                 required
                             >
                             <datalist id="locationOptions">
@@ -406,7 +481,7 @@
                                 <option value="CM-210">
                             </datalist>
                             <div class="form-text">
-                                Puedes seleccionar una ubicación existente o escribir una nueva.
+                                Entre 5 y 100 caracteres. Puedes usar "/" para múltiples ubicaciones (ej. CM-104/Almacén A) o Puedes seleccionar una ubicación existente.
                             </div>
                             <div class="invalid-feedback d-block" id="ubicacionError"></div>
                         </div>
@@ -603,22 +678,34 @@
                 }
 
                 if (!value) {
-                    if (showError) setFieldError(field, errorElement, `La ${fieldLabel} es obligatoria.`);
-                    return false;
-                }
-
-                if (value.length < 5) {
-                    if (showError) setFieldError(field, errorElement, `La ${fieldLabel} debe tener al menos 5 caracteres.`);
-                    return false;
-                }
-
-                if (value.length > 100) {
-                    if (showError) setFieldError(field, errorElement, `La ${fieldLabel} no puede exceder 100 caracteres.`);
+                    if (showError) {
+                        setFieldError(field, errorElement, `La ${fieldLabel} es obligatoria.`);
+                    }
                     return false;
                 }
 
                 if (!inventoryAllowedTextRegex.test(value)) {
-                    if (showError) setFieldError(field, errorElement, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+                    if (showError) {
+                        setFieldError(
+                            field,
+                            errorElement,
+                            `La ${fieldLabel} contiene caracteres no permitidos. Solo se permiten letras, números, espacios, punto, coma y guion.`
+                        );
+                    }
+                    return false;
+                }
+
+                if (value.length < 5) {
+                    if (showError) {
+                        setFieldError(field, errorElement, `La ${fieldLabel} debe tener al menos 5 caracteres.`);
+                    }
+                    return false;
+                }
+
+                if (value.length > 100) {
+                    if (showError) {
+                        setFieldError(field, errorElement, `La ${fieldLabel} no puede exceder 100 caracteres.`);
+                    }
                     return false;
                 }
 
@@ -635,17 +722,54 @@
 
             function validateCategoria(showError = true) {
                 const value = categoriaInput.value.trim();
-                const isValid = !!value;
 
-                if (showError) {
-                    if (!isValid) {
-                        setFieldError(categoriaInput, categoriaError, 'Debes seleccionar o escribir una categoría.');
-                    } else {
-                        clearFieldError(categoriaInput, categoriaError);
+                if (showError) clearFieldError(categoriaInput, categoriaError);
+
+                if (!value) {
+                    if (showError) {
+                        setFieldError(categoriaInput, categoriaError, 'La categoría es obligatoria.');
                     }
+                    return false;
                 }
 
-                return isValid;
+                if (!/^[A-Za-z0-9\s\.,\-]{3,100}$/.test(value)) {
+                    if (showError) {
+                        setFieldError(
+                            categoriaInput,
+                            categoriaError,
+                            'Formato inválido para categoría. Solo se permiten letras, números, espacios, punto, coma y guion, entre 5 y 100 caracteres.'
+                        );
+                    }
+                    return false;
+                }
+
+                return true;
+            }
+
+            function validateUbicacion(showError = true) {
+                const value = ubicacionInput.value.trim();
+
+                if (showError) clearFieldError(ubicacionInput, ubicacionError);
+
+                if (!value) {
+                    if (showError) {
+                        setFieldError(ubicacionInput, ubicacionError, 'La ubicación es obligatoria.');
+                    }
+                    return false;
+                }
+
+                if (!/^[A-Za-z0-9\s\.,\-\/]{5,100}$/.test(value)) {
+                    if (showError) {
+                        setFieldError(
+                            ubicacionInput,
+                            ubicacionError,
+                            'Formato inválido para ubicación. Solo se permiten letras, números, espacios, punto, coma, guion y "/", entre 5 y 100 caracteres.'
+                        );
+                    }
+                    return false;
+                }
+
+                return true;
             }
 
             function validateCantidadTotal(showError = true) {
@@ -688,20 +812,6 @@
                 }
 
                 return true;
-            }
-
-            function validateUbicacion(showError = true) {
-                const isValid = !!ubicacionInput.value;
-
-                if (showError) {
-                    if (!isValid) {
-                        setFieldError(ubicacionInput, ubicacionError, 'Debes seleccionar una ubicación.');
-                    } else {
-                        clearFieldError(ubicacionInput, ubicacionError);
-                    }
-                }
-
-                return isValid;
             }
 
             function validateImage(showError = true) {
@@ -886,8 +996,20 @@
             });
 
             nombreInput.addEventListener('input', function () {
-                nombreInput.value = nombreInput.value.slice(0, 100);
-                validateNombreItem(true);
+                const value = nombreInput.value;
+
+                if (value.length > 100) {
+                    nombreInput.value = value.slice(0, 100);
+
+                    setFieldError(
+                        nombreInput,
+                        nombreItemError,
+                        'El nombre del item no puede exceder 100 caracteres.'
+                    );
+                } else {
+                    validateNombreItem(true);
+                }
+
                 updateAddItemButtonState();
             });
 
@@ -918,6 +1040,27 @@
                 updateAddItemButtonState();
             });
 
+            ubicacionInput.addEventListener('input', function () {
+                const value = ubicacionInput.value;
+
+                if (value.length > 100) {
+                    ubicacionInput.value = value.slice(0, 100);
+
+                    setFieldError(
+                        ubicacionInput,
+                        ubicacionError,
+                        'La ubicación no puede exceder 100 caracteres.'
+                    );
+                } else {
+                    validateUbicacion(true);
+                }
+
+                updateAddItemButtonState();
+            });
+
+            // .addEventListener('input', filterInventoryCards);
+            // inventoryCateinventorySearchgoryFilter.addEventListener('change', filterInventoryCards);
+
             addItemForm.addEventListener('submit', function (e) {
                 const isNombreValid = validateNombreItem(true);
                 const isCategoriaValid = validateCategoria(true);
@@ -941,129 +1084,6 @@
 
                 submitAddItemBtn.disabled = true;
             });
-
-    //         addItemForm.addEventListener('submit', function (e) {
-    //             const isNombreValid = validateNombreItem(true);
-    //             const isCategoriaValid = validateCategoria(true);
-    //             const isCantidadTotalValid = validateCantidadTotal(true);
-    //             const isCantidadDisponibleValid = validateCantidadDisponible(true);
-    //             const isUbicacionValid = validateUbicacion(true);
-    //             const isImageValid = validateImage(true);
-
-    //             if (
-    //                 !isNombreValid ||
-    //                 !isCategoriaValid ||
-    //                 !isCantidadTotalValid ||
-    //                 !isCantidadDisponibleValid ||
-    //                 !isUbicacionValid ||
-    //                 !isImageValid
-    //             ) {
-    //                 e.preventDefault();
-    //                 updateAddItemButtonState();
-    //                 return;
-    //             }
-
-    //             const nombre = nombreInput.value.trim();
-    //             const categoria = categoriaInput.value;
-    //             const cantidadTotal = cantidadTotalInput.value;
-    //             const cantidadDisponible = cantidadDisponibleInput.value;
-    //             const ubicacion = ubicacionInput.value;
-    //             const file = imageInput.files[0];
-
-    //             const imageUrl = URL.createObjectURL(file);
-    //             const statusText = Number(cantidadDisponible) > 0 ? 'Disponible' : 'No disponible';
-    //             const statusColor = Number(cantidadDisponible) > 0 ? '#6FC21F' : '#dc3545';
-
-    //             const cardHtml = `
-    //     <div class="col-md-6 col-lg-4 inventory-card-wrapper">
-    //         <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
-    //             <img
-    //                 src="${imageUrl}"
-    //                 class="card-img-top"
-    //                 alt="${nombre}"
-    //                 style="height: 220px; object-fit: cover; object-position: center;"
-    //             >
-
-    //             <div class="card-body d-flex flex-column">
-    //                 <div class="d-flex justify-content-between align-items-start mb-2">
-    //                     <h5 class="card-title mb-0 fw-bold inventory-item-name">${nombre}</h5>
-    //                     <span class="badge rounded-0 inventory-status-badge" style="background-color:${statusColor}; color:white;">
-    //                         ${statusText}
-    //                     </span>
-    //                 </div>
-
-    //                 <p class="text-muted small mb-3 inventory-description">
-    //                     Item agregado manualmente al inventario.
-    //                 </p>
-
-    //                 <div class="small mb-3">
-    //                     <div class="d-flex justify-content-between">
-    //                         <span class="text-muted">Cantidad Total:</span>
-    //                         <strong class="inventory-total">${cantidadTotal}</strong>
-    //                     </div>
-    //                     <div class="d-flex justify-content-between">
-    //                         <span class="text-muted">Cantidad Disponible:</span>
-    //                         <strong class="text-success inventory-available">${cantidadDisponible}</strong>
-    //                     </div>
-    //                     <div class="d-flex justify-content-between">
-    //                         <span class="text-muted">Ubicación:</span>
-    //                         <strong class="inventory-location">${ubicacion}</strong>
-    //                     </div>
-    //                     <div class="d-flex justify-content-between">
-    //                         <span class="text-muted">Categoría:</span>
-    //                         <strong class="inventory-category">${categoria}</strong>
-    //                     </div>
-    //                 </div>
-
-    //                 <div class="mt-auto d-grid gap-3">
-    //                     <div>
-    //                         <div class="small text-muted mb-1">Editar Cantidad Total</div>
-    //                         <div class="d-flex align-items-center justify-content-between gap-2">
-    //                             <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-decrease">-</button>
-    //                             <span class="fw-bold inventory-total-control">${cantidadTotal}</span>
-    //                             <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-total-increase">+</button>
-    //                         </div>
-    //                     </div>
-
-    //                     <div>
-    //                         <div class="small text-muted mb-1">Editar Cantidad Disponible</div>
-    //                         <div class="d-flex align-items-center justify-content-between gap-2">
-    //                             <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-decrease">-</button>
-    //                             <span class="fw-bold inventory-available-control">${cantidadDisponible}</span>
-    //                             <button type="button" class="btn btn-outline-secondary btn-sm px-3 inventory-available-increase">+</button>
-    //                         </div>
-    //                     </div>
-
-    //                     <button
-    //                         type="button"
-    //                         class="btn btn-danger open-delete-item-modal"
-    //                         data-item-name="${nombre}"
-    //                     >
-    //                         <i class="bi bi-trash me-1"></i> Eliminar Item
-    //                     </button>
-    //                 </div>
-    //             </div>
-    //         </div>
-    //     </div>
-    // `;
-
-    //             inventoryCards.insertAdjacentHTML('beforeend', cardHtml);
-
-    //             const modalInstance = window.bootstrap.Modal.getOrCreateInstance(addItemModal);
-    //             modalInstance.hide();
-
-    //             addItemForm.reset();
-    //             clearAllInvalid();
-    //             resetImageState();
-    //             updateAddItemButtonState();
-
-    //             attachInventoryCardEvents();
-
-    //             setTimeout(() => {
-    //                 const toastInstance = window.bootstrap.Toast.getOrCreateInstance(inventoryToast);
-    //                 toastInstance.show();
-    //             }, 250);
-    //         });
 
             if (confirmDeleteInventoryItem) {
                 confirmDeleteInventoryItem.addEventListener('click', function () {
@@ -1099,5 +1119,162 @@
         });
     </script>
     @endif
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.editItemForm').forEach(form => {
+                const description = form.querySelector('input[name="description"]');
+                const category = form.querySelector('input[name="category"]');
+                const location = form.querySelector('input[name="location"]');
+                const quantity = form.querySelector('input[name="quantity"]');
+                const available = form.querySelector('input[name="available_quantity"]');
+                const image = form.querySelector('input[name="image"]');
+
+                const errorDescription = form.querySelector('.error-description');
+                const errorCategory = form.querySelector('.error-category');
+                const errorLocation = form.querySelector('.error-location');
+                const errorQuantity = form.querySelector('.error-quantity');
+                const errorAvailable = form.querySelector('.error-available');
+                const errorImage = form.querySelector('.error-image');
+
+                function setError(input, errorElement, message) {
+                    input.classList.add('is-invalid');
+                    if (errorElement) errorElement.textContent = message;
+                }
+
+                function clearError(input, errorElement) {
+                    input.classList.remove('is-invalid');
+                    if (errorElement) errorElement.textContent = '';
+                }
+
+                function validateDescription(showError = true) {
+                    const value = description.value.trim();
+
+                    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]{5,100}$/.test(value)) {
+                        if (showError) {
+                            setError(description, errorDescription, 'Formato inválido para descripción.');
+                        }
+                        return false;
+                    }
+
+                    clearError(description, errorDescription);
+                    return true;
+                }
+
+                function validateCategory(showError = true) {
+                    const value = category.value.trim();
+
+                    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]{3,100}$/.test(value)) {
+                        if (showError) {
+                            setError(category, errorCategory, 'Formato inválido para categoría.');
+                        }
+                        return false;
+                    }
+
+                    clearError(category, errorCategory);
+                    return true;
+                }
+
+                function validateLocation(showError = true) {
+                    const value = location.value.trim();
+
+                    if (!/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-\/]{5,100}$/.test(value)) {
+                        if (showError) {
+                            setError(location, errorLocation, 'Formato inválido para ubicación.');
+                        }
+                        return false;
+                    }
+
+                    clearError(location, errorLocation);
+                    return true;
+                }
+
+                function validateQuantity(showError = true) {
+                    const value = Number(quantity.value);
+
+                    if (!Number.isInteger(value) || value < 1) {
+                        if (showError) {
+                            setError(quantity, errorQuantity, 'Debe ser mayor o igual a 1.');
+                        }
+                        return false;
+                    }
+
+                    clearError(quantity, errorQuantity);
+                    return true;
+                }
+
+                function validateAvailable(showError = true) {
+                    const qty = Number(quantity.value);
+                    const avail = Number(available.value);
+
+                    if (!Number.isInteger(avail) || avail < 0 || avail > qty) {
+                        if (showError) {
+                            setError(available, errorAvailable, 'Debe ser mayor o igual a 0 y no exceder la cantidad total.');
+                        }
+                        return false;
+                    }
+
+                    clearError(available, errorAvailable);
+                    return true;
+                }
+
+                function validateImage(showError = true) {
+                    if (image.files.length === 0) {
+                        clearError(image, errorImage);
+                        return true; // optional in edit
+                    }
+
+                    const file = image.files[0];
+
+                    if (!['image/jpeg', 'image/jpg'].includes(file.type)) {
+                        if (showError) {
+                            setError(image, errorImage, 'Solo JPG o JPEG.');
+                        }
+                        return false;
+                    }
+
+                    if (file.size > 2 * 1024 * 1024) {
+                        if (showError) {
+                            setError(image, errorImage, 'Máximo 2MB.');
+                        }
+                        return false;
+                    }
+
+                    clearError(image, errorImage);
+                    return true;
+                }
+
+                // Live validation
+                description.addEventListener('input', () => validateDescription(true));
+                category.addEventListener('input', () => validateCategory(true));
+                category.addEventListener('change', () => validateCategory(true));
+                location.addEventListener('input', () => validateLocation(true));
+                location.addEventListener('change', () => validateLocation(true));
+
+                quantity.addEventListener('input', () => {
+                    validateQuantity(true);
+                    validateAvailable(true);
+                });
+
+                available.addEventListener('input', () => validateAvailable(true));
+                image.addEventListener('change', () => validateImage(true));
+
+                // Submit validation
+                form.addEventListener('submit', function (e) {
+                    const valid =
+                        validateDescription(true) &&
+                        validateCategory(true) &&
+                        validateLocation(true) &&
+                        validateQuantity(true) &&
+                        validateAvailable(true) &&
+                        validateImage(true);
+
+                    if (!valid) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        });
+        </script>
 
 </x-layout>

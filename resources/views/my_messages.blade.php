@@ -1,6 +1,6 @@
 <x-layout title="Mensajes - MAIKINE">
     <x-navbar></x-navbar>
-
+    @vite('resources/js/pages/messages-profanity.js')
     <div class="container-fluid py-4">
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
             <div class="row g-0" style="min-height: 650px;">
@@ -76,16 +76,44 @@
                         <div class="input-group">
                             <input
                                 type="text"
+                                id="chatMessageInput"
                                 class="form-control form-control-lg border-end-0"
                                 placeholder="Escribe un mensaje..."
+                                maxlength="1000"
                             >
-                            <button class="btn btn-success px-4" type="button">
+                            <button
+                                class="btn btn-success px-4"
+                                id="sendChatMessageBtn"
+                                type="button"
+                            >
                                 <i class="bi bi-send"></i>
                             </button>
                         </div>
+                        <div class="invalid-feedback d-block" id="chatMessageError"></div>
                     </div>
                 </div>
-
+                <div class="toast-container position-fixed bottom-0 start-0 p-3">
+                    <div
+                        id="chatProfanityToast"
+                        class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
+                        role="alert"
+                        aria-live="assertive"
+                        aria-atomic="true"
+                        style="width: auto; max-width: 360px;"
+                    >
+                        <div class="d-flex">
+                            <div class="toast-body fw-semibold">
+                                Se detectó lenguaje inapropiado. Revisa el mensaje.
+                            </div>
+                            <button
+                                type="button"
+                                class="btn-close me-2 m-auto"
+                                data-bs-dismiss="toast"
+                                aria-label="Cerrar"
+                            ></button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

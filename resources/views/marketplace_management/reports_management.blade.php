@@ -70,6 +70,11 @@
                     </div>
                 </div>
             </div>
+            <div class="mt-3 d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary" id="clearReportsFilters">
+                    Limpiar filtros
+                </button>
+            </div>
         </div>
 
         <!--Legend-->
@@ -439,6 +444,8 @@
                 reportsPagination: $('reportsPagination'),
             };
 
+            const clearReportsFiltersBtn = document.getElementById('clearReportsFilters');
+
             const toastIds = {
                 resolve: 'resolveToast',
                 delete: 'deleteToast',
@@ -558,6 +565,14 @@
                     );
                 });
             }
+
+            clearReportsFiltersBtn?.addEventListener('click', () => {
+                els.filterReportedBy.value = '';
+                els.filterSeller.value = '';
+                els.filterReason.value = '';
+                els.filterDate.value = '';
+                    applyFilters();
+                });
 
             function renderReports() {
                 const allRows = [...rows()];

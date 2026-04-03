@@ -24,18 +24,35 @@ private function logActivity($action, $comment = null)
     ]);
 }
 
-public function index()
+public function index(Request $request)
 {
-    
-    $items = Equipment::paginate(18);
+    $query = Equipment::query();
 
-    $categories = Equipment::
-    select('category')
-    ->distinct()
-    ->pluck('category');
+    // Search filter
+    if ($request->filled('search')) {
+        $search = $request->search;
+
+        $query->where(function ($q) use ($search) {
+            $q->where('description', 'like', '%' . $search . '%')
+              ->orWhere('category', 'like', '%' . $search . '%')
+              ->orWhere('location', 'like', '%' . $search . '%');
+        });
+    }
+
+    // Category filter
+    if ($request->filled('category')) {
+        $query->where('category', $request->category);
+    }
+
+    // Pagination + keep filters in URL
+    $items = $query->paginate(18)->withQueryString();
+
+    // Categories list
+    $categories = Equipment::select('category')
+        ->distinct()
+        ->pluck('category');
 
     return view('inventory_management.admin_inventory', compact('items', 'categories'));
-
 }
 
 public function update(Request $request, $id)
@@ -43,12 +60,13 @@ public function update(Request $request, $id)
     $item = Equipment::findOrFail($id);
 
     $validated = $request->validate([
-        'description' => 'required|string|max:255',
-        'category' => 'required|string',
+        'description' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/'],
+        'category' => ['required', 'string', 'min:3', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/'],
         'quantity' => 'required|integer|min:1',
         'available_quantity' => 'required|integer|min:0|lte:quantity',
-        'location' => 'required|string',
+        'location' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-\/]+$/'],
         'image' => 'nullable|image|mimes:jpg,jpeg|max:2048',
+
     ]);
 
     // If new image uploaded
@@ -78,13 +96,34 @@ public function update(Request $request, $id)
 public function store(Request $request)
 {
     $validated = $request->validate([
-        'description' => 'required|string|max:255',
-        'category' => 'required|string',
-        'quantity' => 'required|integer|min:1',
-        'available_quantity' => 'required|integer|min:0|lte:quantity',
-        'location' => 'required|string',
-        'image' => 'required|image|mimes:jpg,jpeg|max:2048',
-    ]);
+    'description' => [
+        'required',
+        'string',
+        'min:5',
+        'max:100',
+        'regex:/^[A-Za-z0-9\s\.,\-]+$/'
+    ],
+
+    'category' => [
+        'required',
+        'string',
+        'min:3',
+        'max:100',
+        'regex:/^[A-Za-z0-9\s\.,\-]+$/'
+    ],
+
+    'location' => [
+        'required',
+        'string',
+        'min:5',
+        'max:100',
+        'regex:/^[A-Za-z0-9\s\.,\-\/]+$/'
+    ],
+
+    'quantity' => 'required|integer|min:1',
+    'available_quantity' => 'required|integer|min:0|lte:quantity',
+    'image' => 'required|image|mimes:jpg,jpeg|max:2048',
+]);
 
     $imagePath = $request->file('image')->store('equipment_photos', 'public');
 
@@ -325,16 +364,55 @@ public function checkoutCart(Request $request)
         ->with('success', 'Solicitud de préstamo realizada correctamente.');
 }
 
-public function borrows()
+public function borrows(Request $request)
 {
-    $pending = Lending::with('items.equipment', 'user')
-        ->where('flag', true)
-        ->where('status', 'pending')
-        ->get();
+    $pendingQuery = Lending::with(['user', 'items.equipment'])
+        ->where('status', 'pending');
 
-    $approved = Lending::with('items.equipment', 'user')
-        ->where('status', 'approved')
-        ->get();
+    $approvedQuery = Lending::with(['user', 'items.equipment'])
+        ->whereIn('status', ['approved', 'active']);
+
+    if ($request->filled('search')) {
+        $search = $request->search;
+
+        $pendingQuery->where(function ($q) use ($search) {
+            $q->whereHas('user', function ($userQuery) use ($search) {
+                $userQuery->where('first_name', 'like', '%' . $search . '%')
+                    ->orWhere('last_name', 'like', '%' . $search . '%')
+                    ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $search . '%']);
+            })
+            ->orWhereHas('items.equipment', function ($itemQuery) use ($search) {
+                $itemQuery->where('description', 'like', '%' . $search . '%')
+                    ->orWhere('location', 'like', '%' . $search . '%');
+            })
+            ->orWhere('special_reason', 'like', '%' . $search . '%')
+            ->orWhere('commentary', 'like', '%' . $search . '%')
+            ->orWhereDate('start_time', $search);
+        });
+
+        $approvedQuery->where(function ($q) use ($search) {
+            $q->whereHas('user', function ($userQuery) use ($search) {
+                $userQuery->where('first_name', 'like', '%' . $search . '%')
+                    ->orWhere('last_name', 'like', '%' . $search . '%')
+                    ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ['%' . $search . '%']);
+            })
+            ->orWhereHas('items.equipment', function ($itemQuery) use ($search) {
+                $itemQuery->where('description', 'like', '%' . $search . '%')
+                    ->orWhere('location', 'like', '%' . $search . '%');
+            })
+            ->orWhere('special_reason', 'like', '%' . $search . '%')
+            ->orWhere('commentary', 'like', '%' . $search . '%')
+            ->orWhereDate('start_time', $search);
+        });
+    }
+
+    if ($request->filled('date')) {
+        $pendingQuery->whereDate('start_time', $request->date);
+        $approvedQuery->whereDate('start_time', $request->date);
+    }
+
+    $pending = $pendingQuery->latest('start_time')->get();
+    $approved = $approvedQuery->latest('start_time')->get();
 
     return view('inventory_management.borrows', compact('pending', 'approved'));
 }
