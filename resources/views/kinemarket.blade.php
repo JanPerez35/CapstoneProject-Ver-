@@ -232,7 +232,7 @@
 
         <!-- Search and Filter -->
         <div class="row mb-4 g-3">
-            <div class="col-md-9">
+            <div class="col-md-10">
                 <div class="input-group search-group">
                    <span class="input-group-text bg-white border-0">
                        <i class="bi bi-search"></i>
@@ -247,7 +247,7 @@
                     >
                 </div>
             </div>
-            <div class="col-md-3 d-grid">
+            <div class="col-md-2 d-grid">
                 <button type="button" class="btn btn-success" id="searchMarketplaceBtn">
                     Buscar
                 </button>
@@ -310,11 +310,17 @@
         <!-- Card Template for empty search and filter results -->
         <div class="row g-4" id="marketplaceCardsContainer">
             <div class="col-12 d-none" id="marketplaceEmptyState">
-                <div class="border rounded-4 p-4 text-center bg-light">
-                    <h5 class="fw-bold mb-2">Publicaciones no existentes</h5>
+                <div class="card border-0 shadow-sm rounded-0">
+                    <div class="card-body py-5 text-center">
+                        <i class="bi bi-shop fs-1 text-muted"></i>
+                        <h4 class="fw-bold mt-3">No se encontraron publicaciones.</h4>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Card Template for empty search, no publications, and filter results -->
+
 
 
         <!-- Pagination -->
