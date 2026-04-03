@@ -9,11 +9,19 @@ use App\Models\Lending;
 use App\Models\LendingItem;
 use App\Models\ActivityLog;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\EmailService;
 
 class EquipmentController extends Controller
 {
+    protected $emailService;
 
-private function logActivity($action, $comment = null)
+    public function __construct(EmailService $emailService)
+    {
+        $this->emailService = $emailService;
+    }
+
+
+    private function logActivity($action, $comment = null)
 {
     ActivityLog::create([
         'user_id' => 1, // temporary
@@ -359,7 +367,9 @@ public function cart()
         $status = $isSpecialCase ? 'pending' : 'approved';
         $itemStatus = $isSpecialCase ? 'pending' : 'approved';
 
-        DB::transaction(function () use ($cart, $startDateTime, $endDateTime, $isSpecialCase, $validated, $status, $itemStatus) {
+        $lending = null;
+
+        DB::transaction(function () use ($cart, $startDateTime, $endDateTime, $isSpecialCase, $validated, $status, $itemStatus, &$lending) {
             $lending = Lending::create([
                 'user_id' => auth()->id() ?? 1,
                 'commentary' => null,
@@ -392,6 +402,16 @@ public function cart()
                 }
             }
         });
+
+        $lending->load('user');
+
+        if (!$isSpecialCase && $lending->user && !empty($lending->user->email)) {
+            $this->emailService->send(
+                $lending->user->email,
+                'Solicitud de item aprobada',
+                'Tu solicitud de equipo deportivo fue aprobada satisfactoriamente. Por favor entra a tu perfil de MAIKINE para más detalles.'
+            );
+        }
 
         $this->logActivity(
             'Creó solicitud',
@@ -456,60 +476,76 @@ public function borrows(Request $request)
     return view('inventory_management.borrows', compact('pending', 'approved'));
 }
 
-public function approveRequest($id)
-{
-    $lending = Lending::with('items')->findOrFail($id);
+    public function approveRequest($id)
+    {
+        $lending = Lending::with(['items', 'user'])->findOrFail($id);
 
-    DB::transaction(function () use ($lending) {
-        foreach ($lending->items as $item) {
-            $equipment = Equipment::lockForUpdate()->findOrFail($item->equipment_id);
+        DB::transaction(function () use ($lending) {
+            foreach ($lending->items as $item) {
+                $equipment = Equipment::lockForUpdate()->findOrFail($item->equipment_id);
 
-            if ($item->quantity > $equipment->available_quantity) {
-                throw new \Exception('No hay suficiente inventario para aprobar esta solicitud.');
+                if ($item->quantity > $equipment->available_quantity) {
+                    throw new \Exception('No hay suficiente inventario para aprobar esta solicitud.');
+                }
+
+                $equipment->available_quantity -= $item->quantity;
+                $equipment->save();
+
+                $item->item_status = 'approved';
+                $item->save();
             }
 
-            $equipment->available_quantity -= $item->quantity;
-            $equipment->save();
+            $lending->status = 'approved';
+            $lending->save();
+        });
 
-            $item->item_status = 'approved';
-            $item->save();
+        if ($lending->user && !empty($lending->user->email)) {
+            $this->emailService->send(
+                $lending->user->email,
+                'Solicitud de item aprobada',
+                'Tu solicitud de equipo deportivo fue aprobada satisfactoriamente. Por favor entra a tu perfil de MAIKINE para más detalles.'
+            );
         }
 
-        $lending->status = 'approved';
-        $lending->save();
-    });
+        $this->logActivity(
+            'Aprobó solicitud',
+            'Solicitud ID ' . $lending->id . ' aprobada'
+        );
 
-    $this->logActivity(
-    'Aprobó solicitud',
-    'Solicitud ID ' . $lending->id . ' aprobada'
-    );
+        return redirect()->route('inventory_management.borrows')
+            ->with('success', 'Solicitud aprobada correctamente.');
+    }
 
-    return redirect()->route('inventory_management.borrows')
-        ->with('success', 'Solicitud aprobada correctamente.');
-}
+    public function rejectRequest($id)
+    {
+        $lending = Lending::with(['items', 'user'])->findOrFail($id);
 
-public function rejectRequest($id)
-{
-    $lending = Lending::with('items')->findOrFail($id);
+        DB::transaction(function () use ($lending) {
+            foreach ($lending->items as $item) {
+                $item->item_status = 'rejected';
+                $item->save();
+            }
 
-    DB::transaction(function () use ($lending) {
-        foreach ($lending->items as $item) {
-            $item->item_status = 'rejected';
-            $item->save();
+            $lending->status = 'rejected';
+            $lending->save();
+        });
+
+        if ($lending->user && !empty($lending->user->email)) {
+            $this->emailService->send(
+                $lending->user->email,
+                'Solicitud de item denegada',
+                'Tu solicitud de equipo deportivo fue denegada. Por favor entra a tu perfil de MAIKINE para más detalles. De tener alguna duda comunícate con el administrador de inventario (inventario@upr.edu).'
+            );
         }
 
-        $lending->status = 'rejected';
-        $lending->save();
-    });
+        $this->logActivity(
+            'Rechazó solicitud',
+            'Solicitud ID ' . $lending->id . ' rechazada'
+        );
 
-    $this->logActivity(
-    'Rechazó solicitud',
-    'Solicitud ID ' . $lending->id . ' rechazada'
-    );
-
-    return redirect()->route('inventory_management.borrows')
-        ->with('success', 'Solicitud denegada correctamente.');
-}
+        return redirect()->route('inventory_management.borrows')
+            ->with('success', 'Solicitud denegada correctamente.');
+    }
 
 public function markReturned($id)
 {
