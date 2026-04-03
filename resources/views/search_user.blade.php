@@ -1,6 +1,40 @@
 <x-layout title="Buscar Usuarios">
     <x-navbar></x-navbar>
 
+    @vite('resources/js/search_user_validation.js')
+
+    <style>
+        .status-active-badge {
+            background-color: #7FC61B !important;
+            color: white !important;
+        }
+
+        .users-pagination .page-link {
+            color: #198754;
+            border-color: #198754;
+            background-color: #fff;
+            box-shadow: none;
+        }
+
+        .users-pagination .page-link:hover {
+            color: #fff;
+            background-color: #198754;
+            border-color: #198754;
+        }
+
+        .users-pagination .page-item.active .page-link {
+            color: #fff;
+            background-color: #198754;
+            border-color: #198754;
+        }
+
+        .users-pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            background-color: #fff;
+            border-color: #dee2e6;
+        }
+    </style>
+
     <div class="container py-4">
         <div class="mb-4">
             <h1 class="fw-bold rounded-2">Buscar Usuarios</h1>
@@ -10,44 +44,47 @@
         </div>
 
         {{-- Filters --}}
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-body p-3">
-                <div class="row g-3">
-
-                    <div class="col-lg-6">
-                        <label for="userSearchInput" class="form-label fw-semibold">Buscar Usuarios</label>
-
-                        <div class="input-group search-group">
-                            <span class="input-group-text bg-white border-0">
-                                <i class="bi bi-search"></i>
-                            </span>
-                            <input
-                                type="text"
-                                id="userSearchInput"
-                                class="form-control border-0"
-                                placeholder="Buscar por nombre o correo..."
-                            >
-                        </div>
-                    </div>
-
-                    <div class="col-lg-6">
-                        <label for="roleFilterSelect" class="form-label fw-semibold">Filtrar por Rol</label>
-                        <select id="roleFilterSelect" class="form-select rounded-3 border-2 border-dark">
-                            <option value="all" selected>Todos los Roles</option>
-                            <option value="Usuario">Usuario</option>
-                            <option value="Admin Super">Admin Super</option>
-                            <option value="Admin Inventario">Admin Inventario</option>
-                            <option value="Admin Facilidades">Admin Facilidades</option>
-                            <option value="Admin Mercado">Admin Mercado</option>
-                        </select>
+        <div class="mb-4">
+            <div class="row g-3 align-items-stretch mb-3">
+                <div class="col-lg-10">
+                    <div class="input-group search-group h-100">
+                        <span class="input-group-text bg-white border-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input
+                            type="text"
+                            id="userSearchInput"
+                            class="form-control border-0"
+                            placeholder="Buscar por nombre o correo..."
+                        >
                     </div>
                 </div>
+
+                <div class="col-lg-2 d-grid">
+                    <button type="button" class="btn btn-success h-100 fw-semibold" id="searchUsersBtn">
+                        Buscar
+                    </button>
+                </div>
             </div>
-                <div class="mt-3 d-flex gap-2">
+
+            <div class="row g-3 align-items-center">
+                <div class="col-md-6 col-lg-4">
+                    <select id="roleFilterSelect" class="form-select border-2 border-dark">
+                        <option value="all" selected>Todos los Roles</option>
+                        <option value="Usuario">Usuario</option>
+                        <option value="Admin Super">Admin Super</option>
+                        <option value="Admin Inventario">Admin Inventario</option>
+                        <option value="Admin Facilidades">Admin Facilidades</option>
+                        <option value="Admin Mercado">Admin Mercado</option>
+                    </select>
+                </div>
+
+                <div class="col-auto">
                     <button type="button" class="btn btn-outline-secondary" id="clearUserFilters">
                         Limpiar filtros
                     </button>
                 </div>
+            </div>
         </div>
 
         {{-- Empty state --}}
@@ -108,7 +145,7 @@
                         <div class="col-lg-2">
                             <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                             <div class="d-flex flex-column gap-2">
-                                <span class="badge bg-success user-status-badge align-self-start px-2 py-1 rounded-0">Activo</span>
+                                <span class="badge user-status-badge status-active-badge align-self-start px-2 py-1 rounded-0">Activo</span>
 
                                 <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
                                     <i class="bi bi-ban me-1"></i>
@@ -143,7 +180,7 @@
                                         </a>
 
                                         <span class="badge user-role-badge bg-primary-subtle text-primary-emphasis px-2 py-1 small">
-                                          Usuario
+                                            Usuario
                                         </span>
                                     </div>
 
@@ -166,7 +203,7 @@
                         <div class="col-lg-2">
                             <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                             <div class="d-flex flex-column gap-2">
-                                <span class="badge bg-success user-status-badge align-self-start px-2 py-1 rounded-0">Activo</span>
+                                <span class="badge user-status-badge status-active-badge align-self-start px-2 py-1 rounded-0">Activo</span>
 
                                 <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
                                     <i class="bi bi-ban me-1"></i>
@@ -200,7 +237,7 @@
                                         </a>
 
                                         <span class="badge user-role-badge bg-success-subtle text-success-emphasis px-2 py-1 small">
-                                             Admin Inventario
+                                            Admin Inventario
                                         </span>
                                     </div>
 
@@ -223,7 +260,7 @@
                         <div class="col-lg-2">
                             <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                             <div class="d-flex flex-column gap-2">
-                                <span class="badge bg-success user-status-badge align-self-start px-2 py-1 rounded-0">Activo</span>
+                                <span class="badge user-status-badge status-active-badge align-self-start px-2 py-1 rounded-0">Activo</span>
 
                                 <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
                                     <i class="bi bi-ban me-1"></i>
@@ -275,7 +312,6 @@
                                 <option>Admin Inventario</option>
                                 <option>Admin Facilidades</option>
                                 <option selected>Admin Mercado</option>
-                                <option>Admin Mercado</option>
                             </select>
                         </div>
 
@@ -294,6 +330,20 @@
                 </div>
             </div>
 
+        </div>
+
+        {{-- Pagination --}}
+        <div class="mt-4 d-flex justify-content-center">
+            <ul class="pagination users-pagination mb-0" id="usersPagination"></ul>
+        </div>
+    </div>
+
+    {{-- Empty state --}}
+    <div id="usersEmptyState" class="card border-0 shadow-sm rounded-0 d-none container mb-4">
+        <div class="card-body py-5 text-center">
+            <i class="bi bi-people fs-1 text-muted"></i>
+            <h4 class="fw-bold mt-3">No se encontraron usuarios</h4>
+            <p class="text-muted mb-0">Intenta con otro nombre, correo o filtro de rol.</p>
         </div>
     </div>
 
@@ -380,7 +430,6 @@
              aria-live="assertive"
              aria-atomic="true"
              style="width: auto; max-width: fit-content;">
-
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     La cuenta ha sido baneada.
@@ -415,200 +464,4 @@
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const userSearchInput = document.getElementById('userSearchInput');
-            const roleFilterSelect = document.getElementById('roleFilterSelect');
-            const usersList = document.getElementById('usersList');
-            const userCards = document.querySelectorAll('.user-card');
-            const usersEmptyState = document.getElementById('usersEmptyState');
-
-            const confirmRoleModal = document.getElementById('confirmRoleModal');
-            const confirmRoleText = document.getElementById('confirmRoleText');
-            const confirmRoleBtn = document.getElementById('confirmRoleBtn');
-
-            const confirmBanModal = document.getElementById('confirmBanModal');
-            const confirmBanText = document.getElementById('confirmBanText');
-            const confirmBanBtn = document.getElementById('confirmBanBtn');
-
-            const roleToastEl = document.getElementById('roleToast');
-            const banToastEl = document.getElementById('banToast');
-            const unbanToastEl = document.getElementById('unbanToast');
-
-            let pendingRoleChange = null;
-            let pendingBanAction = null;
-
-            function getRoleBadgeClass(role) {
-                if (role === 'Usuario') return 'bg-primary-subtle text-primary-emphasis';
-                if (role === 'Admin Inventario') return 'bg-success-subtle text-success-emphasis';
-                if (role === 'Admin Mercado') return 'bg-warning-subtle text-warning-emphasis';
-                if (role === 'Admin Facilidades') return 'bg-info-subtle text-info-emphasis';
-                if (role === 'Admin Super') return 'bg-danger-subtle text-danger-emphasis';
-                return 'bg-secondary-subtle text-secondary-emphasis';
-            }
-
-            function filterUsers() {
-                const searchValue = userSearchInput.value.trim().toLowerCase();
-                const roleValue = roleFilterSelect.value;
-
-                let visibleCount = 0;
-
-                userCards.forEach(card => {
-                    const name = card.dataset.name.toLowerCase();
-                    const email = card.dataset.email.toLowerCase();
-                    const role = card.dataset.role;
-
-                    const matchesSearch =
-                        !searchValue ||
-                        name.includes(searchValue) ||
-                        email.includes(searchValue);
-
-                    const matchesRole =
-                        roleValue === 'all' ||
-                        role === roleValue;
-
-                    const shouldShow = matchesSearch && matchesRole;
-                    card.classList.toggle('d-none', !shouldShow);
-
-                    if (shouldShow) visibleCount++;
-                });
-
-                usersEmptyState.classList.toggle('d-none', visibleCount !== 0);
-                usersList.classList.toggle('d-none', visibleCount === 0);
-            }
-
-            userSearchInput.addEventListener('input', filterUsers);
-            roleFilterSelect.addEventListener('change', filterUsers);
-
-            document.querySelectorAll('.role-select').forEach(select => {
-                select.dataset.previousValue = select.value;
-
-                select.addEventListener('change', function () {
-                    const card = select.closest('.user-card');
-                    const userName = card.dataset.name;
-                    const newRole = select.value;
-                    const previousRole = select.dataset.previousValue;
-
-                    pendingRoleChange = {
-                        card,
-                        select,
-                        userName,
-                        newRole,
-                        previousRole
-                    };
-
-                    confirmRoleText.textContent = `¿Deseas cambiar el rol de ${userName} a "${newRole}"?`;
-
-                    const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmRoleModal);
-                    modalInstance.show();
-                });
-            });
-
-            confirmRoleBtn.addEventListener('click', function () {
-                if (!pendingRoleChange) return;
-
-                const { card, select, newRole } = pendingRoleChange;
-                const badge = card.querySelector('.user-role-badge');
-
-                card.dataset.role = newRole;
-                select.dataset.previousValue = newRole;
-
-                badge.className = `badge user-role-badge px-2 py-1 small ${getRoleBadgeClass(newRole)}`;
-                badge.innerHTML = ` ${newRole}`;
-
-                const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmRoleModal);
-                modalInstance.hide();
-
-                const toast = window.bootstrap.Toast.getOrCreateInstance(roleToastEl);
-                toast.show();
-
-                pendingRoleChange = null;
-                filterUsers();
-            });
-
-            confirmRoleModal.addEventListener('hidden.bs.modal', function () {
-                if (pendingRoleChange) {
-                    pendingRoleChange.select.value = pendingRoleChange.previousRole;
-                    pendingRoleChange = null;
-                }
-            });
-
-            const clearUserFiltersBtn = document.getElementById('clearUserFilters');
-
-            if (clearUserFiltersBtn) {
-                clearUserFiltersBtn.addEventListener('click', function () {
-
-                    // Reset inputs
-                    userSearchInput.value = '';
-                    roleFilterSelect.value = 'all';
-
-                    // Re-run filter
-                    filterUsers();
-                });
-            }
-
-            document.querySelectorAll('.ban-toggle-btn').forEach(button => {
-                button.addEventListener('click', function () {
-                    const card = button.closest('.user-card');
-                    const userName = card.dataset.name;
-                    const currentStatus = card.dataset.status;
-
-                    pendingBanAction = { card, button, currentStatus };
-
-                    if (currentStatus === 'Activo') {
-                        confirmBanText.textContent = `¿Estás seguro de banear a ${userName}?`;
-                        confirmBanBtn.className = 'btn btn-danger';
-                        confirmBanBtn.textContent = 'Banear';
-                    } else {
-                        confirmBanText.textContent = `¿Estás seguro de desbanear a ${userName}?`;
-                        confirmBanBtn.className = 'btn btn-success';
-                        confirmBanBtn.textContent = 'Desbanear';
-                    }
-
-                    const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmBanModal);
-                    modalInstance.show();
-                });
-            });
-
-            confirmBanBtn.addEventListener('click', function () {
-                if (!pendingBanAction) return;
-
-                const { card, button, currentStatus } = pendingBanAction;
-                const statusBadge = card.querySelector('.user-status-badge');
-
-                if (currentStatus === 'Activo') {
-                    card.dataset.status = 'Baneado';
-                    statusBadge.textContent = 'Baneado';
-                    statusBadge.className = 'badge bg-danger user-status-badge align-self-start px-2 py-1 rounded-0';
-
-                    button.className = 'btn btn-outline-success rounded-3 ban-toggle-btn btn-sm';
-                    button.innerHTML = '<i class="bi bi-arrow-counterclockwise me-1"></i> Desbanear';
-
-                    const toast = window.bootstrap.Toast.getOrCreateInstance(banToastEl);
-                    toast.show();
-                } else {
-                    card.dataset.status = 'Activo';
-                    statusBadge.textContent = 'Activo';
-                    statusBadge.className = 'badge bg-success user-status-badge align-self-start px-2 py-1 rounded-0';
-
-                    button.className = 'btn btn-danger rounded-3 ban-toggle-btn btn-sm';
-                    button.innerHTML = '<i class="bi bi-ban me-1"></i> Banear';
-
-                    const toast = window.bootstrap.Toast.getOrCreateInstance(unbanToastEl);
-                    toast.show();
-                }
-
-                const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmBanModal);
-                modalInstance.hide();
-
-                pendingBanAction = null;
-            });
-
-            confirmBanModal.addEventListener('hidden.bs.modal', function () {
-                pendingBanAction = null;
-            });
-
-            filterUsers();
-        });
-    </script>
 </x-layout>

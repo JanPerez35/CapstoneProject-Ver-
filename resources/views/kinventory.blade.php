@@ -118,15 +118,17 @@
                             </div>
                         </div>
                     </div>
-                @empty
-                    <div class="col-12">
-                        <div class="text-center py-5">
-                            <p class="fw-semibold fs-3 text-secondary mb-0">
-                                Item no disponible.
-                            </p>
+            @empty
+                <div class="col-12">
+                    <div id="itemsEmptyState" class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body py-5 text-center">
+                            <i class="bi bi-box-seam fs-1 text-muted"></i>
+                            <h4 class="fw-bold mt-3">No se encontraron equipos</h4>
+                            <p class="text-muted mb-0">Intenta cambiar los filtros o buscar otro equipo.</p>
                         </div>
                     </div>
-                @endforelse
+                </div>
+            @endforelse
             </div>
 
             @if ($items->hasPages())

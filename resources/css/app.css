@@ -376,3 +376,9 @@
     word-break: break-word;
     line-height: 1.5;
 }
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}

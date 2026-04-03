@@ -42,10 +42,10 @@
                     Exportar a CSV
                 </a>
 
-                <a href="{{ route('inventory_management.inventory_statistics.export', ['format' => 'txt', 'type' => $type, 'year' => $year, 'month' => $month]) }}"
+                <a href="{{ route('inventory_management.inventory_statistics.export', ['format' => 'pdf', 'type' => $type, 'year' => $year, 'month' => $month]) }}"
                    class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
                     <i class="bi bi-download"></i>
-                    Exportar a TXT
+                    Exportar a PDF
                 </a>
             </div>
         </div>
@@ -156,7 +156,7 @@
                             <table class="table align-middle mb-0">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
+                                        <th>Rango</th>
                                         <th>Objeto</th>
                                         <th class="text-end">Pedidos</th>
                                     </tr>

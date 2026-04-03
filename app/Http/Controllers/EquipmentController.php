@@ -8,6 +8,7 @@ use App\Models\Equipment;
 use App\Models\Lending;
 use App\Models\LendingItem;
 use App\Models\ActivityLog;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class EquipmentController extends Controller
 {
@@ -614,25 +615,28 @@ public function exportStatistics(Request $request)
         $content  = implode("\n", $lines);
         $filename = "reporte_inventario_{$type}_{$year}.csv";
         $mime     = 'text/csv';
-    } else {
-        $lines = [
-            "REPORTE DE INVENTARIO",
-            "Tipo: " . ($type === 'annual' ? 'Anual' : 'Mensual'),
-            "Período: {$periodLabel}",
-            "",
-            "TOP ARTÍCULOS:",
-        ];
-        if ($items->isEmpty()) {
-            $lines[] = "Sin datos para el período seleccionado.";
-        } else {
-            foreach ($items as $i => $item) {
-                $lines[] = ($i + 1) . ". {$item->description} - {$item->total} pedidos";
-            }
-        }
-        $content  = implode("\n", $lines);
-        $filename = "reporte_inventario_{$type}_{$year}.txt";
-        $mime     = 'text/plain';
+
+        return response($content, 200)
+            ->header('Content-Type', $mime . '; charset=utf-8')
+            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
     }
+
+    elseif ($format === 'pdf') {
+
+        $pdf = Pdf::loadView('pdfs.statistics_pdf', [
+            'items' => $items,
+            'type' => $type,
+            'year' => $year,
+            'month' => $month,
+            'periodLabel' => $periodLabel,
+        ]);
+
+        return $pdf->download("reporte_inventario_{$type}_{$year}.pdf");
+    }
+
+// fallback (por si acaso)
+    abort(404);
+
 
     return response($content, 200)
         ->header('Content-Type', $mime . '; charset=utf-8')
