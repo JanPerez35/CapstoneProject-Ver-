@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
     const MAX_TEXT_LENGTH = 100;
     const MIN_TEXT_LENGTH = 5;
+    const SCROLL_KEY = 'inventoryScrollY';
 
     const TEXT_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
     const CATEGORY_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
@@ -21,6 +22,62 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let pendingDeleteForm = null;
     let pendingEditForm = null;
+
+    function saveScroll() {
+        sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+    }
+
+    function clearScroll() {
+        sessionStorage.removeItem(SCROLL_KEY);
+    }
+
+    function isPaginationLink(link) {
+        return !!link.closest('.pagination');
+    }
+
+    function restoreScroll() {
+        const saved = sessionStorage.getItem(SCROLL_KEY);
+        if (!saved) return;
+
+        const target = parseInt(saved, 10);
+        if (Number.isNaN(target)) {
+            clearScroll();
+            return;
+        }
+
+        let attempts = 0;
+        const maxAttempts = 20;
+
+        const tryScroll = () => {
+            window.scrollTo(0, target);
+            attempts++;
+
+            if (attempts < maxAttempts && Math.abs(window.scrollY - target) > 5) {
+                setTimeout(tryScroll, 100);
+            } else {
+                clearScroll();
+            }
+        };
+
+        setTimeout(tryScroll, 100);
+    }
+
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', saveScroll);
+    });
+
+    document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            if (isPaginationLink(link)) {
+                clearScroll();
+                return;
+            }
+
+            saveScroll();
+        });
+    });
+
+    window.addEventListener('load', restoreScroll);
 
     function getToastInstance(element) {
         if (!element || typeof bootstrap === 'undefined') return null;
@@ -331,9 +388,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // =========================
-    // ADD ITEM FORM
-    // =========================
     const addItemForm = document.getElementById('addItemForm');
 
     if (addItemForm) {
@@ -576,9 +630,6 @@ document.addEventListener('DOMContentLoaded', function () {
         updateAddButtonState();
     }
 
-    // =========================
-    // EDIT ITEM FORMS
-    // =========================
     document.querySelectorAll('.editItemForm').forEach(function (form) {
         const description = form.querySelector('input[name="description"]');
 

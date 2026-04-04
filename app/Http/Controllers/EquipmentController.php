@@ -75,105 +75,99 @@ class EquipmentController extends Controller
         return view('inventory_management.admin_inventory', compact('items', 'categories', 'locations'));
     }
 
-public function update(Request $request, $id)
-{
-    $item = Equipment::findOrFail($id);
 
-    $validated = $request->validate([
-        'description' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/'],
-        'category' => ['required', 'string', 'min:3', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/'],
-        'quantity' => 'required|integer|min:1',
-        'available_quantity' => 'required|integer|min:0|lte:quantity',
-        'location' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-\/]+$/'],
-        'image' => 'nullable|image|mimes:jpg,jpeg|max:2048',
 
-    ]);
+    public function update(Request $request, $id)
+    {
+        $item = Equipment::findOrFail($id);
 
-    // If new image uploaded
-    if ($request->hasFile('image')) {
-        // delete old image
+        $validated = $request->validate([
+            'description' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/'],
+            'category' => ['required', 'string', 'min:3', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/'],
+            'quantity' => 'required|integer|min:1',
+            'available_quantity' => 'required|integer|min:0|lte:quantity',
+            'location' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-\/]+$/'],
+            'image' => 'nullable|image|mimes:jpg,jpeg|max:2048',
+        ]);
+
+        if ($request->hasFile('image')) {
+            if ($item->equipment_photo_url) {
+                \Storage::disk('public')->delete($item->equipment_photo_url);
+            }
+
+            $imagePath = $request->file('image')->store('equipment_photos', 'public');
+            $item->equipment_photo_url = $imagePath;
+        }
+
+        $item->update([
+            'description' => $validated['description'],
+            'category' => $validated['category'],
+            'quantity' => $validated['quantity'],
+            'available_quantity' => $validated['available_quantity'],
+            'location' => $validated['location'],
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Item actualizado correctamente');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'description' => [
+                'required',
+                'string',
+                'min:5',
+                'max:100',
+                'regex:/^[A-Za-z0-9\s\.,\-]+$/'
+            ],
+            'category' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-z0-9\s\.,\-]+$/'
+            ],
+            'location' => [
+                'required',
+                'string',
+                'min:5',
+                'max:100',
+                'regex:/^[A-Za-z0-9\s\.,\-\/]+$/'
+            ],
+            'quantity' => 'required|integer|min:1',
+            'available_quantity' => 'required|integer|min:0|lte:quantity',
+            'image' => 'required|image|mimes:jpg,jpeg|max:2048',
+        ]);
+
+        $imagePath = $request->file('image')->store('equipment_photos', 'public');
+
+        Equipment::create([
+            'description' => $validated['description'],
+            'category' => $validated['category'],
+            'quantity' => $validated['quantity'],
+            'available_quantity' => $validated['available_quantity'],
+            'location' => $validated['location'],
+            'equipment_photo_url' => $imagePath,
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Item agregado correctamente');
+    }
+
+    public function destroy($id)
+    {
+        $item = Equipment::findOrFail($id);
+
         if ($item->equipment_photo_url) {
             \Storage::disk('public')->delete($item->equipment_photo_url);
         }
 
-        $imagePath = $request->file('image')->store('equipment_photos', 'public');
-        $item->equipment_photo_url = $imagePath;
+        $item->delete();
+
+        return redirect()->back()
+            ->with('success', 'Item eliminado correctamente');
     }
-
-    // update fields
-    $item->update([
-        'description' => $validated['description'],
-        'category' => $validated['category'],
-        'quantity' => $validated['quantity'],
-        'available_quantity' => $validated['available_quantity'],
-        'location' => $validated['location'],
-    ]);
-
-    return redirect()->route('inventory_management')
-        ->with('success', 'Item actualizado correctamente');
-}
-
-public function store(Request $request)
-{
-    $validated = $request->validate([
-    'description' => [
-        'required',
-        'string',
-        'min:5',
-        'max:100',
-        'regex:/^[A-Za-z0-9\s\.,\-]+$/'
-    ],
-
-    'category' => [
-        'required',
-        'string',
-        'min:3',
-        'max:100',
-        'regex:/^[A-Za-z0-9\s\.,\-]+$/'
-    ],
-
-    'location' => [
-        'required',
-        'string',
-        'min:5',
-        'max:100',
-        'regex:/^[A-Za-z0-9\s\.,\-\/]+$/'
-    ],
-
-    'quantity' => 'required|integer|min:1',
-    'available_quantity' => 'required|integer|min:0|lte:quantity',
-    'image' => 'required|image|mimes:jpg,jpeg|max:2048',
-]);
-
-    $imagePath = $request->file('image')->store('equipment_photos', 'public');
-
-    Equipment::create([
-        'description' => $validated['description'],
-        'category' => $validated['category'],
-        'quantity' => $validated['quantity'],
-        'available_quantity' => $validated['available_quantity'],
-        'location' => $validated['location'],
-        'equipment_photo_url' => $imagePath,
-    ]);
-
-    return redirect()->route('inventory_management')
-        ->with('success', 'Item agregado correctamente');
-}
-
-public function destroy($id)
-{
-    $item = Equipment::findOrFail($id);
-
-    // delete image from storage
-    if ($item->equipment_photo_url) {
-        \Storage::disk('public')->delete($item->equipment_photo_url);
-    }
-
-    $item->delete();
-
-    return redirect()->route('inventory_management')
-        ->with('success', 'Item eliminado correctamente');
-}
 
 public function kinventory(Request $request)
 {
@@ -250,12 +244,20 @@ public function borrow(Request $request)
         $validated = $request->validate([
             'equipment_id' => 'required|integer|exists:equipment,id',
             'quantity' => 'required|integer|min:1',
+            'redirect_back' => 'nullable|string',
         ]);
+
+        $redirectBack = $validated['redirect_back'] ?? route('kinventory');
+
+        // Seguridad básica: solo permitir redirects internos del mismo sitio
+        if (!str_starts_with($redirectBack, url('/'))) {
+            $redirectBack = route('kinventory');
+        }
 
         $equipment = Equipment::findOrFail($validated['equipment_id']);
 
         if ($validated['quantity'] > $equipment->available_quantity) {
-            return redirect()->route('kinventory')
+            return redirect($redirectBack)
                 ->with('error', 'La cantidad solicitada excede la cantidad disponible.');
         }
 
@@ -265,7 +267,7 @@ public function borrow(Request $request)
             $newQuantity = $cart[$equipment->id]['quantity'] + $validated['quantity'];
 
             if ($newQuantity > $equipment->available_quantity) {
-                return redirect()->route('kinventory')
+                return redirect($redirectBack)
                     ->with('error', 'La cantidad total en el carrito excede la cantidad disponible.');
             }
 
@@ -285,7 +287,7 @@ public function borrow(Request $request)
 
         session()->put('cart', $cart);
 
-        return redirect()->route('kinventory')
+        return redirect($redirectBack)
             ->with('cart_success', 'Item añadido al carrito.');
     }
 

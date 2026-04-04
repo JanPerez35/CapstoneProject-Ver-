@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const SCROLL_KEY = 'kinventoryScrollY';
+
     const borrowButtons = document.querySelectorAll('.open-borrow-modal');
     const borrowModal = document.getElementById('borrowModal');
     const borrowEquipmentId = document.getElementById('borrowEquipmentId');
@@ -9,6 +11,71 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmAddToCart = document.getElementById('confirmAddToCart');
     const borrowQuantityError = document.getElementById('borrowQuantityError');
     const borrowForm = document.getElementById('borrowForm');
+
+    function saveScrollPosition() {
+        sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
+    }
+
+    function clearScrollPosition() {
+        sessionStorage.removeItem(SCROLL_KEY);
+    }
+
+    function isPaginationLink(link) {
+        return !!link.closest('.pagination');
+    }
+
+    function restoreScrollPosition() {
+        const savedScrollY = sessionStorage.getItem(SCROLL_KEY);
+        if (savedScrollY === null) return;
+
+        const targetY = parseInt(savedScrollY, 10);
+        if (Number.isNaN(targetY)) {
+            clearScrollPosition();
+            return;
+        }
+
+        let attempts = 0;
+        const maxAttempts = 20;
+
+        const tryRestore = () => {
+            window.scrollTo(0, targetY);
+            attempts++;
+
+            if (attempts < maxAttempts && Math.abs(window.scrollY - targetY) > 5) {
+                setTimeout(tryRestore, 100);
+            } else {
+                clearScrollPosition();
+            }
+        };
+
+        setTimeout(tryRestore, 100);
+    }
+
+    document.querySelectorAll('form').forEach((form) => {
+        form.addEventListener('submit', () => {
+            saveScrollPosition();
+        });
+    });
+
+    document.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+            if (isPaginationLink(link)) {
+                clearScrollPosition();
+                return;
+            }
+
+            saveScrollPosition();
+        });
+    });
+
+    const categorySelect = document.querySelector('select[name="category"]');
+    if (categorySelect) {
+        categorySelect.addEventListener('change', () => {
+            saveScrollPosition();
+        });
+    }
+
+    window.addEventListener('load', restoreScrollPosition);
 
     const hasBorrowModal =
         borrowModal &&
@@ -94,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             borrowQuantity.value = '1';
             borrowQuantity.min = '1';
-            borrowQuantity.removeAttribute('max');
+            borrowQuantity.max = String(currentItem.stock);
             clearBorrowQuantityError();
 
             setTimeout(() => {
@@ -170,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        saveScrollPosition();
         borrowForm.submit();
     });
 });

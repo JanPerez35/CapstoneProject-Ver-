@@ -83,6 +83,7 @@
                     <select
                         name="category"
                         class="form-select border-2 border-dark"
+                        onchange="this.form.submit()"
                     >
                         <option value="">Todas las categorías</option>
 
