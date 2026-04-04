@@ -16,11 +16,13 @@
         <div class="d-flex flex-wrap gap-2 mb-4">
             <a href="{{ route('inventory_management') }}"
                class="btn btn-outline-success px-4 fw-semibold">
+                <i class="bi bi-box"></i>
                 Inventario Administrativo
             </a>
 
             <a href="{{ route('inventory_management.borrows') }}"
                class="btn btn-success px-4 fw-semibold">
+                <i class="bi bi-card-checklist"></i>
                 Préstamos
             </a>
 
