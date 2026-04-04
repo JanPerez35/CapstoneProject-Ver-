@@ -481,10 +481,10 @@ function attachMarketplaceDeleteEvents() {
 
             if (deletePostModalText) {
                 deletePostModalText.innerHTML = `
-                    Vas a eliminar<br>
-                    "<strong>${truncatedPostTitle}</strong>".<br>
-                    Esta acción no se puede deshacer.
-                `;
+                <span class="d-block mb-2">Vas a eliminar</span>
+                <span class="d-block mb-2 text-break">"<strong>${truncatedPostTitle}</strong>".</span>
+                <span class="d-block">Esta acción no se puede deshacer.</span>
+            `;
             }
 
             const modalInstance = bootstrap.Modal.getOrCreateInstance(deletePostModal);

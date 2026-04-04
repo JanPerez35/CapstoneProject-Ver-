@@ -320,28 +320,36 @@
 }
 
 .marketplace-card-top {
-    min-height: 4.5rem;
+    min-height: auto;
 }
 
 .marketplace-card-header-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.75rem;
 }
 
 .marketplace-card-title {
     min-width: 0;
     overflow: hidden;
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    white-space: normal;
     text-overflow: ellipsis;
     line-height: 1.25;
+    word-break: break-word;
 }
 
 .marketplace-card-description {
     overflow: hidden;
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    white-space: normal;
     text-overflow: ellipsis;
     line-height: 1.5;
+    word-break: break-word;
 }
 
 .marketplace-status-badge {
@@ -377,8 +385,16 @@
     line-height: 1.5;
 }
 
-th, td {
-    border: 1px solid #ccc;
-    padding: 8px;
-    text-align: center;
+#deletePostModalText {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+}
+
+#deletePostModalLabel {
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.3;
+    padding-right: 2.5rem;
 }
