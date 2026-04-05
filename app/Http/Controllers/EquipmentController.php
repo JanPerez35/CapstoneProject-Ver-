@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
 use App\Models\Equipment;
 use App\Models\Lending;
 use App\Models\LendingItem;
@@ -216,12 +217,13 @@ public function borrow(Request $request)
         $equipment->save();
     });
 
-    return redirect()->route('kinventory')->with('success', 'Equipo solicitado correctamente.');
-
     $this->logActivity(
-    'Solicitud de Préstamo',
-    'Solicitud creada para equipo ID ' . $validated['equipment_id']
+        'Solicitud de Préstamo',
+        'Solicitud creada para equipo ID ' . $validated['equipment_id']
+
     );
+
+    return redirect()->route('kinventory')->with('success', 'Equipo solicitado correctamente.');
 
 }
 
@@ -608,6 +610,19 @@ public function accessLogs()
         ->paginate(10);
 
     return view('access_logs', compact('logs'));
+}
+
+public function profile()
+{
+    $user = User::findOrFail(1);
+
+    $requests = Lending::with('items.equipment')
+        ->where('user_id', 1)
+        ->latest('created_at')
+        ->paginate(5)
+        ->withQueryString();
+
+    return view('my_profile', compact('user', 'requests'));
 }
 
 }

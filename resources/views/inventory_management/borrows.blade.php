@@ -93,7 +93,10 @@
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body p-0">
                         <div class="p-4 border-bottom">
-                            <h4 class="fw-bold mb-1">Solicitudes por Revisar</h4>
+                            <h4 class="fw-bold mb-1">
+                                <i class="bi bi-exclamation-circle me-2 text-warning"></i>
+                                Solicitudes por Revisar
+                            </h4>
                             <p class="text-muted mb-0">
                                 Aquí aparecen los casos especiales pendientes de aprobación.
                             </p>
@@ -110,10 +113,8 @@
                                         <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
                                             <div class="flex-grow-1">
 
-                                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                                                    <h5 class="fw-bold mb-0">
-                                                        {{ $lending->items->first()->equipment->description ?? 'Equipo' }}
-                                                    </h5>
+                                                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                                                    <h5 class="fw-bold mb-0">Artículos solicitados</h5>
 
                                                     @if($lending->flag)
                                                         <span class="badge text-bg-warning rounded-0">Caso Especial</span>
@@ -124,20 +125,52 @@
                                                     </span>
                                                 </div>
 
+                                                <div class="mb-3">
+                                                    @forelse($lending->items as $item)
+                                                        <div class="border rounded-3 px-3 py-2 mb-2 bg-light-subtle">
+                                                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                                                <span class="fw-semibold">
+                                                                    {{ $item->equipment->description ?? 'Equipo' }}
+                                                                </span>
+                                                                <span>
+                                                                    <span class="text-muted">Cantidad:</span>
+                                                                    <strong>{{ $item->quantity }}</strong>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    @empty
+                                                        <div class="text-muted">No hay artículos en esta solicitud.</div>
+                                                    @endforelse
+                                                </div>
+
                                                 <div class="row g-3 small mb-3">
                                                     <div class="col-md-4">
-                                                        <div><span class="text-muted">Usuario:</span> <strong>{{ $lending->user->first_name ?? 'N/A' }} {{ $lending->user->last_name ?? '' }}</strong></div>
-                                                        <div><span class="text-muted">Cantidad:</span> 
+                                                        <div>
+                                                            <span class="text-muted">Usuario:</span>
+                                                            <strong>{{ $lending->user->first_name ?? 'N/A' }} {{ $lending->user->last_name ?? '' }}</strong>
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-muted">Total de artículos:</span>
+                                                            <strong>{{ $lending->items->count() }}</strong>
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-muted">Cantidad total:</span>
                                                             <strong>{{ $lending->items->sum('quantity') }}</strong>
                                                         </div>
                                                     </div>
 
                                                     <div class="col-md-4">
-                                                        <div><span class="text-muted">Recogida:</span> <strong>{{ \Carbon\Carbon::parse($lending->start_time)->format('m/d/Y h:i A') }}</strong></div>
+                                                        <div>
+                                                            <span class="text-muted">Recogida:</span>
+                                                            <strong>{{ \Carbon\Carbon::parse($lending->start_time)->format('m/d/Y h:i A') }}</strong>
+                                                        </div>
                                                     </div>
 
                                                     <div class="col-md-4">
-                                                        <div><span class="text-muted">Devolución:</span> <strong>{{ \Carbon\Carbon::parse($lending->end_time)->format('m/d/Y h:i A') }}</strong></div>
+                                                        <div>
+                                                            <span class="text-muted">Devolución:</span>
+                                                            <strong>{{ \Carbon\Carbon::parse($lending->end_time)->format('m/d/Y h:i A') }}</strong>
+                                                        </div>
                                                     </div>
                                                 </div>
 
@@ -163,7 +196,6 @@
                                                     </button>
                                                 </form>
                                             </div>
-
                                         </div>
                                     </div>
                                 </div>
@@ -181,47 +213,80 @@
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body p-0">
+
                         <div class="p-4 border-bottom">
-                            <h4 class="fw-bold mb-1">Solicitudes Aprobadas / Activas</h4>
+                            <h4 class="fw-bold mb-1">
+                                <i class="bi bi-check-circle me-2 text-success"></i>
+                                Solicitudes Activas
+                            </h4>
                             <p class="text-muted mb-0">
                                 Aquí están los préstamos normales y los casos especiales aprobados.
                             </p>
                         </div>
-
                         <div id="activeEmptyState" class="d-none text-center py-5">
                             <i class="bi bi-inbox fs-1 text-muted"></i>
                             <h5 class="fw-bold mt-3">No hay solicitudes activas</h5>
-                            <p class="text-muted mb-0">No hay solicitudes aprobadas para mostrar con esos filtros.</p>
+                            <p class="text-muted mb-0">
+                                No hay solicitudes aprobadas para mostrar con esos filtros.
+                            </p>
                         </div>
-                            @forelse($approved as $lending)
-                                <div class="borrow-request active-request card border rounded-4 shadow-sm">
-                                    <div class="card-body p-4">
+                        @forelse($approved as $lending)
+                            <div class="borrow-request active-request card border rounded-4 shadow-sm m-3">
+                                <div class="card-body p-4">
 
-                                        <h5 class="fw-bold mb-2">
-                                            {{ $lending->items->first()->equipment->description ?? 'Equipo' }}
-                                        </h5>
+                                    <h5 class="fw-bold mb-3">Artículos aprobados / activos</h5>
 
-                                        <p><strong>Cantidad:</strong> {{ $lending->items->sum('quantity') }}</p>
-                                        <strong>
-                                            {{ $lending->user 
-                                                ? $lending->user->first_name . ' ' . $lending->user->last_name 
-                                                : 'Usuario desconocido' }}
-                                        </strong>
-
-                                        <form method="POST" action="{{ route('inventory_management.requests.return', $lending->id) }}">
-                                            @csrf
-                                            <button class="btn btn-outline-success">
-                                                Marcar como devuelto
-                                            </button>
-                                        </form>
-
+                                    {{-- ITEMS --}}
+                                    <div class="mb-3">
+                                        @forelse($lending->items as $item)
+                                            <div class="border rounded-3 px-3 py-2 mb-2 bg-light-subtle">
+                                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                                    <span class="fw-semibold">
+                                                        {{ $item->equipment->description ?? 'Equipo' }}
+                                                    </span>
+                                                    <span>
+                                                        <span class="text-muted">Cantidad:</span>
+                                                        <strong>{{ $item->quantity }}</strong>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        @empty
+                                            <div class="text-muted">No hay artículos en esta solicitud.</div>
+                                        @endforelse
                                     </div>
+
+                                    {{-- SUMMARY --}}
+                                    <p class="mb-1">
+                                        <strong>Total de artículos:</strong> {{ $lending->items->count() }}
+                                    </p>
+
+                                    <p class="mb-2">
+                                        <strong>Cantidad total:</strong> {{ $lending->items->sum('quantity') }}
+                                    </p>
+
+                                    <p class="mb-3">
+                                        <strong>Usuario:</strong>
+                                        {{ $lending->user
+                                            ? $lending->user->first_name . ' ' . $lending->user->last_name
+                                            : 'Usuario desconocido' }}
+                                    </p>
+
+                                    {{-- ACTION --}}
+                                    <form method="POST" action="{{ route('inventory_management.requests.return', $lending->id) }}">
+                                        @csrf
+                                        <button class="btn btn-outline-success">
+                                            Marcar como devuelto
+                                        </button>
+                                    </form>
+
                                 </div>
-                            @empty
-                                <div class="text-center py-4 text-muted">
-                                    No hay solicitudes activas.
-                                </div>
-                            @endforelse
+                            </div>
+                        @empty
+                            <div class="text-center py-4 text-muted">
+                                No hay solicitudes activas.
+                            </div>
+                        @endforelse
+
                     </div>
                 </div>
             </div>

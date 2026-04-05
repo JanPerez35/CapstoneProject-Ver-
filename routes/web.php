@@ -15,9 +15,9 @@ Route::get('/welcome', function () {
     return view('welcome');
 });
 
-Route::get('/my_profile', function () {
-    return view('my_profile');
-})->name('my_profile');
+// Route::get('/my_profile', function () {
+//     return view('my_profile');
+// })->name('my_profile');
 
 //Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
 
@@ -124,6 +124,8 @@ Route::delete('/facility/events/{item}', [FacilityCostController::class, 'destro
 
 Route::get('/facility_management/export/csv', [FacilityCostController::class, 'exportCsv'])->name('facility.export.csv');
 Route::get('/facility_management/export/pdf', [FacilityCostController::class, 'exportPdf'])->name('facility.export.pdf');
+
+Route::get('/my_profile', [EquipmentController::class, 'profile'])->name('my_profile');
 
 require __DIR__.'\saml2.php';
 

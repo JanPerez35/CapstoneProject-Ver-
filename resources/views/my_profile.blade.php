@@ -18,7 +18,7 @@
                 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
                     <div>
                         <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
-                            <h1 class="fw-bold mb-0">Usuario Actual (Aquí dirá el nombre)</h1>
+                            <h1 class="fw-bold mb-0">{{ $user->first_name }} {{ $user->last_name }}</h1>
                             <span class="bg-primary-subtle text-primary-emphasis fw-semibold rounded-0 px-2 py-1">
                                 Usuario
                             </span>
@@ -64,32 +64,33 @@
         <ul class="nav w-100 flex-wrap gap-2 mb-4" id="profileTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button
-                    class="btn btn-success rounded-3 px-4 py-2 active"
+                    class="btn {{ request('tab') === 'requests' ? 'btn-outline-success' : 'btn-success' }} rounded-3 px-4 py-2"
                     id="posts-tab"
                     data-bs-toggle="tab"
                     data-bs-target="#posts-pane"
                     type="button"
                     role="tab"
                     aria-controls="posts-pane"
-                    aria-selected="true"
+                    aria-selected="{{ request('tab') === 'requests' ? 'false' : 'true' }}"
                 >
                     <i class="bi bi-bag me-2"></i> Publicaciones (3)
                 </button>
-            </li>
+                            </li>
 
 
             <li class="nav-item" role="presentation">
                 <button
-                    class="btn btn-outline-success rounded-3 px-4 py-2"
+                    class="btn {{ request('tab') === 'requests' ? 'btn-success' : 'btn-outline-success' }} rounded-3 px-4 py-2"
                     id="requests-tab"
                     data-bs-toggle="tab"
                     data-bs-target="#requests-pane"
                     type="button"
                     role="tab"
                     aria-controls="requests-pane"
-                    aria-selected="false"
+                    aria-selected="{{ request('tab') === 'requests' ? 'true' : 'false' }}"
                 >
-                    <i class="bi bi-clipboard-check me-2"></i> Solicitudes de Artículos
+                    <i class="bi bi-clipboard-check me-2"></i>
+                    Solicitudes de Artículos ({{ $requests->total() }})
                 </button>
             </li>
         </ul>
@@ -97,7 +98,7 @@
         <div class="tab-content">
 
             {{-- Posts tab --}}
-            <div class="tab-pane fade show active" id="posts-pane" role="tabpanel" aria-labelledby="posts-tab">
+            <div class="tab-pane fade {{ request('tab') === 'requests' ? '' : 'show active' }}" id="posts-pane" role="tabpanel" aria-labelledby="posts-tab">
 
                 <div class="row g-4">
                     <div class="col-md-6 col-lg-4 post-card-wrapper">
@@ -158,59 +159,67 @@
 
 
             {{-- Requests tab --}}
-            <div class="tab-pane fade" id="requests-pane" role="tabpanel" aria-labelledby="requests-tab">
+            <div class="tab-pane fade {{ request('tab') === 'requests' ? 'show active' : '' }}" id="requests-pane" role="tabpanel" aria-labelledby="requests-tab">
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-body p-4">
                         <h2 class="fw-bold mb-4">Solicitudes de Artículos</h2>
 
-                        {{-- Pendiente --}}
-                        <div class="border rounded-4 p-4 mb-3">
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <div>
-                                    <h5 class="fw-bold mb-1">Nike Zapatos de Baloncesto</h5>
-                                    <p class="text-muted mb-0">Solicitado: 03/10/2026</p>
-                                </div>
-                                <span class="badge bg-warning text-dark rounded-0 px-3 py-2">Pendiente</span>
-                            </div>
-                        </div>
+                        @forelse($requests as $request)
+                            <div class="border rounded-4 p-4 mb-3">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <div>
+                                        <h5 class="fw-bold mb-1">
+                                            @if($request->items->count())
+                                                @foreach($request->items as $item)
+                                                    <div>{{ $item->equipment->description }} (x{{ $item->quantity }})</div>
+                                                @endforeach
+                                            @else
+                                                Sin artículos
+                                            @endif
+                                        </h5>
 
-                        {{-- Aprobada --}}
-                        <div class="border rounded-4 p-4 mb-3">
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <div>
-                                    <h5 class="fw-bold mb-1">Cuica para saltar</h5>
-                                    <p class="text-muted mb-0">Solicitado: 02/25/2026</p>
-                                </div>
-                                <span class="badge bg-success rounded-0 px-3 py-2">Aprobada</span>
-                            </div>
-                        </div>
+                                        <p class="text-muted mb-0">
+                                            Solicitado: {{ \Carbon\Carbon::parse($request->created_at)->format('m/d/Y') }}
+                                        </p>
 
-                        {{-- Rechazada --}}
-                        <div class="border rounded-4 p-4 mb-3">
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <div>
-                                    <h5 class="fw-bold mb-1">Camisa deportiva</h5>
-                                    <p class="text-muted mb-0">Solicitado: 02/20/2026</p>
-                                </div>
-                                <span class="badge bg-danger rounded-0 px-3 py-2">Rechazada</span>
-                            </div>
-                        </div>
+                                        @if($request->status === 'returned')
+                                            <p class="text-muted mb-0">
+                                                Devuelto: {{ \Carbon\Carbon::parse($request->end_time)->format('m/d/Y') }}
+                                            </p>
+                                        @endif
+                                    </div>
 
-                        {{-- NUEVO: Finalizado (devuelto) --}}
-                        <div class="border rounded-4 p-4">
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <div>
-                                    <h5 class="fw-bold mb-1">Mancuernas Ajustables</h5>
-                                    <p class="text-muted mb-0">Solicitado: 01/15/2026</p>
-                                    <p class="text-muted mb-0">Devuelto: 01/22/2026</p>
-                                </div>
-                                <span class="badge rounded-0 px-3 py-2"
-                                      style="background-color:#e5e7eb; color:#374151;">
-                        Finalizado
-                    </span>
-                            </div>
-                        </div>
+                                    @php
+                                        $statusClass = match($request->status) {
+                                            'pending' => 'bg-warning text-dark',
+                                            'approved', 'active' => 'bg-success',
+                                            'rejected' => 'bg-danger',
+                                            'returned', 'finished' => '',
+                                            default => 'bg-secondary',
+                                        };
+                                    @endphp
 
+                                    @if(in_array($request->status, ['returned', 'finished']))
+                                        <span class="badge rounded-0 px-3 py-2" style="background-color:#e5e7eb; color:#374151;">
+                                            Finalizado
+                                        </span>
+                                    @else
+                                        <span class="badge {{ $statusClass }} rounded-0 px-3 py-2">
+                                            {{ ucfirst($request->status) }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div class="alert alert-info rounded-4 mb-0">
+                                No tienes solicitudes registradas todavía.
+                            </div>
+                        @endforelse
+                        @if($requests->hasPages())
+                            <div class="mt-4 d-flex justify-content-center">
+                                {{ $requests->appends(['tab' => 'requests'])->links() }}
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -253,19 +262,31 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const profileTabButtons = document.querySelectorAll('#profileTabs button');
+            const requestsTab = document.getElementById('requests-tab');
+            const postsTab = document.getElementById('posts-tab');
+
+            function syncTabButtonStyles(activeButton) {
+                profileTabButtons.forEach((btn) => {
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-success');
+                });
+
+                activeButton.classList.remove('btn-outline-success');
+                activeButton.classList.add('btn-success');
+            }
+
+            if (window.location.search.includes('tab=requests')) {
+                syncTabButtonStyles(requestsTab);
+            } else {
+                syncTabButtonStyles(postsTab);
+            }
 
             profileTabButtons.forEach((button) => {
                 button.addEventListener('shown.bs.tab', function (event) {
-                    profileTabButtons.forEach((btn) => {
-                        btn.classList.remove('btn-success');
-                        btn.classList.add('btn-outline-success');
-                    });
-
-                    event.target.classList.remove('btn-outline-success');
-                    event.target.classList.add('btn-success');
+                    syncTabButtonStyles(event.target);
                 });
             });
         });
-    </script>
+        </script>
 
 </x-layout>
