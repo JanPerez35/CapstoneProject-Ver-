@@ -209,6 +209,11 @@
     font-weight: 600;
 }
 
+#createPostModal #postPriceGroup .input-group-text {
+    background-color: #f1f3f5;
+    border-right: 1px solid #ced4da;
+}
+
 #createPostModal #postPrice {
     border-left: 0;
 }

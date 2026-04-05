@@ -39,6 +39,7 @@
     data-request-success="{{ session('request_success') }}"
     data-cart-removed-success="{{ session('cart_removed_success') }}"
     data-reopen-cart-modal="{{ session('reopen_cart_modal') ? '1' : '0' }}"
+    data-current-user-id="{{ auth()->id() ?? '' }}"
 >
 <div class="container-fluid px-0">
     <header class="d-flex flex-wrap align-items-center justify-content-between py-2 px-2 border-bottom bg-light">
@@ -65,7 +66,7 @@
                     <i class="bi bi-person-fill"></i> Mi Perfil
                 </a>
 
-                <a href="{{ route('my_messages') }}"
+                <a href="{{ route('my_messages', ['return_to' => url()->full()]) }}"
                    class="btn {{ request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success' }}">
                     <i class="bi bi-chat-left-text"></i> Mis Chats
                 </a>
@@ -93,6 +94,8 @@
 </div>
 
 <main>{{ $slot }}</main>
+
+
 
 <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">

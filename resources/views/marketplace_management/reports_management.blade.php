@@ -1,6 +1,6 @@
 <x-layout title="Gestión de Mercado">
     <x-navbar></x-navbar>
-    @vite('resources/js/pages/marketplace_reports.js')
+    @vite('resources/js/marketplace_reports.js')
     <div class="container pt-2 pb-4">
 
         <!--This is the header-->

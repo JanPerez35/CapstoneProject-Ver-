@@ -90,10 +90,6 @@ Route::get('/marketplace_management', function () {
     return view('/marketplace_management.reports_management');
 })->name('marketplace_management');
 
-Route::get('/marketplace_management.admin_marketplace', function () {
-    return view('/marketplace_management.admin_marketplace');
-})->name('marketplace_management.admin_marketplace');
-
 // Route::get('/access_logs', function () {
 //     return view('access_logs');
 // })->name('access_logs');
@@ -108,14 +104,6 @@ Route::get('/access_logs', [EquipmentController::class, 'accessLogs'])
 Route::get('/my_messages', function () {
     return view('my_messages');
 })->name('my_messages');
-
-/*Route::get('/kinemercado/reportar_usuario', function () {
-    return view('kinemercado');
-})->name('kinemercado.reportar_usuario');*/
-
-Route::get('/kinemercado/mensaje', function () {
-    return view('kinemercado_mensaje');
-})->name('kinemercado_mensaje');
 
 Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management');
 Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])->name('facility.rates.save');

@@ -1,6 +1,6 @@
 <x-layout title="Gestión de Costos de Instalaciones">
     <x-navbar></x-navbar>
-    @vite('resources/js/pages/facility_management.js')
+    @vite('resources/js/facility_management.js')
     <div class="container py-4">
 
         @if(session('rates_saved'))
