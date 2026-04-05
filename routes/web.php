@@ -5,6 +5,8 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\FacilityCostController;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\TermsController;
+
 
 
 Route::get('/', function () {
@@ -126,6 +128,9 @@ Route::get('/facility_management/export/csv', [FacilityCostController::class, 'e
 Route::get('/facility_management/export/pdf', [FacilityCostController::class, 'exportPdf'])->name('facility.export.pdf');
 
 require __DIR__.'\saml2.php';
+
+Route::post('/terms-and-conditions/update', [TermsController::class, 'update'])
+    ->name('terms.update');
 
 // Temporary routes until user tables are connected
 Route::get('/test-email/request-approved', [EmailController::class, 'requestApproved']);
