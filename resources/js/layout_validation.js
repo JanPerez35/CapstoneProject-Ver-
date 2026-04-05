@@ -26,6 +26,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const removeCartConfirmText = document.getElementById('removeCartConfirmText');
     const confirmRemoveCartItem = document.getElementById('confirmRemoveCartItem');
 
+    const openTermsPdfPicker = document.getElementById('openTermsPdfPicker');
+    const termsPdfInput = document.getElementById('termsPdfInput');
+    const termsPdfError = document.getElementById('termsPdfError');
+    const termsPdfSelectedName = document.getElementById('termsPdfSelectedName');
+    const updateTermsForm = document.getElementById('updateTermsForm');
+    const confirmTermsUpdateModal = document.getElementById('confirmTermsUpdateModal');
+    const confirmTermsUpdateBtn = document.getElementById('confirmTermsUpdateBtn');
+
+
     const allowedReasonRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
 
     let removeCartFormId = null;
@@ -38,6 +47,38 @@ document.addEventListener('DOMContentLoaded', function () {
     function clearError(field, errorEl) {
         if (field) field.classList.remove('is-invalid');
         if (errorEl) errorEl.textContent = '';
+    }
+
+    function clearTermsPdfError() {
+        if (termsPdfError) {
+            termsPdfError.textContent = '';
+            termsPdfError.classList.add('d-none');
+        }
+    }
+
+    function setTermsPdfError(message) {
+        if (termsPdfError) {
+            termsPdfError.textContent = message;
+            termsPdfError.classList.remove('d-none');
+        }
+    }
+
+    function validateTermsPdfFile(file) {
+        if (!file) {
+            setTermsPdfError('Debes seleccionar un archivo PDF.');
+            return false;
+        }
+
+        const isPdfByMime = file.type === 'application/pdf';
+        const isPdfByExtension = file.name.toLowerCase().endsWith('.pdf');
+
+        if (!isPdfByMime && !isPdfByExtension) {
+            setTermsPdfError('Solo se permiten archivos PDF.');
+            return false;
+        }
+
+        clearTermsPdfError();
+        return true;
     }
 
     function isBlockedPickupDay(dateString) {
@@ -356,6 +397,15 @@ document.addEventListener('DOMContentLoaded', function () {
             cartRemovedToastMessage.textContent = cartRemovedSuccess;
             bootstrap.Toast.getOrCreateInstance(cartRemovedToastEl, { delay: 3000 }).show();
         }
+
+        const termsUpdatedSuccess = bodyEl?.dataset?.termsUpdatedSuccess || '';
+        const termsUpdatedToastEl = document.getElementById('termsUpdatedToast');
+        const termsUpdatedToastMessage = document.getElementById('termsUpdatedToastMessage');
+
+        if (termsUpdatedSuccess && termsUpdatedToastEl && termsUpdatedToastMessage) {
+            termsUpdatedToastMessage.textContent = termsUpdatedSuccess;
+            bootstrap.Toast.getOrCreateInstance(termsUpdatedToastEl, { delay: 3000 }).show();
+        }
     }
 
     if (pickupDate) {
@@ -441,6 +491,52 @@ document.addEventListener('DOMContentLoaded', function () {
         specialReason.addEventListener('change', () => {
             validateSpecialReason(true);
             updateSubmitButtonStateQuietly();
+        });
+    }
+
+    if (openTermsPdfPicker && termsPdfInput) {
+        openTermsPdfPicker.addEventListener('click', () => {
+            clearTermsPdfError();
+            termsPdfInput.click();
+        });
+    }
+
+    if (termsPdfInput) {
+        termsPdfInput.addEventListener('change', () => {
+            const file = termsPdfInput.files?.[0];
+
+            if (!validateTermsPdfFile(file)) {
+                termsPdfInput.value = '';
+
+                if (termsPdfSelectedName) {
+                    termsPdfSelectedName.textContent = '';
+                    termsPdfSelectedName.classList.add('d-none');
+                }
+
+                return;
+            }
+
+            if (termsPdfSelectedName && file) {
+                termsPdfSelectedName.textContent = `Archivo seleccionado: ${file.name}`;
+                termsPdfSelectedName.classList.remove('d-none');
+            }
+
+            if (confirmTermsUpdateModal) {
+                const modalInstance = bootstrap.Modal.getOrCreateInstance(confirmTermsUpdateModal);
+                modalInstance.show();
+            }
+        });
+    }
+
+    if (confirmTermsUpdateBtn) {
+        confirmTermsUpdateBtn.addEventListener('click', () => {
+            const file = termsPdfInput?.files?.[0];
+
+            if (!validateTermsPdfFile(file)) {
+                return;
+            }
+
+            updateTermsForm?.submit();
         });
     }
 
