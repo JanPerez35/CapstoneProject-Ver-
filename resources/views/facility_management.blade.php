@@ -1,7 +1,15 @@
 <x-layout title="Gestión de Costos de Instalaciones">
     <x-navbar></x-navbar>
-
+    @vite('resources/js/pages/facility_management.js')
     <div class="container py-4">
+
+        @if(session('rates_saved'))
+            <div id="ratesSavedAutoTrigger"></div>
+        @endif
+
+        @if(session('rental_saved'))
+            <div id="rentalSavedAutoTrigger"></div>
+        @endif
 
         <!--Header-->
         <div class="mb-4">
@@ -10,11 +18,10 @@
         </div>
 
         <!--Warning-->
-        <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-4" id="costEstimateNotice">
+        <div class="alert bg-warning-subtle text-warning-emphasis rounded-4 border-0 shadow-sm mb-4 px-4 py-4" id="costEstimateNotice">
             <div class="d-flex align-items-start gap-3">
-                <i class="bi bi-exclamation-triangle-fill fs-4 mt-1"></i>
                 <div>
-                    <strong>Aviso importante:</strong> Los costos mostrados en esta página son
+                    <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong> Los costos mostrados en esta página son
                     <strong>estimaciones</strong> calculadas según las tarifas configuradas, el salón,
                     el horario y los servicios seleccionados. Estos valores pueden cambiar y deben ser
                     validados administrativamente antes de considerarse finales.
@@ -63,7 +70,6 @@
                 <i class="bi bi-download"></i>
                 Exportar a PDF
             </a>
-            </button>
 
         </div>
 
@@ -75,7 +81,7 @@
 
                     <div class="col-md-4 col-lg-3">
                         <label for="reportType" class="form-label fw-semibold">Tipo de reporte</label>
-                        <select id="reportType" name="report_type" class="form-select form-select-lg border-2 border-dark">
+                        <select id="reportType" name="report_type" class="form-select form-select border-2 border-dark">
                             <option value="monthly" {{ ($reportType ?? 'monthly') === 'monthly' ? 'selected' : '' }}>Mensual</option>
                             <option value="annual" {{ ($reportType ?? 'monthly') === 'annual' ? 'selected' : '' }}>Anual</option>
                         </select>
@@ -83,7 +89,7 @@
 
                     <div class="col-md-4 col-lg-3" id="monthFilterWrapper">
                         <label for="reportMonth" class="form-label fw-semibold">Mes</label>
-                        <select id="reportMonth" name="report_month" class="form-select form-select-lg border-2 border-dark">
+                        <select id="reportMonth" name="report_month" class="form-select form-select border-2 border-dark">
                             <option value="1" {{ ($reportMonth ?? now()->month) == 1 ? 'selected' : '' }}>Enero</option>
                             <option value="2" {{ ($reportMonth ?? now()->month) == 2 ? 'selected' : '' }}>Febrero</option>
                             <option value="3" {{ ($reportMonth ?? now()->month) == 3 ? 'selected' : '' }}>Marzo</option>
@@ -101,7 +107,7 @@
 
                     <div class="col-md-4 col-lg-3">
                         <label for="reportYear" class="form-label fw-semibold">Año</label>
-                        <select id="reportYear" name="report_year" class="form-select form-select-lg border-2 border-dark">
+                        <select id="reportYear" name="report_year" class="form-select form-select border-2 border-dark">
                             <option value="2024" {{ ($reportYear ?? now()->year) == 2024 ? 'selected' : '' }}>2024</option>
                             <option value="2025" {{ ($reportYear ?? now()->year) == 2025 ? 'selected' : '' }}>2025</option>
                             <option value="2026" {{ ($reportYear ?? now()->year) == 2026 ? 'selected' : '' }}>2026</option>
@@ -110,7 +116,7 @@
 
                     <div class="col-md-12 col-lg-3">
                         <label for="filterClassroom" class="form-label fw-semibold">Salón</label>
-                        <select id="filterClassroom" name="filter_classroom" class="form-select form-select-lg border-2 border-dark">
+                        <select id="filterClassroom" name="filter_classroom" class="form-select form-select border-2 border-dark">
                             <option value="all" {{ ($filterClassroom ?? 'all') === 'all' ? 'selected' : '' }}>Todos los salones</option>
                             @foreach ($facilityCosts as $cost)
                                 <option value="{{ $cost->classroom_name }}" {{ ($filterClassroom ?? 'all') === $cost->classroom_name ? 'selected' : '' }}>
@@ -118,6 +124,11 @@
                                 </option>
                             @endforeach
                         </select>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-outline-secondary" id="clearFacilityFilters">
+                            Limpiar filtros
+                        </button>
                     </div>
                 </form>
             </div>
@@ -213,13 +224,17 @@
                     </tfoot>
                 </table>
 
-                <div id="facilityCostEmptyState" class="d-none p-5 text-center">
-                    <h5 class="fw-bold mb-2">No hay costos para mostrar</h5>
-                    <p class="text-muted mb-0">Prueba cambiando el período o el salón seleccionado.</p>
+                <div id="facilityCostEmptyState" class="card border-0 shadow-sm rounded-0 d-none container mb-4">
+                    <div class="card-body py-5 text-center">
+                    <i class="bi bi-currency-dollar fs-1 text-muted"></i>
+                    <h4 class="fw-bold mb-2">No hay costos para mostrar</h4>
+                    <p class="text-muted mb-0">Prueba añadiendo un evento o cambiando los parametros de la busqueda.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
 
     <nav class="mt-4" aria-label="Paginación de costos">
         <ul class="pagination justify-content-center" id="facilityCostPagination"></ul>
@@ -265,22 +280,52 @@
                                     <button type="button" class="btn btn-outline-success btn-sm" id="clearClassroomsSelectionBtn">
                                         <i class="bi bi-eraser me-1"></i>Limpiar Selección
                                     </button>
+
+                                   <div class="d-flex flex-wrap gap-2 ms-md-2">
+                                       <button type="button" class="btn btn-success btn-sm" id="openAddClassroomModalBtn"
+                                               data-bs-toggle="modal" data-bs-target="#addClassroomModal">
+                                           <i class="bi bi-plus-lg me-1"></i>Agregar salón
+                                       </button>
+                                       <button type="button" class="btn btn-danger btn-sm" id="openDiscardSelectedClassroomsBtn">
+                                           <i class="bi bi-trash me-1"></i>Descartar salones
+                                       </button>
+                                   </div>
                                 </div>
 
                                 <div class="row g-2" id="configClassroomGroup">
+{{--                                    @foreach ($facilityCosts as $cost)--}}
+{{--                                        @php $salon = $cost->classroom_name; @endphp--}}
+{{--                                        <div class="col-md-3">--}}
+{{--                                            <label class="multi-classroom-card" for="cfg{{ str_replace(' ', '', $salon) }}">--}}
+{{--                                                <input--}}
+{{--                                                    class="form-check-input config-classroom-check"--}}
+{{--                                                    type="checkbox"--}}
+{{--                                                    id="cfg{{ str_replace(' ', '', $salon) }}"--}}
+{{--                                                    name="classrooms[]"--}}
+{{--                                                    value="{{ $salon }}"--}}
+{{--                                                >--}}
+{{--                                                <span>{{ $salon }}</span>--}}
+{{--                                            </label>--}}
+{{--                                        </div>--}}
+{{--                                    @endforeach--}}
+
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
-                                        <div class="col-md-3">
-                                            <label class="multi-classroom-card" for="cfg{{ str_replace(' ', '', $salon) }}">
-                                                <input
-                                                    class="form-check-input config-classroom-check"
-                                                    type="checkbox"
-                                                    id="cfg{{ str_replace(' ', '', $salon) }}"
-                                                    name="classrooms[]"
-                                                    value="{{ $salon }}"
-                                                >
-                                                <span>{{ $salon }}</span>
-                                            </label>
+                                        <div class="col-md-4 classroom-card-col" data-classroom-name="{{ $salon }}">
+                                            <div class="multi-classroom-card">
+                                                <label class="d-flex align-items-start gap-3 mb-0 flex-grow-1" for="cfg{{ str_replace(' ', '', $salon) }}">
+                                                    <input
+                                                        class="form-check-input config-classroom-check prominent-checkbox"
+                                                        type="checkbox"
+                                                        id="cfg{{ str_replace(' ', '', $salon) }}"
+                                                        name="classrooms[]"
+                                                        value="{{ $salon }}"
+                                                    >
+                                                    <span class="fw-medium classroom-name" title="{{ $salon }}">
+                                                       {{ $salon }}
+                                                   </span>
+                                                </label>
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>
@@ -289,6 +334,16 @@
                             <hr class="my-4">
 
                             <div class="mb-4">
+                                <hr class="my-4">
+                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-3" id="configureRatesHelpNotice">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div>
+                                            <strong><i class="bi bi-warning-circle me-2"></i>Aviso:</strong>
+                                            Si el salón ya fue configurado anteriormente, se mostrarán sus tarifas guardadas para que puedas modificarlas.
+                                            Si el salón nunca ha sido configurado, los campos aparecerán vacíos con ejemplos como referencia.
+                                        </div>
+                                    </div>
+                                </div>
                                 <h5 class="mb-3 section-title-match">Información base del salón</h5>
 
                                 <div class="row g-3">
@@ -303,17 +358,19 @@
                                                 <label for="{{ $campo['id'] }}" class="form-label fw-semibold">
                                                     {{ $campo['label'] }} <span class="text-danger">*</span>
                                                 </label>
-                                                <div class="input-group input-group-lg">
+                                                <div class="input-group input-group-lg money-input-group">
                                                     <span class="input-group-text">$</span>
                                                     <input
                                                         type="text"
                                                         class="form-control money-input"
                                                         id="{{ $campo['id'] }}"
                                                         name="{{ $campo['name'] }}"
-                                                        value="0.00"
+{{--                                                        value = "0.00"--}}
+                                                        placeholder="Ej. 25.00"
                                                         required
                                                     >
                                                 </div>
+                                                <div class="invalid-feedback d-block" id="{{ $campo['id'] }}Error"></div>
                                                 @isset($campo['help'])
                                                     <small class="text-muted d-block mt-2">{{ $campo['help'] }}</small>
                                                 @endisset
@@ -365,110 +422,50 @@
                                                 <label for="configDiaria{{ $periodo['sufijo'] }}" class="form-label fw-semibold">
                                                     Diario <span class="text-danger">*</span>
                                                 </label>
-                                                <div class="input-group input-group-lg mb-3">
+                                                <div class="input-group input-group-lg mb-1 money-input-group">
                                                     <span class="input-group-text">$</span>
-
-                                                    @if ($periodo['sufijo'] == '1')
-                                                        <input
-                                                            type="text"
-                                                            class="form-control money-input"
-                                                            id="configDiaria1"
-                                                            name="daily_cost_1"
-                                                            value="{{ $periodo['diario'] }}"
-                                                            required
-                                                        >
-                                                    @elseif ($periodo['sufijo'] == '2')
-                                                        <input
-                                                            type="text"
-                                                            class="form-control money-input"
-                                                            id="configDiaria2"
-                                                            name="daily_cost_2"
-                                                            value="{{ $periodo['diario'] }}"
-                                                            required
-                                                        >
-                                                    @else
-                                                        <input
-                                                            type="text"
-                                                            class="form-control money-input"
-                                                            id="configDiaria3"
-                                                            name="daily_cost_3"
-                                                            value="{{ $periodo['diario'] }}"
-                                                            required
-                                                        >
-                                                    @endif
+                                                    <input
+                                                        type="text"
+                                                        class="form-control money-input"
+                                                        id="configDiaria{{ $periodo['sufijo'] }}"
+                                                        name="daily_cost_{{ $periodo['sufijo'] }}"
+                                                        placeholder="Ej. 25.00"
+                                                        required
+                                                    >
                                                 </div>
+                                                <div class="invalid-feedback d-block" id="configDiaria{{ $periodo['sufijo'] }}Error"></div>
 
                                                 <label for="configSemanal{{ $periodo['sufijo'] }}" class="form-label fw-semibold">
                                                     Semanal <span class="text-danger">*</span>
                                                 </label>
-                                                <div class="input-group input-group-lg mb-3">
+                                                <div class="input-group input-group-lg mb-1 money-input-group">
                                                     <span class="input-group-text">$</span>
-
-                                                    @if ($periodo['sufijo'] == '1')
-                                                        <input
-                                                            type="text"
-                                                            class="form-control money-input"
-                                                            id="configSemanal1"
-                                                            name="weekly_cost_1"
-                                                            value="{{ $periodo['semanal'] }}"
-                                                            required
-                                                        >
-                                                    @elseif ($periodo['sufijo'] == '2')
-                                                        <input
-                                                            type="text"
-                                                            class="form-control money-input"
-                                                            id="configSemanal2"
-                                                            name="weekly_cost_2"
-                                                            value="{{ $periodo['semanal'] }}"
-                                                            required
-                                                        >
-                                                    @else
-                                                        <input
-                                                            type="text"
-                                                            class="form-control money-input"
-                                                            id="configSemanal3"
-                                                            name="weekly_cost_3"
-                                                            value="{{ $periodo['semanal'] }}"
-                                                            required
-                                                        >
-                                                    @endif
+                                                    <input
+                                                        type="text"
+                                                        class="form-control money-input"
+                                                        id="configSemanal{{ $periodo['sufijo'] }}"
+                                                        name="weekly_cost_{{ $periodo['sufijo'] }}"
+                                                        placeholder="Ej. 25.00"
+                                                        required
+                                                    >
                                                 </div>
+                                                <div class="invalid-feedback d-block" id="configSemanal{{ $periodo['sufijo'] }}Error"></div>
 
                                                 <label for="configMensual{{ $periodo['sufijo'] }}" class="form-label fw-semibold">
                                                     Mensual <span class="text-danger">*</span>
                                                 </label>
-                                                <div class="input-group input-group-lg">
+                                                <div class="input-group input-group-lg mb-1 money-input-group">
                                                     <span class="input-group-text">$</span>
-
-                                                    @if ($periodo['sufijo'] == '1')
-                                                        <input
-                                                            type="text"
-                                                            class="form-control money-input"
-                                                            id="configMensual1"
-                                                            name="monthly_cost_1"
-                                                            value="{{ $periodo['mensual'] }}"
-                                                            required
-                                                        >
-                                                    @elseif ($periodo['sufijo'] == '2')
-                                                        <input
-                                                            type="text"
-                                                            class="form-control money-input"
-                                                            id="configMensual2"
-                                                            name="monthly_cost_2"
-                                                            value="{{ $periodo['mensual'] }}"
-                                                            required
-                                                        >
-                                                    @else
-                                                        <input
-                                                            type="text"
-                                                            class="form-control money-input"
-                                                            id="configMensual3"
-                                                            name="monthly_cost_3"
-                                                            value="{{ $periodo['mensual'] }}"
-                                                            required
-                                                        >
-                                                    @endif
+                                                    <input
+                                                        type="text"
+                                                        class="form-control money-input"
+                                                        id="configMensual{{ $periodo['sufijo'] }}"
+                                                        name="monthly_cost_{{ $periodo['sufijo'] }}"
+                                                        placeholder="Ej. 25.00"
+                                                        required
+                                                    >
                                                 </div>
+                                                <div class="invalid-feedback d-block" id="configMensual{{ $periodo['sufijo'] }}Error"></div>
                                             </div>
                                         </div>
                                     @endforeach
@@ -557,8 +554,10 @@
                                     id="rentalDate"
                                     name="fecha"
                                     class="form-control form-control-lg"
+                                    min="{{now()->toDateString()}}"
                                     required
                                 >
+                                <div class="invalid-feedback d-block" id="rentalDateError"></div>
                             </div>
 
                             <div class="col-md-4">
@@ -572,14 +571,14 @@
                                     class="form-control form-control-lg"
                                     placeholder="Nombre del responsable"
                                     minlength="10"
-                                    maxlength="60"
+                                    maxlength="40"
                                     required
                                 >
                                 <small class="text-muted d-block fst-italic">
-                                    Entre 10 y 60 caracteres. Solo letras y espacios. La primera letra irá en mayúscula.
+                                    Entre 10 y 40 caracteres. Solo letras y espacios.
                                 </small>
                                 <div class="invalid-feedback" id="rentalResponsableError">
-                                    El responsable debe tener entre 10 y 60 caracteres.
+                                    El responsable debe tener entre 10 y 40 caracteres.
                                 </div>
                             </div>
                         </div>
@@ -597,6 +596,7 @@
                                     Horario fin <span class="text-danger">*</span>
                                 </label>
                                 <select id="rentalEndTime" name="hora_fin" class="form-select form-select-lg" required></select>
+                                <div class="invalid-feedback d-block" id="rentalTimeError"></div>
                             </div>
                         </div>
 
@@ -611,14 +611,14 @@
                                 rows="4"
                                 placeholder="Descripción del evento"
                                 minlength="10"
-                                maxlength="1000"
+                                maxlength="500"
                                 required
                             ></textarea>
                             <small class="text-muted d-block fst-italic">
-                                Entre 10 y 1000 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                Entre 10 y 500 caracteres. Solo letras, números, espacios, punto, coma y guion.
                             </small>
                             <div class="invalid-feedback" id="rentalDescripcionError">
-                                La descripción debe tener entre 10 y 1000 caracteres y solo usar caracteres permitidos.
+                                La descripción debe tener entre 10 y 500 caracteres y solo usar caracteres permitidos.
                             </div>
                         </div>
 
@@ -762,6 +762,78 @@
         </div>
     </div>
 
+    <!--Add Classroom Modal-->
+    <div class="modal fade" id="addClassroomModal" tabindex="-1" aria-labelledby="addClassroomModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 align-items-start">
+                    <div class="pe-3">
+                        <h5 class="modal-title fw-bold mb-1" id="addClassroomModalLabel">Agregar salón</h5>
+                        <p class="text-muted mb-0">Escribe el nombre del nuevo salón.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+
+                <div class="modal-body pt-0">
+                    <label for="newClassroomName" class="form-label fw-semibold">
+                        Nombre del salón <span class="text-danger">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        id="newClassroomName"
+                        class="form-control border-2 border-dark"
+                        placeholder="Ej. CM 211"
+                    >
+                    <small class="text-muted d-block fst-italic">
+                        Entre 6 y 40 caracteres. Solo letras, espacios, coma, punto y guion.
+                    </small>
+                    <div class="invalid-feedback d-block" id="newClassroomNameError"></div>
+                </div>
+
+
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="confirmAddClassroomBtn" disabled>
+                        Agregar salón
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="deleteClassroomModal" tabindex="-1" aria-labelledby="deleteClassroomModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 align-items-start">
+                    <div class="pe-3">
+                        <h5 class="modal-title fw-bold mb-1" id="deleteClassroomModalLabel">Descartar salón</h5>
+                        <p class="text-muted mb-0">
+                            ¿Estás seguro de que deseas eliminar los salon/es selecionados? Esta acción es permanente.
+                        </p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+
+                <div class="modal-body pt-0">
+                    <div class="fw-semibold mb-2">Salones selecionados:</div>
+                    <div id="deleteClassroomNameText">—</div>
+                </div>
+
+
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteClassroomBtn">
+                        Eliminar salón
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <!--Notification Toasts-->
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
         <div id="ratesSavedToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" style="width:auto; max-width:fit-content;">
@@ -807,7 +879,38 @@
         </div>
     </div>
 
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+
+        <!-- Tarifa Toast -->
+        <div id="ratesSavedToast" class="toast align-items-center text-bg-success border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    Tarifas guardadas correctamente.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+
+        <!-- Evento Toast -->
+        <div id="rentalSavedToast" class="toast align-items-center text-bg-success border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">
+                    Evento creado correctamente.
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+
+    </div>
+
     <style>
+
+        .money-input::placeholder {
+            color: #6c757d;
+            font-style: italic;
+            opacity: 1;
+        }
+
         .service-option-card {
             border: 1px solid #dee2e6;
             border-radius: 1rem;
@@ -937,892 +1040,71 @@
         }
     </style>
 
+    @php
+        //                $tarifasPorSalon = $facilityCosts->mapWithKeys(function ($cost) {
+        //                    return [
+        //                        $cost->classroom_name => [
+        //                            'area' => (float) $cost->classroom_space,
+        //                            'utilidades' => (float) $cost->supply_cost,
+        //                            'electricidad' => (float) $cost->electricity_cost,
+        //                            'agua' => (float) $cost->water_cost,
+        //                            'diaria1' => (float) $cost->daily_cost_1,
+        //                            'semanal1' => (float) $cost->weekly_cost_1,
+        //                            'mensual1' => (float) $cost->monthly_cost_1,
+        //                            'diaria2' => (float) $cost->daily_cost_2,
+        //                            'semanal2' => (float) $cost->weekly_cost_2,
+        //                            'mensual2' => (float) $cost->monthly_cost_2,
+        //                            'diaria3' => (float) $cost->daily_cost_3,
+        //                            'semanal3' => (float) $cost->weekly_cost_3,
+        //                            'mensual3' => (float) $cost->monthly_cost_3,
+        //                        ],
+        //                    ];
+        //                })->toArray();
+            $tarifasPorSalon = $facilityCosts->mapWithKeys(function ($cost) {
+            $isConfigured =
+            !is_null($cost->classroom_space) &&
+            !is_null($cost->supply_cost) &&
+            !is_null($cost->electricity_cost) &&
+            !is_null($cost->water_cost) &&
+            !is_null($cost->daily_cost_1) &&
+            !is_null($cost->weekly_cost_1) &&
+            !is_null($cost->monthly_cost_1) &&
+            !is_null($cost->daily_cost_2) &&
+            !is_null($cost->weekly_cost_2) &&
+            !is_null($cost->monthly_cost_2) &&
+            !is_null($cost->daily_cost_3) &&
+            !is_null($cost->weekly_cost_3) &&
+            !is_null($cost->monthly_cost_3);
+
+            return [
+            $cost->classroom_name => [
+            'configured' => $isConfigured,
+            'area' => $isConfigured ? (float) $cost->classroom_space : null,
+            'utilidades' => $isConfigured ? (float) $cost->supply_cost : null,
+            'electricidad' => $isConfigured ? (float) $cost->electricity_cost : null,
+            'agua' => $isConfigured ? (float) $cost->water_cost : null,
+            'diaria1' => $isConfigured ? (float) $cost->daily_cost_1 : null,
+            'semanal1' => $isConfigured ? (float) $cost->weekly_cost_1 : null,
+            'mensual1' => $isConfigured ? (float) $cost->monthly_cost_1 : null,
+            'diaria2' => $isConfigured ? (float) $cost->daily_cost_2 : null,
+            'semanal2' => $isConfigured ? (float) $cost->weekly_cost_2 : null,
+            'mensual2' => $isConfigured ? (float) $cost->monthly_cost_2 : null,
+            'diaria3' => $isConfigured ? (float) $cost->daily_cost_3 : null,
+            'semanal3' => $isConfigured ? (float) $cost->weekly_cost_3 : null,
+            'mensual3' => $isConfigured ? (float) $cost->monthly_cost_3 : null,
+            ],
+            ];
+        })->toArray();
+    @endphp
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const $ = (id) => document.getElementById(id);
 
-            const downloadCsvBtn = $('downloadCsvBtn');
-            const downloadPdfBtn = $('downloadPdfBtn');
-            const downloadToastEl = $('downloadToast');
+        window.facilityManagementConfig = {
+            facilityManagementUrl: @json(route('facility_management')),
+            tarifasPorSalon: @json($tarifasPorSalon),
+        };
 
+        const tarifasPorSalon = @json($tarifasPorSalon);
 
-            const FACILITY_COSTS_PER_PAGE = 10;
-            let currentFacilityCostsPage = 1;
-            const facilityCostPagination = $('facilityCostPagination');
-
-            const classroomIds = ['Cancha CM', 'Lateral 1', 'Lateral 2', 'CM 201', 'CM 202', 'CM 203', 'CM 204', 'CM 210'];
-            const academicRooms = ['CM 201', 'CM 202', 'CM 203', 'CM 204', 'CM 210'];
-            const lateralRooms = ['Lateral 1', 'Lateral 2'];
-
-            const reportType = $('reportType');
-            const monthFilterWrapper = $('monthFilterWrapper');
-            const reportMonth = $('reportMonth');
-            const reportYear = $('reportYear');
-            const filterClassroom = $('filterClassroom');
-
-            const facilityCostTable = $('facilityCostTable');
-            const facilityCostTableBody = $('facilityCostTableBody');
-            const facilityCostEmptyState = $('facilityCostEmptyState');
-            const facilityCostGrandTotal = $('facilityCostGrandTotal');
-
-            const configureRatesModal = $('configureRatesModal');
-            const addRentalModal = $('addRentalModal');
-
-            const configureRatesForm = $('configureRatesForm');
-            const addRentalForm = $('addRentalForm');
-
-            const saveRatesBtn = $('saveRatesBtn');
-            const saveRentalBtn = $('saveRentalBtn');
-
-            const configClassroomChecks = [...document.querySelectorAll('.config-classroom-check')];
-            const moneyInputs = [...document.querySelectorAll('.money-input')];
-
-            const configAreaSalon = $('configAreaSalon');
-            const configUtilidades = $('configUtilidades');
-            const configElectricidad = $('configElectricidad');
-            const configAgua = $('configAgua');
-            const configDiaria1 = $('configDiaria1');
-            const configSemanal1 = $('configSemanal1');
-            const configMensual1 = $('configMensual1');
-            const configDiaria2 = $('configDiaria2');
-            const configSemanal2 = $('configSemanal2');
-            const configMensual2 = $('configMensual2');
-            const configDiaria3 = $('configDiaria3');
-            const configSemanal3 = $('configSemanal3');
-            const configMensual3 = $('configMensual3');
-
-            const configPreviewLaborable = $('configPreviewLaborable');
-            const configPreviewSabado = $('configPreviewSabado');
-            const configPreviewDomingo = $('configPreviewDomingo');
-
-            const rentalClassroom = $('rentalClassroom');
-            const rentalDate = $('rentalDate');
-            const rentalResponsable = $('rentalResponsable');
-            const rentalStartTime = $('rentalStartTime');
-            const rentalEndTime = $('rentalEndTime');
-            const rentalDescripcion = $('rentalDescripcion');
-            const rentalPeriodType = $('rentalPeriodType');
-
-            const rentalUtilities = $('rentalUtilities');
-            const rentalElectricity = $('rentalElectricity');
-            const rentalWater = $('rentalWater');
-            const rentalServiceChecks = [rentalUtilities, rentalElectricity, rentalWater];
-
-            const rentalEstimatedTotal = $('rentalEstimatedTotal');
-            const rentalEstimatedTotalInput = $('rentalEstimatedTotalInput');
-            const detectedPeriodLabel = $('detectedPeriodLabel');
-            const detectedHoursLabel = $('detectedHoursLabel');
-            const servicesRequiredMessage = $('servicesRequiredMessage');
-            const rentalResponsableError = $('rentalResponsableError');
-            const rentalDescripcionError = $('rentalDescripcionError');
-
-            const confirmDeleteCostEntryBtn = $('confirmDeleteCostEntryBtn');
-            const deleteButtons = () => [...document.querySelectorAll('.delete-cost-row-btn')];
-
-            const toasts = {
-                ratesSaved: bootstrap.Toast.getOrCreateInstance($('ratesSavedToast'), { delay: 2500 }),
-                rentalSaved: bootstrap.Toast.getOrCreateInstance($('rentalSavedToast'), { delay: 2500 }),
-                deleteEntry: bootstrap.Toast.getOrCreateInstance($('deleteEntryToast'), { delay: 2500 }),
-                download: bootstrap.Toast.getOrCreateInstance($('downloadToast'), { delay: 2500 }),
-            };
-
-            let selectedDeleteUrl = null;
-            // let nextEntryId = 3;
-            let configureDirty = false;
-            let rentalDirty = false;
-
-            @php
-                $tarifasPorSalon = $facilityCosts->mapWithKeys(function ($cost) {
-                    return [
-                        $cost->classroom_name => [
-                            'area' => (float) $cost->classroom_space,
-                            'utilidades' => (float) $cost->supply_cost,
-                            'electricidad' => (float) $cost->electricity_cost,
-                            'agua' => (float) $cost->water_cost,
-                            'diaria1' => (float) $cost->daily_cost_1,
-                            'semanal1' => (float) $cost->weekly_cost_1,
-                            'mensual1' => (float) $cost->monthly_cost_1,
-                            'diaria2' => (float) $cost->daily_cost_2,
-                            'semanal2' => (float) $cost->weekly_cost_2,
-                            'mensual2' => (float) $cost->monthly_cost_2,
-                            'diaria3' => (float) $cost->daily_cost_3,
-                            'semanal3' => (float) $cost->weekly_cost_3,
-                            'mensual3' => (float) $cost->monthly_cost_3,
-                        ],
-                    ];
-                })->toArray();
-            @endphp
-
-            const tarifasPorSalon = @json($tarifasPorSalon);
-
-            const formatMoney = (value) => Number(value).toLocaleString('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            });
-
-            const parseMoney = (text) => Number(String(text).replace(/[^0-9.]/g, '')) || 0;
-            const toNumber = (value) => Number(String(value).replace(/[^0-9.]/g, '')) || 0;
-
-            function sanitizeMoneyInput(input) {
-                let value = input.value.replace(/[^0-9.]/g, '');
-                const firstDot = value.indexOf('.');
-
-                if (firstDot !== -1) {
-                    value = value.slice(0, firstDot + 1) + value.slice(firstDot + 1).replace(/\./g, '');
-                }
-
-                if (value.startsWith('.')) value = '0' + value;
-                input.value = value;
-            }
-
-            function normalizeMoneyInput(input) {
-                input.value = toNumber(input.value).toFixed(2);
-            }
-
-            function timeToMinutes(timeValue) {
-                if (!timeValue) return 0;
-                const [hour, minute] = timeValue.split(':').map(Number);
-                return (hour * 60) + minute;
-            }
-
-            function calculateHours(start, end) {
-                const diff = timeToMinutes(end) - timeToMinutes(start);
-                return diff > 0 ? diff / 60 : 0;
-            }
-
-            function getSelectedClassrooms() {
-                return configClassroomChecks.filter(check => check.checked).map(check => check.value);
-            }
-
-            function setSelectionByList(list) {
-                configClassroomChecks.forEach(check => {
-                    check.checked = list.includes(check.value);
-                });
-                configureDirty = true;
-                updateConfigureSaveState();
-            }
-
-            function loadRatesIntoForm(classroomId) {
-                const data = tarifasPorSalon[classroomId];
-                if (!data) return;
-
-                configAreaSalon.value = Number(data.area).toFixed(2);
-                configUtilidades.value = Number(data.utilidades).toFixed(2);
-                configElectricidad.value = Number(data.electricidad).toFixed(2);
-                configAgua.value = Number(data.agua).toFixed(2);
-                configDiaria1.value = Number(data.diaria1).toFixed(2);
-                configSemanal1.value = Number(data.semanal1).toFixed(2);
-                configMensual1.value = Number(data.mensual1).toFixed(2);
-                configDiaria2.value = Number(data.diaria2).toFixed(2);
-                configSemanal2.value = Number(data.semanal2).toFixed(2);
-                configMensual2.value = Number(data.mensual2).toFixed(2);
-                configDiaria3.value = Number(data.diaria3).toFixed(2);
-                configSemanal3.value = Number(data.semanal3).toFixed(2);
-                configMensual3.value = Number(data.mensual3).toFixed(2);
-
-                updateConfigPreview();
-            }
-
-            function updateConfigPreview() {
-                const area = toNumber(configAreaSalon.value);
-                configPreviewLaborable.textContent = formatMoney((area * toNumber(configDiaria1.value)).toFixed(2));
-                configPreviewSabado.textContent = formatMoney((area * toNumber(configDiaria2.value)).toFixed(2));
-                configPreviewDomingo.textContent = formatMoney((area * toNumber(configDiaria3.value)).toFixed(2));
-            }
-
-            function isConfigureFormValid() {
-                if (!getSelectedClassrooms().length) return false;
-
-                const requiredValues = [
-                    configAreaSalon.value, configUtilidades.value, configElectricidad.value, configAgua.value,
-                    configDiaria1.value, configSemanal1.value, configMensual1.value,
-                    configDiaria2.value, configSemanal2.value, configMensual2.value,
-                    configDiaria3.value, configSemanal3.value, configMensual3.value,
-                ];
-
-                return requiredValues.every(value => value !== '' && !Number.isNaN(toNumber(value)));
-            }
-
-            function updateConfigureSaveState() {
-                saveRatesBtn.disabled = !isConfigureFormValid();
-            }
-
-            function periodLabelFromValue(value) {
-                if (value === 'laborable') return 'Laborable';
-                if (value === 'no_laborable_sabado') return 'No laborable sábado';
-                if (value === 'no_laborable_domingo_festivo') return 'No laborable domingo o festivo';
-                return '—';
-            }
-
-            function getPeriodRateData(classroomId, periodType) {
-                const data = tarifasPorSalon[classroomId];
-                if (!data) return { diaria: 0, semanal: 0, mensual: 0 };
-
-                if (periodType === 'laborable') return { diaria: toNumber(data.diaria1), semanal: toNumber(data.semanal1), mensual: toNumber(data.mensual1) };
-                if (periodType === 'no_laborable_sabado') return { diaria: toNumber(data.diaria2), semanal: toNumber(data.semanal2), mensual: toNumber(data.mensual2) };
-                if (periodType === 'no_laborable_domingo_festivo') return { diaria: toNumber(data.diaria3), semanal: toNumber(data.semanal3), mensual: toNumber(data.mensual3) };
-
-                return { diaria: 0, semanal: 0, mensual: 0 };
-            }
-
-            function hasSelectedServices() {
-                return rentalServiceChecks.some(input => input.checked);
-            }
-
-            function toggleServicesError(show) {
-                servicesRequiredMessage.classList.toggle('d-none', !show);
-                servicesRequiredMessage.classList.toggle('d-block', show);
-            }
-
-            function setFieldError(field, errorElement, message) {
-                if (!field) return;
-                field.classList.add('is-invalid');
-                if (errorElement) errorElement.textContent = message;
-            }
-
-            function clearFieldError(field, errorElement) {
-                if (!field) return;
-                field.classList.remove('is-invalid');
-                if (errorElement) errorElement.textContent = '';
-            }
-
-            function capitalizeWords(value) {
-                return value
-                    .toLowerCase()
-                    .replace(/\s+/g, ' ')
-                    .trimStart()
-                    .replace(/(^|\s)([A-Za-zÁÉÍÓÚáéíóúÑñ])/g, (match, space, letter) => `${space}${letter.toUpperCase()}`);
-            }
-
-            function validateResponsable(showError = true) {
-                const value = rentalResponsable.value.trim();
-                const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
-
-                if (showError) clearFieldError(rentalResponsable, rentalResponsableError);
-
-                if (!value) {
-                    if (showError) setFieldError(rentalResponsable, rentalResponsableError, 'El responsable es requerido.');
-                    return false;
-                }
-
-                if (value.length < 10) {
-                    if (showError) setFieldError(rentalResponsable, rentalResponsableError, 'El responsable debe tener al menos 10 caracteres.');
-                    return false;
-                }
-
-                if (value.length > 60) {
-                    if (showError) setFieldError(rentalResponsable, rentalResponsableError, 'El responsable no puede exceder 60 caracteres.');
-                    return false;
-                }
-
-                if (!regex.test(value)) {
-                    if (showError) setFieldError(rentalResponsable, rentalResponsableError, 'Solo se permiten letras y espacios.');
-                    return false;
-                }
-
-                return true;
-            }
-
-            function validateDescripcion(showError = true) {
-                const value = rentalDescripcion.value.trim();
-                const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
-
-                if (showError) clearFieldError(rentalDescripcion, rentalDescripcionError);
-
-                if (!value) {
-                    if (showError) setFieldError(rentalDescripcion, rentalDescripcionError, 'La descripción es requerida.');
-                    return false;
-                }
-
-                if (value.length < 10) {
-                    if (showError) setFieldError(rentalDescripcion, rentalDescripcionError, 'La descripción debe tener al menos 10 caracteres.');
-                    return false;
-                }
-
-                if (value.length > 1000) {
-                    if (showError) setFieldError(rentalDescripcion, rentalDescripcionError, 'La descripción no puede exceder 1000 caracteres.');
-                    return false;
-                }
-
-                if (!regex.test(value)) {
-                    if (showError) setFieldError(rentalDescripcion, rentalDescripcionError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
-                    return false;
-                }
-
-                return true;
-            }
-
-            function calculateRentalEstimate() {
-                const classroomId = rentalClassroom.value;
-                const startTime = rentalStartTime.value;
-                const endTime = rentalEndTime.value;
-                const periodType = rentalPeriodType.value;
-                const hours = calculateHours(startTime, endTime);
-
-                detectedPeriodLabel.textContent = periodLabelFromValue(periodType);
-                detectedHoursLabel.textContent = `${hours.toFixed(2)} horas`;
-
-                if (!classroomId || !hours || !periodType || !tarifasPorSalon[classroomId]) {
-                    rentalEstimatedTotal.textContent = formatMoney(0);
-                    rentalEstimatedTotalInput.value = '0.00';
-                    return 0;
-                }
-
-                const data = tarifasPorSalon[classroomId];
-                const area = toNumber(data.area);
-                const periodRates = getPeriodRateData(classroomId, periodType);
-
-                let total = area * periodRates.diaria;
-                if (rentalUtilities.checked) total += toNumber(data.utilidades) * hours;
-                if (rentalElectricity.checked) total += toNumber(data.electricidad) * hours;
-                if (rentalWater.checked) total += toNumber(data.agua) * hours;
-
-                rentalEstimatedTotal.textContent = formatMoney(total);
-                rentalEstimatedTotalInput.value = total.toFixed(2);
-                return total;
-            }
-
-            function isRentalFormValid() {
-                const validTimes =
-                    rentalStartTime.value &&
-                    rentalEndTime.value &&
-                    timeToMinutes(rentalEndTime.value) > timeToMinutes(rentalStartTime.value);
-
-                const validResponsable = validateResponsable(false);
-                const validDescription = validateDescripcion(false);
-                const validServices = hasSelectedServices();
-
-                toggleServicesError(!validServices);
-
-                return !!(
-                    rentalClassroom.value &&
-                    rentalDate.value &&
-                    rentalPeriodType.value &&
-                    validTimes &&
-                    validResponsable &&
-                    validDescription &&
-                    validServices
-                );
-            }
-
-            function updateRentalSaveState() {
-                saveRentalBtn.disabled = !isRentalFormValid();
-            }
-
-            function toggleMonthFilter() {
-                monthFilterWrapper.classList.toggle('d-none', reportType.value !== 'monthly');
-            }
-
-            function renderLocalPagination(container, currentPage, totalItems, itemsPerPage, onPageChange) {
-                if (!container) return;
-
-                const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
-
-                if (totalItems <= 0) {
-                    container.innerHTML = '';
-                    return;
-                }
-
-                let paginationHTML = '';
-
-                paginationHTML += `
-        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-            <button type="button" class="page-link" data-page="prev">&laquo;</button>
-        </li>
-    `;
-
-                for (let page = 1; page <= totalPages; page++) {
-                    paginationHTML += `
-            <li class="page-item ${page === currentPage ? 'active' : ''}">
-                <button type="button" class="page-link" data-page="${page}">${page}</button>
-            </li>
-        `;
-                }
-
-                paginationHTML += `
-        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-            <button type="button" class="page-link" data-page="next">&raquo;</button>
-        </li>
-    `;
-
-                container.innerHTML = paginationHTML;
-
-                container.querySelectorAll('.page-link').forEach((button) => {
-                    button.addEventListener('click', () => {
-                        const action = button.dataset.page;
-                        let newPage = currentPage;
-
-                        if (action === 'prev' && currentPage > 1) {
-                            newPage = currentPage - 1;
-                        } else if (action === 'next' && currentPage < totalPages) {
-                            newPage = currentPage + 1;
-                        } else if (!isNaN(action)) {
-                            newPage = Number(action);
-                        }
-
-                        if (newPage !== currentPage) {
-                            onPageChange(newPage);
-                        }
-                    });
-                });
-            }
-
-            function triggerFacilityDownload(type) {
-                toasts.download.show();
-
-                const selectedType = reportType.value === 'annual' ? 'anual' : 'mensual';
-                const selectedYear = reportYear.value;
-                const selectedMonth = reportMonth.options[reportMonth.selectedIndex]?.text || '';
-                const selectedClassroom = filterClassroom.options[filterClassroom.selectedIndex]?.text || 'Todos los salones';
-
-                const visibleRows = getVisibleFacilityRows();
-
-                let content = '';
-
-                if (type === 'csv') {
-                    const headers = ['Fecha', 'Salón', 'Hora', 'Periodo', 'Servicios', 'Total'];
-
-                    const rows = visibleRows.map((row) => {
-                        const fecha = row.cells[0]?.textContent.trim() || '';
-                        const salon = row.cells[1]?.textContent.trim() || '';
-                        const hora = row.cells[2]?.textContent.trim() || '';
-                        const periodo = row.cells[3]?.textContent.trim() || '';
-                        const servicios = [...row.cells[4].querySelectorAll('.service-badge-table')]
-                            .map((badge) => badge.textContent.trim())
-                            .join(' | ');
-                        const total = row.cells[5]?.textContent.trim() || '';
-
-                        return [fecha, salon, hora, periodo, servicios, total].join(',');
-                    });
-
-                    content = [headers.join(','), ...rows].join('\n');
-                } else {
-                    const rowsText = visibleRows.map((row, index) => {
-                        const fecha = row.cells[0]?.textContent.trim() || '';
-                        const salon = row.cells[1]?.textContent.trim() || '';
-                        const hora = row.cells[2]?.textContent.trim() || '';
-                        const periodo = row.cells[3]?.textContent.trim() || '';
-                        const servicios = [...row.cells[4].querySelectorAll('.service-badge-table')]
-                            .map((badge) => badge.textContent.trim())
-                            .join(', ');
-                        const total = row.cells[5]?.textContent.trim() || '';
-
-                        return `${index + 1}. ${fecha} | ${salon} | ${hora} | ${periodo} | ${servicios} | ${total}`;
-                    }).join('\n');
-
-                    content =
-                        `REPORTE DE COSTOS DE FACILIDAD
-Tipo: ${selectedType}
-${selectedType === 'mensual' ? 'Mes: ' + selectedMonth : ''}
-Año: ${selectedYear}
-Salón: ${selectedClassroom}
-Total estimado del período: ${facilityCostGrandTotal.textContent.trim()}
-
-REGISTROS:
-${rowsText || 'No hay registros visibles para exportar.'}`;
-                }
-
-                const blob = new Blob(
-                    [content],
-                    { type: type === 'csv' ? 'text/csv;charset=utf-8;' : 'application/pdf' }
-                );
-
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-
-                link.href = url;
-                link.download = type === 'csv'
-                    ? `reporte_costos_facilidad_${selectedType}_${selectedYear}.csv`
-                    : `reporte_costos_facilidad_${selectedType}_${selectedYear}.pdf`;
-
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            }
-
-            function getVisibleFacilityRows() {
-                return [...facilityCostTableBody.querySelectorAll('tr')]
-                    .filter((row) => row.style.display !== 'none');
-            }
-
-            function applyTableFilters() {
-                const type = reportType.value;
-                const month = reportMonth.value;
-                const year = reportYear.value;
-                const classroom = filterClassroom.value;
-
-                const allRows = [...facilityCostTableBody.querySelectorAll('tr')];
-
-                const filteredRows = allRows.filter((row) => {
-                    const rowMonth = row.dataset.month;
-                    const rowYear = row.dataset.year;
-                    const rowClassroom = row.dataset.classroom;
-
-                    const matchesType = type === 'annual'
-                        ? rowYear === year
-                        : (rowYear === year && rowMonth === month);
-
-                    const matchesClassroom = classroom === 'all' ? true : rowClassroom === classroom;
-
-                    return matchesType && matchesClassroom;
-                });
-
-                const totalPages = Math.max(1, Math.ceil(filteredRows.length / FACILITY_COSTS_PER_PAGE));
-
-                if (currentFacilityCostsPage > totalPages) {
-                    currentFacilityCostsPage = totalPages;
-                }
-
-                const start = (currentFacilityCostsPage - 1) * FACILITY_COSTS_PER_PAGE;
-                const end = start + FACILITY_COSTS_PER_PAGE;
-                const paginatedRows = filteredRows.slice(start, end);
-
-                allRows.forEach((row) => {
-                    row.style.display = 'none';
-                });
-
-                paginatedRows.forEach((row) => {
-                    row.style.display = '';
-                });
-
-                const totalAmount = filteredRows.reduce((sum, row) => {
-                    const amountCell = row.querySelector('td:nth-child(6)');
-                    return sum + parseMoney(amountCell.textContent);
-                }, 0);
-
-                facilityCostGrandTotal.textContent = formatMoney(totalAmount);
-
-                const hasRows = filteredRows.length > 0;
-                facilityCostTable.classList.toggle('d-none', !hasRows);
-                facilityCostEmptyState.classList.toggle('d-none', hasRows);
-
-                renderLocalPagination(
-                    facilityCostPagination,
-                    currentFacilityCostsPage,
-                    filteredRows.length,
-                    FACILITY_COSTS_PER_PAGE,
-                    (page) => {
-                        currentFacilityCostsPage = page;
-                        applyTableFilters();
-                    }
-                );
-            }
-
-            function createServiceBadges(services) {
-                return services.map(service => `<span class="badge rounded-0 px-3 py-2 me-2 mb-1 service-badge-table">${service}</span>`).join('');
-            }
-
-            function formatDisplayDate(dateValue) {
-                const date = new Date(`${dateValue}T12:00:00`);
-                const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-                return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-            }
-
-            function formatDisplayTime24To12(timeValue) {
-                const [hourStr, minuteStr] = timeValue.split(':');
-                let hour = Number(hourStr);
-                const suffix = hour >= 12 ? 'PM' : 'AM';
-                hour = hour % 12 || 12;
-                return `${String(hour).padStart(2, '0')}:${minuteStr} ${suffix}`;
-            }
-
-            // function appendRentalRow() {
-            //     const classroomId = rentalClassroom.value;
-            //     const eventDate = rentalDate.value;
-            //     const startTime = rentalStartTime.value;
-            //     const endTime = rentalEndTime.value;
-            //     const periodLabel = periodLabelFromValue(rentalPeriodType.value);
-
-            //     const services = [];
-            //     if (rentalUtilities.checked) services.push('Utilidades');
-            //     if (rentalElectricity.checked) services.push('Electricidad');
-            //     if (rentalWater.checked) services.push('Agua');
-
-            //     const total = calculateRentalEstimate();
-            //     // const rowId = `cost-row-${String(nextEntryId).padStart(3, '0')}`;
-            //     // nextEntryId += 1;
-
-            //     const row = document.createElement('tr');
-            //     row.dataset.entryId = rowId;
-            //     row.dataset.date = eventDate;
-            //     row.dataset.month = String(new Date(`${eventDate}T12:00:00`).getMonth() + 1);
-            //     row.dataset.year = String(new Date(`${eventDate}T12:00:00`).getFullYear());
-            //     row.dataset.classroom = classroomId;
-
-            //     row.innerHTML = `
-            //         <td>${formatDisplayDate(eventDate)}</td>
-            //         <td>${classroomId}</td>
-            //         <td>${formatDisplayTime24To12(startTime)} - ${formatDisplayTime24To12(endTime)}</td>
-            //         <td>${periodLabel}</td>
-            //         <td>${createServiceBadges(services)}</td>
-            //         <td class="text-end fw-semibold">${formatMoney(total)}</td>
-            //         <td class="text-center">
-            //             <button
-            //                 type="button"
-            //                 class="btn btn-sm btn-outline-danger delete-cost-row-btn"
-            //                 data-entry-id="${rowId}"
-            //                 data-bs-toggle="modal"
-            //                 data-bs-target="#deleteCostEntryModal"
-            //             >
-            //                 <i class="bi bi-trash"></i>
-            //             </button>
-            //         </td>
-            //     `;
-
-            //     facilityCostTableBody.appendChild(row);
-            //     bindDeleteButtons();
-            //     applyTableFilters();
-            // }
-            //     facilityCostTableBody.appendChild(row);
-            //     bindDeleteButtons();
-            //     currentFacilityCostsPage = 1;
-            //     applyTableFilters();
-            // }
-
-            function bindDeleteButtons() {
-                deleteButtons().forEach((btn) => {
-                    btn.onclick = () => {
-                        selectedDeleteUrl = btn.dataset.deleteUrl;
-                    };
-                });
-            }
-
-            function buildTimeOptions(selectElement, startHour, startMinute, endHour, endMinute) {
-                selectElement.innerHTML = '<option value="" selected disabled>Seleccionar</option>';
-
-                let current = (startHour * 60) + startMinute;
-                const end = (endHour * 60) + endMinute;
-
-                while (current <= end) {
-                    const hour = Math.floor(current / 60);
-                    const minute = current % 60;
-                    const value = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
-                    const label = formatDisplayTime24To12(value);
-
-                    const option = document.createElement('option');
-                    option.value = value;
-                    option.textContent = label;
-                    selectElement.appendChild(option);
-
-                    current += 15;
-                }
-            }
-
-            const configureHasChanges = () => configureDirty;
-            const rentalHasChanges = () => rentalDirty;
-
-            function resetConfigureFormState() {
-                configureRatesForm.reset();
-                setSelectionByList(['Cancha CM']);
-                loadRatesIntoForm('Cancha CM');
-                configureRatesForm.classList.remove('was-validated');
-                configureDirty = false;
-                updateConfigureSaveState();
-                updateConfigPreview();
-            }
-
-            function resetRentalFormState() {
-                addRentalForm.reset();
-                addRentalForm.classList.remove('was-validated');
-                rentalDirty = false;
-
-                toggleServicesError(false);
-                clearFieldError(rentalResponsable, rentalResponsableError);
-                clearFieldError(rentalDescripcion, rentalDescripcionError);
-
-                rentalEstimatedTotal.textContent = formatMoney(0);
-                rentalEstimatedTotalInput.value = '0.00';
-                detectedPeriodLabel.textContent = '—';
-                detectedHoursLabel.textContent = '0.00 horas';
-
-                updateRentalSaveState();
-            }
-
-            $('selectAllClassroomsBtn').addEventListener('click', () => setSelectionByList(classroomIds));
-            $('selectAcademicClassroomsBtn').addEventListener('click', () => setSelectionByList(academicRooms));
-            $('selectLateralClassroomsBtn').addEventListener('click', () => setSelectionByList(lateralRooms));
-            $('clearClassroomsSelectionBtn').addEventListener('click', () => setSelectionByList([]));
-
-            configClassroomChecks.forEach((check) => {
-                check.addEventListener('change', () => {
-                    const selected = getSelectedClassrooms();
-                    if (selected.length === 1) loadRatesIntoForm(selected[0]);
-                    configureDirty = true;
-                    updateConfigureSaveState();
-                });
-            });
-
-            moneyInputs.forEach((input) => {
-                input.addEventListener('input', () => {
-                    sanitizeMoneyInput(input);
-                    configureDirty = true;
-                    updateConfigPreview();
-                    updateConfigureSaveState();
-                });
-
-                input.addEventListener('blur', () => {
-                    normalizeMoneyInput(input);
-                    updateConfigPreview();
-                    updateConfigureSaveState();
-                });
-
-                input.addEventListener('keydown', (e) => {
-                    if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
-                });
-            });
-
-            [rentalClassroom, rentalDate, rentalStartTime, rentalEndTime, rentalPeriodType].forEach((el) => {
-                el.addEventListener('change', () => {
-                    rentalDirty = true;
-                    calculateRentalEstimate();
-                    updateRentalSaveState();
-                });
-            });
-
-            rentalDescripcion.addEventListener('input', () => {
-                rentalDirty = true;
-
-                rentalDescripcion.value = rentalDescripcion.value
-                    .replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]/g, '')
-                    .slice(0, 1000);
-
-                validateDescripcion(true);
-                updateRentalSaveState();
-            });
-
-            rentalDescripcion.addEventListener('blur', () => {
-                validateDescripcion(true);
-                updateRentalSaveState();
-            });
-
-            rentalServiceChecks.forEach((el) => {
-                el.addEventListener('change', () => {
-                    rentalDirty = true;
-                    calculateRentalEstimate();
-                    toggleServicesError(!hasSelectedServices());
-                    updateRentalSaveState();
-                });
-            });
-
-            rentalResponsable.addEventListener('input', () => {
-                rentalDirty = true;
-
-                let cleanedValue = rentalResponsable.value.replace(/[^A-Za-zÁÉÍÓÚáéíóúÑñ\s]/g, '');
-                cleanedValue = cleanedValue.replace(/\s{2,}/g, ' ');
-                cleanedValue = capitalizeWords(cleanedValue);
-
-                if (cleanedValue.length > 60) {
-                    cleanedValue = cleanedValue.slice(0, 60);
-                }
-
-                rentalResponsable.value = cleanedValue;
-                validateResponsable(true);
-                updateRentalSaveState();
-            });
-
-            rentalResponsable.addEventListener('blur', () => {
-                rentalResponsable.value = capitalizeWords(rentalResponsable.value.trim());
-                validateResponsable(true);
-                updateRentalSaveState();
-            });
-
-            [reportType, reportMonth, reportYear, filterClassroom].forEach((el) => {
-                el.addEventListener('change', () => {
-                    currentFacilityCostsPage = 1;
-                    toggleMonthFilter();
-                    $('facilityCostFilterForm').submit();
-                });
-            });
-
-            saveRatesBtn.addEventListener('click', () => {
-                configureRatesForm.classList.add('was-validated');
-
-                if (!isConfigureFormValid()) {
-                    updateConfigureSaveState();
-                    return;
-                }
-
-                configureRatesForm.submit();
-            });
-
-            addRentalForm.addEventListener('submit', (e) => {
-                addRentalForm.classList.add('was-validated');
-
-                const responsableOk = validateResponsable(true);
-                const descripcionOk = validateDescripcion(true);
-                const servicesOk = hasSelectedServices();
-                toggleServicesError(!servicesOk);
-
-                if (!(isRentalFormValid() && responsableOk && descripcionOk && servicesOk)) {
-                    e.preventDefault();
-                    updateRentalSaveState();
-                }
-            });
-
-            confirmDeleteCostEntryBtn.addEventListener('click', () => {
-                if (selectedDeleteUrl) {
-                    const deleteForm = $('deleteCostEntryForm');
-                    deleteForm.action = selectedDeleteUrl;
-                    deleteForm.submit();
-                }
-            });
-
-            document.querySelectorAll('.configure-cancel-btn, .configure-close-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (configureHasChanges()) {
-                        bootstrap.Modal.getOrCreateInstance($('confirmCancelConfigureModal')).show();
-                    } else {
-                        bootstrap.Modal.getOrCreateInstance(configureRatesModal).hide();
-                    }
-                });
-            });
-
-            document.querySelectorAll('.rental-cancel-btn, .rental-close-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (rentalHasChanges()) {
-                        bootstrap.Modal.getOrCreateInstance($('confirmCancelRentalModal')).show();
-                    } else {
-                        bootstrap.Modal.getOrCreateInstance(addRentalModal).hide();
-                    }
-                });
-            });
-
-            $('confirmCancelConfigureBtn').addEventListener('click', () => {
-                configureDirty = false;
-                bootstrap.Modal.getOrCreateInstance($('confirmCancelConfigureModal')).hide();
-                bootstrap.Modal.getOrCreateInstance(configureRatesModal).hide();
-                resetConfigureFormState();
-            });
-
-            $('confirmCancelRentalBtn').addEventListener('click', () => {
-                rentalDirty = false;
-                bootstrap.Modal.getOrCreateInstance($('confirmCancelRentalModal')).hide();
-                bootstrap.Modal.getOrCreateInstance(addRentalModal).hide();
-                resetRentalFormState();
-            });
-
-            configureRatesModal.addEventListener('show.bs.modal', resetConfigureFormState);
-            addRentalModal.addEventListener('show.bs.modal', resetRentalFormState);
-
-            buildTimeOptions(rentalStartTime, 7, 30, 21, 30);
-            buildTimeOptions(rentalEndTime, 7, 45, 21, 45);
-
-            bindDeleteButtons();
-            toggleMonthFilter();
-            resetConfigureFormState();
-            resetRentalFormState();
-            applyTableFilters();
-
-            downloadCsvBtn.addEventListener('click', () => {
-                triggerFacilityDownload('csv');
-            });
-
-            downloadPdfBtn.addEventListener('click', () => {
-                triggerFacilityDownload('pdf');
-            });
-        });
     </script>
 </x-layout>

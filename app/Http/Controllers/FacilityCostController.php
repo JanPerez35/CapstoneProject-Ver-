@@ -268,7 +268,7 @@ class FacilityCostController extends Controller
         $items = $query->get();
         $grandTotal = $items->sum('calculated_cost');
 
-        $pdf = Pdf::loadView('facility_export_pdf', compact(
+        $pdf = Pdf::loadView('pdfs.facility_cost_pdf', compact(
             'items',
             'grandTotal',
             'reportType',
@@ -279,5 +279,5 @@ class FacilityCostController extends Controller
 
         return $pdf->download('facility_costs_' . now()->format('Ymd_His') . '.pdf');
     }
-    
+
 }
