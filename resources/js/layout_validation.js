@@ -49,6 +49,38 @@ document.addEventListener('DOMContentLoaded', function () {
         if (errorEl) errorEl.textContent = '';
     }
 
+    function clearTermsPdfError() {
+        if (termsPdfError) {
+            termsPdfError.textContent = '';
+            termsPdfError.classList.add('d-none');
+        }
+    }
+
+    function setTermsPdfError(message) {
+        if (termsPdfError) {
+            termsPdfError.textContent = message;
+            termsPdfError.classList.remove('d-none');
+        }
+    }
+
+    function validateTermsPdfFile(file) {
+        if (!file) {
+            setTermsPdfError('Debes seleccionar un archivo PDF.');
+            return false;
+        }
+
+        const isPdfByMime = file.type === 'application/pdf';
+        const isPdfByExtension = file.name.toLowerCase().endsWith('.pdf');
+
+        if (!isPdfByMime && !isPdfByExtension) {
+            setTermsPdfError('Solo se permiten archivos PDF.');
+            return false;
+        }
+
+        clearTermsPdfError();
+        return true;
+    }
+
     function isBlockedPickupDay(dateString) {
         const date = new Date(`${dateString}T00:00:00`);
         const day = date.getDay();
