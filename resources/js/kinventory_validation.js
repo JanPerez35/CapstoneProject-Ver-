@@ -112,9 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function normalizeQuantityValue() {
         const value = parseInt(borrowQuantity.value, 10);
-
-        if (Number.isNaN(value)) return null;
-        return value;
+        return Number.isNaN(value) ? null : value;
     }
 
     function validateBorrowQuantity(showError = true) {
@@ -127,7 +125,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
-        if (value === null || value < 1) {
+        if (value === null) {
+            if (showError) {
+                setBorrowQuantityError('Debes ingresar un número válido.');
+            }
+            return false;
+        }
+
+        if (value < 1) {
             if (showError) {
                 setBorrowQuantityError('Debes pedir al menos 1 unidad.');
             }
@@ -136,12 +141,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (value > currentItem.stock) {
             if (showError) {
-                setBorrowQuantityError(`No puedes añadir más de ${currentItem.stock} unidades disponibles.`);
+                setBorrowQuantityError(`No puedes pedir más de ${currentItem.stock} unidades disponibles.`);
             }
             return false;
         }
 
-        if (showError) clearBorrowQuantityError();
+        clearBorrowQuantityError();
         return true;
     }
 
@@ -161,7 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             borrowQuantity.value = '1';
             borrowQuantity.min = '1';
-            borrowQuantity.max = String(currentItem.stock);
             clearBorrowQuantityError();
 
             setTimeout(() => {
@@ -172,16 +176,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     borrowQuantity.addEventListener('input', () => {
-        clearBorrowQuantityError();
-
         if (borrowQuantity.value === '') {
+            setBorrowQuantityError('Debes pedir al menos 1 unidad.');
             return;
         }
 
-        let value = normalizeQuantityValue();
+        const value = normalizeQuantityValue();
 
         if (value === null) {
-            setBorrowQuantityError('Debes pedir al menos 1 unidad.');
+            setBorrowQuantityError('Debes ingresar un número válido.');
             return;
         }
 
@@ -193,12 +196,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (value > currentItem.stock) {
             borrowQuantity.value = String(currentItem.stock);
-            setBorrowQuantityError(`No puedes añadir más de ${currentItem.stock} unidades disponibles.`);
+            setBorrowQuantityError(`No puedes pedir más de ${currentItem.stock} unidades disponibles.`);
             return;
         }
 
         clearBorrowQuantityError();
     });
+
+    borrowQuantity.addEventListener('keydown', (event) => {
+        const value = normalizeQuantityValue();
+
+        if (
+            (event.key === 'ArrowUp' || event.key === 'PageUp') &&
+            value !== null &&
+            value >= currentItem.stock
+        ) {
+            event.preventDefault();
+            setBorrowQuantityError(`No puedes pedir más de ${currentItem.stock} unidades disponibles.`);
+        }
+    });
+
+    borrowQuantity.addEventListener('wheel', (event) => {
+        if (document.activeElement !== borrowQuantity) return;
+
+        const value = normalizeQuantityValue();
+
+        if (event.deltaY < 0 && value !== null && value >= currentItem.stock) {
+            event.preventDefault();
+            setBorrowQuantityError(`No puedes pedir más de ${currentItem.stock} unidades disponibles.`);
+        }
+    }, { passive: false });
 
     borrowQuantity.addEventListener('blur', () => {
         if (borrowQuantity.value === '') {
@@ -228,8 +255,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (pastedValue > currentItem.stock) {
             event.preventDefault();
             borrowQuantity.value = String(currentItem.stock);
-            setBorrowQuantityError(`No puedes añadir más de ${currentItem.stock} unidades disponibles.`);
+            setBorrowQuantityError(`No puedes pedir más de ${currentItem.stock} unidades disponibles.`);
+            return;
         }
+
+        clearBorrowQuantityError();
     });
 
     confirmAddToCart.addEventListener('click', () => {

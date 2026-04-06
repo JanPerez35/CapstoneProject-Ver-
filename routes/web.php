@@ -5,6 +5,8 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\FacilityCostController;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\TermsController;
+
 
 Route::get('/', function () {
     return view('login');
@@ -89,10 +91,6 @@ Route::get('/marketplace_management', function () {
     return view('/marketplace_management.reports_management');
 })->name('marketplace_management');
 
-Route::get('/marketplace_management.admin_marketplace', function () {
-    return view('/marketplace_management.admin_marketplace');
-})->name('marketplace_management.admin_marketplace');
-
 // Route::get('/access_logs', function () {
 //     return view('access_logs');
 // })->name('access_logs');
@@ -107,14 +105,6 @@ Route::get('/access_logs', [EquipmentController::class, 'accessLogs'])
 Route::get('/my_messages', function () {
     return view('my_messages');
 })->name('my_messages');
-
-/*Route::get('/kinemercado/reportar_usuario', function () {
-    return view('kinemercado');
-})->name('kinemercado.reportar_usuario');*/
-
-Route::get('/kinemercado/mensaje', function () {
-    return view('kinemercado_mensaje');
-})->name('kinemercado_mensaje');
 
 Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management');
 Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])->name('facility.rates.save');
@@ -133,6 +123,9 @@ Route::post('/facility/import-mock-events', [FacilityCostController::class, 'imp
     ->name('facility.import.mock');
 
 require __DIR__.'\saml2.php';
+
+Route::post('/terms-and-conditions/update', [TermsController::class, 'update'])
+    ->name('terms.update');
 
 // Temporary routes until user tables are connected
 Route::get('/test-email/request-approved', [EmailController::class, 'requestApproved']);

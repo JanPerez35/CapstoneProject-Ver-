@@ -38,7 +38,10 @@
     data-cart-success="{{ session('cart_success') }}"
     data-request-success="{{ session('request_success') }}"
     data-cart-removed-success="{{ session('cart_removed_success') }}"
+    data-terms-updated-success="{{ session('terms_updated_success') }}"
     data-reopen-cart-modal="{{ session('reopen_cart_modal') ? '1' : '0' }}"
+    data-current-user-id="{{ auth()->id() ?? '' }}"
+
 >
 <div class="container-fluid px-0">
     <header class="d-flex flex-wrap align-items-center justify-content-between py-2 px-2 border-bottom bg-light">
@@ -65,7 +68,7 @@
                     <i class="bi bi-person-fill"></i> Mi Perfil
                 </a>
 
-                <a href="{{ route('my_messages') }}"
+                <a href="{{ route('my_messages', ['return_to' => url()->full()]) }}"
                    class="btn {{ request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success' }}">
                     <i class="bi bi-chat-left-text"></i> Mis Chats
                 </a>
@@ -317,8 +320,7 @@
                                            class="form-control form-control-lg"
                                            id="return_date"
                                            name="return_date">
-                                    <div class="form-text">Debe ser una fecha futura.</div>
-                                    <div class="invalid-feedback d-block" id="return_date_error"></div>
+                                    <div class="form-text">Debe ser una fecha futura. No se permiten viernes, sábados ni domingos.</div>                                    <div class="invalid-feedback d-block" id="return_date_error"></div>
                                 </div>
 
                                 <div class="mb-3">
@@ -523,6 +525,28 @@
         </div>
     </div>
 
+    <div id="termsUpdatedToast"
+         class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true"
+         style="width: auto; max-width: fit-content;">
+
+        <div class="d-flex align-items-center">
+            <div class="toast-body fw-semibold rounded-0 pe-1"
+                 id="termsUpdatedToastMessage">
+                Términos y condiciones actualizados correctamente.
+            </div>
+
+            <button type="button"
+                    class="btn-close p-0 ms-1 me-2"
+                    data-bs-dismiss="toast"
+                    aria-label="Cerrar"
+                    style="background-color: transparent; border: none; transform: scale(0.8);">
+            </button>
+        </div>
+    </div>
+
 </div>
 
 <footer class="bg-light text-dark mt-5 pt-4 border-top">
@@ -626,19 +650,48 @@
             </div>
 
             <div class="modal-body pt-3">
-                <div class="border rounded-4 overflow-hidden" style="height: 75vh;">
+                <div class="border rounded-4 overflow-hidden mb-3" style="height: 75vh;">
+
                     <iframe
-                        src="{{ asset('documents/terms_conditions.pdf') }}"
+                        src="{{ asset('documents/terms_conditions.pdf') }}?v={{ file_exists(public_path('documents/terms_conditions.pdf')) ? filemtime(public_path('documents/terms_conditions.pdf')) : time() }}"
                         width="100%"
                         height="100%"
                         style="border: 0;"
                         title="Términos y Condiciones PDF">
                     </iframe>
+
                 </div>
+
+                <form id="updateTermsForm"
+                      method="POST"
+                      action="{{ route('terms.update') }}"
+                      enctype="multipart/form-data">
+                    @csrf
+
+                    <input
+                        type="file"
+                        id="termsPdfInput"
+                        name="terms_pdf"
+                        accept="application/pdf,.pdf"
+                        class="d-none"
+                    >
+
+                    <div class="d-flex flex-column gap-2">
+                        <button type="button"
+                                class="btn btn-outline-success align-self-start"
+                                id="openTermsPdfPicker">
+                            <i class="bi bi-upload me-1"></i>
+                            Actualizar términos y condiciones
+                        </button>
+
+                        <div id="termsPdfSelectedName" class="text-muted small d-none"></div>
+                        <div id="termsPdfError" class="text-danger small d-none"></div>
+                    </div>
+                </form>
             </div>
 
             <div class="modal-footer border-0 pt-0">
-                <a href="{{ asset('documents/terms_conditions.pdf') }}"
+                <a href="{{ asset('documents/terms_conditions.pdf') }}?v={{ file_exists(public_path('documents/terms_conditions.pdf')) ? filemtime(public_path('documents/terms_conditions.pdf')) : time() }}"
                    target="_blank"
                    class="btn btn-outline-success">
                     <i class="bi bi-box-arrow-up-right me-1"></i>
@@ -654,5 +707,41 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="confirmTermsUpdateModal" tabindex="-1" aria-labelledby="confirmTermsUpdateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+            <div class="modal-header border-0 pb-0 align-items-start">
+                <div class="w-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="modal-title fw-bold mb-0" id="confirmTermsUpdateModalLabel">
+                            Confirmar actualización
+                        </h4>
+
+                        <button type="button"
+                                class="btn-close ms-3"
+                                data-bs-dismiss="modal"
+                                aria-label="Cerrar"></button>
+                    </div>
+
+                    <p class="text-muted mt-2 mb-0">
+                        ¿Estás seguro que quieres cambiar los términos y condiciones?
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 pt-2">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <button type="button" class="btn btn-success" id="confirmTermsUpdateBtn">
+                    Sí, actualizar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

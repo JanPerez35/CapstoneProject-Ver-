@@ -2,7 +2,8 @@
     <x-navbar></x-navbar>
 
     @vite('resources/js/pages/marketplace_profanity.js')
-    @vite('resources/js/pages/marketplace.js')
+    @vite('resources/js/marketplace_validation.js')
+    <input type="hidden" id="returnPostId" value="{{ request('post_id') }}">
     <div
         id="marketplaceHome"
         class="container py-4"
@@ -10,6 +11,7 @@
         data-create-url="{{ '/marketplace' }}"
         data-delete-url-base="{{ url('/marketplace') }}"
         data-details-url-base="{{ url('/marketplace') }}"
+        data-current-user-id="{{ auth()->id() ?? '' }}"
     >
         <div class="mb-4">
             <h1 class="fw-bold">Bienvenido al Kinemercado</h1>
@@ -459,7 +461,7 @@
 
 
                             <div class="col-6">
-                                <a href="{{ url('/my_messages') }}" class="btn btn-outline-success w-100 rounded-3">
+                                <a href="{{ url('/my_messages') }}" id="postDetailsChatLink" class="btn btn-outline-success w-100 rounded-3">
                                     <i class="bi bi-chat me-2"></i> Enviar Mensaje
                                 </a>
                             </div>
@@ -516,7 +518,7 @@
                                 <select class="form-select form-select-lg" id="reportReason" required>
                                     <option value="" selected disabled>Seleccionar una razón</option>
                                     <option value="Fraude">Fraude o estafa</option>
-                                    <option value="Información flasa">Información falsa</option>
+                                    <option value="Información falsa">Información falsa</option>
                                     <option value="Lengiaje ofensivo">Lenguaje ofensivo</option>
                                     <option value="Contenido inapropiado">Contenido inapropiado</option>
                                     <option value="Otros">Otros</option>
