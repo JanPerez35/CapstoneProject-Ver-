@@ -120,22 +120,18 @@ let isReportDirty = false;
 let allowReportClose = false;
 
 // Storage
-function getStoredMarketplacePosts() {
-    try {
-        const raw = localStorage.getItem('marketplacePosts');
-        return raw ? JSON.parse(raw) : [];
-    } catch {
-        return [];
-    }
-}
+let allMarketplacePosts =[];
 
-function saveMarketplacePosts(posts) {
-    localStorage.setItem('marketplacePosts', JSON.stringify(posts));
-}
+async function fetchPosts() {
+    const res = await fetch('/posts');
+    const data = await res.json();
 
-let allMarketplacePosts = getStoredMarketplacePosts();
+    allMarketplacePosts = data;
+    renderMarketplace();
+}
 
 // Helpers
+
 function setFieldError(field, errorElement, message) {
     if (!field) return;
 
@@ -182,30 +178,6 @@ async function fileToDataURL(file) {
     });
 }
 
-async function createMarketplacePostObject() {
-    const imageUrls = await Promise.all(
-        selectedPostImages.map((file) => fileToDataURL(file))
-    );
-
-    const firstImage = imageUrls[0] || '';
-
-    return {
-        id: Date.now(),
-        title: postTitle.value.trim(),
-        description: postDescription.value.trim(),
-        price: postPrice.value.trim(),
-        category: postCategory.value,
-        condition: postCondition.value,
-        status: 'Disponible',
-        seller: 'Usuario actual',
-        rating: '0.0',
-        reviews: '0',
-        createdAt: 'hace unos segundos',
-        image: firstImage,
-        images: imageUrls,
-    };
-}
-
 function createMarketplaceCardHTML(post) {
     return `
        <div
@@ -221,7 +193,7 @@ function createMarketplaceCardHTML(post) {
            <div class="card h-100 shadow-sm rounded-4 overflow-hidden item-card border-0 marketplace-card-shell">
 
                <img
-                   src="${post.image}"
+                   src="${post.photo_1_url ? '/storage/' + post.photo_1_url : '/images/marketplace_images/picture-not-available.png'}"
                    class="card-img-top"
                    alt="${post.title}"
                    style="height: 220px; object-fit: contain;"
@@ -443,7 +415,8 @@ function attachMarketplaceDetailsEvents() {
     if (!postDetailsModal) return;
 
     document.querySelectorAll('.open-post-details').forEach((button) => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
             const postId = Number(button.dataset.id);
             const selectedPost = allMarketplacePosts.find(
                 (post) => Number(post.id) === postId
@@ -494,22 +467,23 @@ function attachMarketplaceDeleteEvents() {
 }
 
 if (deletePostModal && confirmDeletePost) {
-    confirmDeletePost.addEventListener('click', () => {
+    confirmDeletePost.addEventListener('click', async () => {
         if (postIdToDelete === null) return;
 
-        allMarketplacePosts = allMarketplacePosts.filter(
-            (post) => Number(post.id) !== postIdToDelete
-        );
+        await fetch(`/posts/${postIdToDelete}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            }
+        });
 
-        saveMarketplacePosts(allMarketplacePosts);
-
+        await fetchPosts();
         const modalInstance = bootstrap.Modal.getOrCreateInstance(deletePostModal);
         modalInstance.hide();
 
         postDeletedToast?.show();
 
         postIdToDelete = null;
-        renderMarketplace();
     });
 }
 
@@ -1494,9 +1468,27 @@ if (publishBtn && createPostForm) {
             return;
         }
 
-        const newPost = await createMarketplacePostObject();
-        allMarketplacePosts.unshift(newPost);
-        saveMarketplacePosts(allMarketplacePosts);
+        const formData = new FormData();
+
+        formData.append('title', postTitle.value);
+        formData.append('description', postDescription.value);
+        formData.append('cost', postPrice.value);
+        formData.append('category', postCategory.value);
+        formData.append('condition', postCondition.value);
+
+        selectedPostImages.forEach(file => {
+            formData.append('images[]', file);
+        });
+
+        await fetch('/posts', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: formData
+        });
+
+        await fetchPosts();
 
         currentMarketplacePage = 1;
         renderMarketplace();
@@ -1692,4 +1684,4 @@ if (confirmCancelReport && reportUserModal && cancelReportConfirmModal) {
 initializeSellerRating();
 updatePublishButtonState();
 updateReportButtonState();
-renderMarketplace();
+fetchPosts();

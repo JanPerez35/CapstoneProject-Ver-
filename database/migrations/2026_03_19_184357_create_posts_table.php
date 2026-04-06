@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('status');
             $table->string('condition');
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->string('category');
 
             $table->string('photo_1_url')->nullable();
