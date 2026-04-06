@@ -58,7 +58,7 @@
 
     <!-- Logo -->
     <div class="mb-4">
-        <img src="images/kines_logo.png" class="logo" alt="Kinesiología Logo">
+        <img src="images/kine_logo.png" class="logo" alt="Kinesiología Logo">
     </div>
 
     <!-- Title -->
