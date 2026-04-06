@@ -349,6 +349,19 @@ function renderPostDetailsCarousel(images = []) {
 }
 
 function populatePostDetailsModal(post) {
+    const postDetailsChatLink = document.getElementById('postDetailsChatLink');
+
+    if (postDetailsChatLink && post) {
+        const currentUserId = document.body.dataset.currentUserId || 'guest';
+        const sellerKey = String(post.seller || 'seller').replace(/\s+/g, '_').toLowerCase();
+        const chatId = `chat_${currentUserId}_${post.id}_${sellerKey}`;
+
+        postDetailsChatLink.href =
+            `/my_messages?return_to=${encodeURIComponent(`/kinemarket?post_id=${post.id}`)}` +
+            `&post_id=${post.id}` +
+            `&chat_id=${encodeURIComponent(chatId)}`;
+    }
+
     if (!post) return;
 
     if (postDetailsModalLabel) {
@@ -396,7 +409,8 @@ function populatePostDetailsModal(post) {
     }
 
     if (postDetailsSellerRating) {
-        postDetailsSellerRating.innerHTML = `<i class="bi bi-star-fill text-warning me-1"></i> ${post.rating || '0.0'} <span class="text-muted">(${post.reviews || 0} reseñas)</span>`;
+        postDetailsSellerRating.innerHTML =
+            `<i class="bi bi-star-fill text-warning me-1"></i> ${post.rating || '0.0'} <span class="text-muted">(${post.reviews || 0} reseñas)</span>`;
     }
 
     if (postDetailsCategory) {
@@ -408,6 +422,30 @@ function populatePostDetailsModal(post) {
         : (post.image ? [post.image] : []);
 
     renderPostDetailsCarousel(images);
+}
+
+function openReturnedPostIfNeeded() {
+    const returnPostIdInput = document.getElementById('returnPostId');
+    if (!returnPostIdInput) return;
+
+    const returnPostId = Number(returnPostIdInput.value);
+    if (!returnPostId) return;
+
+    const matchedPost = allMarketplacePosts.find(
+        (post) => Number(post.id) === returnPostId
+    );
+
+    if (!matchedPost || !postDetailsModal) return;
+
+    populatePostDetailsModal(matchedPost);
+
+    const modalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
+    modalInstance.show();
+
+    const matchingCard = document.querySelector(`.marketplace-card[data-id="${returnPostId}"]`);
+    if (matchingCard) {
+        matchingCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 }
 
 
@@ -1685,3 +1723,4 @@ initializeSellerRating();
 updatePublishButtonState();
 updateReportButtonState();
 fetchPosts();
+openReturnedPostIfNeeded();

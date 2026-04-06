@@ -7,65 +7,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!input || !sendBtn || !errorEl) return;
 
-    function setFieldError(message) {
+    function setProfanityError(message) {
         input.classList.add('is-invalid');
         errorEl.textContent = message;
+        errorEl.dataset.errorType = 'profanity';
+        sendBtn.disabled = true;
     }
 
-    function clearFieldError() {
-        input.classList.remove('is-invalid');
-        errorEl.textContent = '';
-    }
-
-    function validateMessageBase() {
-        const value = input.value.trim();
-
-        clearFieldError();
-
-        if (!value) {
-            setFieldError('El mensaje no puede estar vacío.');
-            return false;
+    function clearProfanityError() {
+        if(errorEl.dataset.errorType === 'profanity') {
+            input.classList.remove('is-invalid');
+            errorEl.textContent = '';
+            delete errorEl.dataset.errorType;
         }
-
-        return true;
     }
 
     function validateMessageProfanity() {
         const value = input.value.trim();
 
         if (!value) {
+            clearProfanityError();
             return true;
         }
-
         const matchedWord = findProfanity(value);
 
-        if (matchedWord) {
-            setFieldError('El mensaje contiene lenguaje inapropiado.');
+        if (matchedWord){
+            setProfanityError('El mensaje contiene lenguaje inapropiado.');
+            sendBtn.disabled = true;
             return false;
         }
-
+        clearProfanityError();
         return true;
     }
 
-    function updateMessageValidationState() {
-        const isBaseValid = validateMessageBase();
 
-        if (!isBaseValid) {
-            sendBtn.disabled = true;
+    input.addEventListener('input', validateMessageProfanity);
+    input.addEventListener('blur', () => {
+        if (!input.value.trim()) {
+            clearProfanityError();
             return;
         }
 
-        const isProfanityValid = validateMessageProfanity();
-        sendBtn.disabled = !isProfanityValid;
-    }
-
-    input.addEventListener('input', () => {
-        updateMessageValidationState();
+        validateMessageProfanity();
     });
 
-    input.addEventListener('blur', () => {
-        updateMessageValidationState();
-    });
-
-    updateMessageValidationState();
 });

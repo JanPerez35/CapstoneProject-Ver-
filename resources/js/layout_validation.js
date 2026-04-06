@@ -215,8 +215,15 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
 
+
+
         if (returnDate.value <= today) {
             if (showErrors) setError(returnDate, returnDateError, 'La fecha de devolución debe ser futura.');
+            return false;
+        }
+
+        if (isBlockedPickupDay(returnDate.value)) {
+            if (showErrors) setError(returnDate, returnDateError, 'No se permiten viernes, sábados ni domingos.');
             return false;
         }
 

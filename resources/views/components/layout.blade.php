@@ -40,6 +40,7 @@
     data-cart-removed-success="{{ session('cart_removed_success') }}"
     data-terms-updated-success="{{ session('terms_updated_success') }}"
     data-reopen-cart-modal="{{ session('reopen_cart_modal') ? '1' : '0' }}"
+    data-current-user-id="{{ auth()->id() ?? '' }}"
 
 >
 <div class="container-fluid px-0">
@@ -67,7 +68,7 @@
                     <i class="bi bi-person-fill"></i> Mi Perfil
                 </a>
 
-                <a href="{{ route('my_messages') }}"
+                <a href="{{ route('my_messages', ['return_to' => url()->full()]) }}"
                    class="btn {{ request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success' }}">
                     <i class="bi bi-chat-left-text"></i> Mis Chats
                 </a>
@@ -319,8 +320,7 @@
                                            class="form-control form-control-lg"
                                            id="return_date"
                                            name="return_date">
-                                    <div class="form-text">Debe ser una fecha futura.</div>
-                                    <div class="invalid-feedback d-block" id="return_date_error"></div>
+                                    <div class="form-text">Debe ser una fecha futura. No se permiten viernes, sábados ni domingos.</div>                                    <div class="invalid-feedback d-block" id="return_date_error"></div>
                                 </div>
 
                                 <div class="mb-3">

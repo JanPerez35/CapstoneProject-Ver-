@@ -9,7 +9,7 @@
 
                 <li class="nav-item flex-fill text-center">
                     <a href="{{ route('kinemarket') }}"
-                       class="btn w-100 {{ request()->routeIs('kinemarket', 'my_messages') ? 'btn-success' : 'btn-outline-success' }}">
+                       class="btn w-100 {{ request()->routeIs('kinemarket') || (request()->routeIs('my_messages') && request()->filled('post_id')) ? 'btn-success' : 'btn-outline-success' }}">
                         <i class="bi bi-shop"></i>
                         Kinemercado
                     </a>
