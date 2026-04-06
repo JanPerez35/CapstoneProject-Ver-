@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmailController;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\PostController;
+use App\Models\Post;
 
 
 Route::get('/', function () {
@@ -41,9 +43,7 @@ Route::get('/inventory_management/inventory_statistics', function () {
     return view('inventory_management.inventory_statistics');
 })->name('inventory_management.inventory_statistics');
 
-Route::get('/kinemarket', function () {
-    return view('kinemarket');
-})->name('kinemarket');
+Route::get('/kinemarket', [PostController::class, 'index'])->name('kinemarket');
 
 Route::get('/marketplace_management', function () {
     return view('/marketplace_management.reports_management');
@@ -60,6 +60,12 @@ Route::get('/facility_management', function () {
 Route::get('/my_messages', function () {
     return view('my_messages');
 })->name('my_messages');
+
+Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+Route::get('/posts', function () {
+    return Post::with('user')->latest()->get();
+});
 
 require __DIR__ . '\saml2.php';
 
