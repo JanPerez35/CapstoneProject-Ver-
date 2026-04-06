@@ -1,6 +1,7 @@
 <x-layout title="Kinventario">
     <x-navbar>
     </x-navbar>
+    @vite('resources/js/kinventory_validation.js')
 
     <div class= "container py-4">
 
@@ -9,23 +10,12 @@
             <p>Aquí podrás pedir prestado equipo deportivo
                 directamente del departamento de Kinesiología.
             </p>
-            {{--    <p class="fw-bolder text-danger"> *IMPORTANTE: Usted es--}}
-            {{--        responsable de entregar el equipo en la misma  condición  en la que se le fue entregado. <br>--}}
-            {{--        Al acceder a esta pagina usted acepta los terminos y condiciones, donde--}}
-            {{--        se hace totalmente responsable de reemplazar equipo dañado durante--}}
-            {{--        el tiempo de prestamo del equipo.--}}
-
-            {{--    </p>--}}
-
-@if(session('success'))
-    <div class="alert alert-success">
-        {{ session('success') }}
-    </div>
-@endif
         </div>
-            <form method="GET" action="{{ route('kinventory') }}" class="row mb-4 g-3">
-                <div class="col-md-8">
-                    <div class="input-group search-group">
+
+        <form method="GET" action="{{ route('kinventory') }}" class="mb-5">
+            <div class="row g-3 mb-3 align-items-stretch">
+                <div class="col-lg-10">
+                    <div class="input-group search-group h-100">
                         <span class="input-group-text bg-white border-0">
                             <i class="bi bi-search"></i>
                         </span>
@@ -40,7 +30,15 @@
                     </div>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-lg-2 d-grid">
+                    <button type="submit" class="btn btn-success h-100">
+                        Buscar
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-4">
                     <select name="category" class="form-select border-2 border-dark" onchange="this.form.submit()">
                         <option value="">Todas las categorías</option>
                         @foreach($categories as $cat)
@@ -51,91 +49,88 @@
                     </select>
                 </div>
 
-                <div class="col-12 d-flex gap-2">
-                    <button type="submit" class="btn btn-success">
-                        Buscar
-                    </button>
-
+                <div class="col-md-auto">
                     <a href="{{ route('kinventory') }}" class="btn btn-outline-secondary">
                         Limpiar filtros
                     </a>
                 </div>
-            </form>
+            </div>
+        </form>
 
-        {{--        okay this will be some sort of card grid, It will be filled when the cards are actually available--}}
-        <div class="row g-4">
-                @forelse($items as $item)
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
-                            <img
-                                src="{{ $item->equipment_photo_url ? asset('storage/' . $item->equipment_photo_url) : asset('images/kinventory_images/default.jpg') }}"
-                                class="card-img-top"
-                                alt="{{ $item->description }}"
-                                style="height: 300px; object-fit: contain; object-position: center; background-color:#f8f9fa;"
-                            >
+        <div class="row g-4 mt-2">
+            @forelse($items as $item)
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
+                        <img
+                            src="{{ $item->equipment_photo_url ? asset('storage/' . $item->equipment_photo_url) : asset('images/kinventory_images/default.jpg') }}"
+                            class="card-img-top"
+                            alt="{{ $item->description }}"
+                            style="height: 300px; object-fit: contain; object-position: center; background-color:#f8f9fa;"
+                        >
 
-                            <div class="card-body d-flex flex-column">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="card-title mb-0 fw-bold">
-                                        {{ $item->description }}
-                                    </h5>
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0 fw-bold">
+                                    {{ $item->description }}
+                                </h5>
 
-                                    <span class="badge rounded-0"
-                                        style="background-color: {{ $item->available_quantity > 0 ? '#6FC21F' : '#dc3545' }}; color:white;">
-                                        {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
-                                    </span>
+                                <span class="badge rounded-0"
+                                      style="background-color: {{ $item->available_quantity > 0 ? '#6FC21F' : '#dc3545' }}; color:white;">
+                                    {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
+                                </span>
+                            </div>
+
+                            <div class="small mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Cantidad Disponible:</span>
+                                    <strong class="text-success">{{ $item->available_quantity }}</strong>
                                 </div>
-
-                                <div class="small mb-3">
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Cantidad Disponible:</span>
-                                        <strong class="text-success">{{ $item->available_quantity }}</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between">
-                                        <span class="text-muted">Ubicación:</span>
-                                        <strong>{{ $item->location }}</strong>
-                                    </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Ubicación:</span>
+                                    <strong>{{ $item->location }}</strong>
                                 </div>
+                            </div>
 
-                                <div class="mt-auto d-grid gap-2">
-                                    <button
-                                        class="btn btn-success open-borrow-modal"
-                                        data-item-id="{{ $item->id }}"
-                                        data-item-name="{{ $item->description }}"
-                                        data-item-stock="{{ $item->available_quantity }}"
-                                        data-item-image="{{ $item->equipment_photo_url ? asset('storage/' . $item->equipment_photo_url) : asset('images/kinventory_images/default.jpg') }}"
-                                        data-item-location="{{ $item->location }}"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#borrowModal"
-                                        {{ $item->available_quantity == 0 ? 'disabled' : '' }}
-                                    >
-                                        Pedir prestado
-                                    </button>
-                                </div>
+                            <div class="mt-auto d-grid gap-2">
+                                <button
+                                    type="button"
+                                    class="btn btn-success open-borrow-modal"
+                                    data-item-id="{{ $item->id }}"
+                                    data-item-name="{{ $item->description }}"
+                                    data-item-stock="{{ $item->available_quantity }}"
+                                    data-item-image="{{ $item->equipment_photo_url ? asset('storage/' . $item->equipment_photo_url) : asset('images/kinventory_images/default.jpg') }}"
+                                    data-item-location="{{ $item->location }}"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#borrowModal"
+                                    {{ $item->available_quantity == 0 ? 'disabled' : '' }}
+                                >
+                                    Pedir prestado
+                                </button>
                             </div>
                         </div>
                     </div>
-                @empty
-                    <div class="col-12">
-                        <div class="alert alert-info">
-                            No hay equipos disponibles.
+                </div>
+            @empty
+                <div class="col-12">
+                    <div id="itemsEmptyState" class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body py-5 text-center">
+                            <i class="bi bi-box-seam fs-1 text-muted"></i>
+                            <h4 class="fw-bold mt-3">No se encontraron equipos</h4>
+                            <p class="text-muted mb-0">Intenta cambiar los filtros o buscar otro equipo.</p>
                         </div>
                     </div>
-                @endforelse
-            </div>
-
-            @if ($items->hasPages())
-                <div class="mt-4 d-flex justify-content-center">
-                    {{ $items->links('pagination::bootstrap-5') }}
                 </div>
-            @endif
-
+            @endforelse
         </div>
 
+        @if ($items->hasPages())
+            <div class="mt-4 d-flex justify-content-center">
+                {{ $items->links('pagination::bootstrap-5') }}
+            </div>
+        @endif
 
     </div>
-    {{--    here container for cards closes--}}
-    {{-- Borrow Pop up when someone clicks on a card --}}
+
     <div class="modal fade" id="borrowModal" tabindex="-1" aria-labelledby="borrowModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -149,9 +144,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
-                <form method="POST" action="{{ route('cart.add') }}">
+                <form method="POST" action="{{ route('cart.add') }}" id="borrowForm" novalidate>
                     @csrf
-
+                    <input type="hidden" name="redirect_back" value="{{ url()->full() }}">
                     <div class="modal-body">
                         <input type="hidden" name="equipment_id" id="borrowEquipmentId">
 
@@ -181,15 +176,15 @@
                                 value="1"
                                 required
                             >
-                        {{-- NUEVO: aquí saldrá el warning en rojo --}}
-                        <div class="invalid-feedback d-block" id="borrowQuantityError"></div>
+                            <div class="invalid-feedback" id="borrowQuantityError"></div>
+                        </div>
                     </div>
 
                     <div class="modal-footer border-0 pt-0">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                             Cancelar
                         </button>
-                        <button type="submit" class="btn btn-success">
+                        <button type="button" class="btn btn-success" id="confirmAddToCart">
                             <i class="bi bi-cart-plus me-1"></i> Añadir al carrito
                         </button>
                     </div>
@@ -199,61 +194,3 @@
     </div>
 
 </x-layout>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const borrowButtons = document.querySelectorAll('.open-borrow-modal');
-    const borrowEquipmentId = document.getElementById('borrowEquipmentId');
-    const borrowModalText = document.getElementById('borrowModalText');
-    const borrowModalImage = document.getElementById('borrowModalImage');
-    const borrowModalStock = document.getElementById('borrowModalStock');
-    const borrowQuantity = document.getElementById('borrowQuantity');
-
-    borrowButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            const itemId = this.dataset.itemId;
-            const itemName = this.dataset.itemName;
-            const itemStock = this.dataset.itemStock;
-            const itemImage = this.dataset.itemImage;
-
-            borrowEquipmentId.value = itemId;
-            borrowModalText.textContent = `Selecciona la cantidad que deseas de "${itemName}"`;
-            borrowModalImage.src = itemImage;
-            borrowModalStock.textContent = itemStock;
-            borrowQuantity.max = itemStock;
-            borrowQuantity.value = 1;
-        });
-    });
-});
-</script>
-
-    {{-- Ignore this, this was me testing the email service it is for me to reference later--}}
-{{--<h2>Send Email</h2>--}}
-
-{{--@if(session('success'))--}}
-{{--    <p style="color: green">{{ session('success') }}</p>--}}
-{{--@endif--}}
-
-{{--<form method="POST" action="/send-email">--}}
-{{--    @csrf--}}
-
-{{--    <label>Email:</label>--}}
-{{--    <input type="email" name="email" required>--}}
-
-{{--    <br><br>--}}
-
-{{--    <label>Subject:</label>--}}
-{{--    <input type="text" name="subject" required>--}}
-
-{{--    <br><br>--}}
-
-{{--    <br><br>--}}
-
-{{--    <label>Message:</label>--}}
-{{--    <textarea name="message" required></textarea>--}}
-
-{{--    <br><br>--}}
-
-{{--    <button type="submit">Send</button>--}}
-{{--</form>--}}
-

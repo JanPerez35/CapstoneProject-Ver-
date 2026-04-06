@@ -6,7 +6,6 @@ use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\FacilityCostController;
 use Illuminate\Support\Facades\Mail;
 
-
 Route::get('/', function () {
     return view('login');
 });
@@ -126,6 +125,12 @@ Route::get('/facility_management/export/csv', [FacilityCostController::class, 'e
 Route::get('/facility_management/export/pdf', [FacilityCostController::class, 'exportPdf'])->name('facility.export.pdf');
 
 Route::get('/my_profile', [EquipmentController::class, 'profile'])->name('my_profile');
+
+Route::get('/mock-eventflow/events', [FacilityCostController::class, 'mockExternalEvents'])
+    ->name('facility.mock.events');
+
+Route::post('/facility/import-mock-events', [FacilityCostController::class, 'importMockEvents'])
+    ->name('facility.import.mock');
 
 require __DIR__.'\saml2.php';
 

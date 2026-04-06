@@ -1,4 +1,4 @@
-import { PROFANITY_WORDS } from '../config/profanity-words';
+import { PROFANITY_WORDS } from '../config/profanity_words.js';
 
 function normalizeText(text = '') {
     return text

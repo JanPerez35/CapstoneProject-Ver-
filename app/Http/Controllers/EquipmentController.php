@@ -9,11 +9,20 @@ use App\Models\Equipment;
 use App\Models\Lending;
 use App\Models\LendingItem;
 use App\Models\ActivityLog;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\EmailService;
 
 class EquipmentController extends Controller
 {
+    protected $emailService;
 
-private function logActivity($action, $comment = null)
+    public function __construct(EmailService $emailService)
+    {
+        $this->emailService = $emailService;
+    }
+
+
+    private function logActivity($action, $comment = null)
 {
     ActivityLog::create([
         'user_id' => 1, // temporary
@@ -25,136 +34,141 @@ private function logActivity($action, $comment = null)
     ]);
 }
 
-public function index(Request $request)
-{
-    $query = Equipment::query();
+    public function index(Request $request)
+    {
+        $query = Equipment::query();
 
-    // Search filter
-    if ($request->filled('search')) {
-        $search = $request->search;
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
 
-        $query->where(function ($q) use ($search) {
-            $q->where('description', 'like', '%' . $search . '%')
-              ->orWhere('category', 'like', '%' . $search . '%')
-              ->orWhere('location', 'like', '%' . $search . '%');
-        });
+            $query->where(function ($q) use ($search) {
+                $q->where('description', 'like', '%' . $search . '%')
+                    ->orWhere('category', 'like', '%' . $search . '%')
+                    ->orWhere('location', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Category filter
+        if ($request->filled('category')) {
+            $query->where('category', $request->category);
+        }
+
+        // Pagination + keep filters in URL
+        $items = $query->paginate(18)->withQueryString();
+
+        // Categories list
+        $categories = Equipment::select('category')
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+
+        // Locations list
+        $locations = Equipment::select('location')
+            ->whereNotNull('location')
+            ->where('location', '!=', '')
+            ->distinct()
+            ->orderBy('location')
+            ->pluck('location');
+
+        return view('inventory_management.admin_inventory', compact('items', 'categories', 'locations'));
     }
 
-    // Category filter
-    if ($request->filled('category')) {
-        $query->where('category', $request->category);
+
+
+    public function update(Request $request, $id)
+    {
+        $item = Equipment::findOrFail($id);
+
+        $validated = $request->validate([
+            'description' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/'],
+            'category' => ['required', 'string', 'min:3', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/'],
+            'quantity' => 'required|integer|min:1',
+            'available_quantity' => 'required|integer|min:0|lte:quantity',
+            'location' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-\/]+$/'],
+            'image' => 'nullable|image|mimes:jpg,jpeg|max:2048',
+        ]);
+
+        if ($request->hasFile('image')) {
+            if ($item->equipment_photo_url) {
+                \Storage::disk('public')->delete($item->equipment_photo_url);
+            }
+
+            $imagePath = $request->file('image')->store('equipment_photos', 'public');
+            $item->equipment_photo_url = $imagePath;
+        }
+
+        $item->update([
+            'description' => $validated['description'],
+            'category' => $validated['category'],
+            'quantity' => $validated['quantity'],
+            'available_quantity' => $validated['available_quantity'],
+            'location' => $validated['location'],
+        ]);
+
+        return redirect()->back()
+            ->with('success', 'Item actualizado correctamente');
     }
 
-    // Pagination + keep filters in URL
-    $items = $query->paginate(18)->withQueryString();
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'description' => [
+                'required',
+                'string',
+                'min:5',
+                'max:100',
+                'regex:/^[A-Za-z0-9\s\.,\-]+$/'
+            ],
+            'category' => [
+                'required',
+                'string',
+                'min:3',
+                'max:100',
+                'regex:/^[A-Za-z0-9\s\.,\-]+$/'
+            ],
+            'location' => [
+                'required',
+                'string',
+                'min:5',
+                'max:100',
+                'regex:/^[A-Za-z0-9\s\.,\-\/]+$/'
+            ],
+            'quantity' => 'required|integer|min:1',
+            'available_quantity' => 'required|integer|min:0|lte:quantity',
+            'image' => 'required|image|mimes:jpg,jpeg|max:2048',
+        ]);
 
-    // Categories list
-    $categories = Equipment::select('category')
-        ->distinct()
-        ->pluck('category');
+        $imagePath = $request->file('image')->store('equipment_photos', 'public');
 
-    return view('inventory_management.admin_inventory', compact('items', 'categories'));
-}
+        Equipment::create([
+            'description' => $validated['description'],
+            'category' => $validated['category'],
+            'quantity' => $validated['quantity'],
+            'available_quantity' => $validated['available_quantity'],
+            'location' => $validated['location'],
+            'equipment_photo_url' => $imagePath,
+        ]);
 
-public function update(Request $request, $id)
-{
-    $item = Equipment::findOrFail($id);
+        return redirect()->back()
+            ->with('success', 'Item agregado correctamente');
+    }
 
-    $validated = $request->validate([
-        'description' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/'],
-        'category' => ['required', 'string', 'min:3', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/'],
-        'quantity' => 'required|integer|min:1',
-        'available_quantity' => 'required|integer|min:0|lte:quantity',
-        'location' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-\/]+$/'],
-        'image' => 'nullable|image|mimes:jpg,jpeg|max:2048',
+    public function destroy($id)
+    {
+        $item = Equipment::findOrFail($id);
 
-    ]);
-
-    // If new image uploaded
-    if ($request->hasFile('image')) {
-        // delete old image
         if ($item->equipment_photo_url) {
             \Storage::disk('public')->delete($item->equipment_photo_url);
         }
 
-        $imagePath = $request->file('image')->store('equipment_photos', 'public');
-        $item->equipment_photo_url = $imagePath;
+        $item->delete();
+
+        return redirect()->back()
+            ->with('success', 'Item eliminado correctamente');
     }
-
-    // update fields
-    $item->update([
-        'description' => $validated['description'],
-        'category' => $validated['category'],
-        'quantity' => $validated['quantity'],
-        'available_quantity' => $validated['available_quantity'],
-        'location' => $validated['location'],
-    ]);
-
-    return redirect()->route('inventory_management')
-        ->with('success', 'Item actualizado correctamente');
-}
-
-public function store(Request $request)
-{
-    $validated = $request->validate([
-    'description' => [
-        'required',
-        'string',
-        'min:5',
-        'max:100',
-        'regex:/^[A-Za-z0-9\s\.,\-]+$/'
-    ],
-
-    'category' => [
-        'required',
-        'string',
-        'min:3',
-        'max:100',
-        'regex:/^[A-Za-z0-9\s\.,\-]+$/'
-    ],
-
-    'location' => [
-        'required',
-        'string',
-        'min:5',
-        'max:100',
-        'regex:/^[A-Za-z0-9\s\.,\-\/]+$/'
-    ],
-
-    'quantity' => 'required|integer|min:1',
-    'available_quantity' => 'required|integer|min:0|lte:quantity',
-    'image' => 'required|image|mimes:jpg,jpeg|max:2048',
-]);
-
-    $imagePath = $request->file('image')->store('equipment_photos', 'public');
-
-    Equipment::create([
-        'description' => $validated['description'],
-        'category' => $validated['category'],
-        'quantity' => $validated['quantity'],
-        'available_quantity' => $validated['available_quantity'],
-        'location' => $validated['location'],
-        'equipment_photo_url' => $imagePath,
-    ]);
-
-    return redirect()->route('inventory_management')
-        ->with('success', 'Item agregado correctamente');
-}
-
-public function destroy($id)
-{
-    $item = Equipment::findOrFail($id);
-
-    // delete image from storage
-    if ($item->equipment_photo_url) {
-        \Storage::disk('public')->delete($item->equipment_photo_url);
-    }
-
-    $item->delete();
-
-    return redirect()->route('inventory_management')
-        ->with('success', 'Item eliminado correctamente');
-}
 
 public function kinventory(Request $request)
 {
@@ -227,47 +241,57 @@ public function borrow(Request $request)
 
 }
 
-public function addToCart(Request $request)
-{
-    $validated = $request->validate([
-        'equipment_id' => 'required|integer|exists:equipment,id',
-        'quantity' => 'required|integer|min:1',
-    ]);
+    public function addToCart(Request $request)
+    {
+        $validated = $request->validate([
+            'equipment_id' => 'required|integer|exists:equipment,id',
+            'quantity' => 'required|integer|min:1',
+            'redirect_back' => 'nullable|string',
+        ]);
 
-    $equipment = Equipment::findOrFail($validated['equipment_id']);
+        $redirectBack = $validated['redirect_back'] ?? route('kinventory');
 
-    if ($validated['quantity'] > $equipment->available_quantity) {
-        return redirect()->route('kinventory')
-            ->with('error', 'La cantidad solicitada excede la cantidad disponible.');
-    }
-
-    $cart = session()->get('cart', []);
-
-    if (isset($cart[$equipment->id])) {
-        $newQuantity = $cart[$equipment->id]['quantity'] + $validated['quantity'];
-
-        if ($newQuantity > $equipment->available_quantity) {
-            return redirect()->route('kinventory')
-                ->with('error', 'La cantidad total en el carrito excede la cantidad disponible.');
+        // Seguridad básica: solo permitir redirects internos del mismo sitio
+        if (!str_starts_with($redirectBack, url('/'))) {
+            $redirectBack = route('kinventory');
         }
 
-        $cart[$equipment->id]['quantity'] = $newQuantity;
-    } else {
-        $cart[$equipment->id] = [
-            'equipment_id' => $equipment->id,
-            'description' => $equipment->description,
-            'category' => $equipment->category,
-            'location' => $equipment->location,
-            'equipment_photo_url' => $equipment->equipment_photo_url,
-            'quantity' => $validated['quantity'],
-        ];
+        $equipment = Equipment::findOrFail($validated['equipment_id']);
+
+        if ($validated['quantity'] > $equipment->available_quantity) {
+            return redirect($redirectBack)
+                ->with('error', 'La cantidad solicitada excede la cantidad disponible.');
+        }
+
+        $cart = session()->get('cart', []);
+
+        if (isset($cart[$equipment->id])) {
+            $newQuantity = $cart[$equipment->id]['quantity'] + $validated['quantity'];
+
+            if ($newQuantity > $equipment->available_quantity) {
+                return redirect($redirectBack)
+                    ->with('error', 'La cantidad total en el carrito excede la cantidad disponible.');
+            }
+
+            $cart[$equipment->id]['quantity'] = $newQuantity;
+            $cart[$equipment->id]['available_quantity'] = $equipment->available_quantity;
+        } else {
+            $cart[$equipment->id] = [
+                'equipment_id' => $equipment->id,
+                'description' => $equipment->description,
+                'category' => $equipment->category,
+                'location' => $equipment->location,
+                'equipment_photo_url' => $equipment->equipment_photo_url,
+                'available_quantity' => $equipment->available_quantity,
+                'quantity' => $validated['quantity'],
+            ];
+        }
+
+        session()->put('cart', $cart);
+
+        return redirect($redirectBack)
+            ->with('cart_success', 'Item añadido al carrito.');
     }
-
-    session()->put('cart', $cart);
-
-    return redirect()->route('kinventory')
-        ->with('success', 'Equipo añadido al carrito.');
-}
 
 public function cart()
 {
@@ -276,96 +300,133 @@ public function cart()
     return view('cart.index', compact('cart'));
 }
 
-public function removeFromCart($id)
-{
-    $cart = session()->get('cart', []);
+    public function removeFromCart($id)
+    {
+        $cart = session()->get('cart', []);
 
-    if (isset($cart[$id])) {
-        unset($cart[$id]);
-        session()->put('cart', $cart);
-    }
-    return redirect()->back()->with('success', 'Item eliminado del carrito..');
-}
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
+            session()->put('cart', $cart);
+        }
 
-public function checkoutCart(Request $request)
-{
-    $isSpecialCase = $request->has('special_case');
+        $shouldReopenCart = !empty($cart);
 
-    $rules = [
-        'pickup_date' => 'required|date|after_or_equal:today',
-        'pickup_time' => 'required|date_format:H:i:s',
-        'commentary' => 'nullable|string|max:1000',
-        'accept_terms' => 'required|accepted',
-    ];
-
-    if ($isSpecialCase) {
-        $rules['return_date'] = 'required|date|after_or_equal:pickup_date';
-        $rules['special_reason'] = 'required|string|max:1000';
-    } else {
-        $rules['return_date'] = 'nullable|date';
-        $rules['special_reason'] = 'nullable|string|max:1000';
+        return redirect()->back()
+            ->with('cart_removed_success', 'Item removido del carrito correctamente.')
+            ->with('reopen_cart_modal', $shouldReopenCart);
     }
 
-    $validated = $request->validate($rules);
+    public function checkoutCart(Request $request)
+    {
+        $isSpecialCase = $request->has('special_case');
 
-    $cart = session()->get('cart', []);
+        $rules = [
+            'pickup_date' => 'required|date|after:today',
+            'pickup_time' => 'required|date_format:H:i:s',
+            'accept_terms' => 'required|accepted',
+            'cart_quantities' => 'required|array',
+            'cart_quantities.*' => 'required|integer|min:1',
+        ];
 
-    if (empty($cart)) {
-        return redirect()->back()->with('error', 'El carrito está vacío.');
-    }
+        if ($isSpecialCase) {
+            $rules['return_date'] = 'required|date|after_or_equal:pickup_date';
+            $rules['special_reason'] = [
+                'required',
+                'string',
+                'min:10',
+                'max:500',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/',
+            ];
+        } else {
+            $rules['return_date'] = 'nullable|date';
+            $rules['special_reason'] = [
+                'nullable',
+                'string',
+                'max:500',
+                'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]*$/',
+            ];
+        }
 
-    $startDateTime = $validated['pickup_date'] . ' ' . $validated['pickup_time'];
+        $validated = $request->validate($rules);
 
-    $endDateTime = $isSpecialCase
-        ? $validated['return_date'] . ' 15:00:00'
-        : $validated['pickup_date'] . ' 15:00:00';
+        $cart = session()->get('cart', []);
 
-    $status = $isSpecialCase ? 'pending' : 'approved';
-    $itemStatus = $isSpecialCase ? 'pending' : 'approved';
+        if (empty($cart)) {
+            return redirect()->back()->with('error', 'El carrito está vacío.');
+        }
 
-    DB::transaction(function () use ($cart, $startDateTime, $endDateTime, $isSpecialCase, $validated, $status, $itemStatus) {
-        $lending = Lending::create([
-            'user_id' => 1,
-            'commentary' => $validated['commentary'] ?? null,
-            'special_reason' => $isSpecialCase ? $validated['special_reason'] : null,
-            'start_time' => $startDateTime,
-            'end_time' => $endDateTime,
-            'flag' => $isSpecialCase,
-            'status' => $status,
-        ]);
-
-        foreach ($cart as $cartItem) {
-            $equipment = Equipment::lockForUpdate()->findOrFail($cartItem['equipment_id']);
-
-            if ($cartItem['quantity'] > $equipment->available_quantity) {
-                throw new \Exception('La cantidad solicitada excede la cantidad disponible para ' . $equipment->description);
-            }
-
-            LendingItem::create([
-                'lending_id' => $lending->id,
-                'equipment_id' => $equipment->id,
-                'quantity' => $cartItem['quantity'],
-                'item_status' => $itemStatus,
-            ]);
-
-            if (!$isSpecialCase) {
-                $equipment->available_quantity -= $cartItem['quantity'];
-                $equipment->save();
+        foreach ($cart as $equipmentId => &$cartItem) {
+            if (isset($validated['cart_quantities'][$equipmentId])) {
+                $cartItem['quantity'] = (int) $validated['cart_quantities'][$equipmentId];
             }
         }
-    });
+        unset($cartItem);
 
-    $this->logActivity(
-    'Creó solicitud',
-    'Solicitud de préstamo creada desde carrito'
-    );
+        $startDateTime = $validated['pickup_date'] . ' ' . $validated['pickup_time'];
 
-    session()->forget('cart');
+        $endDateTime = $isSpecialCase
+            ? $validated['return_date'] . ' 15:00:00'
+            : $validated['pickup_date'] . ' 15:00:00';
 
-    return redirect()->route('kinventory')
-        ->with('success', 'Solicitud de préstamo realizada correctamente.');
-}
+        $status = $isSpecialCase ? 'pending' : 'approved';
+        $itemStatus = $isSpecialCase ? 'pending' : 'approved';
 
+        $lending = null;
+
+        DB::transaction(function () use ($cart, $startDateTime, $endDateTime, $isSpecialCase, $validated, $status, $itemStatus, &$lending) {
+            $lending = Lending::create([
+                'user_id' => auth()->id() ?? 1,
+                'commentary' => null,
+                'special_reason' => $isSpecialCase ? $validated['special_reason'] : null,
+                'start_time' => $startDateTime,
+                'end_time' => $endDateTime,
+                'flag' => $isSpecialCase,
+                'status' => $status,
+            ]);
+
+            foreach ($cart as $cartItem) {
+                $equipment = Equipment::lockForUpdate()->findOrFail($cartItem['equipment_id']);
+
+                if ($cartItem['quantity'] > $equipment->available_quantity) {
+                    throw new \Exception(
+                        'La cantidad solicitada excede la cantidad disponible para ' . $equipment->description
+                    );
+                }
+
+                LendingItem::create([
+                    'lending_id' => $lending->id,
+                    'equipment_id' => $equipment->id,
+                    'quantity' => $cartItem['quantity'],
+                    'item_status' => $itemStatus,
+                ]);
+
+                if (!$isSpecialCase) {
+                    $equipment->available_quantity -= $cartItem['quantity'];
+                    $equipment->save();
+                }
+            }
+        });
+
+        $lending->load('user');
+
+        if (!$isSpecialCase && $lending->user && !empty($lending->user->email)) {
+            $this->emailService->send(
+                $lending->user->email,
+                'Solicitud de item aprobada',
+                'Tu solicitud de equipo deportivo fue aprobada satisfactoriamente. Por favor entra a tu perfil de MAIKINE para más detalles.'
+            );
+        }
+
+        $this->logActivity(
+            'Creó solicitud',
+            'Solicitud de préstamo creada desde carrito'
+        );
+
+        session()->forget('cart');
+
+        return redirect()->route('kinventory')
+            ->with('request_success', 'Solicitud enviada correctamente. Pronto recibirás un email con el estado.');
+    }
 public function borrows(Request $request)
 {
     $pendingQuery = Lending::with(['user', 'items.equipment'])
@@ -419,60 +480,76 @@ public function borrows(Request $request)
     return view('inventory_management.borrows', compact('pending', 'approved'));
 }
 
-public function approveRequest($id)
-{
-    $lending = Lending::with('items')->findOrFail($id);
+    public function approveRequest($id)
+    {
+        $lending = Lending::with(['items', 'user'])->findOrFail($id);
 
-    DB::transaction(function () use ($lending) {
-        foreach ($lending->items as $item) {
-            $equipment = Equipment::lockForUpdate()->findOrFail($item->equipment_id);
+        DB::transaction(function () use ($lending) {
+            foreach ($lending->items as $item) {
+                $equipment = Equipment::lockForUpdate()->findOrFail($item->equipment_id);
 
-            if ($item->quantity > $equipment->available_quantity) {
-                throw new \Exception('No hay suficiente inventario para aprobar esta solicitud.');
+                if ($item->quantity > $equipment->available_quantity) {
+                    throw new \Exception('No hay suficiente inventario para aprobar esta solicitud.');
+                }
+
+                $equipment->available_quantity -= $item->quantity;
+                $equipment->save();
+
+                $item->item_status = 'approved';
+                $item->save();
             }
 
-            $equipment->available_quantity -= $item->quantity;
-            $equipment->save();
+            $lending->status = 'approved';
+            $lending->save();
+        });
 
-            $item->item_status = 'approved';
-            $item->save();
+        if ($lending->user && !empty($lending->user->email)) {
+            $this->emailService->send(
+                $lending->user->email,
+                'Solicitud de item aprobada',
+                'Tu solicitud de equipo deportivo fue aprobada satisfactoriamente. Por favor entra a tu perfil de MAIKINE para más detalles.'
+            );
         }
 
-        $lending->status = 'approved';
-        $lending->save();
-    });
+        $this->logActivity(
+            'Aprobó solicitud',
+            'Solicitud ID ' . $lending->id . ' aprobada'
+        );
 
-    $this->logActivity(
-    'Aprobó solicitud',
-    'Solicitud ID ' . $lending->id . ' aprobada'
-    );
+        return redirect()->route('inventory_management.borrows')
+            ->with('success', 'Solicitud aprobada correctamente.');
+    }
 
-    return redirect()->route('inventory_management.borrows')
-        ->with('success', 'Solicitud aprobada correctamente.');
-}
+    public function rejectRequest($id)
+    {
+        $lending = Lending::with(['items', 'user'])->findOrFail($id);
 
-public function rejectRequest($id)
-{
-    $lending = Lending::with('items')->findOrFail($id);
+        DB::transaction(function () use ($lending) {
+            foreach ($lending->items as $item) {
+                $item->item_status = 'rejected';
+                $item->save();
+            }
 
-    DB::transaction(function () use ($lending) {
-        foreach ($lending->items as $item) {
-            $item->item_status = 'rejected';
-            $item->save();
+            $lending->status = 'rejected';
+            $lending->save();
+        });
+
+        if ($lending->user && !empty($lending->user->email)) {
+            $this->emailService->send(
+                $lending->user->email,
+                'Solicitud de item denegada',
+                'Tu solicitud de equipo deportivo fue denegada. Por favor entra a tu perfil de MAIKINE para más detalles. De tener alguna duda comunícate con el administrador de inventario (inventario@upr.edu).'
+            );
         }
 
-        $lending->status = 'rejected';
-        $lending->save();
-    });
+        $this->logActivity(
+            'Rechazó solicitud',
+            'Solicitud ID ' . $lending->id . ' rechazada'
+        );
 
-    $this->logActivity(
-    'Rechazó solicitud',
-    'Solicitud ID ' . $lending->id . ' rechazada'
-    );
-
-    return redirect()->route('inventory_management.borrows')
-        ->with('success', 'Solicitud denegada correctamente.');
-}
+        return redirect()->route('inventory_management.borrows')
+            ->with('success', 'Solicitud denegada correctamente.');
+    }
 
 public function markReturned($id)
 {
@@ -578,25 +655,28 @@ public function exportStatistics(Request $request)
         $content  = implode("\n", $lines);
         $filename = "reporte_inventario_{$type}_{$year}.csv";
         $mime     = 'text/csv';
-    } else {
-        $lines = [
-            "REPORTE DE INVENTARIO",
-            "Tipo: " . ($type === 'annual' ? 'Anual' : 'Mensual'),
-            "Período: {$periodLabel}",
-            "",
-            "TOP ARTÍCULOS:",
-        ];
-        if ($items->isEmpty()) {
-            $lines[] = "Sin datos para el período seleccionado.";
-        } else {
-            foreach ($items as $i => $item) {
-                $lines[] = ($i + 1) . ". {$item->description} - {$item->total} pedidos";
-            }
-        }
-        $content  = implode("\n", $lines);
-        $filename = "reporte_inventario_{$type}_{$year}.txt";
-        $mime     = 'text/plain';
+
+        return response($content, 200)
+            ->header('Content-Type', $mime . '; charset=utf-8')
+            ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
     }
+
+    elseif ($format === 'pdf') {
+
+        $pdf = Pdf::loadView('pdfs.statistics_pdf', [
+            'items' => $items,
+            'type' => $type,
+            'year' => $year,
+            'month' => $month,
+            'periodLabel' => $periodLabel,
+        ]);
+
+        return $pdf->download("reporte_inventario_{$type}_{$year}.pdf");
+    }
+
+// fallback (por si acaso)
+    abort(404);
+
 
     return response($content, 200)
         ->header('Content-Type', $mime . '; charset=utf-8')
@@ -612,17 +692,45 @@ public function accessLogs()
     return view('access_logs', compact('logs'));
 }
 
-public function profile()
+public function profile(Request $request)
 {
     $user = User::findOrFail(1);
 
-    $requests = Lending::with('items.equipment')
-        ->where('user_id', 1)
+    $requestsQuery = Lending::with('items.equipment')
+        ->where('user_id', 1);
+
+    if ($request->filled('request_search')) {
+        $search = strtolower($request->request_search);
+
+        $requestsQuery->where(function ($query) use ($search) {
+            $query->whereHas('items.equipment', function ($q) use ($search) {
+                $q->whereRaw('LOWER(description) LIKE ?', ["%{$search}%"]);
+            });
+        });
+    }
+
+    if ($request->filled('request_status')) {
+        $status = strtolower($request->request_status);
+
+        if ($status === 'finished') {
+            $requestsQuery->whereIn('status', ['finished', 'returned']);
+        } else {
+            $requestsQuery->where('status', $status);
+        }
+    }
+
+    $requests = $requestsQuery
         ->latest('created_at')
         ->paginate(5)
         ->withQueryString();
 
+    if ($requests->currentPage() > $requests->lastPage() && $requests->lastPage() > 0) {
+        return redirect()->route('my_profile', array_merge(
+            $request->except('page'),
+            ['tab' => 'requests', 'page' => 1]
+        ));
+    }
+
     return view('my_profile', compact('user', 'requests'));
 }
-
 }
