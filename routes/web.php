@@ -2,9 +2,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\EquipmentController;
+use App\Http\Controllers\FacilityCostController;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\PostController;
 use App\Models\Post;
+use App\Http\Controllers\TermsController;
+
 
 
 Route::get('/', function () {
@@ -19,29 +23,68 @@ Route::get('/my_profile', function () {
     return view('my_profile');
 })->name('my_profile');
 
+//Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
+
+Route::get('/kinventory', [EquipmentController::class, 'kinventory'])
+    ->name('kinventory');
+
+Route::post('/kinventory/borrow', [EquipmentController::class, 'borrow'])
+    ->name('kinventory.borrow');
+
 Route::get('/terms_and_conditions', function () {
     return view('terms_and_conditions');
 })->name('terms_and_conditions');
 
 
-Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
+// Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
 Route::post('/send-email', [EmailController::class, 'sendEmail']);
+
+Route::post('/cart/add', [EquipmentController::class, 'addToCart'])->name('cart.add');
+
+Route::get('/cart', [EquipmentController::class, 'cart'])->name('cart.index');
+Route::delete('/cart/remove/{id}', [EquipmentController::class, 'removeFromCart'])->name('cart.remove');
+Route::post('/cart/checkout', [EquipmentController::class, 'checkoutCart'])->name('cart.checkout');
 
 Route::get('/search_user', function () {
     return view('search_user');
 })->name('search_user');
 
-Route::get('/inventory_management', function () {
-    return view('inventory_management.admin_inventory');
-})->name('inventory_management');
+// Route::get('/inventory_management', function () {
+//     return view('inventory_management');
+// })->name('inventory_management');//->middleware('role:super,inventory,user')
 
-Route::get('/inventory_management/borrows', function () {
-    return view('inventory_management.borrows');
-})->name('inventory_management.borrows');
+Route::get('/inventory_management', [EquipmentController::class, 'index'])
+    ->name('inventory_management');
 
-Route::get('/inventory_management/inventory_statistics', function () {
-    return view('inventory_management.inventory_statistics');
-})->name('inventory_management.inventory_statistics');
+Route::post('/inventory_management', [EquipmentController::class, 'store'])
+    ->name('inventory.store');
+
+Route::delete('/equipment/{id}', [EquipmentController::class, 'destroy'])
+    ->name('equipment.destroy');
+
+Route::put('/equipment/{id}', [EquipmentController::class, 'update'])
+    ->name('equipment.update');
+
+Route::get('/inventory_management/borrows', [EquipmentController::class, 'borrows'])
+    ->name('inventory_management.borrows');
+
+Route::post('/inventory_management/requests/{id}/approve', [EquipmentController::class, 'approveRequest'])
+    ->name('inventory_management.requests.approve');
+
+Route::post('/inventory_management/requests/{id}/reject', [EquipmentController::class, 'rejectRequest'])
+    ->name('inventory_management.requests.reject');
+
+Route::post('/inventory_management/requests/{id}/return', [EquipmentController::class, 'markReturned'])
+    ->name('inventory_management.requests.return');
+
+Route::post('/inventory_management/requests/{id}/return', [EquipmentController::class, 'markReturned'])
+    ->name('inventory_management.requests.return');
+
+Route::get('/inventory_management/inventory_statistics', [EquipmentController::class, 'statistics'])
+    ->name('inventory_management.inventory_statistics');
+
+Route::get('/inventory_management/inventory_statistics/export', [EquipmentController::class, 'exportStatistics'])
+    ->name('inventory_management.inventory_statistics.export');
 
 Route::get('/kinemarket', [PostController::class, 'index'])->name('kinemarket');
 
@@ -49,13 +92,20 @@ Route::get('/marketplace_management', function () {
     return view('/marketplace_management.reports_management');
 })->name('marketplace_management');
 
-Route::get('/access_logs', function () {
-    return view('access_logs');
-})->name('access_logs');
+Route::get('/marketplace_management.admin_marketplace', function () {
+    return view('/marketplace_management.admin_marketplace');
+})->name('marketplace_management.admin_marketplace');
 
-Route::get('/facility_management', function () {
-    return view('facility_management');
-})->name('facility_management');
+// Route::get('/access_logs', function () {
+//     return view('access_logs');
+// })->name('access_logs');
+
+Route::get('/access_logs', [EquipmentController::class, 'accessLogs'])
+    ->name('access_logs');
+
+// Route::get('/facility_management', function () {
+//     return view('facility_management');
+// })->name('facility_management');
 
 Route::get('/my_messages', function () {
     return view('my_messages');
@@ -68,6 +118,25 @@ Route::get('/posts', function () {
 });
 
 require __DIR__ . '\saml2.php';
+/*Route::get('/kinemercado/reportar_usuario', function () {
+    return view('kinemercado');
+})->name('kinemercado.reportar_usuario');*/
+
+Route::get('/kinemercado/mensaje', function () {
+    return view('kinemercado_mensaje');
+})->name('kinemercado_mensaje');
+
+Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management');
+Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])->name('facility.rates.save');
+Route::post('/facility/events', [FacilityCostController::class, 'storeEvent'])->name('facility.events.store');
+Route::delete('/facility/events/{item}', [FacilityCostController::class, 'destroy'])->name('facility.events.destroy');
+
+Route::get('/facility_management/export/csv', [FacilityCostController::class, 'exportCsv'])->name('facility.export.csv');
+Route::get('/facility_management/export/pdf', [FacilityCostController::class, 'exportPdf'])->name('facility.export.pdf');
+
+
+Route::post('/terms-and-conditions/update', [TermsController::class, 'update'])
+    ->name('terms.update');
 
 // Temporary routes until user tables are connected
 Route::get('/test-email/request-approved', [EmailController::class, 'requestApproved']);

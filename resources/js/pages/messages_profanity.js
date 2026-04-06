@@ -1,4 +1,4 @@
-import { findProfanity } from '../utils/profanity-checker';
+import { findProfanity } from '../utils/profanity_checker.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('chatMessageInput');

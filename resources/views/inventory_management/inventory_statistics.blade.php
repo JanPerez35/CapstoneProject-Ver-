@@ -12,23 +12,20 @@
 
         {{-- Internal nav --}}
         <div class="d-flex flex-wrap gap-2 mb-4">
-
             <a href="{{ route('inventory_management') }}"
                class="btn btn-outline-success px-4 fw-semibold">
+                <i class="bi bi-box"></i>
                 Inventario Administrativo
             </a>
-
             <a href="{{ route('inventory_management.borrows') }}"
                class="btn btn-outline-success px-4 fw-semibold">
+                <i class="bi bi-card-checklist"></i>
                 Préstamos
             </a>
-
             <a href="{{ route('inventory_management.inventory_statistics') }}"
                class="btn btn-success px-4 fw-semibold">
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
-
-
         </div>
 
         {{-- Page title + export buttons --}}
@@ -41,57 +38,54 @@
             </div>
 
             <div class="d-flex flex-wrap gap-3">
-                <button type="button" id="downloadCsvBtn" class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
+                <a href="{{ route('inventory_management.inventory_statistics.export', ['format' => 'csv', 'type' => $type, 'year' => $year, 'month' => $month]) }}"
+                   class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold export-btn">
                     <i class="bi bi-download"></i>
                     Exportar a CSV
-                </button>
+                </a>
 
-                <button type="button" id="downloadPdfBtn" class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
+                <a href="{{ route('inventory_management.inventory_statistics.export', ['format' => 'pdf', 'type' => $type, 'year' => $year, 'month' => $month]) }}"
+                   class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold export-btn">
                     <i class="bi bi-download"></i>
                     Exportar a PDF
-                </button>
+                </a>
             </div>
         </div>
 
         {{-- Filters --}}
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-body p-4">
-                <form id="reportFilterForm" class="row g-3 align-items-end">
+                <form method="GET"
+                      action="{{ route('inventory_management.inventory_statistics') }}"
+                      id="reportFilterForm"
+                      class="row g-3 align-items-end">
+
                     <div class="col-md-4">
                         <label for="reportType" class="form-label fw-semibold">Tipo de reporte</label>
-                        <select id="reportType" class="form-select form-select-lg border-2 border-dark">
-                            <option value="monthly" selected>Mensual</option>
-                            <option value="annual">Anual</option>
+                        <select id="reportType" name="type" class="form-select form-select-lg auto-submit">
+                            <option value="monthly" {{ $type === 'monthly' ? 'selected' : '' }}>Mensual</option>
+                            <option value="annual"  {{ $type === 'annual'  ? 'selected' : '' }}>Anual</option>
                         </select>
                     </div>
 
-                    <div class="col-md-4" id="monthFilterWrapper">
+                    <div class="col-md-4 {{ $type === 'annual' ? 'd-none' : '' }}" id="monthFilterWrapper">
                         <label for="reportMonth" class="form-label fw-semibold">Mes</label>
-                        <select id="reportMonth" class="form-select form-select-lg border-2 border-dark">
-                            <option value="1">Enero</option>
-                            <option value="2">Febrero</option>
-                            <option value="3">Marzo</option>
-                            <option value="4">Abril</option>
-                            <option value="5">Mayo</option>
-                            <option value="6">Junio</option>
-                            <option value="7">Julio</option>
-                            <option value="8">Agosto</option>
-                            <option value="9">Septiembre</option>
-                            <option value="10">Octubre</option>
-                            <option value="11">Noviembre</option>
-                            <option value="12">Diciembre</option>
+                        <select id="reportMonth" name="month" class="form-select form-select-lg auto-submit">
+                            @foreach([1=>'Enero',2=>'Febrero',3=>'Marzo',4=>'Abril',5=>'Mayo',6=>'Junio',7=>'Julio',8=>'Agosto',9=>'Septiembre',10=>'Octubre',11=>'Noviembre',12=>'Diciembre'] as $num => $name)
+                                <option value="{{ $num }}" {{ $month === $num ? 'selected' : '' }}>{{ $name }}</option>
+                            @endforeach
                         </select>
                     </div>
 
                     <div class="col-md-4">
                         <label for="reportYear" class="form-label fw-semibold">Año</label>
-                        <select id="reportYear" class="form-select form-select-lg border-2 border-dark">
-                            <option value="2023">2023</option>
-                            <option value="2024" selected>2024</option>
-                            <option value="2025">2025</option>
-                            <option value="2026">2026</option>
+                        <select id="reportYear" name="year" class="form-select form-select-lg auto-submit">
+                            @foreach($availableYears as $yr)
+                                <option value="{{ $yr }}" {{ $year === $yr ? 'selected' : '' }}>{{ $yr }}</option>
+                            @endforeach
                         </select>
                     </div>
+
                 </form>
             </div>
         </div>
@@ -102,8 +96,12 @@
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body p-4">
                         <p class="text-muted mb-2">Objeto con más pedidos</p>
-                        <h4 class="fw-bold mb-1" id="topItemName">Balón de Baloncesto</h4>
-                        <p class="mb-0 text-success fw-semibold" id="topItemOrders">34 pedidos</p>
+                        <h4 class="fw-bold mb-1">
+                            {{ $topItem ? $topItem->description : '—' }}
+                        </h4>
+                        <p class="mb-0 text-success fw-semibold">
+                            {{ $topItem ? $topItem->total . ' pedidos' : '—' }}
+                        </p>
                     </div>
                 </div>
             </div>
@@ -112,7 +110,7 @@
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body p-4">
                         <p class="text-muted mb-2">Total de pedidos</p>
-                        <h4 class="fw-bold mb-1" id="totalOrders">86</h4>
+                        <h4 class="fw-bold mb-1">{{ $totalReqs }}</h4>
                         <p class="mb-0 text-muted">En el periodo seleccionado</p>
                     </div>
                 </div>
@@ -122,7 +120,7 @@
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body p-4">
                         <p class="text-muted mb-2">Cantidad de artículos analizados</p>
-                        <h4 class="fw-bold mb-1" id="totalItemsAnalyzed">5</h4>
+                        <h4 class="fw-bold mb-1">{{ $totalItems }}</h4>
                         <p class="mb-0 text-muted">Resumen del inventario más solicitado</p>
                     </div>
                 </div>
@@ -134,16 +132,19 @@
             <div class="col-lg-8">
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <h4 class="fw-bold mb-1">Artículos con más pedidos</h4>
-                                <p class="text-muted mb-0">Gráfica comparativa del periodo seleccionado</p>
-                            </div>
-                        </div>
+                        <h4 class="fw-bold mb-1">Artículos con más pedidos</h4>
+                        <p class="text-muted mb-3">Gráfica comparativa del periodo seleccionado</p>
 
-                        <div style="height: 380px;">
-                            <canvas id="inventoryStatsChart"></canvas>
-                        </div>
+                        @if($items->isEmpty())
+                            <div class="d-flex align-items-center justify-content-center text-muted"
+                                 style="height: 380px;">
+                                Sin datos para el período seleccionado.
+                            </div>
+                        @else
+                            <div style="height: 380px;">
+                                <canvas id="inventoryStatsChart"></canvas>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -157,27 +158,25 @@
                             <table class="table align-middle mb-0">
                                 <thead>
                                 <tr>
-                                    <th>#</th>
+                                    <th>Rango</th>
                                     <th>Objeto</th>
                                     <th class="text-end">Pedidos</th>
                                 </tr>
                                 </thead>
-                                <tbody id="topItemsTableBody">
-                                <tr>
-                                    <td class="fw-bold">1</td>
-                                    <td>Balón de Baloncesto</td>
-                                    <td class="text-end fw-semibold">34</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">2</td>
-                                    <td>Raqueta de Tenis</td>
-                                    <td class="text-end fw-semibold">26</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold">3</td>
-                                    <td>Balón de Fútbol</td>
-                                    <td class="text-end fw-semibold">18</td>
-                                </tr>
+                                <tbody>
+                                @forelse($items->take(3) as $i => $item)
+                                    <tr>
+                                        <td class="fw-bold">{{ $i + 1 }}</td>
+                                        <td>{{ $item->description }}</td>
+                                        <td class="text-end fw-semibold">{{ $item->total }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="text-muted text-center">
+                                            Sin datos para el período seleccionado.
+                                        </td>
+                                    </tr>
+                                @endforelse
                                 </tbody>
                             </table>
                         </div>
@@ -185,7 +184,7 @@
                         <hr class="my-4">
 
                         <p class="text-muted small mb-0">
-                            Este resumen es visual y demostrativo para el panel administrativo.
+                            Basado en las solicitudes de préstamo registradas en el sistema.
                         </p>
                     </div>
                 </div>
@@ -193,20 +192,18 @@
         </div>
     </div>
 
-    {{-- Download Toast --}}
+    {{-- TOAST (ESTILO SUBTLE COMO EL TUYO) --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
         <div id="downloadToast"
-             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
              style="width: auto; max-width: fit-content;">
-
             <div class="d-flex align-items-center">
-                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
+                <div class="toast-body fw-semibold rounded-0 pe-1">
                     Tu documento se descargará en unos instantes.
                 </div>
-
                 <button type="button"
                         class="btn-close p-0 ms-1 me-2"
                         data-bs-dismiss="toast"
@@ -217,177 +214,87 @@
         </div>
     </div>
 
+    {{-- CHART --}}
+    @if($items->isNotEmpty())
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const ctx = document.getElementById('inventoryStatsChart').getContext('2d');
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const reportType = document.getElementById('reportType');
-            const reportMonth = document.getElementById('reportMonth');
-            const reportYear = document.getElementById('reportYear');
-            const monthFilterWrapper = document.getElementById('monthFilterWrapper');
-
-            const topItemName = document.getElementById('topItemName');
-            const topItemOrders = document.getElementById('topItemOrders');
-            const totalOrders = document.getElementById('totalOrders');
-            const totalItemsAnalyzed = document.getElementById('totalItemsAnalyzed');
-            const topItemsTableBody = document.getElementById('topItemsTableBody');
-
-            const downloadCsvBtn = document.getElementById('downloadCsvBtn');
-            const downloadPdfBtn = document.getElementById('downloadPdfBtn');
-            const downloadToastEl = document.getElementById('downloadToast');
-
-            const monthlyData = {
-                labels: ['Balón de Baloncesto', 'Raqueta de Tenis', 'Balón de Fútbol', 'Mancuernas', 'Conos'],
-                values: [34, 26, 18, 12, 8]
-            };
-
-            const annualData = {
-                labels: ['Balón de Baloncesto', 'Balón de Fútbol', 'Raqueta de Tenis', 'Mancuernas', 'Bandas Elásticas'],
-                values: [240, 198, 176, 121, 97]
-            };
-
-            const chartCtx = document.getElementById('inventoryStatsChart').getContext('2d');
-
-            const statsChart = new Chart(chartCtx, {
-                type: 'bar',
-                data: {
-                    labels: monthlyData.labels,
-                    datasets: [{
-                        label: 'Cantidad de pedidos',
-                        data: monthlyData.values,
-                        backgroundColor: '#198754',
-                        borderColor: '#146c43',
-                        borderWidth: 1,
-                        borderRadius: 10
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            displayColors: false
-                        }
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: @json($items->pluck('description')),
+                        datasets: [{
+                            label: 'Cantidad de pedidos',
+                            data: @json($items->pluck('total')),
+                            backgroundColor: '#198754',
+                            borderColor: '#146c43',
+                            borderWidth: 1,
+                            borderRadius: 10
+                        }]
                     },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 5
+                    options: {
+                        maintainAspectRatio: false,
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { displayColors: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 1, precision: 0 }
                             }
                         }
                     }
-                }
+                });
+            });
+        </script>
+    @endif
+
+    {{-- FILTER SCRIPT --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('reportFilterForm');
+            const reportType = document.getElementById('reportType');
+            const monthWrapper = document.getElementById('monthFilterWrapper');
+
+            document.querySelectorAll('.auto-submit').forEach(function (el) {
+                el.addEventListener('change', function () { form.submit(); });
             });
 
-            function getCurrentDataSet() {
-                return reportType.value === 'annual' ? annualData : monthlyData;
-            }
-
-            function renderTopTable(labels, values) {
-                const topThree = labels.map((label, index) => ({
-                    label,
-                    value: values[index]
-                }))
-                    .sort((a, b) => b.value - a.value)
-                    .slice(0, 3);
-
-                topItemsTableBody.innerHTML = topThree.map((item, index) => `
-                    <tr>
-                        <td class="fw-bold">${index + 1}</td>
-                        <td>${item.label}</td>
-                        <td class="text-end fw-semibold">${item.value}</td>
-                    </tr>
-                `).join('');
-            }
-
-            function updateSummary(labels, values) {
-                const ranked = labels.map((label, index) => ({
-                    label,
-                    value: values[index]
-                }))
-                    .sort((a, b) => b.value - a.value);
-
-                const top = ranked[0];
-                const total = values.reduce((sum, value) => sum + value, 0);
-
-                topItemName.textContent = top.label;
-                topItemOrders.textContent = `${top.value} pedidos`;
-                totalOrders.textContent = total;
-                totalItemsAnalyzed.textContent = values.length;
-            }
-
-            function updateChartAndStats() {
-                const dataSet = getCurrentDataSet();
-
-                statsChart.data.labels = dataSet.labels;
-                statsChart.data.datasets[0].data = dataSet.values;
-                statsChart.update();
-
-                renderTopTable(dataSet.labels, dataSet.values);
-                updateSummary(dataSet.labels, dataSet.values);
-
-                if (reportType.value === 'annual') {
-                    monthFilterWrapper.classList.add('d-none');
+            reportType.addEventListener('change', function () {
+                if (this.value === 'annual') {
+                    monthWrapper.classList.add('d-none');
                 } else {
-                    monthFilterWrapper.classList.remove('d-none');
+                    monthWrapper.classList.remove('d-none');
                 }
-            }
-
-            function triggerFakeDownload(type) {
-                const toast = window.bootstrap.Toast.getOrCreateInstance(downloadToastEl);
-                toast.show();
-
-                const selectedType = reportType.value === 'annual' ? 'anual' : 'mensual';
-                const selectedYear = reportYear.value;
-                const selectedMonth = reportMonth.options[reportMonth.selectedIndex]?.text || '';
-                const dataSet = getCurrentDataSet();
-
-                let content = '';
-
-                if (type === 'csv') {
-                    content = 'Objeto,Pedidos\n' + dataSet.labels.map((label, index) => `${label},${dataSet.values[index]}`).join('\n');
-                } else {
-                    content =
-                        `REPORTE DE INVENTARIO
-Tipo: ${selectedType}
-${selectedType === 'mensual' ? 'Mes: ' + selectedMonth : ''}
-Año: ${selectedYear}
-
-TOP ARTÍCULOS:
-${dataSet.labels.map((label, index) => `${index + 1}. ${label} - ${dataSet.values[index]} pedidos`).join('\n')}`;
-                }
-
-                const blob = new Blob([content], { type: type === 'csv' ? 'text/csv;charset=utf-8;' : 'application/pdf' });
-                const link = document.createElement('a');
-                const url = URL.createObjectURL(blob);
-
-                link.href = url;
-                link.download = type === 'csv'
-                    ? `reporte_inventario_${selectedType}_${selectedYear}.csv`
-                    : `reporte_inventario_${selectedType}_${selectedYear}.pdf`;
-
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            }
-
-            reportType.addEventListener('change', updateChartAndStats);
-            reportMonth.addEventListener('change', updateChartAndStats);
-            reportYear.addEventListener('change', updateChartAndStats);
-
-            downloadCsvBtn.addEventListener('click', function () {
-                triggerFakeDownload('csv');
             });
-
-            downloadPdfBtn.addEventListener('click', function () {
-                triggerFakeDownload('pdf');
-            });
-
-            updateChartAndStats();
         });
     </script>
+
+    {{-- TOAST SCRIPT --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toastEl = document.getElementById('downloadToast');
+
+            if (!toastEl || typeof bootstrap === 'undefined') return;
+
+            const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
+
+            document.querySelectorAll('.export-btn').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+
+                    const url = this.getAttribute('href');
+                    toast.show();
+
+                    setTimeout(function () {
+                        window.location.href = url;
+                    }, 500);
+                });
+            });
+        });
+    </script>
+
 </x-layout>

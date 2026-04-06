@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>MAIKINE Portal</title>
 
-    <!-- Bootstrap npm package connection -->
+    <!-- Bootstrap CDN, this is temporary until we figure out how to install it locally -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
@@ -68,10 +68,10 @@
     <!-- Button -->
     <div class="mt-4">
 {{--        <a href="{{ route('saml.login') }}" class="btn login-btn text-white shadow">--}}
-        <a href="{{ route('terms_and_conditions') }}" class="btn login-btn text-white shadow">
-            Accede con tu cuenta UPRM*
-        </a>
-    </div>
+            <a href="{{ route('terms_and_conditions') }}" class="btn login-btn text-white shadow">
+                Accede con tu cuenta UPRM*
+            </a>
+        </div>
 
     <!-- Footer -->
     <p class="footer-text fw-bold">
@@ -79,6 +79,8 @@
         es de uso exclusivo para usuarios registrados de la Universidad <br>
         de Puerto Rico Recinto de Mayagüez (UPRM)
 
+    <p class="footer-text">
+        Sistema de Marketplace e Inventario de Kinesiología
     </p>
 
 </div>

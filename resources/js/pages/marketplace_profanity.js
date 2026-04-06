@@ -1,4 +1,4 @@
-import { findProfanity } from '../utils/profanity-checker';
+import { findProfanity } from '../utils/profanity_checker';
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -230,8 +230,52 @@ function setupCreatePost(){
             console.error(err);
         }
 
+        const matchedWord = findProfanity(value);
+
+        if (matchedWord) {
+            setProfanityPriority(
+                descriptionInput,
+                descriptionBaseError,
+                descriptionProfanityError,
+                'La descripción contiene lenguaje inapropiado.'
+            );
+            return false;
+        }
+
+        return true;
     });
 }
+
+
+    function enforceProfanityPriority() {
+        const titleHasProfanity = titleProfanityError.textContent.trim() !== '';
+        const descriptionHasProfanity = descriptionProfanityError.textContent.trim() !== '';
+
+        if (titleHasProfanity) {
+            titleBaseError.textContent = '';
+            titleInput.classList.add('is-invalid');
+        }
+
+        if (descriptionHasProfanity) {
+            descriptionBaseError.textContent = '';
+            descriptionInput.classList.add('is-invalid');
+        }
+    }
+
+    function updateProfanityState() {
+        validateTitleProfanity();
+        validateDescriptionProfanity();
+        enforceProfanityPriority();
+    }
+
+    function runAfterBaseValidation(callback) {
+        setTimeout(callback, 0);
+    }
+
+    titleInput.addEventListener('input', () => {
+        runAfterBaseValidation(updateProfanityState);
+    });
+
 
 
 function timeAgo(date){

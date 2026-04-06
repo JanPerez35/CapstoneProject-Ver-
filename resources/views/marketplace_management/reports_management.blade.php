@@ -1,7 +1,7 @@
 <x-layout title="Gestión de Mercado">
     <x-navbar></x-navbar>
-
-    <div class="container py-4">
+    @vite('resources/js/pages/marketplace_reports.js')
+    <div class="container pt-2 pb-4">
 
         <!--This is the header-->
         <div class="mb-4">
@@ -12,11 +12,9 @@
         </div>
 
         <!--Filter and searches-->
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-body p-4">
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label for="filterReportedBy" class="form-label fw-semibold">Reportado por</label>
+            <div class="mb-4">
+                <div class="row g-3 mb-3 align-items-stretch">
+                    <div class="col-lg-10">
                         <div class="input-group search-group">
                             <span class="input-group-text bg-white border-0">
                                 <i class="bi bi-search"></i>
@@ -24,32 +22,21 @@
 
                         <input
                             type="text"
-                            id="filterReportedBy"
+                            id="filterSearchBy"
                             class="form-control border-0"
-                            placeholder="Buscar usuario..."
+                            placeholder="Buscar usuario o vendedor..."
                             autocomplete="off"
                         >
                         </div>
                     </div>
 
-                    <div class="col-md-3">
-                        <label for="filterSeller" class="form-label fw-semibold">Vendedor</label>
-                        <div class="input-group search-group">
-                            <span class="input-group-text bg-white border-0">
-                                <i class="bi bi-search"></i>
-                            </span>
-                        <input
-                            type="text"
-                            id="filterSeller"
-                            class="form-control border-0"
-                            placeholder="Buscar vendedor..."
-                            autocomplete="off"
-                        >
-                        </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-success w-100" id="searchReportsBtn">
+                            Buscar
+                        </button>
                     </div>
 
                     <div class="col-md-3">
-                        <label for="filterReason" class="form-label fw-semibold">Razón</label>
                         <select id="filterReason" class="form-select border-2 border-dark">
                             <option value="">Todas las razones</option>
                             <option value="Fraude o estafa">Fraude o estafa</option>
@@ -61,16 +48,19 @@
                     </div>
 
                     <div class="col-md-3">
-                        <label for="filterDate" class="form-label fw-semibold">Fecha</label>
                         <input
                             type="date"
                             id="filterDate"
                             class="form-control border-2 border-dark"
                         >
                     </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-outline-secondary" id="clearReportsFilters">
+                            Limpiar filtros
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
 
         <!--Legend-->
         <div class="card border-0 shadow-sm rounded-4 mb-4">
@@ -195,8 +185,11 @@
                 </table>
 
                 <div id="reportsEmptyState" class="reports-empty-state d-none">
-                    <div class="border rounded-4 p-4 text-center bg-light">
-                        <h5 class="fw-bold mb-2">Nada para reportar</h5>
+                    <div class="card border-0 shadow-sm rounded-0">
+                        <div class="card-body py-5 text-center">
+                            <i class="bi bi-flag fs-1 text-muted"></i>
+                            <h4 class="fw-bold mt-3">No se encuentran reportes.</h4>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -386,342 +379,4 @@
             }
         }
     </style>
-
-    <!--Validate Functionality and Filters-->
-    <script>
-
-        const REPORTS_PER_PAGE = 10;
-        let currentReportsPage = 1;
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const $ = (id) => document.getElementById(id);
-            const rows = () => document.querySelectorAll('#reportsTable tbody tr');
-            const resolvedReports = new Set();
-
-            const allowedSearchCharRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]$/;
-
-            function sanitizeSearchValue(value) {
-                return [...value]
-                    .filter((char) => allowedSearchCharRegex.test(char))
-                    .join('');
-            }
-
-            function capitalizeWords(value) {
-                return value
-                    .toLowerCase()
-                    .replace(/\s+/g, ' ')
-                    .replace(/^\s+/, '')
-                    .replace(/\b([a-záéíóúñ])/g, (match) => match.toUpperCase());
-            }
-
-            function formatDateForDisplay(dateValue) {
-                if (!dateValue) return '';
-                const [year, month, day] = dateValue.split('-');
-                return `${month}-${day}-${year}`;
-            }
-
-            const els = {
-                filterReason: $('filterReason'),
-                filterReportedBy: $('filterReportedBy'),
-                filterSeller: $('filterSeller'),
-                filterDate: $('filterDate'),
-
-                resolveModal: $('resolveReportModal'),
-                deleteModal: $('deletePostModal'),
-                banModal: $('banUserModal'),
-
-                confirmResolve: $('confirmResolveReport'),
-                confirmDelete: $('confirmDeletePost'),
-                confirmBan: $('confirmBanUser'),
-
-                reportsTable: $('reportsTable'),
-                emptyState: $('reportsEmptyState'),
-                reportsPagination: $('reportsPagination'),
-            };
-
-            const toastIds = {
-                resolve: 'resolveToast',
-                delete: 'deleteToast',
-                ban: 'banToast',
-                view: 'viewToast',
-            };
-
-            const toasts = Object.fromEntries(
-                Object.entries(toastIds).map(([key, id]) => [
-                    key,
-                    bootstrap.Toast.getOrCreateInstance($(id), { delay: key === 'view' ? 2500 : 3000 })
-                ])
-            );
-
-            let selected = {
-                resolve: null,
-                delete: null,
-                ban: null,
-            };
-
-            const normalize = (text) => text.toLowerCase().trim();
-
-
-            function markResolved(row) {
-                if (!row) return;
-                const reportId = row.dataset.reportId || '';
-                if (reportId) resolvedReports.add(reportId);
-                row.remove();
-                renderReports();
-            }
-
-            function applyFilters() {
-                currentReportsPage = 1;
-                renderReports();
-            }
-
-            function renderLocalPagination(container, currentPage, totalItems, itemsPerPage, onPageChange) {
-                if (!container) return;
-
-                const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
-
-                if (totalItems <= 0) {
-                    container.innerHTML = '';
-                    return;
-                }
-
-                let paginationHTML = '';
-
-                paginationHTML += `
-        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-            <button type="button" class="page-link" data-page="prev">&laquo;</button>
-        </li>
-    `;
-
-                for (let page = 1; page <= totalPages; page++) {
-                    paginationHTML += `
-            <li class="page-item ${page === currentPage ? 'active' : ''}">
-                <button type="button" class="page-link" data-page="${page}">${page}</button>
-            </li>
-        `;
-                }
-
-                paginationHTML += `
-        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-            <button type="button" class="page-link" data-page="next">&raquo;</button>
-        </li>
-    `;
-
-                container.innerHTML = paginationHTML;
-
-                container.querySelectorAll('.page-link').forEach((button) => {
-                    button.addEventListener('click', () => {
-                        const action = button.dataset.page;
-                        let newPage = currentPage;
-
-                        if (action === 'prev' && currentPage > 1) {
-                            newPage = currentPage - 1;
-                        } else if (action === 'next' && currentPage < totalPages) {
-                            newPage = currentPage + 1;
-                        } else if (!isNaN(action)) {
-                            newPage = Number(action);
-                        }
-
-                        if (newPage !== currentPage) {
-                            onPageChange(newPage);
-                        }
-                    });
-                });
-            }
-
-            function getFilteredRows() {
-                const filters = {
-                    reason: normalize(els.filterReason.value),
-                    reportedBy: normalize(els.filterReportedBy.value),
-                    seller: normalize(els.filterSeller.value),
-                    date: formatDateForDisplay(els.filterDate.value)
-                };
-
-                return [...rows()].filter((row) => {
-                    const reportId = row.dataset.reportId || '';
-                    if (reportId && resolvedReports.has(reportId)) {
-                        return false;
-                    }
-
-                    const values = {
-                        reportedBy: normalize(row.cells[0].textContent),
-                        seller: normalize(row.cells[1].textContent),
-                        reason: normalize(row.cells[2].textContent),
-                        date: row.cells[3].textContent.trim()
-                    };
-
-                    return (
-                        (!filters.reason || values.reason === filters.reason) &&
-                        (!filters.reportedBy || values.reportedBy.includes(filters.reportedBy)) &&
-                        (!filters.seller || values.seller.includes(filters.seller)) &&
-                        (!filters.date || values.date === filters.date)
-                    );
-                });
-            }
-
-            function renderReports() {
-                const allRows = [...rows()];
-                const filteredRows = getFilteredRows();
-
-                const totalPages = Math.max(1, Math.ceil(filteredRows.length / REPORTS_PER_PAGE));
-
-                if (currentReportsPage > totalPages) {
-                    currentReportsPage = totalPages;
-                }
-
-                const start = (currentReportsPage - 1) * REPORTS_PER_PAGE;
-                const end = start + REPORTS_PER_PAGE;
-                const paginatedRows = filteredRows.slice(start, end);
-
-                allRows.forEach((row) => {
-                    row.style.display = 'none';
-                });
-
-                paginatedRows.forEach((row) => {
-                    row.style.display = '';
-                });
-
-                const shouldShowEmpty = filteredRows.length === 0;
-                els.emptyState.classList.toggle('d-none', !shouldShowEmpty);
-                els.reportsTable.classList.toggle('d-none', shouldShowEmpty);
-
-                renderLocalPagination(
-                    els.reportsPagination,
-                    currentReportsPage,
-                    filteredRows.length,
-                    REPORTS_PER_PAGE,
-                    (page) => {
-                        currentReportsPage = page;
-                        renderReports();
-                    }
-                );
-            }
-
-            function bindNameInput(input) {
-                input.addEventListener('keydown', (event) => {
-                    const allowedControlKeys = [
-                        'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight',
-                        'ArrowUp', 'ArrowDown', 'Tab', 'Home', 'End'
-                    ];
-
-                    if (allowedControlKeys.includes(event.key) || event.ctrlKey || event.metaKey) return;
-                    if (!allowedSearchCharRegex.test(event.key)) event.preventDefault();
-                });
-
-                input.addEventListener('input', () => {
-                    let cleanValue = sanitizeSearchValue(input.value);
-                    cleanValue = capitalizeWords(cleanValue);
-
-                    if (input.value !== cleanValue) {
-                        const cursorPos = input.selectionStart;
-                        input.value = cleanValue;
-                        input.setSelectionRange(cursorPos, cursorPos);
-                    }
-
-                    applyFilters();
-                });
-
-                input.addEventListener('paste', (event) => {
-                    event.preventDefault();
-
-                    const pasted = (event.clipboardData || window.clipboardData).getData('text');
-                    const clean = capitalizeWords(sanitizeSearchValue(pasted));
-
-                    const start = input.selectionStart;
-                    const end = input.selectionEnd;
-
-                    const newValue = input.value.slice(0, start) + clean + input.value.slice(end);
-                    input.value = capitalizeWords(sanitizeSearchValue(newValue));
-
-                    const newCursor = start + clean.length;
-                    input.setSelectionRange(newCursor, newCursor);
-
-                    applyFilters();
-                });
-
-                input.addEventListener('blur', () => {
-                    input.value = capitalizeWords(sanitizeSearchValue(input.value));
-                    applyFilters();
-                });
-            }
-
-            function bindExclusiveCheckboxes() {
-                rows().forEach((row) => {
-                    const checkboxes = row.querySelectorAll('.action-checkbox');
-
-                    checkboxes.forEach((checkbox) => {
-                        checkbox.addEventListener('change', function () {
-                            if (!this.checked) return;
-                            checkboxes.forEach((other) => {
-                                if (other !== this) other.checked = false;
-                            });
-                        });
-                    });
-                });
-            }
-
-            function bindAction(selector, modalEl, key) {
-                document.querySelectorAll(selector).forEach((checkbox) => {
-                    checkbox.addEventListener('change', function () {
-                        if (!this.checked) return;
-                        selected[key] = this;
-                        bootstrap.Modal.getOrCreateInstance(modalEl).show();
-                    });
-                });
-            }
-
-            function bindModalReset(modalEl, key) {
-                modalEl?.addEventListener('hidden.bs.modal', () => {
-                    if (selected[key]) {
-                        selected[key].checked = false;
-                        selected[key] = null;
-                    }
-                });
-            }
-
-            function bindConfirm(button, key, modalEl, toastKey) {
-                button?.addEventListener('click', () => {
-                    if (selected[key]) {
-                        markResolved(selected[key].closest('tr'));
-                        selected[key] = null;
-                        toasts[toastKey]?.show();
-                    }
-                    bootstrap.Modal.getOrCreateInstance(modalEl).hide();
-                });
-            }
-
-            bindNameInput(els.filterReportedBy);
-            bindNameInput(els.filterSeller);
-
-            [els.filterReason, els.filterDate].forEach((el) => {
-                el.addEventListener('input', applyFilters);
-                el.addEventListener('change', applyFilters);
-            });
-
-            bindExclusiveCheckboxes();
-
-            document.querySelectorAll('.action-view').forEach((checkbox) => {
-                checkbox.addEventListener('change', function () {
-                    if (this.checked) {
-                        toasts.view?.show();
-                        this.checked = false;
-                    }
-                });
-            });
-
-            bindAction('.action-resolve', els.resolveModal, 'resolve');
-            bindAction('.action-delete-post', els.deleteModal, 'delete');
-            bindAction('.action-ban-user', els.banModal, 'ban');
-
-            bindConfirm(els.confirmResolve, 'resolve', els.resolveModal, 'resolve');
-            bindConfirm(els.confirmDelete, 'delete', els.deleteModal, 'delete');
-            bindConfirm(els.confirmBan, 'ban', els.banModal, 'ban');
-
-            bindModalReset(els.resolveModal, 'resolve');
-            bindModalReset(els.deleteModal, 'delete');
-            bindModalReset(els.banModal, 'ban');
-
-            renderReports();
-        });
-    </script>
 </x-layout>

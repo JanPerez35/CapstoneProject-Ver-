@@ -6,7 +6,9 @@ export default defineConfig({
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js',
-                    'resources/js/pages/marketplace-profanity.js', 'resources/js/pages/messages-profanity.js',],
+                    'resources/js/pages/marketplace_profanity.js', 'resources/js/pages/messages_profanity.js',
+                     'resources/js/pages/marketplace.js', 'resources/js/pages/marketplace_reports.js',
+                     'resources/js/pages/facility_management.js'],
             refresh: true,
         })
     ],

@@ -1,6 +1,6 @@
 <x-layout title="Mensajes - MAIKINE">
     <x-navbar></x-navbar>
-    @vite('resources/js/pages/messages-profanity.js')
+    @vite('resources/js/pages/messages_profanity.js')
     <div class="container-fluid py-4">
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
             <div class="row g-0" style="min-height: 650px;">
