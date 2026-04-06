@@ -320,8 +320,7 @@
                                            class="form-control form-control-lg"
                                            id="return_date"
                                            name="return_date">
-                                    <div class="form-text">Debe ser una fecha futura.</div>
-                                    <div class="invalid-feedback d-block" id="return_date_error"></div>
+                                    <div class="form-text">Debe ser una fecha futura. No se permiten viernes, sábados ni domingos.</div>                                    <div class="invalid-feedback d-block" id="return_date_error"></div>
                                 </div>
 
                                 <div class="mb-3">
