@@ -47,7 +47,7 @@
     <header class="d-flex flex-wrap align-items-center justify-content-between py-2 px-2 border-bottom bg-light">
 
         <a href="/kinemarket" class="d-flex align-items-center mb-2 mb-md-0 text-decoration-none">
-            <img src="/images/kines_logo.png"
+            <img src="/images/kine_logo.png"
                  alt="Logo"
                  style="height: 75px; width:auto;"
                  class="me-2">

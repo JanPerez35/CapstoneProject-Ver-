@@ -102,7 +102,8 @@ class FacilityCostController extends Controller
             );
         }
 
-        return redirect()->route('facility_management')->with('success', 'Tarifas guardadas correctamente.');
+        return redirect()->route('facility_management')
+    ->with('rates_saved', 'Tarifas guardadas correctamente.');
     }
 
     public function storeEvent(Request $request)
@@ -118,30 +119,113 @@ class FacilityCostController extends Controller
             'servicios' => ['required', 'array', 'min:1'],
         ]);
 
-        $facilityCost = FacilityCost::where('classroom_name', $validated['salon'])->firstOrFail();
+        $payload = [
+            'classroom' => $validated['salon'],
+            'event_date' => $validated['fecha'],
+            'start_time' => $validated['hora_inicio'],
+            'end_time' => $validated['hora_fin'],
+            'description' => $validated['descripcion'],
+            'responsable' => $validated['responsable'],
+            'period_type' => $validated['tipo_periodo'],
+            'services' => $validated['servicios'],
+        ];
 
-        $start = Carbon::parse($validated['fecha'] . ' ' . $validated['hora_inicio']);
-        $end = Carbon::parse($validated['fecha'] . ' ' . $validated['hora_fin']);
+        $this->createFacilityReportItemFromPayload($payload);
+
+        return redirect()->route('facility_management')
+    ->with('rental_saved', 'Evento guardado correctamente.');
+    }
+
+    // public function storeEvent(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'salon' => ['required', 'string'],
+    //         'fecha' => ['required', 'date'],
+    //         'responsable' => ['required', 'string', 'min:10', 'max:60'],
+    //         'hora_inicio' => ['required'],
+    //         'hora_fin' => ['required'],
+    //         'descripcion' => ['required', 'string', 'min:10', 'max:1000'],
+    //         'tipo_periodo' => ['required', 'string'],
+    //         'servicios' => ['required', 'array', 'min:1'],
+    //     ]);
+
+    //     $facilityCost = FacilityCost::where('classroom_name', $validated['salon'])->firstOrFail();
+
+    //     $start = Carbon::parse($validated['fecha'] . ' ' . $validated['hora_inicio']);
+    //     $end = Carbon::parse($validated['fecha'] . ' ' . $validated['hora_fin']);
+    //     $hoursUsed = $start->diffInMinutes($end) / 60;
+
+    //     $rate = 0;
+    //     if ($validated['tipo_periodo'] === 'laborable') {
+    //         $rate = $facilityCost->daily_cost_1;
+    //     } elseif ($validated['tipo_periodo'] === 'no_laborable_sabado') {
+    //         $rate = $facilityCost->daily_cost_2;
+    //     } elseif ($validated['tipo_periodo'] === 'no_laborable_domingo_festivo') {
+    //         $rate = $facilityCost->daily_cost_3;
+    //     }
+
+    //     $total = $facilityCost->classroom_space * $rate;
+
+    //     if (in_array('utilidades', $validated['servicios'])) {
+    //         $total += $facilityCost->supply_cost * $hoursUsed;
+    //     }
+    //     if (in_array('electricidad', $validated['servicios'])) {
+    //         $total += $facilityCost->electricity_cost * $hoursUsed;
+    //     }
+    //     if (in_array('agua', $validated['servicios'])) {
+    //         $total += $facilityCost->water_cost * $hoursUsed;
+    //     }
+
+    //     $report = FacilityCostReport::firstOrCreate([
+    //         'user_id' => 1,
+    //     ]);
+
+    //     FacilityCostReportItem::create([
+    //         'facility_cost_report_id' => $report->id,
+    //         'facility_cost_id' => $facilityCost->id,
+    //         'responsable' => $validated['responsable'],
+    //         'period_type' => $validated['tipo_periodo'],
+    //         'services' => $validated['servicios'],
+    //         'start_time' => $start,
+    //         'end_time' => $end,
+    //         'event_date' => $validated['fecha'],
+    //         'event_description' => $validated['descripcion'],
+    //         'hours_used' => $hoursUsed,
+    //         'calculated_cost' => round($total, 2),
+    //     ]);
+
+    //     return redirect()->route('facility_management')->with('success', 'Evento guardado correctamente.');
+    // }
+
+    private function createFacilityReportItemFromPayload(array $data)
+    {
+        $facilityCost = FacilityCost::where('classroom_name', $data['classroom'])->firstOrFail();
+
+        $start = Carbon::parse($data['event_date'] . ' ' . $data['start_time']);
+        $end = Carbon::parse($data['event_date'] . ' ' . $data['end_time']);
         $hoursUsed = $start->diffInMinutes($end) / 60;
 
         $rate = 0;
-        if ($validated['tipo_periodo'] === 'laborable') {
+
+        if ($data['period_type'] === 'laborable') {
             $rate = $facilityCost->daily_cost_1;
-        } elseif ($validated['tipo_periodo'] === 'no_laborable_sabado') {
+        } elseif ($data['period_type'] === 'no_laborable_sabado') {
             $rate = $facilityCost->daily_cost_2;
-        } elseif ($validated['tipo_periodo'] === 'no_laborable_domingo_festivo') {
+        } elseif ($data['period_type'] === 'no_laborable_domingo_festivo') {
             $rate = $facilityCost->daily_cost_3;
         }
 
         $total = $facilityCost->classroom_space * $rate;
 
-        if (in_array('utilidades', $validated['servicios'])) {
+        if (in_array('utilidades', $data['services'])) {
             $total += $facilityCost->supply_cost * $hoursUsed;
         }
-        if (in_array('electricidad', $validated['servicios'])) {
+
+        if (in_array('electricidad', $data['services'])) {
             $total += $facilityCost->electricity_cost * $hoursUsed;
         }
-        if (in_array('agua', $validated['servicios'])) {
+
+        if (in_array('agua', $data['services'])) {
             $total += $facilityCost->water_cost * $hoursUsed;
         }
 
@@ -149,21 +233,65 @@ class FacilityCostController extends Controller
             'user_id' => 1,
         ]);
 
-        FacilityCostReportItem::create([
+        return FacilityCostReportItem::create([
             'facility_cost_report_id' => $report->id,
             'facility_cost_id' => $facilityCost->id,
-            'responsable' => $validated['responsable'],
-            'period_type' => $validated['tipo_periodo'],
-            'services' => $validated['servicios'],
+            'responsable' => $data['responsable'],
+            'period_type' => $data['period_type'],
+            'services' => $data['services'],
             'start_time' => $start,
             'end_time' => $end,
-            'event_date' => $validated['fecha'],
-            'event_description' => $validated['descripcion'],
+            'event_date' => $data['event_date'],
+            'event_description' => $data['description'],
             'hours_used' => $hoursUsed,
             'calculated_cost' => round($total, 2),
         ]);
+    }
 
-        return redirect()->route('facility_management')->with('success', 'Evento guardado correctamente.');
+    public function mockExternalEvents()
+    {
+        $events = $this->getMockExternalEvents();
+
+        return response()->json($events);
+    }
+
+    private function getMockExternalEvents(): array
+    {
+        $path = storage_path('app/mock_eventflow_events.json');
+
+        if (!file_exists($path)) {
+            return [];
+        }
+
+        $json = file_get_contents($path);
+        $events = json_decode($json, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return [];
+        }
+
+        return is_array($events) ? $events : [];
+    }
+
+    public function importMockEvents()
+    {
+        $events = $this->getMockExternalEvents();
+
+        $imported = 0;
+
+        foreach ($events as $event) {
+            $facilityExists = FacilityCost::where('classroom_name', $event['classroom'])->exists();
+
+            if (!$facilityExists) {
+                continue;
+            }
+
+            $this->createFacilityReportItemFromPayload($event);
+            $imported++;
+        }
+
+        return redirect()->route('facility_management')
+    ->with('mock_imported', "{$imported} evento(s) simulados importados correctamente.");
     }
 
     public function destroy(FacilityCostReportItem $item)

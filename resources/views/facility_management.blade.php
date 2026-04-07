@@ -11,6 +11,10 @@
             <div id="rentalSavedAutoTrigger"></div>
         @endif
 
+        @if(session('mock_imported'))
+            <div id="mockImportAutoTrigger"></div>
+        @endif
+
         <!--Header-->
         <div class="mb-4">
             <h1 class="fw-bold mb-1">Gestión de Costos de Facilidad</h1>
@@ -70,6 +74,17 @@
                 <i class="bi bi-download"></i>
                 Exportar a PDF
             </a>
+
+            <form method="POST" action="{{ route('facility.import.mock') }}" class="d-inline">
+                @csrf
+                <button
+                    type="submit"
+                    class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
+                >
+                    <i class="bi bi-cloud-arrow-down"></i>
+                    Eventflow API simulado
+                </button>
+            </form>
 
         </div>
 
@@ -857,6 +872,20 @@
             </div>
         </div>
     </div>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        @if(session('mock_imported'))
+            <div id="mockImportToast" class="toast align-items-center text-bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        {{ session('mock_imported') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        @endif
+    </div>
+
     <form id="deleteCostEntryForm" method="POST" class="d-none">
         @csrf
         @method('DELETE')
@@ -1107,4 +1136,5 @@
         const tarifasPorSalon = @json($tarifasPorSalon);
 
     </script>
+
 </x-layout>

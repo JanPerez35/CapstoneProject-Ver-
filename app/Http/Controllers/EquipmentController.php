@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
 use App\Models\Equipment;
 use App\Models\Lending;
 use App\Models\LendingItem;
@@ -22,16 +23,21 @@ class EquipmentController extends Controller
 
 
     private function logActivity($action, $comment = null)
-{
-    ActivityLog::create([
-        'user_id' => 1, // temporary
-        'role' => 'admin', // adjust if needed
-        'action' => $action,
-        'ip_address' => request()->ip(),
-        'comment' => $comment,
-        'created_at' => now(),
-    ]);
-}
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return;
+        }
+
+        ActivityLog::create([
+            'user_id' => $user->id,
+            'role' => $user->role_label,
+            'action' => $action,
+            'ip_address' => request()->ip(),
+            'comment' => $comment,
+        ]);
+    }
 
     public function index(Request $request)
     {
@@ -210,7 +216,7 @@ public function borrow(Request $request)
         }
 
         $lending = Lending::create([
-            'user_id' => 1, // temporary until auth is connected
+            'user_id' => auth()->id(),
             'commentary' => 'Solicitud realizada desde Kinventory',
             'start_time' => now(),
             'end_time' => now()->addDays(7), // temporary
@@ -230,12 +236,13 @@ public function borrow(Request $request)
         $equipment->save();
     });
 
-    return redirect()->route('kinventory')->with('success', 'Equipo solicitado correctamente.');
-
     $this->logActivity(
-    'Solicitud de Préstamo',
-    'Solicitud creada para equipo ID ' . $validated['equipment_id']
+        'Solicitud de Préstamo',
+        'Solicitud creada para equipo ID ' . $validated['equipment_id']
+
     );
+
+    return redirect()->route('kinventory')->with('success', 'Equipo solicitado correctamente.');
 
 }
 
@@ -373,7 +380,7 @@ public function cart()
 
         DB::transaction(function () use ($cart, $startDateTime, $endDateTime, $isSpecialCase, $validated, $status, $itemStatus, &$lending) {
             $lending = Lending::create([
-                'user_id' => auth()->id() ?? 1,
+                'user_id' => auth()->id(),
                 'commentary' => null,
                 'special_reason' => $isSpecialCase ? $validated['special_reason'] : null,
                 'start_time' => $startDateTime,
@@ -690,4 +697,45 @@ public function accessLogs()
     return view('access_logs', compact('logs'));
 }
 
+public function profile(Request $request)
+{
+    $user = auth()->user();
+
+    $requestsQuery = Lending::with('items.equipment')
+        ->where('user_id', $user->id);
+
+    if ($request->filled('request_search')) {
+        $search = strtolower($request->request_search);
+
+        $requestsQuery->where(function ($query) use ($search) {
+            $query->whereHas('items.equipment', function ($q) use ($search) {
+                $q->whereRaw('LOWER(description) LIKE ?', ["%{$search}%"]);
+            });
+        });
+    }
+
+    if ($request->filled('request_status')) {
+        $status = strtolower($request->request_status);
+
+        if ($status === 'finished') {
+            $requestsQuery->whereIn('status', ['finished', 'returned']);
+        } else {
+            $requestsQuery->where('status', $status);
+        }
+    }
+
+    $requests = $requestsQuery
+        ->latest('created_at')
+        ->paginate(5)
+        ->withQueryString();
+
+    if ($requests->currentPage() > $requests->lastPage() && $requests->lastPage() > 0) {
+        return redirect()->route('my_profile', array_merge(
+            $request->except('page'),
+            ['tab' => 'requests', 'page' => 1]
+        ));
+    }
+
+    return view('my_profile', compact('user', 'requests'));
+}
 }

@@ -368,9 +368,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ratesSavedAutoTrigger = document.getElementById('ratesSavedAutoTrigger');
     const rentalSavedAutoTrigger = document.getElementById('rentalSavedAutoTrigger');
+    const mockImportAutoTrigger = document.getElementById('mockImportAutoTrigger');
 
     if (ratesSavedAutoTrigger && toasts.ratesSaved) {
         toasts.ratesSaved.show();
+    }
+
+    if (mockImportAutoTrigger) {
+        const mockImportToastEl = document.getElementById('mockImportToast');
+        if (mockImportToastEl) {
+            const mockImportToast = bootstrap.Toast.getOrCreateInstance(mockImportToastEl, { delay: 3000 });
+            mockImportToast.show();
+        }
     }
 
     if (rentalSavedAutoTrigger && toasts.rentalSaved) {
