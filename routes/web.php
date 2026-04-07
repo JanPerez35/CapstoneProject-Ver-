@@ -10,6 +10,7 @@ use App\Models\Post;
 use App\Http\Controllers\TermsController;
 
 
+
 Route::get('/', function () {
     return view('login');
 });

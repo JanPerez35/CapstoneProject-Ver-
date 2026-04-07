@@ -75,7 +75,6 @@ class User extends Authenticatable
         };
     }
 
-    
     public function isAdmin()
     {
         return in_array($this->role, ['market_admin', 'super_admin', 'user']);

@@ -73,7 +73,7 @@ class EmailController extends Controller
         $this->emailService->send(
             'jan.perez21@upr.edu',
             'Cuenta suspendida',
-            'Tu cuenta ha sido suspendida de la plataforma. Si entiendes que esto fue un error, comunícate con el super administrador (administrador@upr.edu).'
+            'Tu cuenta ha sido suspendida de la plataforma MAIKINE. Si entiendes que esto fue un error, comunícate con el super administrador (administrador@upr.edu).'
         );
 
         return 'Correo de cuenta suspendida enviado.';
@@ -83,8 +83,8 @@ class EmailController extends Controller
     {
         $this->emailService->send(
             'jan.perez21@upr.edu',
-            'Puede que tengas mensajes sin leer',
-            'Hola, puede que tengas mensajes sin leer en MAIKINE. Entra a la plataforma para revisarlos.'
+            'Tienes mensajes sin leer',
+            'Hola, tienes mensajes sin leer en MAIKINE. Entra a la plataforma para revisarlos.'
         );
 
         return 'Correo de recordatorio de mensajes sin leer enviado.';
