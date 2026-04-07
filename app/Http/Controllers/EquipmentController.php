@@ -23,16 +23,21 @@ class EquipmentController extends Controller
 
 
     private function logActivity($action, $comment = null)
-{
-    ActivityLog::create([
-        'user_id' => 1, // temporary
-        'role' => 'admin', // adjust if needed
-        'action' => $action,
-        'ip_address' => request()->ip(),
-        'comment' => $comment,
-        'created_at' => now(),
-    ]);
-}
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return;
+        }
+
+        ActivityLog::create([
+            'user_id' => $user->id,
+            'role' => $user->role_label,
+            'action' => $action,
+            'ip_address' => request()->ip(),
+            'comment' => $comment,
+        ]);
+    }
 
     public function index(Request $request)
     {
@@ -211,7 +216,7 @@ public function borrow(Request $request)
         }
 
         $lending = Lending::create([
-            'user_id' => 1, // temporary until auth is connected
+            'user_id' => auth()->id(),
             'commentary' => 'Solicitud realizada desde Kinventory',
             'start_time' => now(),
             'end_time' => now()->addDays(7), // temporary
@@ -375,7 +380,7 @@ public function cart()
 
         DB::transaction(function () use ($cart, $startDateTime, $endDateTime, $isSpecialCase, $validated, $status, $itemStatus, &$lending) {
             $lending = Lending::create([
-                'user_id' => auth()->id() ?? 1,
+                'user_id' => auth()->id(),
                 'commentary' => null,
                 'special_reason' => $isSpecialCase ? $validated['special_reason'] : null,
                 'start_time' => $startDateTime,
@@ -694,10 +699,10 @@ public function accessLogs()
 
 public function profile(Request $request)
 {
-    $user = User::findOrFail(1);
+    $user = auth()->user();
 
     $requestsQuery = Lending::with('items.equipment')
-        ->where('user_id', 1);
+        ->where('user_id', $user->id);
 
     if ($request->filled('request_search')) {
         $search = strtolower($request->request_search);

@@ -50,4 +50,29 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function getRoleLabelAttribute()
+    {
+        return match (strtolower(trim($this->role))) {
+            'usuario' => 'Usuario',
+            'super administrador', 'admin super' => 'Admin Super',
+            'administrador de inventario', 'admin inventario' => 'Admin Inventario',
+            'administrador de facilidad', 'admin facilidades' => 'Admin Facilidades',
+            'administrador de mercado', 'admin mercado' => 'Admin Mercado',
+            default => 'Usuario',
+        };
+    }
+
+    public function getRoleBadgeClassAttribute()
+    {
+        return match ($this->role_label) {
+            'Usuario' => 'bg-primary-subtle text-primary-emphasis',
+            'Admin Super' => 'bg-danger-subtle text-danger-emphasis',
+            'Admin Inventario' => 'bg-success-subtle text-success-emphasis',
+            'Admin Facilidades' => 'bg-info-subtle text-info-emphasis',
+            'Admin Mercado' => 'bg-warning-subtle text-warning-emphasis',
+            default => 'bg-secondary-subtle text-secondary-emphasis',
+        };
+    }
+
 }

@@ -52,8 +52,8 @@
                     <div>
                         <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
                             <h1 class="fw-bold mb-0">{{ $user->first_name }} {{ $user->last_name }}</h1>
-                            <span class="bg-primary-subtle text-primary-emphasis fw-semibold rounded-0 px-2 py-1">
-                                Usuario
+                            <span class="badge {{ $user->role_badge_class }} px-2 py-1 small rounded-0">
+                                {{ $user->role_label }}
                             </span>
                         </div>
                         <p class="text-muted fs-4 mb-0">Miembro de MAIKINE</p>

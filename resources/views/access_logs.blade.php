@@ -54,10 +54,10 @@
                     <select id="accessLogsRoleFilter" class="form-select border-2 border-dark">
                         <option value="">Todos los Roles</option>
                         <option value="usuario">Usuario</option>
-                        <option value="administrador de mercado">Administrador de Mercado</option>
-                        <option value="administrador de inventario">Administrador de Inventario</option>
-                        <option value="administrador de facilidad">Administrador de Facilidad</option>
-                        <option value="super administrador">Super Administrador</option>
+                        <option value="admin mercado">Administrador de Mercado</option>
+                        <option value="admin inventario">Administrador de Inventario</option>
+                        <option value="admin facilidades">Administrador de Facilidad</option>
+                        <option value="admin super">Super Administrador</option>
                     </select>
                 </div>
 
@@ -168,25 +168,19 @@
                             </td>
                             <td class="py-3 text-center align-middle">
                                 @php
-                                    $roleClass = match(strtolower(trim($log->role))) {
-                                        'usuario' => 'badge user-role-badge bg-primary-subtle text-primary-emphasis',
-
-                                        'administrador de inventario' => 'badge user-role-badge bg-success-subtle text-success-emphasis',
-
-                                        'administrador de mercado' => 'badge user-role-badge bg-warning-subtle text-warning-emphasis',
-
-
-                                        'super administrador' => 'badge user-role-badge bg-danger-subtle text-danger-emphasis',
-
-                                        'administrador de facilidad' => 'badge user-role-badge bg-info-subtle text-info-emphasis',
-
-                                        default => 'badge user-role-badge bg-primary-subtle text-primary-emphasis',
+                                    $roleClass = match(trim($log->role)) {
+                                        'Usuario' => 'bg-primary-subtle text-primary-emphasis',
+                                        'Admin Super' => 'bg-danger-subtle text-danger-emphasis',
+                                        'Admin Inventario' => 'bg-success-subtle text-success-emphasis',
+                                        'Admin Facilidades' => 'bg-info-subtle text-info-emphasis',
+                                        'Admin Mercado' => 'bg-warning-subtle text-warning-emphasis',
+                                        default => 'bg-secondary-subtle text-secondary-emphasis',
                                     };
                                 @endphp
 
-                                <span class="{{ $roleClass }} px-2 py-1 small">
-    {{ ucfirst($log->role) }}
-</span>
+                                <span class="badge {{ $roleClass }} px-2 py-1 small rounded-0">
+                                    {{ $log->role }}
+                                </span>
 
                             </td>
                             <td class="px-4 py-3">{{ $log->action }}</td>
