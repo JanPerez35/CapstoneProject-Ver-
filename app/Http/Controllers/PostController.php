@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Post;
+use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 class PostController extends Controller
 {  
@@ -11,7 +13,7 @@ class PostController extends Controller
     {
         $request->validate([
             'title' => 'required|min:5|max:100',
-            'description' => 'nullable|min:10|max:1000',
+            'description' => 'nullable|max:500',
             'cost' => 'required|numeric',
             'category' => 'required',
             'condition' => 'required',
@@ -44,14 +46,27 @@ class PostController extends Controller
     }
     public function destroy(Post $post)
     {
-        // Seguridad: solo dueño elimina
-        if ($post->user_id !== auth()->id()) {
+        if ($post->user_id !== auth()->id() && !in_array(auth()->user()->role, ['market_admin', 'super_admin'])) {
             abort(403);
+        }
+        $images = [
+                $post->photo_1_url,
+                $post->photo_2_url,
+                $post->photo_3_url
+        ];
+
+        foreach ($images as $image) {
+            if ($image) {
+                Storage::disk('public')->delete($image);
+            }
         }
 
         $post->delete();
 
-        return back()->with('success', 'Post eliminado');
+        return response()->json([
+            'success' => true,
+            'message' => 'Post eliminado exitosamente'
+            ]);
     }
 
     public function index()

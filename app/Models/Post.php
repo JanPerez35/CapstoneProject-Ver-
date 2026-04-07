@@ -19,6 +19,8 @@ class Post extends Model
         'photo_3_url',
         'rating',
     ];
+    
+    protected $appends = ['time_ago'];
 
     // Seller (owner)
     public function user()
@@ -30,5 +32,10 @@ class Post extends Model
     public function chats()
     {
         return $this->hasMany(Chat::class);
+    }
+
+    public function getTimeAgoAttribute()
+    {
+        return $this->created_at->diffForHumans();
     }
 }

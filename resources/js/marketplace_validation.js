@@ -188,7 +188,7 @@ function createMarketplaceCardHTML(post) {
            data-category="${post.category}"
            data-status="${post.status}"
            data-condition="${post.condition}"
-           data-seller="${post.seller}"
+           data-seller="${post.user?.name || 'Usuario'}"
        >
            <div class="card h-100 shadow-sm rounded-4 overflow-hidden item-card border-0 marketplace-card-shell">
 
@@ -216,13 +216,13 @@ function createMarketplaceCardHTML(post) {
                        </div>
 
                        <p class="text-muted marketplace-card-description mb-0" title="${post.description || ''}">
-                           ${post.description}
+                           ${post.description || ''}
                        </p>
                    </div>
 
                    <div class="marketplace-card-meta mt-auto">
                        <h3 class="fw-bold text-success mb-3 marketplace-card-price">
-                           $${post.price}
+                           $${post.cost}
                        </h3>
 
                        <div class="d-flex gap-2 mb-3 flex-wrap">
@@ -237,7 +237,7 @@ function createMarketplaceCardHTML(post) {
 
                        <div class="small text-muted mb-3">
                            <div class="mb-2">
-                               <i class="bi bi-person me-2"></i> ${post.seller}
+                               <i class="bi bi-person me-2"></i> ${post.user?.name || 'Usuario'}
                            </div>
 
                            <div class="mb-2">
@@ -245,7 +245,7 @@ function createMarketplaceCardHTML(post) {
                            </div>
 
                            <div>
-                               <i class="bi bi-clock me-2"></i> ${post.createdAt}
+                               <i class="bi bi-clock me-2"></i> ${post.time_ago}
                            </div>
                        </div>
 
@@ -353,7 +353,7 @@ function populatePostDetailsModal(post) {
 
     if (postDetailsChatLink && post) {
         const currentUserId = document.body.dataset.currentUserId || 'guest';
-        const sellerKey = String(post.seller || 'seller').replace(/\s+/g, '_').toLowerCase();
+        const sellerKey = String(post.user?.name || 'seller').replace(/\s+/g, '_').toLowerCase();
         const chatId = `chat_${currentUserId}_${post.id}_${sellerKey}`;
 
         postDetailsChatLink.href =
@@ -393,7 +393,7 @@ function populatePostDetailsModal(post) {
     }
 
     if (postDetailsPrice) {
-        postDetailsPrice.textContent = `$${post.price || '0.00'}`;
+        postDetailsPrice.textContent = `$${post.cost || '0.00'}`;
     }
 
     if (postDetailsStatus) {
@@ -405,7 +405,7 @@ function populatePostDetailsModal(post) {
     }
 
     if (postDetailsSeller) {
-        postDetailsSeller.textContent = post.seller || 'Usuario';
+        postDetailsSeller.textContent = post.user?.name || 'Usuario';
     }
 
     if (postDetailsSellerRating) {
@@ -417,9 +417,11 @@ function populatePostDetailsModal(post) {
         postDetailsCategory.textContent = post.category || 'Sin categoría';
     }
 
-    const images = Array.isArray(post.images) && post.images.length
-        ? post.images
-        : (post.image ? [post.image] : []);
+    const images = [
+        post.photo_1_url,
+        post.photo_2_url,
+        post.photo_3_url
+    ].filter(Boolean).map(img => '/storage/' + img);
 
     renderPostDetailsCarousel(images);
 }
@@ -535,15 +537,15 @@ function getFilteredMarketplacePosts() {
 
     return allMarketplacePosts.filter((post) => {
         const postRating = Number(post.rating) || 0;
-        const postPriceValue = Number(post.price) || 0;
+        const postPriceValue = Number(post.cost) || 0;
 
         const matchesSearch =
             searchValue === '' ||
             post.title.toLowerCase().includes(searchValue) ||
-            (post.description || '').toLowerCase().includes(searchValue) ||
+            (post.description || 'Sin descripción').toLowerCase().includes(searchValue) ||
             post.category.toLowerCase().includes(searchValue) ||
             post.condition.toLowerCase().includes(searchValue) ||
-            post.seller.toLowerCase().includes(searchValue);
+            post.user?.name.toLowerCase().includes(searchValue);
 
         const matchesCategory =
             selectedCategory === 'all' || post.category === selectedCategory;

@@ -54,7 +54,7 @@ Route::get('/search_user', function () {
 // })->name('inventory_management');//->middleware('role:super,inventory,user')
 
 Route::get('/inventory_management', [EquipmentController::class, 'index'])
-    ->name('inventory_management');
+    ->name('inventory_management')->middleware('role:super,inventory,user');
 
 Route::post('/inventory_management', [EquipmentController::class, 'store'])
     ->name('inventory.store');
@@ -112,6 +112,13 @@ Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.
 Route::get('/posts', function () {
     return Post::with('user')->latest()->get();
 });
+
+Route::get('/reports', [UserReportController::class, 'index']);
+
+Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
+Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
+
+Route::delete('/posts/{post}', [PostController::class, 'destroy']);
 
 require __DIR__ . '\saml2.php';
 /*Route::get('/kinemercado/reportar_usuario', function () {
