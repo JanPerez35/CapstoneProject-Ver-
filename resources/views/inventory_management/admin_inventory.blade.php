@@ -233,7 +233,7 @@
                                         >
 
                                         <div class="form-text">
-                                            Entre 5 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
+                                            Entre 3 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
                                         </div>
                                         <div class="invalid-feedback d-block error-category"></div>
                                     </div>
@@ -266,7 +266,7 @@
                                         >
 
                                         <div class="form-text">
-                                            Entre 5 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
+                                            Entre 3 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
                                         </div>
                                         <div class="invalid-feedback d-block error-location"></div>
                                     </div>
@@ -416,7 +416,7 @@
                                 required
                             >
                             <div class="form-text">
-                                Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
                             </div>
                             <div class="invalid-feedback d-block" id="nombreItemError"></div>
                         </div>
@@ -443,7 +443,7 @@
                             <input type="hidden" id="categoria" name="category">
 
                             <div class="form-text">
-                                Entre 5 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
+                                Entre 3 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
                             </div>
                             <div class="invalid-feedback d-block" id="categoriaError"></div>
                         </div>
@@ -657,7 +657,7 @@
                             <input type="hidden" id="ubicacion" name="location">
 
                             <div class="form-text">
-                                Entre 5 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
+                                Entre 3 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
                             </div>
                             <div class="invalid-feedback d-block" id="ubicacionError"></div>
                         </div>
@@ -759,8 +759,13 @@
                         <h4 class="modal-title fw-bold" id="confirmDeleteModalLabel">Eliminar Item</h4>
                         <p class="text-muted mb-0" id="confirmDeleteText">
                             ¿Seguro que quieres borrar este item?
+
+                        <p class="text-danger fw-semibold mb-0 d-none" id="confirmDeleteWarningText">
+                            *Este item tiene un pedido atado.
+                        </p>
                         </p>
                     </div>
+
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
