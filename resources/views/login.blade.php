@@ -68,7 +68,8 @@
     <!-- Button -->
     <div class="mt-4">
 {{--        <a href="{{ route('saml.login') }}" class="btn login-btn text-white shadow">--}}
-            <a href="{{ route('terms_and_conditions') }}" class="btn login-btn text-white shadow">
+
+        <a href="{{ route('saml.login') }}" class="btn login-btn text-white shadow">
                 Accede con tu cuenta UPRM*
             </a>
         </div>
