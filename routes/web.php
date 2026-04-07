@@ -53,7 +53,7 @@ Route::get('/search_user', function () {
 // })->name('inventory_management');//->middleware('role:super,inventory,user')
 
 Route::get('/inventory_management', [EquipmentController::class, 'index'])
-    ->name('inventory_management')->middleware('role:super,inventory,user');
+    ->name('inventory_management')->middleware('role:admin super,inventory,user');
 
 Route::post('/inventory_management', [EquipmentController::class, 'store'])
     ->name('inventory.store');
@@ -89,7 +89,7 @@ Route::get('/kinemarket', [PostController::class, 'index'])->name('kinemarket');
 
 Route::get('/marketplace_management', function () {
     return view('/marketplace_management.reports_management');
-})->name('marketplace_management');
+})->name('marketplace_management')->middleware('role:admin super,inventory,user');
 
 // Route::get('/access_logs', function () {
 //     return view('access_logs');
@@ -117,9 +117,6 @@ Route::get('/reports', [UserReportController::class, 'index']);
 Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
 Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
 
-Route::delete('/posts/{post}', [PostController::class, 'destroy']);
-
-require __DIR__ . '\saml2.php';
 /*Route::get('/kinemercado/reportar_usuario', function () {
     return view('kinemercado');
 })->name('kinemercado.reportar_usuario');*/
@@ -128,7 +125,7 @@ Route::get('/kinemercado/mensaje', function () {
     return view('kinemercado_mensaje');
 })->name('kinemercado_mensaje');
 
-Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management');
+Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management')->middleware('role:admin super,admin facilidades');
 Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])->name('facility.rates.save');
 Route::post('/facility/events', [FacilityCostController::class, 'storeEvent'])->name('facility.events.store');
 Route::delete('/facility/events/{item}', [FacilityCostController::class, 'destroy'])->name('facility.events.destroy');
