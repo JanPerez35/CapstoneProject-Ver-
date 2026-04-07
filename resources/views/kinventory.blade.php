@@ -85,10 +85,6 @@
                                     <span class="text-muted">Cantidad Disponible:</span>
                                     <strong class="text-success">{{ $item->available_quantity }}</strong>
                                 </div>
-                                <div class="d-flex justify-content-between">
-                                    <span class="text-muted">Ubicación:</span>
-                                    <strong>{{ $item->location }}</strong>
-                                </div>
                             </div>
 
                             <div class="mt-auto d-grid gap-2">

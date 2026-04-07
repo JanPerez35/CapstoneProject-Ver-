@@ -180,17 +180,14 @@ public function kinventory(Request $request)
     $search = $request->input('search');
     $category = $request->input('category');
 
-    $query = Equipment::query();
-
-    if ($search) {
-        $query->where('description', 'like', '%' . $search . '%');
-    }
-
-    if ($category) {
+    $items = Equipment::where('available_quantity', '>', 0)
+    ->when($search, function ($query) use ($search) {
+        $query->where('description', 'like', "%{$search}%");
+    })
+    ->when($category, function ($query) use ($category) {
         $query->where('category', $category);
-    }
-
-    $items = $query->paginate(18)->withQueryString();
+    })
+    ->paginate(18);
 
     $categories = Equipment::select('category')
         ->whereNotNull('category')
