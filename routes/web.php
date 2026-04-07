@@ -5,6 +5,8 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\FacilityCostController;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\PostController;
+use App\Models\Post;
 use App\Http\Controllers\TermsController;
 
 
@@ -51,7 +53,7 @@ Route::get('/search_user', function () {
 // })->name('inventory_management');//->middleware('role:super,inventory,user')
 
 Route::get('/inventory_management', [EquipmentController::class, 'index'])
-    ->name('inventory_management');
+    ->name('inventory_management')->middleware('role:super,inventory,user');
 
 Route::post('/inventory_management', [EquipmentController::class, 'store'])
     ->name('inventory.store');
@@ -83,9 +85,7 @@ Route::get('/inventory_management/inventory_statistics', [EquipmentController::c
 Route::get('/inventory_management/inventory_statistics/export', [EquipmentController::class, 'exportStatistics'])
     ->name('inventory_management.inventory_statistics.export');
 
-Route::get('/kinemarket', function () {
-    return view('kinemarket');
-})->name('kinemarket');
+Route::get('/kinemarket', [PostController::class, 'index'])->name('kinemarket');
 
 Route::get('/marketplace_management', function () {
     return view('/marketplace_management.reports_management');
@@ -105,6 +105,28 @@ Route::get('/access_logs', [EquipmentController::class, 'accessLogs'])
 Route::get('/my_messages', function () {
     return view('my_messages');
 })->name('my_messages');
+
+Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
+Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+Route::get('/posts', function () {
+    return Post::with('user')->latest()->get();
+});
+
+Route::get('/reports', [UserReportController::class, 'index']);
+
+Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
+Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
+
+Route::delete('/posts/{post}', [PostController::class, 'destroy']);
+
+require __DIR__ . '\saml2.php';
+/*Route::get('/kinemercado/reportar_usuario', function () {
+    return view('kinemercado');
+})->name('kinemercado.reportar_usuario');*/
+
+Route::get('/kinemercado/mensaje', function () {
+    return view('kinemercado_mensaje');
+})->name('kinemercado_mensaje');
 
 Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management');
 Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])->name('facility.rates.save');
