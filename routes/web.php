@@ -54,7 +54,7 @@ Route::get('/search_user', function () {
 // })->name('inventory_management');//->middleware('role:super,inventory,user')
 
 Route::get('/inventory_management', [EquipmentController::class, 'index'])
-    ->name('inventory_management');
+    ->name('inventory_management')->middleware('role:admin super,admin inventory,user');
 
 Route::post('/inventory_management', [EquipmentController::class, 'store'])
     ->name('inventory.store');
