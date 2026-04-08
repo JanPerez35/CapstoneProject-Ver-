@@ -41,7 +41,8 @@ class EquipmentController extends Controller
 
     public function index(Request $request)
     {
-        $query = Equipment::query();
+        // Build base query
+        $query = Equipment::where('pending_deletion', false);
 
         // Search filter
         if ($request->filled('search')) {
@@ -59,11 +60,11 @@ class EquipmentController extends Controller
             $query->where('category', $request->category);
         }
 
-        // Pagination + keep filters in URL
+        // NOW paginate (after filters)
         $items = $query->paginate(18)->withQueryString();
 
         // Categories list
-        $categories = Equipment::select('category')
+        $categories = Equipment::where('pending_deletion', false)
             ->whereNotNull('category')
             ->where('category', '!=', '')
             ->distinct()
@@ -71,7 +72,7 @@ class EquipmentController extends Controller
             ->pluck('category');
 
         // Locations list
-        $locations = Equipment::select('location')
+        $locations = Equipment::where('pending_deletion', false)
             ->whereNotNull('location')
             ->where('location', '!=', '')
             ->distinct()
@@ -163,16 +164,27 @@ class EquipmentController extends Controller
 
     public function destroy($id)
     {
-        $item = Equipment::findOrFail($id);
+        $equipment = Equipment::findOrFail($id);
 
-        if ($item->equipment_photo_url) {
-            \Storage::disk('public')->delete($item->equipment_photo_url);
+        $hasOpenLendings = $equipment->lendingItems()
+            ->whereHas('lending', function ($query) {
+                $query->whereIn('status', ['pending', 'approved', 'active']);
+            })
+            ->exists();
+
+        if ($hasOpenLendings) {
+            $equipment->available_quantity = 0;
+            $equipment->pending_deletion = true;
+            $equipment->save();
+
+            return redirect()->route('inventory_management')
+                ->with('warning', 'Este equipo está vinculado a préstamos pendientes o activos. Se marcó como no disponible y pendiente de eliminación.');
         }
 
-        $item->delete();
+        $equipment->delete();
 
-        return redirect()->back()
-            ->with('success', 'Item eliminado correctamente');
+        return redirect()->route('inventory_management')
+            ->with('success', 'Equipo eliminado correctamente.');
     }
 
 public function kinventory(Request $request)
@@ -181,6 +193,7 @@ public function kinventory(Request $request)
     $category = $request->input('category');
 
     $items = Equipment::where('available_quantity', '>', 0)
+    ->where('pending_deletion', false)
     ->when($search, function ($query) use ($search) {
         $query->where('description', 'like', "%{$search}%");
     })
