@@ -374,17 +374,17 @@
 
                             <div class="col-6 text-muted">Estado:</div>
                             <div class="col-6 text-end">
-                               <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;" id="postDetailsStatus">
-                                   Disponible
-                               </span>
+                               <span class="label-badge badge-available" id="postDetailsStatus">
+    Disponible
+</span>
                             </div>
 
 
                             <div class="col-6 text-muted">Condición:</div>
                             <div class="col-6 text-end">
-                               <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;" id="postDetailsCondition">
-                                   Sin especificar
-                               </span>
+                               <span class="label-badge badge-available" id="postDetailsCondition">
+    Sin especificar
+</span>
                             </div>
 
 
@@ -401,9 +401,9 @@
 
                             <div class="col-6 text-muted">Categoría:</div>
                             <div class="col-6 text-end">
-                               <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;" id="postDetailsCategory">
-                                   Sin categoría
-                               </span>
+                              <span class="label-badge badge-available" id="postDetailsCategory">
+    Sin categoría
+</span>
                             </div>
                         </div>
 

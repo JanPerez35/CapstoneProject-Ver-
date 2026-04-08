@@ -74,10 +74,11 @@
                                     {{ $item->description }}
                                 </h5>
 
-                                <span class="badge rounded-0"
-                                      style="background-color: {{ $item->available_quantity > 0 ? '#6FC21F' : '#dc3545' }}; color:white;">
-                                    {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
-                                </span>
+
+                                <span class="label-badge {{ $item->available_quantity > 0 ? 'badge-available' : 'badge-unavailable' }}">
+    {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
+</span>
+
                             </div>
 
                             <div class="small mb-3">

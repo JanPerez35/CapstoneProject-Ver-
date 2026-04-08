@@ -52,9 +52,11 @@
                     <div>
                         <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
                             <h1 class="fw-bold mb-0">{{ $user->first_name }} {{ $user->last_name }}</h1>
-                            <span class="badge {{ $user->role_badge_class }} px-2 py-1 small rounded-0">
-                                {{ $user->role_label }}
-                            </span>
+
+                            <span class="label-badge {{ $user->role_badge_class }}">
+    {{ $user->role_label }}
+</span>
+
                         </div>
                         <p class="text-muted fs-4 mb-0">Miembro de MAIKINE</p>
 
@@ -213,9 +215,9 @@
                             <div class="card-body d-flex flex-column p-4">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <h5 class="fw-bold mb-0">Baloncesto - Spalding</h5>
-                                    <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
-                                        Disponible
-                                    </span>
+                                    <span class="label-badge badge-available">
+    Disponible
+</span>
                                 </div>
 
                                 <p class="text-muted mb-3">
@@ -225,12 +227,12 @@
                                 <h3 class="fw-bold text-success mb-3">$25</h3>
 
                                 <div class="d-flex gap-2 mb-3 flex-wrap">
-                                    <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
-                                        Muy Bueno
-                                    </span>
-                                    <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
-                                        Baloncesto
-                                    </span>
+<span class="label-badge badge-available">
+    Muy Bueno
+</span>
+                                    <span class="label-badge badge-available">
+    Baloncesto
+</span>
                                 </div>
 
                                 <div class="small text-muted mb-3">
@@ -268,9 +270,9 @@
                             <div class="card-body d-flex flex-column p-4">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <h5 class="fw-bold mb-0">Raqueta Wilson Pro</h5>
-                                    <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
-                                        Disponible
-                                    </span>
+                                    <span class="label-badge badge-available">
+    Disponible
+</span>
                                 </div>
 
                                 <p class="text-muted mb-3">
@@ -280,12 +282,12 @@
                                 <h3 class="fw-bold text-success mb-3">$45</h3>
 
                                 <div class="d-flex gap-2 mb-3 flex-wrap">
-                                    <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
-                                        Bueno
-                                    </span>
-                                    <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
-                                        Tenis
-                                    </span>
+                                    <span class="label-badge badge-available">
+    Muy Bueno
+</span>
+                                    <span class="label-badge badge-available">
+    Tenis
+</span>
                                 </div>
 
                                 <div class="small text-muted mb-3">
@@ -323,9 +325,9 @@
                             <div class="card-body d-flex flex-column p-4">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <h5 class="fw-bold mb-0">Mancuernas Ajustables</h5>
-                                    <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
-                                        Disponible
-                                    </span>
+                                    <span class="label-badge badge-available">
+    Disponible
+</span>
                                 </div>
 
                                 <p class="text-muted mb-3">
@@ -335,12 +337,12 @@
                                 <h3 class="fw-bold text-success mb-3">$120</h3>
 
                                 <div class="d-flex gap-2 mb-3 flex-wrap">
-                                    <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
-                                        Excelente
-                                    </span>
-                                    <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;">
-                                        Levantamiento de Pesas
-                                    </span>
+                                   <span class="label-badge badge-available">
+    Excelente
+</span>
+                                    <span class="label-badge badge-available">
+    Levantamiento de Pesas
+</span>
                                 </div>
 
                                 <div class="small text-muted mb-3">
@@ -468,11 +470,11 @@
 
                                     @php
                                         $statusClass = match($request->status) {
-                                            'pending' => 'bg-warning text-dark',
-                                            'approved', 'active' => 'bg-success',
-                                            'rejected' => 'bg-danger',
-                                            'returned', 'finished' => '',
-                                            default => 'bg-secondary',
+                                            'pending' => 'badge-request-pending',
+                                            'approved', 'active' => 'badge-request-approved',
+                                            'rejected' => 'badge-request-rejected',
+                                            'returned', 'finished' => 'badge-request-finished',
+                                            default => 'badge-request-default',
                                         };
                                     @endphp
 
@@ -481,9 +483,9 @@
                                             Finalizado
                                         </span>
                                     @else
-                                        <span class="badge {{ $statusClass }} rounded-0 px-3 py-2">
-                                            {{ ucfirst($request->status) }}
-                                        </span>
+                                        <span class="label-badge {{ $statusClass }}">
+    {{ in_array($request->status, ['returned', 'finished']) ? 'Finalizado' : ucfirst($request->status) }}
+</span>
                                     @endif
                                 </div>
                             </div>

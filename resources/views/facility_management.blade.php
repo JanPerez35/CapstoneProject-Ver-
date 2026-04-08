@@ -199,8 +199,7 @@
                                 </td>
                                 <td>
                                     @foreach (($item->services ?? []) as $service)
-                                        <span class="badge rounded-0 px-3 py-2 me-2 mb-1 service-badge-table">
-                                            @if ($service === 'utilidades')
+                                        <span class="label-badge badge-available me-2 mb-1">                                            @if ($service === 'utilidades')
                                                 Utilidades
                                             @elseif ($service === 'electricidad')
                                                 Electricidad
