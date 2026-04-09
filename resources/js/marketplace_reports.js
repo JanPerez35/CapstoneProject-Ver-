@@ -27,10 +27,11 @@
     filterSearchBy: $('filterSearchBy'),
     filterDate: $('filterDate'),
 
+
     resolveModal: $('resolveQuerellaModal'),
     deleteModal: $('deletePostModal'),
     banModal: $('bloquearUserModal'),
-
+    searchReportsBtn: $('searchReportsBtn'),
     confirmResolve: $('confirmResolveQuerella'),
     confirmDelete: $('confirmDeletePost'),
     confirmBan: $('confirmBloquearUser'),
@@ -38,7 +39,7 @@
     reportsTable: $('reportsTable'),
     emptyState: $('reportsEmptyState'),
     reportsPagination: $('querellasPagination'),
-};
+    };
 
     const clearReportsFiltersBtn = document.getElementById('clearReportsFilters');
 
@@ -77,6 +78,13 @@
     currentReportsPage = 1;
     renderReports();
 }
+
+    function updateReportsSearchButtonState() {
+        if (!els.filterSearchBy || !els.searchReportsBtn) return;
+
+        const value = els.filterSearchBy.value;
+        els.searchReportsBtn.disabled = value.trim() === '';
+    }
 
     function renderLocalPagination(container, currentPage, totalItems, itemsPerPage, onPageChange) {
     if (!container) return;
@@ -166,6 +174,7 @@
     els.filterSearchBy.value = '';
     els.filterReason.value = '';
     els.filterDate.value = '';
+    updateReportsSearchButtonState();
     applyFilters();
 });
 
@@ -292,7 +301,23 @@
 }
 
     bindNameInput(els.filterSearchBy);
-    els.filterSearchBy?.addEventListener('input',applyFilters);
+    els.filterSearchBy?.addEventListener('input', () => {
+            updateReportsSearchButtonState();
+        });
+
+    els.filterSearchBy?.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+
+                if (!els.searchReportsBtn?.disabled) {
+                    applyFilters();
+                }
+            }
+        });
+
+    els.searchReportsBtn?.addEventListener('click', () => {
+            applyFilters();
+        });
 
     [els.filterReason, els.filterDate].forEach((el) => {
     el.addEventListener('input', applyFilters);
@@ -348,6 +373,7 @@
             });
         });
 
+    updateReportsSearchButtonState();
     renderReports();
 
 });

@@ -48,6 +48,7 @@ const reportSentToastEl = document.getElementById('reportSentToast');
 const postCreatedToastEl = document.getElementById('postCreatedToast');
 const postDeletedToastEl = document.getElementById('postDeletedToast');
 
+
 const ratingSentToast = ratingSentToastEl
     ? bootstrap.Toast.getOrCreateInstance(ratingSentToastEl)
     : null;
@@ -107,6 +108,7 @@ const clearSellerRating = document.getElementById('clearSellerRating');
 const POSTS_PER_PAGE = 18;
 const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
 const priceRegex = /^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/;
+const MAX_PRICE = 10000;
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 const MAX_IMAGES = 3;
 const MIN_IMAGES = 1;
@@ -818,6 +820,18 @@ function validatePrice(showError = true) {
         return false;
     }
 
+    if (Number(value) > MAX_PRICE) {
+        if (showError) {
+            setFieldError(
+                postPrice,
+                postPriceError,
+                'El precio no puede exceder $10,000.00.'
+            );
+            postPriceGroup?.classList.add('is-invalid');
+        }
+        return false;
+    }
+
     if (Number(value) < 0) {
         if (showError) {
             setFieldError(postPrice, postPriceError, 'El precio no puede ser negativo.');
@@ -977,6 +991,10 @@ function resetCreatePostForm() {
         postImage.value = '';
     }
 
+    if (postPrice) {
+        postPrice.dataset.previousValidValue = '';
+    }
+
     resetCreatePostValidation();
     updatePublishButtonState();
 }
@@ -996,6 +1014,10 @@ function resetCreatePostLocalState() {
 
     if (postImage) {
         postImage.value = '';
+    }
+
+    if (postPrice) {
+        postPrice.dataset.previousValidValue = '';
     }
 
     resetCreatePostValidation();
@@ -1255,9 +1277,20 @@ if (clearMarketplaceFilters) {
     });
 }
 
+function updateSearchButtonState() {
+    if (!marketplaceSearch || !searchMarketplaceBtn) return;
+
+    const value = marketplaceSearch.value;
+    searchMarketplaceBtn.disabled = value.trim() === '';
+}
+
 if (marketplaceSearch) {
+    marketplaceSearch.addEventListener('input', () => {
+        updateSearchButtonState();
+    });
+
     marketplaceSearch.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !searchMarketplaceBtn.disabled) {
             e.preventDefault();
             currentMarketplacePage = 1;
             renderMarketplace();
@@ -1265,12 +1298,7 @@ if (marketplaceSearch) {
     });
 }
 
-if (marketplaceConditionFilter) {
-    marketplaceConditionFilter.addEventListener('change', () => {
-        currentMarketplacePage = 1;
-        renderMarketplace();
-    });
-}
+updateSearchButtonState();
 
 if (marketplaceCategoryFilter) {
     marketplaceCategoryFilter.addEventListener('change', () => {
@@ -1362,12 +1390,6 @@ if (reportDescription) {
 
 
 if (postPrice) {
-    postPrice.addEventListener('keydown', (e) => {
-        if (['e', 'E', '+', '-'].includes(e.key)) {
-            e.preventDefault();
-        }
-    });
-
     postPrice.addEventListener('input', () => {
         let value = postPrice.value.replace(/[^0-9.]/g, '');
 
@@ -1387,9 +1409,25 @@ if (postPrice) {
             value = integerPart + '.' + decimalPart;
         }
 
-        postPrice.value = value;
+        const numericValue = Number(value);
 
-        validatePrice(true);
+        if (value && !Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
+            setFieldError(
+                postPrice,
+                postPriceError,
+                'El precio no puede exceder $10,000.00.'
+            );
+            document.getElementById('postPriceGroup')?.classList.add('is-invalid');
+
+            const previousValidValue = postPrice.dataset.previousValidValue || '';
+
+            postPrice.value = previousValidValue;
+        } else {
+            postPrice.value = value;
+            postPrice.dataset.previousValidValue = value;
+            validatePrice(true);
+        }
+
         updatePublishButtonState();
         updateCreatePostDirtyState();
     });

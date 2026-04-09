@@ -14,7 +14,7 @@
         <!--Filter and searches-->
             <div class="mb-4">
                 <div class="row g-3 mb-3 align-items-stretch">
-                    <div class="col-lg-12">
+                    <div class="col-lg-10">
                         <div class="input-group search-group h-100">
                             <span class="input-group-text bg-white border-0">
                                 <i class="bi bi-search"></i>
@@ -29,8 +29,14 @@
                         </div>
                     </div>
 
+                    <div class="col-md-2 d-grid">
+                        <button type="button" class="btn btn-success" id="searchReportsBtn" disabled>
+                            Buscar
+                        </button>
+                    </div>
 
-                    <div class="col-md-3">
+
+                    <div class="col-md-6 col-lg-4">
                         <select id="filterReason" class="form-select border-2 border-dark">
                             <option value="">Todas las razones</option>
                             <option value="Fraude o estafa">Fraude o estafa</option>
@@ -41,7 +47,7 @@
                         </select>
                     </div>
 
-                    <div class="col-md-3">
+                    <div class="col-md-6 col-lg-4">
                         <input
                             type="date"
                             id="filterDate"

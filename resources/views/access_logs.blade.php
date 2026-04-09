@@ -8,7 +8,7 @@
 
         <div class="mb-4">
             <h1 class="fw-bold">Bienvenido al Panel de Administración</h1>
-            <p>Monitorear acceso al sistema y costos de instalaciones.</p>
+            <p> Aquí puedes monitorear acceso al sistema y costos de instalaciones.</p>
         </div>
 
 
@@ -43,7 +43,7 @@
                 </div>
 
                 <div class="col-lg-2 d-grid">
-                    <button type="button" id="searchAccessLogsBtn" class="btn btn-success h-100">
+                    <button type="button" id="searchAccessLogsBtn" class="btn btn-success h-100" disabled>
                         Buscar
                     </button>
                 </div>
