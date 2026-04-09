@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const borrowDateFilter = document.getElementById('borrowDateFilter');
     const borrowSearch = document.getElementById('borrowSearch');
 
+    const borrowSearchBtn = document.getElementById('borrowSearchBtn');
+
     const pendingEmptyState = document.getElementById('pendingEmptyState');
     const activeEmptyState = document.getElementById('activeEmptyState');
 
@@ -46,6 +48,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (activeEmptyState) {
             activeEmptyState.classList.toggle('d-none', activeVisible.length !== 0);
         }
+    }
+
+    function updateBorrowSearchButtonState() {
+        if (!borrowSearch || !borrowSearchBtn) return;
+
+        const hasText = borrowSearch.value.trim().length > 0;
+        borrowSearchBtn.disabled = !hasText;
     }
 
     function filterRequests() {
@@ -174,7 +183,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (borrowSearch) {
-        borrowSearch.addEventListener('input', filterRequests);
+        borrowSearch.addEventListener('input', function () {
+            filterRequests();
+            updateBorrowSearchButtonState();
+        });
     }
 
     if (borrowDateFilter) {
@@ -185,4 +197,5 @@ document.addEventListener('DOMContentLoaded', function () {
     attachDenyEvents();
     attachReturnEvents();
     updateEmptyStates();
+    updateBorrowSearchButtonState();
 });

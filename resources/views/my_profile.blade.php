@@ -158,9 +158,11 @@
                                 </div>
 
                                 <div class="col-lg-2 d-grid">
-                                    <button type="submit" class="btn btn-success h-100 fw-semibold">
+
+                                    <button type="submit" id="postsSearchBtn" class="btn btn-success h-100 fw-semibold" disabled>
                                         Buscar
                                     </button>
+
                                 </div>
                             </div>
 
@@ -407,7 +409,7 @@
                                     </div>
 
                                     <div class="col-lg-2 d-grid">
-                                        <button type="submit" class="btn btn-success h-100 fw-semibold">
+                                        <button type="submit" id="requestsSearchBtn" class="btn btn-success h-100 fw-semibold" disabled>
                                             Buscar
                                         </button>
                                     </div>

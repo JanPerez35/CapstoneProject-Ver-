@@ -23,6 +23,7 @@
                         <input
                             type="text"
                             name="search"
+                            id="kinventorySearchInput"
                             class="form-control border-0"
                             placeholder="Buscar equipo deportivo..."
                             value="{{ request('search') }}"
@@ -31,8 +32,7 @@
                 </div>
 
                 <div class="col-lg-2 d-grid">
-                    <button type="submit" class="btn btn-success h-100">
-                        Buscar
+                    <button type="submit" id="kinventorySearchBtn" class="btn btn-success h-100" disabled>                        Buscar
                     </button>
                 </div>
             </div>

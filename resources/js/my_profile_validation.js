@@ -124,6 +124,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const postsFilterForm = document.getElementById('postsFilterForm');
     const postSearch = document.getElementById('postSearch');
+
+    const postsSearchBtn = document.getElementById('postsSearchBtn');
+    const requestSearch = document.getElementById('requestSearch');
+    const requestsSearchBtn = document.getElementById('requestsSearchBtn');
+
     const sportFilter = document.getElementById('sportFilter');
     const priceFilter = document.getElementById('priceFilter');
     const clearPostsFilters = document.getElementById('clearPostsFilters');
@@ -141,6 +146,20 @@ document.addEventListener('DOMContentLoaded', function () {
         if (selectedRange === '101+') return numericPrice >= 101;
 
         return true;
+    }
+
+    function updatePostsSearchButtonState() {
+        if (!postSearch || !postsSearchBtn) return;
+
+        const hasText = postSearch.value.trim().length > 0;
+        postsSearchBtn.disabled = !hasText;
+    }
+
+    function updateRequestsSearchButtonState() {
+        if (!requestSearch || !requestsSearchBtn) return;
+
+        const hasText = requestSearch.value.trim().length > 0;
+        requestsSearchBtn.disabled = !hasText;
     }
 
     function filterPosts(resetPage = false) {
@@ -174,6 +193,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (resetPage) {
             currentPostsPage = 1;
+        }
+//Odd
+        if (requestSearch) {
+            requestSearch.addEventListener('input', updateRequestsSearchButtonState);
         }
 
         if (postsEmptyState) {
@@ -222,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
         postSearch.addEventListener('input', function () {
             currentPostsPage = 1;
             filterPosts();
+            updatePostsSearchButtonState();
         });
     }
 
@@ -232,9 +256,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (priceFilter) priceFilter.value = '';
             currentPostsPage = 1;
             filterPosts();
+            updatePostsSearchButtonState();
         });
     }
 
     updatePostsTabCount();
     filterPosts(true);
+    updatePostsSearchButtonState();
+    updateRequestsSearchButtonState();
 });

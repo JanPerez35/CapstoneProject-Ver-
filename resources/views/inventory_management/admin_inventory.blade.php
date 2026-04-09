@@ -64,6 +64,7 @@
                         <input
                             type="text"
                             name="search"
+                            id="inventorySearchInput"
                             class="form-control border-0"
                             placeholder="Buscar equipo deportivo..."
                             value="{{ request('search') }}"
@@ -72,8 +73,7 @@
                 </div>
 
                 <div class="col-lg-2 d-grid">
-                    <button type="submit" class="btn btn-success h-100 fw-semibold">
-                        Buscar
+                    <button type="submit" id="inventorySearchBtn" class="btn btn-success h-100 fw-semibold" disabled>                        Buscar
                     </button>
                 </div>
             </div>

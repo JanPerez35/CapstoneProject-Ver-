@@ -129,6 +129,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function updateSearchUsersButtonState() {
+        if (!userSearchInput || !searchUsersBtn) return;
+
+        const hasText = userSearchInput.value.trim().length > 0;
+        searchUsersBtn.disabled = !hasText;
+    }
+
     function filterUsers() {
         const filteredUsers = getFilteredUsers();
         const totalPages = Math.max(1, Math.ceil(filteredUsers.length / USERS_PER_PAGE));
@@ -176,6 +183,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 resetToFirstPageAndFilter();
             }
         });
+        userSearchInput.addEventListener('input', updateSearchUsersButtonState);
+
     }
 
     if (roleFilterSelect) {
@@ -338,4 +347,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     filterUsers();
+    filterUsers();
+    updateSearchUsersButtonState();
 });

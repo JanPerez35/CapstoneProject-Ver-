@@ -64,7 +64,7 @@
                     </div>
 
                     <div class="col-lg-2 d-grid">
-                        <button type="submit" class="btn btn-success h-100 fw-semibold">
+                        <button type="submit" id="borrowSearchBtn" class="btn btn-success h-100 fw-semibold" disabled>
                             Buscar
                         </button>
                     </div>
@@ -321,6 +321,7 @@
                                 </div>
                             @endforelse
                         </div>
+                    </div>
                 </div>
             </div>
         </div>

@@ -61,7 +61,8 @@
                 </div>
 
                 <div class="col-lg-2 d-grid">
-                    <button type="button" class="btn btn-success h-100 fw-semibold" id="searchUsersBtn">
+
+                    <button type="button" class="btn btn-success h-100 fw-semibold" id="searchUsersBtn" disabled>
                         Buscar
                     </button>
                 </div>
