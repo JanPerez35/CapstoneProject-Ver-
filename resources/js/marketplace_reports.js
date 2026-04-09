@@ -19,26 +19,25 @@
     function formatDateForDisplay(dateValue) {
     if (!dateValue) return '';
     const [year, month, day] = dateValue.split('-');
-    return `${month}-${day}-${year}`;
+    return `${month}/${day}/${year}`;
 }
 
     const els = {
     filterReason: $('filterReason'),
     filterSearchBy: $('filterSearchBy'),
     filterDate: $('filterDate'),
-    searchReportsBtn: $('searchReportsBtn'),
 
-    resolveModal: $('resolveReportModal'),
+    resolveModal: $('resolveQuerellaModal'),
     deleteModal: $('deletePostModal'),
-    banModal: $('banUserModal'),
+    banModal: $('bloquearUserModal'),
 
-    confirmResolve: $('confirmResolveReport'),
+    confirmResolve: $('confirmResolveQuerella'),
     confirmDelete: $('confirmDeletePost'),
-    confirmBan: $('confirmBanUser'),
+    confirmBan: $('confirmBloquearUser'),
 
     reportsTable: $('reportsTable'),
     emptyState: $('reportsEmptyState'),
-    reportsPagination: $('reportsPagination'),
+    reportsPagination: $('querellasPagination'),
 };
 
     const clearReportsFiltersBtn = document.getElementById('clearReportsFilters');
@@ -260,20 +259,6 @@
             });
         }
 
-    function bindExclusiveCheckboxes() {
-    rows().forEach((row) => {
-    const checkboxes = row.querySelectorAll('.action-checkbox');
-
-    checkboxes.forEach((checkbox) => {
-    checkbox.addEventListener('change', function () {
-    if (!this.checked) return;
-    checkboxes.forEach((other) => {
-    if (other !== this) other.checked = false;
-});
-});
-});
-});
-}
 
     function bindAction(selector, modalEl, key) {
     document.querySelectorAll(selector).forEach((checkbox) => {
@@ -284,6 +269,17 @@
 });
 });
 }
+
+    document.querySelectorAll('.action-view').forEach((radio) => {
+            radio.addEventListener('change', function () {
+                if (!this.checked) return;
+                toasts.view?.show();
+            });
+        });
+
+        bindAction('.action-resolve', els.resolveModal, 'resolve');
+        bindAction('.action-delete-post', els.deleteModal, 'delete');
+        bindAction('.action-block-user', els.banModal, 'ban');
 
     function bindModalReset(modalEl, key) {
     modalEl?.addEventListener('hidden.bs.modal', () => {
@@ -306,20 +302,18 @@
 }
 
     bindNameInput(els.filterSearchBy);
-    els.searchReportsBtn?.addEventListener('click', applyFilters);
+    els.filterSearchBy?.addEventListener('input',applyFilters);
 
     [els.filterReason, els.filterDate].forEach((el) => {
     el.addEventListener('input', applyFilters);
     el.addEventListener('change', applyFilters);
 });
 
-    bindExclusiveCheckboxes();
 
     document.querySelectorAll('.action-view').forEach((checkbox) => {
     checkbox.addEventListener('change', function () {
     if (this.checked) {
     toasts.view?.show();
-    this.checked = false;
 }
 });
 });
