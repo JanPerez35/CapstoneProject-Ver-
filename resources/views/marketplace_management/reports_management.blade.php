@@ -348,6 +348,18 @@
             transform: scale(1.45);
             cursor: pointer;
             margin: 0;
+            accent-color: #198754;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25));
+            transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
+        }
+
+        .action-radio:hover{
+            transform: scale(1.55);
+        }
+
+        .action-radio.active-radio {
+            opacity: 1;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));
         }
 
         .reports-empty-state {

@@ -270,16 +270,6 @@
 });
 }
 
-    document.querySelectorAll('.action-view').forEach((radio) => {
-            radio.addEventListener('change', function () {
-                if (!this.checked) return;
-                toasts.view?.show();
-            });
-        });
-
-        bindAction('.action-resolve', els.resolveModal, 'resolve');
-        bindAction('.action-delete-post', els.deleteModal, 'delete');
-        bindAction('.action-block-user', els.banModal, 'ban');
 
     function bindModalReset(modalEl, key) {
     modalEl?.addEventListener('hidden.bs.modal', () => {
@@ -320,7 +310,7 @@
 
     bindAction('.action-resolve', els.resolveModal, 'resolve');
     bindAction('.action-delete-post', els.deleteModal, 'delete');
-    bindAction('.action-ban-user', els.banModal, 'ban');
+    bindAction('.action-block-user', els.banModal, 'ban');
 
     bindConfirm(els.confirmResolve, 'resolve', els.resolveModal, 'resolve');
     bindConfirm(els.confirmDelete, 'delete', els.deleteModal, 'delete');
@@ -330,5 +320,35 @@
     bindModalReset(els.deleteModal, 'delete');
     bindModalReset(els.banModal, 'ban');
 
+        document.querySelectorAll('#reportsTable tbody tr').forEach((row) => {
+            const radios = row.querySelectorAll('.action-radio');
+
+            radios.forEach((radio) => {
+                radio.addEventListener('click', function () {
+                    const wasChecked = this.dataset.wasChecked === 'true';
+
+                    radios.forEach((r) => {
+                        r.dataset.wasChecked = 'false';
+                        r.classList.remove('active-radio');
+                    });
+
+                    if (wasChecked) {
+                        this.checked = false;
+
+                        if (selected.resolve === this) selected.resolve = null;
+                        if (selected.delete === this) selected.delete = null;
+                        if (selected.ban === this) selected.ban = null;
+
+                        return;
+                    }
+
+                    this.dataset.wasChecked = 'true';
+                    this.classList.add('active-radio');
+                });
+            });
+        });
+
     renderReports();
+
 });
+
