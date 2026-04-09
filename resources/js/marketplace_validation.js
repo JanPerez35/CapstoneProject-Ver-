@@ -118,6 +118,7 @@ let isCreatePostDirty = false;
 let allowCreatePostClose = false;
 let isReportDirty = false;
 let allowReportClose = false;
+let reportedUserId = null;
 
 // Storage
 let allMarketplacePosts =[];
@@ -349,6 +350,9 @@ function renderPostDetailsCarousel(images = []) {
 }
 
 function populatePostDetailsModal(post) {
+    if (post.user?.id) {
+        reportedUserId = post.user.id;
+    }
     const postDetailsChatLink = document.getElementById('postDetailsChatLink');
 
     if (postDetailsChatLink && post) {
@@ -1626,7 +1630,7 @@ if (reportReason) {
 
 // Submit report
 if (submitReportBtn) {
-    submitReportBtn.addEventListener('click', (e) => {
+    submitReportBtn.addEventListener('click', async (e) => {
         e.preventDefault();
 
         const isReasonValid = validateReportReason(true);
@@ -1636,24 +1640,49 @@ if (submitReportBtn) {
             updateReportButtonState();
             return;
         }
+        try {
+                const response = await fetch('/reports', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        reported_user_id: reportedUserId,
+                        report_reason: reportReason.value,
+                        description: reportDescription.value
+                    })
+                });
 
-        allowReportClose = true;
+                const data = await response.json();
 
-        const reportModalInstance = bootstrap.Modal.getOrCreateInstance(reportUserModal);
-        reportModalInstance.hide();
+                if (!response.ok) {
+                    console.error('ERROR BACKEND:', data);
+                    return;
+                }
 
-        setTimeout(() => {
-            reportSentToast?.show();
-        }, 250);
+                allowReportClose = true;
 
-        if (postDetailsModal) {
-            setTimeout(() => {
-                const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
-                postModalInstance.show();
-            }, 300);
-        }
-    });
-}
+                const reportModalInstance = bootstrap.Modal.getOrCreateInstance(reportUserModal);
+                reportModalInstance.hide();
+
+                setTimeout(() => {
+                    reportSentToast?.show();
+                }, 250);
+
+                if (postDetailsModal) {
+                    setTimeout(() => {
+                        const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
+                        postModalInstance.show();
+                    }, 300);
+                }
+            
+            }
+            catch (error) {
+                console.error('Error enviando reporte:', error);
+            }
+        });
+    } 
 
 // Report modal behavior
 if (reportUserModal) {

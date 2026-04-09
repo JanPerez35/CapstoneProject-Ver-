@@ -1,7 +1,7 @@
 <x-layout title="Mensajes - MAIKINE">
     <x-navbar></x-navbar>
 
-    @vite(['resources/js/pages/messages_profanity.js', 'resources/js/messages_validation.js'])
+    @vite(['resources/js/pages/messages_profanity.js', 'resources/js/messages_validation.js', 'resources/js/echo.js'])
 
     @php
         $volverUrl = request('return_to', route('kinemarket'));
@@ -41,7 +41,7 @@
         class="container-fluid py-4"
         id="messagesView"
         data-chat-id="{{ request('chat_id', '') }}"
-        data-post-id="{{ request('post_id', '') }}"
+        data-post-id="{{ $selectedChat?->post_id ?? '' }}"
         data-current-user-id="{{ auth()->id() ?? '' }}"
     >
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="height: 650px;">
@@ -72,31 +72,45 @@
                         </div>
                     </div>
 
-                    <div id="chatListContainer">
-                        <div
-                            class="p-4 bg-success bg-opacity-10 border-start border-4 border-success chat-list-item"
-                            id="chatListItem"
-                            data-search-text=""
+                   <div id="chatListContainer">
+
+                       @foreach($chats as $chat)
+                        <a 
+                            href="{{ route('my_messages', [
+                                'chat_id' => $chat->id,
+                                'post_id' => $chat->post_id
+                            ]) }}"
+                            class="text-decoration-none text-dark"
                         >
-                            <div class="d-flex align-items-start">
-                                <div
-                                    class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3 chat-user-initial"
-                                    style="width: 48px; height: 48px;"
-                                >
-                                    U
-                                </div>
-
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h5 class="mb-1 fw-bold" id="chatParticipantName">Cargando...</h5>
+                            <div
+                                class="p-4 border-start border-4 border-success chat-list-item"
+                                data-chat-id="{{ $chat->id }}"
+                                data-post-id="{{ $chat->post_id }}"
+                            >
+                                <div class="d-flex align-items-start">
+                                    <div
+                                        class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3 chat-user-initial"
+                                        style="width: 48px; height: 48px;"
+                                    >
+                                        {{ strtoupper(substr($chat->otherUser()->name ?? 'U', 0, 1)) }}
                                     </div>
 
-                                    <div class="text-muted mb-2" id="chatPostSummary" title="">
-                                        Cargando publicación...
+                                    <div class="flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-1 fw-bold">
+                                                {{ $chat->otherUser()->name ?? 'Usuario' }}
+                                            </h5>
+                                        </div>
+
+                                        <div class="text-muted mb-2">
+                                            {{ Str::limit($chat->post->title ?? 'Sin título', 35) }}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            </div>   
+                        </a>
+                        @endforeach
+
                     </div>
 
                     <div
@@ -116,13 +130,15 @@
                                     class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3 chat-user-initial"
                                     style="width: 48px; height: 48px;"
                                 >
-                                    U
+                                    {{ strtoupper(substr($selectedChat?->otherUser()->name ?? 'U', 0, 1)) }}
                                 </div>
 
                                 <div>
-                                    <h4 class="mb-1 fw-bold" id="chatHeaderParticipantName">Cargando...</h4>
-                                    <div class="text-muted" id="chatHeaderPostSummary" title="">
-                                        Cargando publicación...
+                                    <h4 class="mb-1 fw-bold" id="chatHeaderParticipantName">
+                                        {{ $selectedChat?->otherUser()->name ?? 'Selecciona un chat' }}
+                                    </h4>
+                                    <div class="text-muted" id="chatHeaderPostSummary">
+                                        {{ $selectedChat?->post->title ?? '' }}
                                     </div>
                                 </div>
                             </div>
@@ -136,40 +152,31 @@
                                 data-post-id="{{ request('post_id', '') }}"
                             >
                                 <i class="bi bi-eye me-2"></i> Ver Publicación
-                            </button>
+                            </button>   
                         </div>
                     </div>
+                <div id="chatMessagesContainer" class="flex-grow-1 p-4 overflow-auto">
+                    <div id="chatEmptyState" class="text-center text-muted">
+                        No hay mensajes aún
+                    </div>
+                </div>
 
-                    <div class="flex-grow-1 p-4 overflow-auto" id="chatMessagesContainer" style="min-height: 0;">
-                        <div
-                            id="chatEmptyState"
-                            class="h-100 d-flex flex-column justify-content-center align-items-center text-center text-muted"
+                <div class="p-4 border-top">
+                    <div class="input-group">
+                        <input
+                            id="chatMessageInput"
+                            type="text"
+                            class="form-control form-control-lg"
+                            placeholder="Escribe un mensaje..."
                         >
-                            <i class="bi bi-chat fs-1 mb-3"></i>
-                            <h3 class="fw-normal">No hay mensajes aún</h3>
-                            <p>Envía el primer mensaje para comenzar la conversación</p>
-                        </div>
+                        <button id="sendChatMessageBtn" class="btn btn-success">
+                            <i class="bi bi-send"></i>
+                        </button>
+                    </div>
+                </div>
                     </div>
 
                     <div class="p-4 border-top">
-                        <div class="input-group">
-                            <input
-                                type="text"
-                                id="chatMessageInput"
-                                class="form-control form-control-lg border-end-0"
-                                placeholder="Escribe un mensaje..."
-                            >
-                            <button
-                                class="btn btn-success px-4"
-                                id="sendChatMessageBtn"
-                                type="button"
-                                data-conversation-id="{{ $conversation->id ?? '' }}"
-                                data-sender-id="{{ auth()->id() ?? 1 }}"
-                            >
-                                <i class="bi bi-send"></i>
-                            </button>
-                        </div>
-
                         <div class="d-flex justify-content-between mt-1">
                             <div class="invalid-feedback d-block" id="chatMessageError"></div>
                             <small id="chatMessageCounter" class="text-muted d-block text-end">0 / 255</small>

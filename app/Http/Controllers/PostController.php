@@ -74,4 +74,9 @@ class PostController extends Controller
         $posts = Post::latest()->get();
         return view('kinemarket', compact('posts'));
     }
+
+    public function show($id)
+    {
+        return \App\Models\Post::with('user')->findOrFail($id);
+    }
 }

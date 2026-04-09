@@ -8,8 +8,10 @@ use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\PostController;
 use App\Models\Post;
 use App\Http\Controllers\TermsController;
-
-
+use App\Http\Controllers\ChatController;
+use App\Models\Chat;
+use App\Http\Controllers\UserReportController;
+use App\Http\Controllers\MessageController;
 
 Route::get('/', function () {
     return view('login');
@@ -112,13 +114,26 @@ Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.
 Route::get('/posts', function () {
     return Post::with('user')->latest()->get();
 });
+Route::get('/posts/{id}', function ($id) {
+    return \App\Models\Post::with('user')->findOrFail($id);
+});
 
 Route::get('/reports', [UserReportController::class, 'index']);
-
+Route::post('/reports', [UserReportController::class, 'store']);
 Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
 Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
 
 Route::delete('/posts/{post}', [PostController::class, 'destroy']);
+
+Route::get('/my_messages', [ChatController::class, 'index'])->name('my_messages');
+Route::get('/chat/{chatId}', [ChatController::class, 'show'])->name('chat.show');
+Route::post('/messages', [MessageController::class, 'store']);
+Route::get('/messages/{chatId}', function ($chatId) {
+    return \App\Models\Message::with('user')
+        ->where('chat_id', $chatId)
+        ->orderBy('created_at')
+        ->get();
+});
 
 require __DIR__ . '\saml2.php';
 /*Route::get('/kinemercado/reportar_usuario', function () {

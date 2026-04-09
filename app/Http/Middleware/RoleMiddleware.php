@@ -17,7 +17,7 @@ class RoleMiddleware
     {
         // 1. Verifica si el usuario está autenticado
         if (!auth()->check()) {
-            abort(404, 'Not Found');
+            abort(403, 'No Autenticado');
         }
 
         // 2. Obtiene el usuario autenticado
@@ -25,7 +25,7 @@ class RoleMiddleware
 
         // 3. Verifica si el usuario tiene uno de los roles permitidos
         if (!in_array($user->role, $roles)) {
-            abort(403, 'Acceso Denegado');
+            abort(403, 'No Autorizado');
         }
 
         // 4. Permite continuar la request

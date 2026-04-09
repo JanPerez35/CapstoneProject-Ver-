@@ -330,6 +330,7 @@
             <ul class="pagination justify-content-center mb-0" id="marketplacePagination"></ul>
         </nav>
 
+        
 
         <!-- Post Details Modal -->
         <div class="modal fade" id="postDetailsModal" tabindex="-1" aria-labelledby="postDetailsModalLabel" aria-hidden="true">
