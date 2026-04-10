@@ -12,6 +12,7 @@ use App\Models\ActivityLog;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\EmailService;
 use App\Models\Review;
+use App\Models\Post;
 
 class EquipmentController extends Controller
 {
@@ -494,7 +495,7 @@ public function borrows(Request $request)
     $approved = $approvedQuery->latest('start_time')->get();
 
     return view('inventory_management.borrows', compact('pending', 'approved'));
-}
+    }
 
     public function approveRequest($id)
     {
@@ -567,198 +568,204 @@ public function borrows(Request $request)
             ->with('success', 'Solicitud denegada correctamente.');
     }
 
-public function markReturned($id)
-{
-    $lending = Lending::with('items')->findOrFail($id);
+    public function markReturned($id)
+    {
+        $lending = Lending::with('items')->findOrFail($id);
 
-    DB::transaction(function () use ($lending) {
-        foreach ($lending->items as $item) {
-            $equipment = Equipment::lockForUpdate()->findOrFail($item->equipment_id);
+        DB::transaction(function () use ($lending) {
+            foreach ($lending->items as $item) {
+                $equipment = Equipment::lockForUpdate()->findOrFail($item->equipment_id);
 
-            $equipment->available_quantity += $item->quantity;
-            $equipment->save();
+                $equipment->available_quantity += $item->quantity;
+                $equipment->save();
 
-            $item->item_status = 'returned';
-            $item->save();
-        }
+                $item->item_status = 'returned';
+                $item->save();
+            }
 
-        $lending->status = 'returned';
-        $lending->save();
-    });
+            $lending->status = 'returned';
+            $lending->save();
+        });
 
-    $this->logActivity(
-    'Devolución de equipo',
-    'Solicitud ID ' . $lending->id . ' marcada como devuelta'
-    );
+        $this->logActivity(
+        'Devolución de equipo',
+        'Solicitud ID ' . $lending->id . ' marcada como devuelta'
+        );
 
-    return redirect()->route('inventory_management.borrows')
-        ->with('success', 'Equipo marcado como devuelto.');
-}
-
-private function buildStatisticsQuery(string $type, int $year, int $month)
-{
-    $query = DB::table('lending_items')
-        ->join('lendings', 'lending_items.lending_id', '=', 'lendings.id')
-        ->join('equipment', 'lending_items.equipment_id', '=', 'equipment.id')
-        ->selectRaw('equipment.description, CAST(SUM(lending_items.quantity) AS UNSIGNED) as total')
-        ->whereYear('lendings.created_at', $year)
-        ->groupBy('equipment.description')
-        ->orderByDesc('total');
-
-    if ($type === 'monthly') {
-        $query->whereMonth('lendings.created_at', $month);
+        return redirect()->route('inventory_management.borrows')
+            ->with('success', 'Equipo marcado como devuelto.');
     }
 
-    return $query;
-}
+    private function buildStatisticsQuery(string $type, int $year, int $month)
+    {
+        $query = DB::table('lending_items')
+            ->join('lendings', 'lending_items.lending_id', '=', 'lendings.id')
+            ->join('equipment', 'lending_items.equipment_id', '=', 'equipment.id')
+            ->selectRaw('equipment.description, CAST(SUM(lending_items.quantity) AS UNSIGNED) as total')
+            ->whereYear('lendings.created_at', $year)
+            ->groupBy('equipment.description')
+            ->orderByDesc('total');
 
-public function statistics(Request $request)
-{
-    $type  = $request->input('type', 'monthly');
-    $year  = (int) $request->input('year', date('Y'));
-    $month = (int) $request->input('month', date('n'));
+        if ($type === 'monthly') {
+            $query->whereMonth('lendings.created_at', $month);
+        }
 
-    $items = $this->buildStatisticsQuery($type, $year, $month)->get();
-
-    $availableYears = DB::table('lendings')
-        ->selectRaw('DISTINCT YEAR(created_at) as yr')
-        ->whereNotNull('created_at')
-        ->pluck('yr')
-        ->filter()
-        ->sort()
-        ->values()
-        ->toArray();
-
-    if (!in_array((int) date('Y'), $availableYears)) {
-        $availableYears[] = (int) date('Y');
-        sort($availableYears);
+        return $query;
     }
 
-    $topItem    = $items->first();
-    $totalReqs  = $items->sum('total');
-    $totalItems = $items->count();
+    public function statistics(Request $request)
+    {
+        $type  = $request->input('type', 'monthly');
+        $year  = (int) $request->input('year', date('Y'));
+        $month = (int) $request->input('month', date('n'));
 
-    return view('inventory_management.inventory_statistics', compact(
-        'items', 'availableYears', 'type', 'year', 'month',
-        'topItem', 'totalReqs', 'totalItems'
-    ));
-}
+        $allItems = $this->buildStatisticsQuery($type, $year, $month)->get();
+        $items = $allItems->take(5);
 
-public function exportStatistics(Request $request)
-{
-    $type   = $request->input('type', 'monthly');
-    $year   = (int) $request->input('year', date('Y'));
-    $month  = (int) $request->input('month', date('n'));
-    $format = $request->input('format', 'csv');
+        $availableYears = DB::table('lendings')
+            ->selectRaw('DISTINCT YEAR(created_at) as yr')
+            ->whereNotNull('created_at')
+            ->pluck('yr')
+            ->filter()
+            ->sort()
+            ->values()
+            ->toArray();
 
-    $items = $this->buildStatisticsQuery($type, $year, $month)->get();
-
-    $monthNames = [
-        1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
-        5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
-        9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
-    ];
-
-    $periodLabel = $type === 'annual'
-        ? "Anual - {$year}"
-        : "{$monthNames[$month]} {$year}";
-
-    if ($format === 'csv') {
-        $lines   = ["Objeto,Pedidos"];
-        foreach ($items as $item) {
-            $lines[] = "\"{$item->description}\",{$item->total}";
+        if (!in_array((int) date('Y'), $availableYears)) {
+            $availableYears[] = (int) date('Y');
+            sort($availableYears);
         }
-        $content  = implode("\n", $lines);
-        $filename = "reporte_inventario_{$type}_{$year}.csv";
-        $mime     = 'text/csv';
+
+        $topItem    = $allItems->first();
+        $totalReqs  = $allItems->sum('total');
+        $totalItems = $allItems->count();
+
+        return view('inventory_management.inventory_statistics', compact(
+            'items', 'availableYears', 'type', 'year', 'month',
+            'topItem', 'totalReqs', 'totalItems'
+        ));
+    }
+
+    public function exportStatistics(Request $request)
+    {
+        $type   = $request->input('type', 'monthly');
+        $year   = (int) $request->input('year', date('Y'));
+        $month  = (int) $request->input('month', date('n'));
+        $format = $request->input('format', 'csv');
+
+        $items = $this->buildStatisticsQuery($type, $year, $month)->get();
+
+        $monthNames = [
+            1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+            5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+            9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre',
+        ];
+
+        $periodLabel = $type === 'annual'
+            ? "Anual - {$year}"
+            : "{$monthNames[$month]} {$year}";
+
+        if ($format === 'csv') {
+            $lines   = ["Objeto,Pedidos"];
+            foreach ($items as $item) {
+                $lines[] = "\"{$item->description}\",{$item->total}";
+            }
+            $content  = implode("\n", $lines);
+            $filename = "reporte_inventario_{$type}_{$year}.csv";
+            $mime     = 'text/csv';
+
+            return response($content, 200)
+                ->header('Content-Type', $mime . '; charset=utf-8')
+                ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
+        }
+
+        elseif ($format === 'pdf') {
+
+            $pdf = Pdf::loadView('pdfs.statistics_pdf', [
+                'items' => $items,
+                'type' => $type,
+                'year' => $year,
+                'month' => $month,
+                'periodLabel' => $periodLabel,
+            ]);
+
+            return $pdf->download("reporte_inventario_{$type}_{$year}.pdf");
+        }
+
+    // fallback (por si acaso)
+        abort(404);
+
 
         return response($content, 200)
             ->header('Content-Type', $mime . '; charset=utf-8')
             ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
     }
 
-    elseif ($format === 'pdf') {
+    public function accessLogs()
+    {
+        $logs = ActivityLog::with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
 
-        $pdf = Pdf::loadView('pdfs.statistics_pdf', [
-            'items' => $items,
-            'type' => $type,
-            'year' => $year,
-            'month' => $month,
-            'periodLabel' => $periodLabel,
-        ]);
-
-        return $pdf->download("reporte_inventario_{$type}_{$year}.pdf");
+        return view('access_logs', compact('logs'));
     }
 
-// fallback (por si acaso)
-    abort(404);
+    public function profile(Request $request)
+    {
+        $user = auth()->user();
 
+        $requestsQuery = Lending::with('items.equipment')
+            ->where('user_id', $user->id);
 
-    return response($content, 200)
-        ->header('Content-Type', $mime . '; charset=utf-8')
-        ->header('Content-Disposition', "attachment; filename=\"{$filename}\"");
-}
+        if ($request->filled('request_search')) {
+            $search = strtolower($request->request_search);
 
-public function accessLogs()
-{
-    $logs = ActivityLog::with('user')
-        ->orderBy('created_at', 'desc')
-        ->paginate(10);
-
-    return view('access_logs', compact('logs'));
-}
-
-public function profile(Request $request)
-{
-    $user = auth()->user();
-
-    $requestsQuery = Lending::with('items.equipment')
-        ->where('user_id', $user->id);
-
-    if ($request->filled('request_search')) {
-        $search = strtolower($request->request_search);
-
-        $requestsQuery->where(function ($query) use ($search) {
-            $query->whereHas('items.equipment', function ($q) use ($search) {
-                $q->whereRaw('LOWER(description) LIKE ?', ["%{$search}%"]);
+            $requestsQuery->where(function ($query) use ($search) {
+                $query->whereHas('items.equipment', function ($q) use ($search) {
+                    $q->whereRaw('LOWER(description) LIKE ?', ["%{$search}%"]);
+                });
             });
-        });
-    }
-
-    if ($request->filled('request_status')) {
-        $status = strtolower($request->request_status);
-
-        if ($status === 'finished') {
-            $requestsQuery->whereIn('status', ['finished', 'returned']);
-        } else {
-            $requestsQuery->where('status', $status);
         }
-    }
 
-    $requests = $requestsQuery
-        ->latest('created_at')
-        ->paginate(5)
-        ->withQueryString();
+        if ($request->filled('request_status')) {
+            $status = strtolower($request->request_status);
 
-    if ($requests->currentPage() > $requests->lastPage() && $requests->lastPage() > 0) {
-        return redirect()->route('my_profile', array_merge(
-            $request->except('page'),
-            ['tab' => 'requests', 'page' => 1]
+            if ($status === 'finished') {
+                $requestsQuery->whereIn('status', ['finished', 'returned']);
+            } else {
+                $requestsQuery->where('status', $status);
+            }
+        }
+
+        $requests = $requestsQuery
+            ->latest('created_at')
+            ->paginate(5)
+            ->withQueryString();
+
+        if ($requests->currentPage() > $requests->lastPage() && $requests->lastPage() > 0) {
+            return redirect()->route('my_profile', array_merge(
+                $request->except('page'),
+                ['tab' => 'requests', 'page' => 1]
+            ));
+        }
+
+        $posts = Post::where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        $sellerAverageRating = round(
+            Review::where('seller_id', $user->id)->avg('rating') ?? 0,
+            1
+        );
+
+        $sellerReviewsCount = Review::where('seller_id', $user->id)->count();
+
+        return view('my_profile', compact(
+            'user',
+            'requests',
+            'posts',
+            'sellerAverageRating',
+            'sellerReviewsCount'
         ));
     }
-
-    $sellerAverageRating = round(
-        Review::where('seller_id', $user->id)->avg('rating') ?? 0,
-        1
-    );
-
-    $sellerReviewsCount = Review::where('seller_id', $user->id)->count();
-
-    return view('my_profile', compact(
-        'user',
-        'requests',
-        'sellerAverageRating',
-        'sellerReviewsCount'
-    ));
-}
 }

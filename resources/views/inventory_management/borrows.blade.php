@@ -128,10 +128,12 @@
 
                                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                                                     @if($lending->flag)
-                                                        <span class="badge text-bg-warning rounded-0">Caso Especial</span>
+                                                        <span class="label-badge badge-request-special">
+                                                            Caso Especial
+                                                        </span>
                                                     @endif
 
-                                                    <span class="badge text-bg-light border text-dark rounded-0 special-status-label">
+                                                    <span class="label-badge badge-request-pending">
                                                         Pendiente de aprobación
                                                     </span>
                                                 </div>
