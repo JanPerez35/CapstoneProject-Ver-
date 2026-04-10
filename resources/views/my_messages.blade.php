@@ -131,6 +131,7 @@
                                 <div
                                     class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3 chat-user-initial"
                                     style="width: 48px; height: 48px;"
+                                    id="chatHeaderParticipantInitial"
                                 >
                                     {{ strtoupper(substr($selectedChat?->otherUser()->name ?? 'U', 0, 1)) }}
                                 </div>

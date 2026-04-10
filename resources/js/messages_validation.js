@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatPostSummary = document.getElementById('chatPostSummary');
     const chatHeaderParticipantName = document.getElementById('chatHeaderParticipantName');
     const chatHeaderPostSummary = document.getElementById('chatHeaderPostSummary');
+    const chatHeaderParticipantInitial = document.getElementById('chatHeaderParticipantInitial');
 
     const messagesSearchInput = document.getElementById('messagesSearchInput');
     const chatListContainer = document.getElementById('chatListContainer');
@@ -306,6 +307,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (chatHeaderParticipantName) {
                 chatHeaderParticipantName.textContent = sellerName;
+            }
+            if (chatHeaderParticipantInitial) {
+                chatHeaderParticipantInitial.textContent = sellerInitial;
             }
 
             if (chatPostSummary) {
@@ -735,6 +739,7 @@ async function loadMessages(chatId) {
 
                 chatHeaderParticipantName.textContent = userName;
                 chatHeaderPostSummary.textContent = postTitle;
+                chatHeaderParticipantInitial.textContent = userName.charAt(0).toUpperCase();
 
                 if (!chatId) {
                     console.error('No hay chat_id');
