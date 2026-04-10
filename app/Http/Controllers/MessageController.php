@@ -19,7 +19,6 @@ class MessageController extends Controller
             'chat_id' => $request->chat_id,
             'user_id' => auth()->id(),
             'content' => $request->content,
-            'isMine' => $message->user_id == auth()->id(),
             'status' => 'sent',
             'sent_at' => now(),
         ]);
