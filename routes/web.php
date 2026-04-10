@@ -12,6 +12,7 @@ use App\Http\Controllers\ChatController;
 use App\Models\Chat;
 use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return view('login');
@@ -47,9 +48,8 @@ Route::get('/cart', [EquipmentController::class, 'cart'])->name('cart.index');
 Route::delete('/cart/remove/{id}', [EquipmentController::class, 'removeFromCart'])->name('cart.remove');
 Route::post('/cart/checkout', [EquipmentController::class, 'checkoutCart'])->name('cart.checkout');
 
-Route::get('/search_user', function () {
-    return view('search_user');
-})->name('search_user');
+Route::get('/search_user', [UserController::class, 'index'])->name('search_user');
+Route::put('/users/{user}/role', [UserController::class, 'updateRole']);
 
 // Route::get('/inventory_management', function () {
 //     return view('inventory_management');
@@ -104,10 +104,6 @@ Route::get('/access_logs', [EquipmentController::class, 'accessLogs'])
 // Route::get('/facility_management', function () {
 //     return view('facility_management');
 // })->name('facility_management');
-
-Route::get('/my_messages', function () {
-    return view('my_messages');
-})->name('my_messages');
 
 Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
 Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');

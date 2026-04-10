@@ -202,17 +202,19 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.role-select').forEach(select => {
         select.dataset.previousValue = select.value;
 
-        select.addEventListener('change', function () {
+        select.addEventListener('change', async function () {
             const card = select.closest('.user-card');
             if (!card) return;
 
+            const userId = card.dataset.userId;
             const userName = card.dataset.name;
             const newRole = select.value;
-            const previousRole = select.dataset.previousValue;
+            const previousRole = select.dataset.previousValue;            
 
             pendingRoleChange = {
                 card,
                 select,
+                userId,
                 userName,
                 newRole,
                 previousRole
@@ -228,10 +230,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     if (confirmRoleBtn) {
-        confirmRoleBtn.addEventListener('click', function () {
+        confirmRoleBtn.addEventListener('click', async function () {
             if (!pendingRoleChange) return;
 
-            const { card, select, newRole } = pendingRoleChange;
+            const { card, select, newRole, userId } = pendingRoleChange;
             const badge = getRoleBadgeElement(card);
 
             card.dataset.role = newRole;
@@ -244,6 +246,32 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmRoleModal);
             modalInstance.hide();
+
+            try {
+            const response = await fetch(`/users/${userId}/role`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    role: newRole
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.error('Error:', data);
+                return;
+            }
+
+            console.log('Rol actualizado correctamente');
+
+            } 
+            catch (error) {
+                console.error('Error:', error);
+            }
 
             if (roleToastEl) {
                 const toast = window.bootstrap.Toast.getOrCreateInstance(roleToastEl);

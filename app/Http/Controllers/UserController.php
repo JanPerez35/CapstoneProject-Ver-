@@ -11,16 +11,18 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
-        return view('users.index', compact('users'));
+        return view('search_user', compact('users'));
     }
 
     // Actualizar el rol de un usuario
     public function updateRole(Request $request, User $user)
     {
-        $request->validate(['role' => 'required|string|in:user,inventory_admin,marketplace_admin,facility_admin,super_admin',]);
+        $request->validate(['role' => 'required|string|in:Usuario,Admin Inventario,Admin Mercado,Admin Facilidades,Admin Super',]);
         $user->role = $request->role;
         $user->save();
 
-        return redirect()->back()->with('success', 'Role updated successfully!');
+        return response()->json([
+                'message' => 'Rol actualizado correctamente'
+            ]);    
     }
 }
