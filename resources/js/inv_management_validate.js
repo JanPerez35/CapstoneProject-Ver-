@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const CATEGORY_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
     const LOCATION_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-\/]+$/;
 
+    const searchInput = document.getElementById('inventorySearchInput');
+    const searchBtn = document.getElementById('inventorySearchBtn');
+
     const addToastElement = document.getElementById('inventoryAddToast');
     const deleteToastElement = document.getElementById('inventoryDeleteToast');
     const editToastElement = document.getElementById('inventoryEditToast');
@@ -64,6 +67,13 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(tryScroll, 100);
     }
 
+    function updateSearchButtonState() {
+        if (!searchInput || !searchBtn) return;
+
+        const hasText = searchInput.value.trim().length > 0;
+        searchBtn.disabled = !hasText;
+    }
+
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', saveScroll);
     });
@@ -80,6 +90,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     window.addEventListener('load', restoreScroll);
+
+    if (searchInput) {
+        searchInput.addEventListener('input', updateSearchButtonState);
+    }
+
+    updateSearchButtonState();
 
     function getToastInstance(element) {
         if (!element || typeof bootstrap === 'undefined') return null;

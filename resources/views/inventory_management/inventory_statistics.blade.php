@@ -6,7 +6,7 @@
         <div class="mb-4">
             <h1 class="fw-bold">Gestión de Inventario</h1>
             <p>
-                Aquí podrás administrar el inventario de equipo deportivo del departamento de Kinesiología.
+                Aquí puedes administrar el inventario de equipo deportivo del departamento de Kinesiología.
             </p>
         </div>
 

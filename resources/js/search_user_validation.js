@@ -28,12 +28,29 @@ document.addEventListener('DOMContentLoaded', function () {
     let currentPage = 1;
 
     function getRoleBadgeClass(role) {
-        if (role === 'Usuario') return 'bg-primary-subtle text-primary-emphasis';
-        if (role === 'Admin Inventario') return 'bg-success-subtle text-success-emphasis';
-        if (role === 'Admin Mercado') return 'bg-warning-subtle text-warning-emphasis';
-        if (role === 'Admin Facilidades') return 'bg-info-subtle text-info-emphasis';
-        if (role === 'Admin Super') return 'bg-danger-subtle text-danger-emphasis';
-        return 'bg-secondary-subtle text-secondary-emphasis';
+        if (role === 'Usuario') return 'label-badge badge-user';
+        if (role === 'Admin Super') return 'label-badge badge-super-admin';
+        if (role === 'Admin Inventario') return 'label-badge badge-inventory-admin';
+        if (role === 'Admin Facilidades') return 'label-badge badge-facility-admin';
+        if (role === 'Admin Mercado') return 'label-badge badge-market-admin';
+        return 'label-badge badge-user';
+    }
+
+    function getRoleBadgeElement(card) {
+        const nameLink = card.querySelector('.user-name-link');
+        if (!nameLink) return null;
+
+        const headerRow = nameLink.closest('.d-flex');
+        if (!headerRow) return null;
+
+        return headerRow.querySelector('.label-badge');
+    }
+
+    function getStatusBadgeElement(card) {
+        return Array.from(card.querySelectorAll('.label-badge')).find(badge => {
+            const text = badge.textContent.trim();
+            return text === 'Activo' || text === 'Bloqueado';
+        }) || null;
     }
 
     function getFilteredUsers() {
@@ -112,6 +129,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function updateSearchUsersButtonState() {
+        if (!userSearchInput || !searchUsersBtn) return;
+
+        const hasText = userSearchInput.value.trim().length > 0;
+        searchUsersBtn.disabled = !hasText;
+    }
+
     function filterUsers() {
         const filteredUsers = getFilteredUsers();
         const totalPages = Math.max(1, Math.ceil(filteredUsers.length / USERS_PER_PAGE));
@@ -132,8 +156,13 @@ document.addEventListener('DOMContentLoaded', function () {
             card.classList.remove('d-none');
         });
 
-        usersEmptyState.classList.toggle('d-none', filteredUsers.length !== 0);
-        usersList.classList.toggle('d-none', filteredUsers.length === 0);
+        if (usersEmptyState) {
+            usersEmptyState.classList.toggle('d-none', filteredUsers.length !== 0);
+        }
+
+        if (usersList) {
+            usersList.classList.toggle('d-none', filteredUsers.length === 0);
+        }
 
         renderPagination(filteredUsers.length);
     }
@@ -154,6 +183,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 resetToFirstPageAndFilter();
             }
         });
+        userSearchInput.addEventListener('input', updateSearchUsersButtonState);
+
     }
 
     if (roleFilterSelect) {
@@ -162,8 +193,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (clearUserFiltersBtn) {
         clearUserFiltersBtn.addEventListener('click', function () {
-            userSearchInput.value = '';
-            roleFilterSelect.value = 'all';
+            if (userSearchInput) userSearchInput.value = '';
+            if (roleFilterSelect) roleFilterSelect.value = 'all';
             resetToFirstPageAndFilter();
         });
     }
@@ -173,6 +204,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         select.addEventListener('change', function () {
             const card = select.closest('.user-card');
+            if (!card) return;
+
             const userName = card.dataset.name;
             const newRole = select.value;
             const previousRole = select.dataset.previousValue;
@@ -185,58 +218,74 @@ document.addEventListener('DOMContentLoaded', function () {
                 previousRole
             };
 
-            confirmRoleText.textContent = `¿Deseas cambiar el rol de ${userName} a "${newRole}"?`;
+            if (confirmRoleText) {
+                confirmRoleText.textContent = `¿Deseas cambiar el rol de ${userName} a "${newRole}"?`;
+            }
 
             const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmRoleModal);
             modalInstance.show();
         });
     });
 
-    confirmRoleBtn.addEventListener('click', function () {
-        if (!pendingRoleChange) return;
+    if (confirmRoleBtn) {
+        confirmRoleBtn.addEventListener('click', function () {
+            if (!pendingRoleChange) return;
 
-        const { card, select, newRole } = pendingRoleChange;
-        const badge = card.querySelector('.user-role-badge');
+            const { card, select, newRole } = pendingRoleChange;
+            const badge = getRoleBadgeElement(card);
 
-        card.dataset.role = newRole;
-        select.dataset.previousValue = newRole;
+            card.dataset.role = newRole;
+            select.dataset.previousValue = newRole;
 
-        badge.className = `badge user-role-badge px-2 py-1 small ${getRoleBadgeClass(newRole)}`;
-        badge.textContent = newRole;
+            if (badge) {
+                badge.className = getRoleBadgeClass(newRole);
+                badge.textContent = newRole;
+            }
 
-        const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmRoleModal);
-        modalInstance.hide();
+            const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmRoleModal);
+            modalInstance.hide();
 
-        const toast = window.bootstrap.Toast.getOrCreateInstance(roleToastEl);
-        toast.show();
+            if (roleToastEl) {
+                const toast = window.bootstrap.Toast.getOrCreateInstance(roleToastEl);
+                toast.show();
+            }
 
-        pendingRoleChange = null;
-        filterUsers();
-    });
-
-    confirmRoleModal.addEventListener('hidden.bs.modal', function () {
-        if (pendingRoleChange) {
-            pendingRoleChange.select.value = pendingRoleChange.previousRole;
             pendingRoleChange = null;
-        }
-    });
+            filterUsers();
+        });
+    }
+
+    if (confirmRoleModal) {
+        confirmRoleModal.addEventListener('hidden.bs.modal', function () {
+            if (pendingRoleChange) {
+                pendingRoleChange.select.value = pendingRoleChange.previousRole;
+                pendingRoleChange = null;
+            }
+        });
+    }
 
     document.querySelectorAll('.ban-toggle-btn').forEach(button => {
         button.addEventListener('click', function () {
             const card = button.closest('.user-card');
+            if (!card) return;
+
             const userName = card.dataset.name;
             const currentStatus = card.dataset.status;
 
             pendingBanAction = { card, button, currentStatus };
 
             if (currentStatus === 'Activo') {
-                confirmBanText.textContent = `¿Estás seguro de banear a ${userName}?`;
+                if (confirmBanText) {
+                    confirmBanText.textContent = `¿Estás seguro de bloquear a ${userName}?`;
+                }
                 confirmBanBtn.className = 'btn btn-danger';
-                confirmBanBtn.textContent = 'Banear';
+                confirmBanBtn.textContent = 'Bloquear';
             } else {
-                confirmBanText.textContent = `¿Estás seguro de desbanear a ${userName}?`;
+                if (confirmBanText) {
+                    confirmBanText.textContent = `¿Estás seguro de desbloquear a ${userName}?`;
+                }
                 confirmBanBtn.className = 'btn btn-success';
-                confirmBanBtn.textContent = 'Desbanear';
+                confirmBanBtn.textContent = 'Desbloquear';
             }
 
             const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmBanModal);
@@ -244,44 +293,60 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    confirmBanBtn.addEventListener('click', function () {
-        if (!pendingBanAction) return;
+    if (confirmBanBtn) {
+        confirmBanBtn.addEventListener('click', function () {
+            if (!pendingBanAction) return;
 
-        const { card, button, currentStatus } = pendingBanAction;
-        const statusBadge = card.querySelector('.user-status-badge');
+            const { card, button, currentStatus } = pendingBanAction;
+            const statusBadge = getStatusBadgeElement(card);
 
-        if (currentStatus === 'Activo') {
-            card.dataset.status = 'Baneado';
-            statusBadge.textContent = 'Baneado';
-            statusBadge.className = 'badge bg-danger user-status-badge align-self-start px-2 py-1 rounded-0';
+            if (currentStatus === 'Activo') {
+                card.dataset.status = 'Bloqueado';
 
-            button.className = 'btn btn-outline-success rounded-3 ban-toggle-btn btn-sm';
-            button.innerHTML = '<i class="bi bi-arrow-counterclockwise me-1"></i> Desbanear';
+                if (statusBadge) {
+                    statusBadge.textContent = 'Bloqueado';
+                    statusBadge.className = 'label-badge badge-blocked align-self-start';
+                }
 
-            const toast = window.bootstrap.Toast.getOrCreateInstance(banToastEl);
-            toast.show();
-        } else {
-            card.dataset.status = 'Activo';
-            statusBadge.textContent = 'Activo';
-            statusBadge.className = 'badge user-status-badge status-active-badge align-self-start px-2 py-1 rounded-0';
+                button.className = 'btn btn-outline-success rounded-3 ban-toggle-btn btn-sm';
+                button.innerHTML = '<i class="bi bi-arrow-counterclockwise me-1"></i> Desbloquear';
 
-            button.className = 'btn btn-danger rounded-3 ban-toggle-btn btn-sm';
-            button.innerHTML = '<i class="bi bi-ban me-1"></i> Banear';
+                if (banToastEl) {
+                    const toast = window.bootstrap.Toast.getOrCreateInstance(banToastEl);
+                    toast.show();
+                }
+            } else {
+                card.dataset.status = 'Activo';
 
-            const toast = window.bootstrap.Toast.getOrCreateInstance(unbanToastEl);
-            toast.show();
-        }
+                if (statusBadge) {
+                    statusBadge.textContent = 'Activo';
+                    statusBadge.className = 'label-badge badge-active align-self-start';
+                }
 
-        const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmBanModal);
-        modalInstance.hide();
+                button.className = 'btn btn-danger rounded-3 ban-toggle-btn btn-sm';
+                button.innerHTML = '<i class="bi bi-ban me-1"></i> Bloquear';
 
-        pendingBanAction = null;
-        filterUsers();
-    });
+                if (unbanToastEl) {
+                    const toast = window.bootstrap.Toast.getOrCreateInstance(unbanToastEl);
+                    toast.show();
+                }
+            }
 
-    confirmBanModal.addEventListener('hidden.bs.modal', function () {
-        pendingBanAction = null;
-    });
+            const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmBanModal);
+            modalInstance.hide();
+
+            pendingBanAction = null;
+            filterUsers();
+        });
+    }
+
+    if (confirmBanModal) {
+        confirmBanModal.addEventListener('hidden.bs.modal', function () {
+            pendingBanAction = null;
+        });
+    }
 
     filterUsers();
+    filterUsers();
+    updateSearchUsersButtonState();
 });

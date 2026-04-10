@@ -38,8 +38,8 @@
     <div class="container py-4">
         <div class="mb-4">
             <h1 class="fw-bold rounded-2">Buscar Usuarios</h1>
-            <p class="text-muted mb-0">
-                Buscar usuarios y ver sus perfiles, administrar roles y banear/desbanear cuentas
+            <p class="text mb-0">
+                Buscar usuarios y ver sus perfiles, administrar roles y bloquear/desbloquear cuentas
             </p>
         </div>
 
@@ -61,7 +61,8 @@
                 </div>
 
                 <div class="col-lg-2 d-grid">
-                    <button type="button" class="btn btn-success h-100 fw-semibold" id="searchUsersBtn">
+
+                    <button type="button" class="btn btn-success h-100 fw-semibold" id="searchUsersBtn" disabled>
                         Buscar
                     </button>
                 </div>
@@ -121,9 +122,9 @@
                                             John Davis
                                         </a>
 
-                                        <span class="badge user-role-badge bg-primary-subtle text-primary-emphasis px-2 py-1 small">
-                                            Usuario
-                                        </span>
+                                        <span class="label-badge badge-user">
+    Usuario
+</span>
                                     </div>
 
                                     <div class="text-muted small">john.davis@university.edu</div>
@@ -145,11 +146,13 @@
                         <div class="col-lg-2">
                             <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                             <div class="d-flex flex-column gap-2">
-                                <span class="badge user-status-badge status-active-badge align-self-start px-2 py-1 rounded-0">Activo</span>
+                                <span class="label-badge badge-active align-self-start">
+                                Activo
+                                </span>
 
                                 <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
                                     <i class="bi bi-ban me-1"></i>
-                                    Banear
+                                    Bloquear
                                 </button>
                             </div>
                         </div>
@@ -179,9 +182,9 @@
                                             Sarah Chen
                                         </a>
 
-                                        <span class="badge user-role-badge bg-primary-subtle text-primary-emphasis px-2 py-1 small">
-                                            Usuario
-                                        </span>
+                                        <span class="label-badge badge-user">
+    Usuario
+</span>
                                     </div>
 
                                     <div class="text-muted small">sarah.chen@university.edu</div>
@@ -203,11 +206,12 @@
                         <div class="col-lg-2">
                             <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                             <div class="d-flex flex-column gap-2">
-                                <span class="badge user-status-badge status-active-badge align-self-start px-2 py-1 rounded-0">Activo</span>
-
+<span class="label-badge badge-active align-self-start">
+    Activo
+</span>
                                 <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
                                     <i class="bi bi-ban me-1"></i>
-                                    Banear
+                                    Bloquear
                                 </button>
                             </div>
                         </div>
@@ -236,9 +240,9 @@
                                             Mike Johnson
                                         </a>
 
-                                        <span class="badge user-role-badge bg-success-subtle text-success-emphasis px-2 py-1 small">
-                                            Admin Inventario
-                                        </span>
+                                        <span class="label-badge badge-inventory-admin">
+    Admin Inventario
+</span>
                                     </div>
 
                                     <div class="text-muted small">mike.johnson@university.edu</div>
@@ -260,11 +264,12 @@
                         <div class="col-lg-2">
                             <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                             <div class="d-flex flex-column gap-2">
-                                <span class="badge user-status-badge status-active-badge align-self-start px-2 py-1 rounded-0">Activo</span>
-
+<span class="label-badge badge-active align-self-start">
+    Activo
+</span>
                                 <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
                                     <i class="bi bi-ban me-1"></i>
-                                    Banear
+                                    Bloquear
                                 </button>
                             </div>
                         </div>
@@ -277,7 +282,7 @@
                  data-name="Laura Gómez"
                  data-email="laura.gomez@university.edu"
                  data-role="Admin Mercado"
-                 data-status="Baneado">
+                 data-status="Bloqueado">
                 <div class="card-body p-3">
                     <div class="row g-2 align-items-center">
                         <div class="col-lg-7">
@@ -294,9 +299,9 @@
                                             Laura Gómez
                                         </a>
 
-                                        <span class="badge user-role-badge bg-warning-subtle text-warning-emphasis px-2 py-1 small">
-                                            Admin Mercado
-                                        </span>
+                                        <span class="label-badge badge-market-admin">
+    Admin Mercado
+</span>
                                     </div>
 
                                     <div class="text-muted small">laura.gomez@university.edu</div>
@@ -318,11 +323,12 @@
                         <div class="col-lg-2">
                             <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                             <div class="d-flex flex-column gap-2">
-                                <span class="badge bg-danger user-status-badge align-self-start px-2 py-1 rounded-0">Baneado</span>
-
+<span class="label-badge badge-blocked align-self-start">
+    Bloqueado
+</span>
                                 <button type="button" class="btn btn-outline-success rounded-3 ban-toggle-btn btn-sm">
                                     <i class="bi bi-arrow-counterclockwise rounded-3 me-1"></i>
-                                    Desbanear
+                                    Desbloquear
                                 </button>
                             </div>
                         </div>
@@ -452,7 +458,7 @@
              style="width: auto; max-width: fit-content;">
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
-                    La cuenta ha sido desbaneada.
+                    La cuenta ha sido desbloqueada.
                 </div>
                 <button type="button"
                         class="btn-close p-0 ms-1 me-2"

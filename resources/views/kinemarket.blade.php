@@ -16,7 +16,7 @@
         <div class="mb-4">
             <h1 class="fw-bold">Bienvenido al Kinemercado</h1>
             <p>
-                Aqui podras buscar equipamiento deportivo y contactar con posibles vendedores.
+                Aquí puedes buscar equipamiento deportivo y contactar con posibles vendedores.
             </p>
         </div>
 
@@ -59,6 +59,17 @@
 
 
                             <div class="mb-3">
+                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mt-3 mb-3 px-4 py-3" id="postExpirationNotice">
+                                    <div class="d-flex align-items-start gap-3">
+                                        <div>
+                                            <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
+                                            Las publicaciones en Kinemercado solo permanecen activas por
+                                            <strong>15 días</strong>. Luego de ese periodo, la publicación será
+                                            <strong>eliminada automáticamente</strong>.
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <label for="postTitle" class="form-label fw-semibold">
                                     Título<span class="text-danger">*</span>
                                 </label>
@@ -119,6 +130,7 @@
 
                                     <small class="text-muted d-block fst-italic">
                                         Escribe solo números y hasta 2 decimales.
+                                        El máximo valor permitido es $10,000.00.
                                     </small>
                                     <div class="invalid-feedback d-block" id="postPriceError"></div>
                                 </div>
@@ -250,7 +262,7 @@
                 </div>
             </div>
             <div class="col-md-2 d-grid">
-                <button type="button" class="btn btn-success" id="searchMarketplaceBtn">
+                <button type="button" class="btn btn-success" id="searchMarketplaceBtn" disabled>
                     Buscar
                 </button>
             </div>
@@ -374,17 +386,17 @@
 
                             <div class="col-6 text-muted">Estado:</div>
                             <div class="col-6 text-end">
-                               <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;" id="postDetailsStatus">
-                                   Disponible
-                               </span>
+                               <span class="label-badge badge-available" id="postDetailsStatus">
+    Disponible
+</span>
                             </div>
 
 
                             <div class="col-6 text-muted">Condición:</div>
                             <div class="col-6 text-end">
-                               <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;" id="postDetailsCondition">
-                                   Sin especificar
-                               </span>
+                               <span class="label-badge badge-available" id="postDetailsCondition">
+    Sin especificar
+</span>
                             </div>
 
 
@@ -401,9 +413,9 @@
 
                             <div class="col-6 text-muted">Categoría:</div>
                             <div class="col-6 text-end">
-                               <span class="badge rounded-0 px-3 py-2" style="background-color:#6FC21F; color:white;" id="postDetailsCategory">
-                                   Sin categoría
-                               </span>
+                              <span class="label-badge badge-available" id="postDetailsCategory">
+    Sin categoría
+</span>
                             </div>
                         </div>
 
@@ -547,8 +559,8 @@
 
 
                             <div class="alert alert-warning rounded-4 mb-0">
-                                <strong><i class="bi bi-exclamation-circle me-2"></i>Nota:</strong> Los reportes son revisados por administradores del mercado.
-                                Los reportes falsos pueden resultar en restricciones de cuenta.
+                                <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong> Los querellas son revisados por los administradores de mercado.
+                                Las querellas válidas pueden resultar en restricciones de cuenta.
                             </div>
                         </form>
                     </div>
@@ -559,7 +571,7 @@
                             Cancelar
                         </button>
                         <button type="button" class="btn btn-danger px-4" id="submitReportBtn" disabled>
-                            Enviar Reporte
+                            Enviar Querella
                         </button>
                     </div>
                 </div>
@@ -660,7 +672,7 @@
             >
                 <div class="d-flex align-items-center">
                     <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
-                        Reporte fue enviado exitosamente.
+                        Querella fue enviado exitosamente.
                     </div>
                     <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar" style="background-color: transparent; border: none; transform: scale(0.8);"></button>
                 </div>

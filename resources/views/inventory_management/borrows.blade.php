@@ -8,7 +8,7 @@
         <div class="mb-4">
             <h1 class="fw-bold">Gestión de Inventario</h1>
             <p>
-                Aquí podrás administrar el inventario de equipo deportivo del departamento de Kinesiología.
+                Aquí puedes administrar el inventario de equipo deportivo del departamento de Kinesiología.
             </p>
         </div>
 
@@ -64,7 +64,7 @@
                     </div>
 
                     <div class="col-lg-2 d-grid">
-                        <button type="submit" class="btn btn-success h-100 fw-semibold">
+                        <button type="submit" id="borrowSearchBtn" class="btn btn-success h-100 fw-semibold" disabled>
                             Buscar
                         </button>
                     </div>
@@ -321,6 +321,7 @@
                                 </div>
                             @endforelse
                         </div>
+                    </div>
                 </div>
             </div>
         </div>

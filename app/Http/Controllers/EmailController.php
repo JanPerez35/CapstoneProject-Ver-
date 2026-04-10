@@ -72,8 +72,8 @@ class EmailController extends Controller
     {
         $this->emailService->send(
             'jan.perez21@upr.edu',
-            'Cuenta suspendida',
-            'Tu cuenta ha sido suspendida de la plataforma MAIKINE. Si entiendes que esto fue un error, comunícate con el super administrador (administrador@upr.edu).'
+            'Cuenta bloqueada',
+            'Tu cuenta ha sido bloqueada de la plataforma MAIKINE. Si entiendes que esto fue un error, comunícate con el super administrador (administrador@upr.edu).'
         );
 
         return 'Correo de cuenta suspendida enviado.';

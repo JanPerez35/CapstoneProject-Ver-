@@ -19,27 +19,27 @@
     function formatDateForDisplay(dateValue) {
     if (!dateValue) return '';
     const [year, month, day] = dateValue.split('-');
-    return `${month}-${day}-${year}`;
+    return `${month}/${day}/${year}`;
 }
 
     const els = {
     filterReason: $('filterReason'),
     filterSearchBy: $('filterSearchBy'),
     filterDate: $('filterDate'),
-    searchReportsBtn: $('searchReportsBtn'),
 
-    resolveModal: $('resolveReportModal'),
+
+    resolveModal: $('resolveQuerellaModal'),
     deleteModal: $('deletePostModal'),
-    banModal: $('banUserModal'),
-
-    confirmResolve: $('confirmResolveReport'),
+    banModal: $('bloquearUserModal'),
+    searchReportsBtn: $('searchReportsBtn'),
+    confirmResolve: $('confirmResolveQuerella'),
     confirmDelete: $('confirmDeletePost'),
-    confirmBan: $('confirmBanUser'),
+    confirmBan: $('confirmBloquearUser'),
 
     reportsTable: $('reportsTable'),
     emptyState: $('reportsEmptyState'),
-    reportsPagination: $('reportsPagination'),
-};
+    reportsPagination: $('querellasPagination'),
+    };
 
     const clearReportsFiltersBtn = document.getElementById('clearReportsFilters');
 
@@ -78,6 +78,13 @@
     currentReportsPage = 1;
     renderReports();
 }
+
+    function updateReportsSearchButtonState() {
+        if (!els.filterSearchBy || !els.searchReportsBtn) return;
+
+        const value = els.filterSearchBy.value;
+        els.searchReportsBtn.disabled = value.trim() === '';
+    }
 
     function renderLocalPagination(container, currentPage, totalItems, itemsPerPage, onPageChange) {
     if (!container) return;
@@ -167,6 +174,7 @@
     els.filterSearchBy.value = '';
     els.filterReason.value = '';
     els.filterDate.value = '';
+    updateReportsSearchButtonState();
     applyFilters();
 });
 
@@ -260,20 +268,6 @@
             });
         }
 
-    function bindExclusiveCheckboxes() {
-    rows().forEach((row) => {
-    const checkboxes = row.querySelectorAll('.action-checkbox');
-
-    checkboxes.forEach((checkbox) => {
-    checkbox.addEventListener('change', function () {
-    if (!this.checked) return;
-    checkboxes.forEach((other) => {
-    if (other !== this) other.checked = false;
-});
-});
-});
-});
-}
 
     function bindAction(selector, modalEl, key) {
     document.querySelectorAll(selector).forEach((checkbox) => {
@@ -284,6 +278,7 @@
 });
 });
 }
+
 
     function bindModalReset(modalEl, key) {
     modalEl?.addEventListener('hidden.bs.modal', () => {
@@ -306,27 +301,41 @@
 }
 
     bindNameInput(els.filterSearchBy);
-    els.searchReportsBtn?.addEventListener('click', applyFilters);
+    els.filterSearchBy?.addEventListener('input', () => {
+            updateReportsSearchButtonState();
+        });
+
+    els.filterSearchBy?.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+
+                if (!els.searchReportsBtn?.disabled) {
+                    applyFilters();
+                }
+            }
+        });
+
+    els.searchReportsBtn?.addEventListener('click', () => {
+            applyFilters();
+        });
 
     [els.filterReason, els.filterDate].forEach((el) => {
     el.addEventListener('input', applyFilters);
     el.addEventListener('change', applyFilters);
 });
 
-    bindExclusiveCheckboxes();
 
     document.querySelectorAll('.action-view').forEach((checkbox) => {
     checkbox.addEventListener('change', function () {
     if (this.checked) {
     toasts.view?.show();
-    this.checked = false;
 }
 });
 });
 
     bindAction('.action-resolve', els.resolveModal, 'resolve');
     bindAction('.action-delete-post', els.deleteModal, 'delete');
-    bindAction('.action-ban-user', els.banModal, 'ban');
+    bindAction('.action-block-user', els.banModal, 'ban');
 
     bindConfirm(els.confirmResolve, 'resolve', els.resolveModal, 'resolve');
     bindConfirm(els.confirmDelete, 'delete', els.deleteModal, 'delete');
@@ -336,5 +345,36 @@
     bindModalReset(els.deleteModal, 'delete');
     bindModalReset(els.banModal, 'ban');
 
+        document.querySelectorAll('#reportsTable tbody tr').forEach((row) => {
+            const radios = row.querySelectorAll('.action-radio');
+
+            radios.forEach((radio) => {
+                radio.addEventListener('click', function () {
+                    const wasChecked = this.dataset.wasChecked === 'true';
+
+                    radios.forEach((r) => {
+                        r.dataset.wasChecked = 'false';
+                        r.classList.remove('active-radio');
+                    });
+
+                    if (wasChecked) {
+                        this.checked = false;
+
+                        if (selected.resolve === this) selected.resolve = null;
+                        if (selected.delete === this) selected.delete = null;
+                        if (selected.ban === this) selected.ban = null;
+
+                        return;
+                    }
+
+                    this.dataset.wasChecked = 'true';
+                    this.classList.add('active-radio');
+                });
+            });
+        });
+
+    updateReportsSearchButtonState();
     renderReports();
+
 });
+
