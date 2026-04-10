@@ -7,7 +7,7 @@
 
         <div class="mb-4">
             <h1 class="fw-bold" >Bienvenido al Kinventario</h1>
-            <p>Aquí podrás pedir prestado equipo deportivo
+            <p>Aquí puedes pedir prestado equipo deportivo
                 directamente del departamento de Kinesiología.
             </p>
         </div>
@@ -23,6 +23,7 @@
                         <input
                             type="text"
                             name="search"
+                            id="kinventorySearchInput"
                             class="form-control border-0"
                             placeholder="Buscar equipo deportivo..."
                             value="{{ request('search') }}"
@@ -31,8 +32,7 @@
                 </div>
 
                 <div class="col-lg-2 d-grid">
-                    <button type="submit" class="btn btn-success h-100">
-                        Buscar
+                    <button type="submit" id="kinventorySearchBtn" class="btn btn-success h-100" disabled>                        Buscar
                     </button>
                 </div>
             </div>
@@ -74,10 +74,11 @@
                                     {{ $item->description }}
                                 </h5>
 
-                                <span class="badge rounded-0"
-                                      style="background-color: {{ $item->available_quantity > 0 ? '#6FC21F' : '#dc3545' }}; color:white;">
-                                    {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
-                                </span>
+
+                                <span class="label-badge {{ $item->available_quantity > 0 ? 'badge-available' : 'badge-unavailable' }}">
+    {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
+</span>
+
                             </div>
 
                             <div class="small mb-3">
@@ -85,10 +86,7 @@
                                     <span class="text-muted">Cantidad Disponible:</span>
                                     <strong class="text-success">{{ $item->available_quantity }}</strong>
                                 </div>
-                                <div class="d-flex justify-content-between">
-                                    <span class="text-muted">Ubicación:</span>
-                                    <strong>{{ $item->location }}</strong>
-                                </div>
+
                             </div>
 
                             <div class="mt-auto d-grid gap-2">

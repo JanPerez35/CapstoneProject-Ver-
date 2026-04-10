@@ -11,6 +11,10 @@
             <div id="rentalSavedAutoTrigger"></div>
         @endif
 
+        @if(session('mock_imported'))
+            <div id="mockImportAutoTrigger"></div>
+        @endif
+
         <!--Header-->
         <div class="mb-4">
             <h1 class="fw-bold mb-1">Gestión de Costos de Facilidad</h1>
@@ -71,68 +75,98 @@
                 Exportar a PDF
             </a>
 
+            <form method="POST" action="{{ route('facility.import.mock') }}" class="d-inline">
+                @csrf
+                <button
+                    type="submit"
+                    class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
+                >
+                    <i class="bi bi-cloud-arrow-down"></i>
+                    Eventflow API simulado
+                </button>
+            </form>
+
         </div>
 
-        <!--Filters-->
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <!--Search and Filters-->
             <div class="card-body p-4">
-                <form id="facilityCostFilterForm" method="GET" action="{{ route('facility_management') }}" class="row g-3 align-items-end">
+                <form id="facilityCostFilterForm" method="GET" action="{{ route('facility_management') }}" class="mb-4">
                     @csrf
 
-                    <div class="col-md-4 col-lg-3">
-                        <label for="reportType" class="form-label fw-semibold">Tipo de reporte</label>
-                        <select id="reportType" name="report_type" class="form-select form-select border-2 border-dark">
-                            <option value="monthly" {{ ($reportType ?? 'monthly') === 'monthly' ? 'selected' : '' }}>Mensual</option>
-                            <option value="annual" {{ ($reportType ?? 'monthly') === 'annual' ? 'selected' : '' }}>Anual</option>
-                        </select>
-                    </div>
+                    <div class="row mb-4 g-3">
+                        <div class="col-md-10">
+                            <div class="input-group search-group">
+                <span class="input-group-text bg-white border-0">
+                    <i class="bi bi-search"></i>
+                </span>
 
-                    <div class="col-md-4 col-lg-3" id="monthFilterWrapper">
-                        <label for="reportMonth" class="form-label fw-semibold">Mes</label>
-                        <select id="reportMonth" name="report_month" class="form-select form-select border-2 border-dark">
-                            <option value="1" {{ ($reportMonth ?? now()->month) == 1 ? 'selected' : '' }}>Enero</option>
-                            <option value="2" {{ ($reportMonth ?? now()->month) == 2 ? 'selected' : '' }}>Febrero</option>
-                            <option value="3" {{ ($reportMonth ?? now()->month) == 3 ? 'selected' : '' }}>Marzo</option>
-                            <option value="4" {{ ($reportMonth ?? now()->month) == 4 ? 'selected' : '' }}>Abril</option>
-                            <option value="5" {{ ($reportMonth ?? now()->month) == 5 ? 'selected' : '' }}>Mayo</option>
-                            <option value="6" {{ ($reportMonth ?? now()->month) == 6 ? 'selected' : '' }}>Junio</option>
-                            <option value="7" {{ ($reportMonth ?? now()->month) == 7 ? 'selected' : '' }}>Julio</option>
-                            <option value="8" {{ ($reportMonth ?? now()->month) == 8 ? 'selected' : '' }}>Agosto</option>
-                            <option value="9" {{ ($reportMonth ?? now()->month) == 9 ? 'selected' : '' }}>Septiembre</option>
-                            <option value="10" {{ ($reportMonth ?? now()->month) == 10 ? 'selected' : '' }}>Octubre</option>
-                            <option value="11" {{ ($reportMonth ?? now()->month) == 11 ? 'selected' : '' }}>Noviembre</option>
-                            <option value="12" {{ ($reportMonth ?? now()->month) == 12 ? 'selected' : '' }}>Diciembre</option>
-                        </select>
-                    </div>
+                                <input
+                                    type="text"
+                                    id="facilitySearch"
+                                    class="form-control border-0"
+                                    placeholder="Buscar por fecha, salón, hora, periodo, servicios o total..."
+                                >
+                            </div>
+                        </div>
 
-                    <div class="col-md-4 col-lg-3">
-                        <label for="reportYear" class="form-label fw-semibold">Año</label>
-                        <select id="reportYear" name="report_year" class="form-select form-select border-2 border-dark">
-                            <option value="2024" {{ ($reportYear ?? now()->year) == 2024 ? 'selected' : '' }}>2024</option>
-                            <option value="2025" {{ ($reportYear ?? now()->year) == 2025 ? 'selected' : '' }}>2025</option>
-                            <option value="2026" {{ ($reportYear ?? now()->year) == 2026 ? 'selected' : '' }}>2026</option>
-                        </select>
-                    </div>
+                        <div class="col-md-2 d-grid">
+                            <button type="button" id="searchFacilityBtn" class="btn btn-success" disabled>
+                                Buscar
+                            </button>
+                        </div>
 
-                    <div class="col-md-12 col-lg-3">
-                        <label for="filterClassroom" class="form-label fw-semibold">Salón</label>
-                        <select id="filterClassroom" name="filter_classroom" class="form-select form-select border-2 border-dark">
-                            <option value="all" {{ ($filterClassroom ?? 'all') === 'all' ? 'selected' : '' }}>Todos los salones</option>
-                            @foreach ($facilityCosts as $cost)
-                                <option value="{{ $cost->classroom_name }}" {{ ($filterClassroom ?? 'all') === $cost->classroom_name ? 'selected' : '' }}>
-                                    {{ $cost->classroom_name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-outline-secondary" id="clearFacilityFilters">
-                            Limpiar filtros
-                        </button>
+                        <div class="col-md-3">
+                            <select id="reportType" name="report_type" class="form-select border-2 border-dark">
+                                <option value="" disabled {{ empty($reportType) ? 'selected' : '' }}>Tipo de reporte</option>
+                                <option value="monthly" {{ ($reportType ?? 'monthly') === 'monthly' ? 'selected' : '' }}>Mensual</option>
+                                <option value="annual" {{ ($reportType ?? 'monthly') === 'annual' ? 'selected' : '' }}>Anual</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3" id="monthFilterWrapper">
+                            <select id="reportMonth" name="report_month" class="form-select border-2 border-dark">
+                                <option value="1" {{ ($reportMonth ?? now()->month) == 1 ? 'selected' : '' }}>Enero</option>
+                                <option value="2" {{ ($reportMonth ?? now()->month) == 2 ? 'selected' : '' }}>Febrero</option>
+                                <option value="3" {{ ($reportMonth ?? now()->month) == 3 ? 'selected' : '' }}>Marzo</option>
+                                <option value="4" {{ ($reportMonth ?? now()->month) == 4 ? 'selected' : '' }}>Abril</option>
+                                <option value="5" {{ ($reportMonth ?? now()->month) == 5 ? 'selected' : '' }}>Mayo</option>
+                                <option value="6" {{ ($reportMonth ?? now()->month) == 6 ? 'selected' : '' }}>Junio</option>
+                                <option value="7" {{ ($reportMonth ?? now()->month) == 7 ? 'selected' : '' }}>Julio</option>
+                                <option value="8" {{ ($reportMonth ?? now()->month) == 8 ? 'selected' : '' }}>Agosto</option>
+                                <option value="9" {{ ($reportMonth ?? now()->month) == 9 ? 'selected' : '' }}>Septiembre</option>
+                                <option value="10" {{ ($reportMonth ?? now()->month) == 10 ? 'selected' : '' }}>Octubre</option>
+                                <option value="11" {{ ($reportMonth ?? now()->month) == 11 ? 'selected' : '' }}>Noviembre</option>
+                                <option value="12" {{ ($reportMonth ?? now()->month) == 12 ? 'selected' : '' }}>Diciembre</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <select id="reportYear" name="report_year" class="form-select border-2 border-dark">
+                                <option value="2024" {{ ($reportYear ?? now()->year) == 2024 ? 'selected' : '' }}>2024</option>
+                                <option value="2025" {{ ($reportYear ?? now()->year) == 2025 ? 'selected' : '' }}>2025</option>
+                                <option value="2026" {{ ($reportYear ?? now()->year) == 2026 ? 'selected' : '' }}>2026</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <select id="filterClassroom" name="filter_classroom" class="form-select border-2 border-dark">
+                                <option value="all" {{ ($filterClassroom ?? 'all') === 'all' ? 'selected' : '' }}>Todos los salones</option>
+                                @foreach ($facilityCosts as $cost)
+                                    <option value="{{ $cost->classroom_name }}" {{ ($filterClassroom ?? 'all') === $cost->classroom_name ? 'selected' : '' }}>
+                                        {{ $cost->classroom_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-12 d-flex gap-2">
+                            <button type="button" class="btn btn-outline-secondary" id="clearFacilityFilters">
+                                Limpiar filtros
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
-        </div>
 
         <!--Data Table-->
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
@@ -184,8 +218,7 @@
                                 </td>
                                 <td>
                                     @foreach (($item->services ?? []) as $service)
-                                        <span class="badge rounded-0 px-3 py-2 me-2 mb-1 service-badge-table">
-                                            @if ($service === 'utilidades')
+                                        <span class="label-badge badge-available me-2 mb-1">                                            @if ($service === 'utilidades')
                                                 Utilidades
                                             @elseif ($service === 'electricidad')
                                                 Electricidad
@@ -857,6 +890,20 @@
             </div>
         </div>
     </div>
+
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+        @if(session('mock_imported'))
+            <div id="mockImportToast" class="toast align-items-center text-bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        {{ session('mock_imported') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        @endif
+    </div>
+
     <form id="deleteCostEntryForm" method="POST" class="d-none">
         @csrf
         @method('DELETE')
@@ -1107,4 +1154,5 @@
         const tarifasPorSalon = @json($tarifasPorSalon);
 
     </script>
+
 </x-layout>

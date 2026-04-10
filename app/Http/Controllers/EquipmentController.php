@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
 use App\Models\Equipment;
 use App\Models\Lending;
 use App\Models\LendingItem;
@@ -22,20 +23,26 @@ class EquipmentController extends Controller
 
 
     private function logActivity($action, $comment = null)
-{
-    ActivityLog::create([
-        'user_id' => 1, // temporary
-        'role' => 'admin', // adjust if needed
-        'action' => $action,
-        'ip_address' => request()->ip(),
-        'comment' => $comment,
-        'created_at' => now(),
-    ]);
-}
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return;
+        }
+
+        ActivityLog::create([
+            'user_id' => $user->id,
+            'role' => $user->role_label,
+            'action' => $action,
+            'ip_address' => request()->ip(),
+            'comment' => $comment,
+        ]);
+    }
 
     public function index(Request $request)
     {
-        $query = Equipment::query();
+        // Build base query
+        $query = Equipment::where('pending_deletion', false);
 
         // Search filter
         if ($request->filled('search')) {
@@ -53,11 +60,11 @@ class EquipmentController extends Controller
             $query->where('category', $request->category);
         }
 
-        // Pagination + keep filters in URL
+        // NOW paginate (after filters)
         $items = $query->paginate(18)->withQueryString();
 
         // Categories list
-        $categories = Equipment::select('category')
+        $categories = Equipment::where('pending_deletion', false)
             ->whereNotNull('category')
             ->where('category', '!=', '')
             ->distinct()
@@ -65,7 +72,7 @@ class EquipmentController extends Controller
             ->pluck('category');
 
         // Locations list
-        $locations = Equipment::select('location')
+        $locations = Equipment::where('pending_deletion', false)
             ->whereNotNull('location')
             ->where('location', '!=', '')
             ->distinct()
@@ -157,16 +164,27 @@ class EquipmentController extends Controller
 
     public function destroy($id)
     {
-        $item = Equipment::findOrFail($id);
+        $equipment = Equipment::findOrFail($id);
 
-        if ($item->equipment_photo_url) {
-            \Storage::disk('public')->delete($item->equipment_photo_url);
+        $hasOpenLendings = $equipment->lendingItems()
+            ->whereHas('lending', function ($query) {
+                $query->whereIn('status', ['pending', 'approved', 'active']);
+            })
+            ->exists();
+
+        if ($hasOpenLendings) {
+            $equipment->available_quantity = 0;
+            $equipment->pending_deletion = true;
+            $equipment->save();
+
+            return redirect()->route('inventory_management')
+                ->with('warning', 'Este equipo está vinculado a préstamos pendientes o activos. Se marcó como no disponible y pendiente de eliminación.');
         }
 
-        $item->delete();
+        $equipment->delete();
 
-        return redirect()->back()
-            ->with('success', 'Item eliminado correctamente');
+        return redirect()->route('inventory_management')
+            ->with('success', 'Equipo eliminado correctamente.');
     }
 
 public function kinventory(Request $request)
@@ -174,17 +192,15 @@ public function kinventory(Request $request)
     $search = $request->input('search');
     $category = $request->input('category');
 
-    $query = Equipment::query();
-
-    if ($search) {
-        $query->where('description', 'like', '%' . $search . '%');
-    }
-
-    if ($category) {
+    $items = Equipment::where('available_quantity', '>', 0)
+    ->where('pending_deletion', false)
+    ->when($search, function ($query) use ($search) {
+        $query->where('description', 'like', "%{$search}%");
+    })
+    ->when($category, function ($query) use ($category) {
         $query->where('category', $category);
-    }
-
-    $items = $query->paginate(18)->withQueryString();
+    })
+    ->paginate(18);
 
     $categories = Equipment::select('category')
         ->whereNotNull('category')
@@ -210,7 +226,7 @@ public function borrow(Request $request)
         }
 
         $lending = Lending::create([
-            'user_id' => 1, // temporary until auth is connected
+            'user_id' => auth()->id(),
             'commentary' => 'Solicitud realizada desde Kinventory',
             'start_time' => now(),
             'end_time' => now()->addDays(7), // temporary
@@ -230,12 +246,13 @@ public function borrow(Request $request)
         $equipment->save();
     });
 
-    return redirect()->route('kinventory')->with('success', 'Equipo solicitado correctamente.');
-
     $this->logActivity(
-    'Solicitud de Préstamo',
-    'Solicitud creada para equipo ID ' . $validated['equipment_id']
+        'Solicitud de Préstamo',
+        'Solicitud creada para equipo ID ' . $validated['equipment_id']
+
     );
+
+    return redirect()->route('kinventory')->with('success', 'Equipo solicitado correctamente.');
 
 }
 
@@ -373,7 +390,7 @@ public function cart()
 
         DB::transaction(function () use ($cart, $startDateTime, $endDateTime, $isSpecialCase, $validated, $status, $itemStatus, &$lending) {
             $lending = Lending::create([
-                'user_id' => auth()->id() ?? 1,
+                'user_id' => auth()->id(),
                 'commentary' => null,
                 'special_reason' => $isSpecialCase ? $validated['special_reason'] : null,
                 'start_time' => $startDateTime,
@@ -690,4 +707,45 @@ public function accessLogs()
     return view('access_logs', compact('logs'));
 }
 
+public function profile(Request $request)
+{
+    $user = auth()->user();
+
+    $requestsQuery = Lending::with('items.equipment')
+        ->where('user_id', $user->id);
+
+    if ($request->filled('request_search')) {
+        $search = strtolower($request->request_search);
+
+        $requestsQuery->where(function ($query) use ($search) {
+            $query->whereHas('items.equipment', function ($q) use ($search) {
+                $q->whereRaw('LOWER(description) LIKE ?', ["%{$search}%"]);
+            });
+        });
+    }
+
+    if ($request->filled('request_status')) {
+        $status = strtolower($request->request_status);
+
+        if ($status === 'finished') {
+            $requestsQuery->whereIn('status', ['finished', 'returned']);
+        } else {
+            $requestsQuery->where('status', $status);
+        }
+    }
+
+    $requests = $requestsQuery
+        ->latest('created_at')
+        ->paginate(5)
+        ->withQueryString();
+
+    if ($requests->currentPage() > $requests->lastPage() && $requests->lastPage() > 0) {
+        return redirect()->route('my_profile', array_merge(
+            $request->except('page'),
+            ['tab' => 'requests', 'page' => 1]
+        ));
+    }
+
+    return view('my_profile', compact('user', 'requests'));
+}
 }

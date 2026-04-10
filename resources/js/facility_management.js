@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmAddClassroomBtn = $('confirmAddClassroomBtn');
     const addClassroomModal = $('addClassroomModal');
 
+    const facilitySearch = $('facilitySearch');
+    const searchFacilityBtn = $('searchFacilityBtn');
 
     const FACILITY_COSTS_PER_PAGE = 10;
     let currentFacilityCostsPage = 1;
@@ -108,6 +110,13 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteEntry: createToastInstance('deleteEntryToast'),
         download: createToastInstance('downloadToast'),
     };
+
+    function updateFacilitySearchButtonState() {
+        if (!facilitySearch || !searchFacilityBtn) return;
+
+        const value = facilitySearch.value;
+        searchFacilityBtn.disabled = value.trim() === '';
+    }
 
     let selectedDeleteUrl = null;
     let selectedClassroomsToDelete = [];
@@ -368,9 +377,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ratesSavedAutoTrigger = document.getElementById('ratesSavedAutoTrigger');
     const rentalSavedAutoTrigger = document.getElementById('rentalSavedAutoTrigger');
+    const mockImportAutoTrigger = document.getElementById('mockImportAutoTrigger');
 
     if (ratesSavedAutoTrigger && toasts.ratesSaved) {
         toasts.ratesSaved.show();
+    }
+
+    if (mockImportAutoTrigger) {
+        const mockImportToastEl = document.getElementById('mockImportToast');
+        if (mockImportToastEl) {
+            const mockImportToast = bootstrap.Toast.getOrCreateInstance(mockImportToastEl, { delay: 3000 });
+            mockImportToast.show();
+        }
     }
 
     if (rentalSavedAutoTrigger && toasts.rentalSaved) {
@@ -379,6 +397,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (clearFacilityFilters) {
         clearFacilityFilters.addEventListener('click', () => {
+            if (facilitySearch) facilitySearch.value = '';
+            updateFacilitySearchButtonState();
+
             window.location.href = facilityConfig.facilityManagementUrl || window.location.pathname;
         });
     }
@@ -894,7 +915,9 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             .filter((row) => row.style.display !== 'none');
     }
 
+
     function applyTableFilters() {
+        const searchValue = (facilitySearch?.value || '').toLowerCase().trim();
         const type = reportType.value;
         const month = reportMonth.value;
         const year = reportYear.value;
@@ -913,8 +936,35 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
             const matchesClassroom = classroom === 'all' ? true : rowClassroom === classroom;
 
-            return matchesType && matchesClassroom;
+            const rowText = row.textContent.toLowerCase();
+
+            const matchesSearch =
+                searchValue === '' ||
+                rowText.includes(searchValue);
+
+            return matchesType && matchesClassroom && matchesSearch;
         });
+
+        if (facilitySearch) {
+            facilitySearch.addEventListener('input', () => {
+                updateFacilitySearchButtonState();
+            });
+
+            facilitySearch.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !searchFacilityBtn.disabled) {
+                    e.preventDefault();
+                    currentFacilityCostsPage = 1;
+                    applyTableFilters();
+                }
+            });
+        }
+
+        if (searchFacilityBtn) {
+            searchFacilityBtn.addEventListener('click', () => {
+                currentFacilityCostsPage = 1;
+                applyTableFilters();
+            });
+        }
 
         const totalPages = Math.max(1, Math.ceil(filteredRows.length / FACILITY_COSTS_PER_PAGE));
 
@@ -1431,4 +1481,6 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             triggerFacilityDownload('pdf');
         });
     }
+
+    updateFacilitySearchButtonState();
 });

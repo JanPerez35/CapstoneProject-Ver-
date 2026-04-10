@@ -93,17 +93,49 @@ document.addEventListener('DOMContentLoaded', function () {
         return d.toISOString().split('T')[0];
     }
 
-    function tomorrowString() {
-        const d = new Date();
-        d.setHours(0, 0, 0, 0);
-        d.setDate(d.getDate() + 1);
-        return d.toISOString().split('T')[0];
+    function getNextAllowedPickupDate() {
+        const now = new Date();
+        const minDate = new Date();
+        minDate.setHours(0, 0, 0, 0);
+
+        // Base: mañana
+        minDate.setDate(minDate.getDate() + 1);
+
+        // Si ya pasó la 1:00 PM, entonces no puede pedir para mañana
+        // y se mueve al próximo día adicional
+        if (now.getHours() >= 13) {
+            minDate.setDate(minDate.getDate() + 1);
+        }
+
+        // Saltar viernes, sábado y domingo
+        while ([5, 6, 0].includes(minDate.getDay())) {
+            minDate.setDate(minDate.getDate() + 1);
+        }
+
+        return minDate;
+    }
+
+    function formatDateToInputValue(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    function minPickupDateString() {
+        return formatDateToInputValue(getNextAllowedPickupDate());
     }
 
     function setMinDates() {
-        const min = tomorrowString();
-        if (pickupDate) pickupDate.min = min;
-        if (returnDate) returnDate.min = min;
+        const minPickup = minPickupDateString();
+
+        if (pickupDate) {
+            pickupDate.min = minPickup;
+        }
+
+        if (returnDate) {
+            returnDate.min = minPickup;
+        }
     }
 
     function toggleSpecialCaseFields() {
@@ -178,22 +210,32 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function validatePickupDate(showErrors = true) {
-        const today = todayString();
+        const minAllowed = minPickupDateString();
 
         if (showErrors) clearError(pickupDate, pickupDateError);
 
         if (!pickupDate || !pickupDate.value) {
-            if (showErrors) setError(pickupDate, pickupDateError, 'La fecha de recogida es obligatoria.');
+            if (showErrors) {
+                setError(pickupDate, pickupDateError, 'La fecha de recogida es obligatoria.');
+            }
             return false;
         }
 
-        if (pickupDate.value <= today) {
-            if (showErrors) setError(pickupDate, pickupDateError, 'La fecha debe ser futura.');
+        if (pickupDate.value < minAllowed) {
+            if (showErrors) {
+                setError(
+                    pickupDate,
+                    pickupDateError,
+                    'Por logística, esa fecha ya no está disponible. Debes seleccionar el próximo día laborable permitido.'
+                );
+            }
             return false;
         }
 
         if (isBlockedPickupDay(pickupDate.value)) {
-            if (showErrors) setError(pickupDate, pickupDateError, 'No se permiten viernes, sábados ni domingos.');
+            if (showErrors) {
+                setError(pickupDate, pickupDateError, 'No se permiten viernes, sábados ni domingos.');
+            }
             return false;
         }
 

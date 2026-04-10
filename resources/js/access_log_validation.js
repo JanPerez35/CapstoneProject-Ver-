@@ -41,6 +41,13 @@
     emptyRow.style.display = visibleRows.length === 0 ? 'table-row' : 'none';
 }
 
+    function updateAccessLogsSearchButtonState() {
+            if (!searchInput || !searchBtn) return;
+
+            const value = searchInput.value;
+            searchBtn.disabled = value.trim() === '';
+    }
+
     function applyAccessLogsFilters() {
     const searchValue = normalizeText(searchInput?.value || '');
     const roleValue = normalizeText(roleFilter?.value || '');
@@ -87,6 +94,7 @@
     row.style.display = '';
 });
 
+    updateAccessLogsSearchButtonState();
     updateEmptyState();
 }
 
@@ -95,13 +103,17 @@
 }
 
     if (searchInput) {
-    searchInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-    e.preventDefault();
-    applyAccessLogsFilters();
-}
-});
-}
+            searchInput.addEventListener('input', () => {
+                updateAccessLogsSearchButtonState();
+            });
+
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !searchBtn?.disabled) {
+                    e.preventDefault();
+                    applyAccessLogsFilters();
+                }
+            });
+    }
 
     if (roleFilter) {
     roleFilter.addEventListener('change', applyAccessLogsFilters);
@@ -162,5 +174,6 @@
 });
 }
 
+    updateAccessLogsSearchButtonState();
     updateEmptyState();
 });

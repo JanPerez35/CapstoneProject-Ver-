@@ -8,7 +8,7 @@
 
         <div class="mb-4">
             <h1 class="fw-bold">Bienvenido al Panel de Administración</h1>
-            <p>Monitorear acceso al sistema y costos de instalaciones.</p>
+            <p> Aquí puedes monitorear acceso al sistema y costos de instalaciones.</p>
         </div>
 
 
@@ -43,7 +43,7 @@
                 </div>
 
                 <div class="col-lg-2 d-grid">
-                    <button type="button" id="searchAccessLogsBtn" class="btn btn-success h-100">
+                    <button type="button" id="searchAccessLogsBtn" class="btn btn-success h-100" disabled>
                         Buscar
                     </button>
                 </div>
@@ -54,10 +54,10 @@
                     <select id="accessLogsRoleFilter" class="form-select border-2 border-dark">
                         <option value="">Todos los Roles</option>
                         <option value="usuario">Usuario</option>
-                        <option value="administrador de mercado">Administrador de Mercado</option>
-                        <option value="administrador de inventario">Administrador de Inventario</option>
-                        <option value="administrador de facilidad">Administrador de Facilidad</option>
-                        <option value="super administrador">Super Administrador</option>
+                        <option value="admin mercado">Administrador de Mercado</option>
+                        <option value="admin inventario">Administrador de Inventario</option>
+                        <option value="admin facilidades">Administrador de Facilidad</option>
+                        <option value="admin super">Super Administrador</option>
                     </select>
                 </div>
 
@@ -167,25 +167,20 @@
                                 {{ trim(($log->user->first_name ?? '') . ' ' . ($log->user->last_name ?? '')) ?: 'Usuario' }}
                             </td>
                             <td class="py-3 text-center align-middle">
+
                                 @php
-                                    $roleClass = match(strtolower(trim($log->role))) {
-                                        'usuario' => 'badge user-role-badge bg-primary-subtle text-primary-emphasis',
-
-                                        'administrador de inventario' => 'badge user-role-badge bg-success-subtle text-success-emphasis',
-
-                                        'administrador de mercado' => 'badge user-role-badge bg-warning-subtle text-warning-emphasis',
-
-
-                                        'super administrador' => 'badge user-role-badge bg-danger-subtle text-danger-emphasis',
-
-                                        'administrador de facilidad' => 'badge user-role-badge bg-info-subtle text-info-emphasis',
-
-                                        default => 'badge user-role-badge bg-primary-subtle text-primary-emphasis',
+                                    $roleClass = match(trim($log->role)) {
+                                        'Usuario' => 'badge-user',
+                                        'Admin Super' => 'badge-super-admin',
+                                        'Admin Inventario' => 'badge-inventory-admin',
+                                        'Admin Facilidades' => 'badge-facility-admin',
+                                        'Admin Mercado' => 'badge-market-admin',
+                                        default => 'badge-user',
                                     };
                                 @endphp
 
-                                <span class="{{ $roleClass }} px-2 py-1 small">
-    {{ ucfirst($log->role) }}
+                                <span class="label-badge {{ $roleClass }}">
+    {{ $log->role }}
 </span>
 
                             </td>

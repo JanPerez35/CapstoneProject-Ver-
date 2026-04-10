@@ -9,7 +9,7 @@
         <div class="mb-4">
             <h1 class="fw-bold">Gestión de Inventario</h1>
             <p>
-                Aquí podrás administrar el inventario de equipo deportivo del departamento de Kinesiología.
+                Aquí puedes administrar el inventario de equipo deportivo del departamento de Kinesiología.
             </p>
         </div>
 
@@ -64,6 +64,7 @@
                         <input
                             type="text"
                             name="search"
+                            id="inventorySearchInput"
                             class="form-control border-0"
                             placeholder="Buscar equipo deportivo..."
                             value="{{ request('search') }}"
@@ -72,8 +73,7 @@
                 </div>
 
                 <div class="col-lg-2 d-grid">
-                    <button type="submit" class="btn btn-success h-100 fw-semibold">
-                        Buscar
+                    <button type="submit" id="inventorySearchBtn" class="btn btn-success h-100 fw-semibold" disabled>                        Buscar
                     </button>
                 </div>
             </div>
@@ -121,12 +121,9 @@
                                     {{ $item->description }}
                                 </h5>
 
-                                <span
-                                    class="badge rounded-0 inventory-status-badge"
-                                    style="background-color: {{ $item->available_quantity > 0 ? '#6FC21F' : '#dc3545' }}; color:white;"
-                                >
-                                    {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
-                                </span>
+                                <span class="label-badge inventory-status-badge {{ $item->available_quantity > 0 ? 'badge-available' : 'badge-unavailable' }}">
+        {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
+    </span>
                             </div>
 
                             <div class="small mb-3">
@@ -233,7 +230,7 @@
                                         >
 
                                         <div class="form-text">
-                                            Entre 5 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
+                                            Entre 3 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
                                         </div>
                                         <div class="invalid-feedback d-block error-category"></div>
                                     </div>
@@ -266,7 +263,7 @@
                                         >
 
                                         <div class="form-text">
-                                            Entre 5 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
+                                            Entre 3 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
                                         </div>
                                         <div class="invalid-feedback d-block error-location"></div>
                                     </div>
@@ -416,7 +413,7 @@
                                 required
                             >
                             <div class="form-text">
-                                Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
                             </div>
                             <div class="invalid-feedback d-block" id="nombreItemError"></div>
                         </div>
@@ -443,7 +440,7 @@
                             <input type="hidden" id="categoria" name="category">
 
                             <div class="form-text">
-                                Entre 5 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
+                                Entre 3 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
                             </div>
                             <div class="invalid-feedback d-block" id="categoriaError"></div>
                         </div>
@@ -657,7 +654,7 @@
                             <input type="hidden" id="ubicacion" name="location">
 
                             <div class="form-text">
-                                Entre 5 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
+                                Entre 3 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
                             </div>
                             <div class="invalid-feedback d-block" id="ubicacionError"></div>
                         </div>
@@ -759,8 +756,13 @@
                         <h4 class="modal-title fw-bold" id="confirmDeleteModalLabel">Eliminar Item</h4>
                         <p class="text-muted mb-0" id="confirmDeleteText">
                             ¿Seguro que quieres borrar este item?
+
+                        <p class="text-danger fw-semibold mb-0 d-none" id="confirmDeleteWarningText">
+                            *Este item tiene un pedido atado.
+                        </p>
                         </p>
                     </div>
+
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 

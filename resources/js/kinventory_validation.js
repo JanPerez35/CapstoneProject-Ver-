@@ -12,12 +12,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const borrowQuantityError = document.getElementById('borrowQuantityError');
     const borrowForm = document.getElementById('borrowForm');
 
+    const searchInput = document.getElementById('kinventorySearchInput');
+    const searchBtn = document.getElementById('kinventorySearchBtn');
+
     function saveScrollPosition() {
         sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
     }
 
     function clearScrollPosition() {
         sessionStorage.removeItem(SCROLL_KEY);
+    }
+
+    function updateSearchButtonState() {
+        if (!searchInput || !searchBtn) return;
+
+        const hasText = searchInput.value.trim().length > 0;
+
+        searchBtn.disabled = !hasText;
     }
 
     function isPaginationLink(link) {
@@ -76,6 +87,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     window.addEventListener('load', restoreScrollPosition);
+
+    if (searchInput) {
+        searchInput.addEventListener('input', updateSearchButtonState);
+    }
+
+    updateSearchButtonState();
+
 
     const hasBorrowModal =
         borrowModal &&

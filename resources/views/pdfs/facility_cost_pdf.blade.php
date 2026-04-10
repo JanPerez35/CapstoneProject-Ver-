@@ -147,30 +147,31 @@
     <thead>
     <tr>
         <th>Fecha</th>
+        <th>Responsable</th>
         <th>Salón</th>
+        <th>Descripción</th>
         <th>Hora Inicio</th>
         <th>Hora Fin</th>
+        <th>Horas</th>
         <th>Período</th>
         <th>Servicios</th>
-        <th>Horas</th>
         <th>Costo</th>
-        <th>Descripción</th>
-        <th>Responsable</th>
     </tr>
     </thead>
     <tbody>
     @forelse($items as $item)
         <tr>
             <td>{{ \Carbon\Carbon::parse($item->event_date)->format('m/d/Y') }}</td>
+            <td class="text-left">{{ $item->responsable }}</td>
             <td>{{ $item->facilityCost->classroom_name ?? 'N/A' }}</td>
+            <td class="text-left">{{ $item->event_description }}</td>
             <td>{{ \Carbon\Carbon::parse($item->start_time)->format('h:i A') }}</td>
             <td>{{ \Carbon\Carbon::parse($item->end_time)->format('h:i A') }}</td>
+            <td>{{ number_format($item->hours_used, 2) }}</td>
             <td>{{ translatePeriodType($item->period_type) }}</td>
             <td class="text-left">{{ translateServices($item->services) }}</td>
-            <td>{{ number_format($item->hours_used, 2) }}</td>
             <td class="text-right">${{ number_format($item->calculated_cost, 2) }}</td>
-            <td class="text-left">{{ $item->event_description }}</td>
-            <td class="text-left">{{ $item->responsable }}</td>
+
         </tr>
     @empty
         <tr>

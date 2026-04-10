@@ -24,6 +24,9 @@ class FacilityCost extends Model
         'weekly_cost_2',
         'monthly_cost_1',
         'monthly_cost_2',
+        'daily_cost_3',
+        'weekly_cost_3',
+        'monthly_cost_3',
     ];
 
     public function reportItems()

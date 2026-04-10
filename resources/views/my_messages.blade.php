@@ -7,7 +7,6 @@
         $volverUrl = request('return_to', route('kinemarket'));
         $chatPostId = request('post_id');
     @endphp
-
     <style>
         .messages-search-group {
             border: 1px solid var(--bs-border-color);

@@ -47,7 +47,7 @@
     <header class="d-flex flex-wrap align-items-center justify-content-between py-2 px-2 border-bottom bg-light">
 
         <a href="/kinemarket" class="d-flex align-items-center mb-2 mb-md-0 text-decoration-none">
-            <img src="/images/kines_logo.png"
+            <img src="/images/kine_logo.png"
                  alt="Logo"
                  style="height: 75px; width:auto;"
                  class="me-2">
@@ -236,7 +236,7 @@
 
                             <div class="border rounded-4 p-4 mb-4 bg-light-subtle">
                                 <h5 class="fw-bold text-secondary mb-3">
-                                    Política de Préstamo:
+                                    Horario de Servicio :
                                 </h5>
 
                                 <p class="mb-2 text-muted">
@@ -265,8 +265,10 @@
                                        id="pickup_date"
                                        name="pickup_date"
                                        required>
-                                <div class="form-text">Solo días futuros. No se permiten viernes, sábados ni domingos.</div>
-                                <div class="invalid-feedback d-block" id="pickup_date_error"></div>
+                                <div class="form-text">
+                                    Solo días laborables permitidos. Si la solicitud se realiza luego de la 1:00 PM,
+                                    no se permitirá seleccionar el próximo día laborable inmediato.
+                                </div>                                <div class="invalid-feedback d-block" id="pickup_date_error"></div>
                             </div>
 
                             <div class="mb-3">
@@ -349,29 +351,20 @@
                             <div class="border rounded-4 p-4 bg-light-subtle">
                                 <h5 class="fw-bold text-secondary mb-3">
                                     <i class="bi bi-file-earmark-text me-2"></i>
-                                    Términos y Condiciones
+                                    Condiciones de préstamo <span class="text-danger">*</span>
                                 </h5>
 
                                 <p class="text-muted mb-3">
-                                    Antes de enviar la solicitud, debes aceptar los términos y condiciones del préstamo.
+                                    Antes de enviar la solicitud, debes aceptar las condiciones del préstamo.
                                 </p>
 
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input"
-                                           type="checkbox"
-                                           id="accept_terms"
-                                           name="accept_terms"
-                                           value="1"
-                                           required>
-                                    <label class="form-check-label fw-semibold" for="accept_terms">
-                                        He leído y acepto los términos y condiciones del préstamo. <span class="text-danger">*</span>
-                                    </label>
-                                </div>
 
-                                <div class="invalid-feedback d-block" id="accept_terms_error"></div>
 
                                 <p class="text-danger fw-semibold mb-2 mt-3">
-                                    No puedes cancelar el pedido una vez lo hagas.
+                                    Debes traer tu ID de estudiante para poder recoger tu pedido.
+                                </p>
+                                <p class="text-danger fw-semibold mb-2 mt-3">
+                                    No puedes cancelar una solicitud en ningún momento.
                                 </p>
 
                                 <p class="text-muted mb-2">
@@ -385,6 +378,20 @@
                                 <p class="text-muted mb-0">
                                     Esta información también está disponible en el footer de la página.
                                 </p>
+                                <br>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="accept_terms"
+                                           name="accept_terms"
+                                           value="1"
+                                           required>
+                                    <label class="form-check-label fw-semibold" for="accept_terms">
+                                        He leído y acepto las condiciones del préstamo.
+                                    </label>
+                                </div>
+                                <div class="invalid-feedback d-block" id="accept_terms_error"></div>
                             </div>
                         </div>
                     @endif

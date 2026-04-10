@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     let postCardToDelete = null;
     let currentPostsPage = 1;
-    let currentRequestsPage = 1;
 
     function showToast(toastElement) {
         if (!toastElement || !window.bootstrap) return;
@@ -125,6 +124,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const postsFilterForm = document.getElementById('postsFilterForm');
     const postSearch = document.getElementById('postSearch');
+
+    const postsSearchBtn = document.getElementById('postsSearchBtn');
+    const requestSearch = document.getElementById('requestSearch');
+    const requestsSearchBtn = document.getElementById('requestsSearchBtn');
+
     const sportFilter = document.getElementById('sportFilter');
     const priceFilter = document.getElementById('priceFilter');
     const clearPostsFilters = document.getElementById('clearPostsFilters');
@@ -142,6 +146,20 @@ document.addEventListener('DOMContentLoaded', function () {
         if (selectedRange === '101+') return numericPrice >= 101;
 
         return true;
+    }
+
+    function updatePostsSearchButtonState() {
+        if (!postSearch || !postsSearchBtn) return;
+
+        const hasText = postSearch.value.trim().length > 0;
+        postsSearchBtn.disabled = !hasText;
+    }
+
+    function updateRequestsSearchButtonState() {
+        if (!requestSearch || !requestsSearchBtn) return;
+
+        const hasText = requestSearch.value.trim().length > 0;
+        requestsSearchBtn.disabled = !hasText;
     }
 
     function filterPosts(resetPage = false) {
@@ -175,6 +193,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (resetPage) {
             currentPostsPage = 1;
+        }
+//Odd
+        if (requestSearch) {
+            requestSearch.addEventListener('input', updateRequestsSearchButtonState);
         }
 
         if (postsEmptyState) {
@@ -223,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function () {
         postSearch.addEventListener('input', function () {
             currentPostsPage = 1;
             filterPosts();
+            updatePostsSearchButtonState();
         });
     }
 
@@ -233,93 +256,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (priceFilter) priceFilter.value = '';
             currentPostsPage = 1;
             filterPosts();
-        });
-    }
-
-    const requestsFilterForm = document.getElementById('requestsFilterForm');
-    const requestSearch = document.getElementById('requestSearch');
-    const statusFilter = document.getElementById('statusFilter');
-    const clearRequestsFilters = document.getElementById('clearRequestsFilters');
-    const requestsEmptyState = document.getElementById('requestsEmptyState');
-    const requestsPagination = document.getElementById('requestsPagination');
-
-    function filterRequests(resetPage = false) {
-        const searchValue = requestSearch ? requestSearch.value.trim().toLowerCase() : '';
-        const statusValue = statusFilter ? statusFilter.value : '';
-
-        const allCards = Array.from(document.querySelectorAll('.request-card'));
-        const matchingCards = [];
-
-        allCards.forEach((card) => {
-            const title = (card.dataset.title || '').toLowerCase();
-            const status = card.dataset.status || '';
-
-            const matchesSearch = !searchValue || title.includes(searchValue);
-            const matchesStatus = !statusValue || status === statusValue;
-
-            if (matchesSearch && matchesStatus) {
-                matchingCards.push(card);
-            } else {
-                card.classList.add('d-none');
-            }
-        });
-
-        if (resetPage) {
-            currentRequestsPage = 1;
-        }
-
-        if (requestsEmptyState) {
-            requestsEmptyState.classList.toggle('d-none', matchingCards.length !== 0);
-        }
-
-        if (matchingCards.length === 0) {
-            if (requestsPagination) requestsPagination.innerHTML = '';
-            return;
-        }
-
-        currentRequestsPage = paginateItems(
-            matchingCards,
-            currentRequestsPage,
-            requestsPagination,
-            function (page) {
-                currentRequestsPage = page;
-                filterRequests(false);
-            }
-        );
-    }
-
-    if (requestsFilterForm) {
-        requestsFilterForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            currentRequestsPage = 1;
-            filterRequests();
-        });
-    }
-
-    if (requestSearch) {
-        requestSearch.addEventListener('input', function () {
-            currentRequestsPage = 1;
-            filterRequests();
-        });
-    }
-
-    if (statusFilter) {
-        statusFilter.addEventListener('change', function () {
-            currentRequestsPage = 1;
-            filterRequests();
-        });
-    }
-
-    if (clearRequestsFilters) {
-        clearRequestsFilters.addEventListener('click', function () {
-            if (requestSearch) requestSearch.value = '';
-            if (statusFilter) statusFilter.value = '';
-            currentRequestsPage = 1;
-            filterRequests();
+            updatePostsSearchButtonState();
         });
     }
 
     updatePostsTabCount();
     filterPosts(true);
-    filterRequests(true);
+    updatePostsSearchButtonState();
+    updateRequestsSearchButtonState();
 });

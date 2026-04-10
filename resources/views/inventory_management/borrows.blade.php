@@ -8,7 +8,7 @@
         <div class="mb-4">
             <h1 class="fw-bold">Gestión de Inventario</h1>
             <p>
-                Aquí podrás administrar el inventario de equipo deportivo del departamento de Kinesiología.
+                Aquí puedes administrar el inventario de equipo deportivo del departamento de Kinesiología.
             </p>
         </div>
 
@@ -64,7 +64,7 @@
                     </div>
 
                     <div class="col-lg-2 d-grid">
-                        <button type="submit" class="btn btn-success h-100 fw-semibold">
+                        <button type="submit" id="borrowSearchBtn" class="btn btn-success h-100 fw-semibold" disabled>
                             Buscar
                         </button>
                     </div>
@@ -97,7 +97,10 @@
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body p-0">
                         <div class="p-4 border-bottom">
-                            <h4 class="fw-bold mb-1">Solicitudes por Revisar</h4>
+                            <h4 class="fw-bold mb-1">
+                                <i class="bi bi-exclamation-circle me-2 text-warning"></i>
+                                Solicitudes por Revisar
+                            </h4>
                             <p class="text-muted mb-0">
                                 Aquí aparecen los casos especiales pendientes de aprobación.
                             </p>
@@ -117,13 +120,13 @@
                                     data-date="{{ \Carbon\Carbon::parse($lending->start_time)->format('Y-m-d') }}"
                                 >
                                     <div class="card-body p-4">
-                                        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3">
+                                        <div class="d-flex flex-column h-100">
                                             <div class="flex-grow-1">
-                                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                                                    <h5 class="fw-bold mb-0">
-                                                        {{ $lending->items->first()->equipment->description ?? 'Equipo' }}
-                                                    </h5>
+                                                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                                                    <h5 class="fw-bold mb-0">Artículos solicitados</h5>
+                                                </div>
 
+                                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
                                                     @if($lending->flag)
                                                         <span class="badge text-bg-warning rounded-0">Caso Especial</span>
                                                     @endif
@@ -133,6 +136,24 @@
                                                     </span>
                                                 </div>
 
+                                                <div class="mb-3">
+                                                    @forelse($lending->items as $item)
+                                                        <div class="border rounded-3 px-3 py-2 mb-2 bg-light-subtle">
+                                                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                                                <span class="fw-semibold">
+                                                                    {{ $item->equipment->description ?? 'Equipo' }}
+                                                                </span>
+                                                                <span>
+                                                                    <span class="text-muted">Cantidad:</span>
+                                                                    <strong>{{ $item->quantity }}</strong>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    @empty
+                                                        <div class="text-muted">No hay artículos en esta solicitud.</div>
+                                                    @endforelse
+                                                </div>
+
                                                 <div class="row g-3 small mb-3">
                                                     <div class="col-md-4">
                                                         <div>
@@ -140,7 +161,11 @@
                                                             <strong>{{ $lending->user->first_name ?? 'N/A' }} {{ $lending->user->last_name ?? '' }}</strong>
                                                         </div>
                                                         <div>
-                                                            <span class="text-muted">Cantidad:</span>
+                                                            <span class="text-muted">Total de artículos:</span>
+                                                            <strong>{{ $lending->items->count() }}</strong>
+                                                        </div>
+                                                        <div>
+                                                            <span class="text-muted">Cantidad total:</span>
                                                             <strong>{{ $lending->items->sum('quantity') }}</strong>
                                                         </div>
                                                     </div>
@@ -167,7 +192,7 @@
                                                 @endif
                                             </div>
 
-                                            <div class="d-flex flex-column justify-content-center gap-2 request-actions" style="min-width: 190px;">
+                                            <div class="d-flex flex-column gap-2 mt-auto pt-3">
                                                 <form method="POST"
                                                       action="{{ route('inventory_management.requests.approve', $lending->id) }}"
                                                       class="approve-form">
@@ -203,19 +228,23 @@
             <div class="col-lg-6">
                 <div class="card border-0 shadow-sm rounded-4 h-100">
                     <div class="card-body p-0">
+
                         <div class="p-4 border-bottom">
-                            <h4 class="fw-bold mb-1">Solicitudes Aprobadas / Activas</h4>
+                            <h4 class="fw-bold mb-1">
+                                <i class="bi bi-check-circle me-2 text-success"></i>
+                                Solicitudes Activas
+                            </h4>
                             <p class="text-muted mb-0">
                                 Aquí están los préstamos normales y los casos especiales aprobados.
                             </p>
                         </div>
-
                         <div id="activeEmptyState" class="d-none text-center py-5">
                             <i class="bi bi-inbox fs-1 text-muted"></i>
                             <h5 class="fw-bold mt-3">No hay solicitudes activas</h5>
-                            <p class="text-muted mb-0">No hay solicitudes aprobadas para mostrar con esos filtros.</p>
+                            <p class="text-muted mb-0">
+                                No hay solicitudes aprobadas para mostrar con esos filtros.
+                            </p>
                         </div>
-
                         <div id="activeRequestsList">
                             @forelse($approved as $lending)
                                 <div
@@ -224,24 +253,61 @@
                                     data-date="{{ \Carbon\Carbon::parse($lending->start_time)->format('Y-m-d') }}"
                                 >
                                     <div class="card-body p-4">
-                                        <h5 class="fw-bold mb-2">
-                                            {{ $lending->items->first()->equipment->description ?? 'Equipo' }}
-                                        </h5>
+                                        <div class="mb-3">
+                                            <h5 class="fw-bold mb-2">Artículos solicitados</h5>
 
-                                        <p class="mb-1">
-                                            <strong>Cantidad:</strong> {{ $lending->items->sum('quantity') }}
-                                        </p>
+                                            @forelse($lending->items as $item)
+                                                <div class="border rounded-3 px-3 py-2 mb-2 bg-light-subtle">
+                                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                                        <span class="fw-semibold">
+                                                            {{ $item->equipment->description ?? 'Equipo' }}
+                                                        </span>
+                                                        <span>
+                                                            <span class="text-muted">Cantidad:</span>
+                                                            <strong>{{ $item->quantity }}</strong>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            @empty
+                                                <div class="text-muted">No hay artículos en esta solicitud.</div>
+                                            @endforelse
+                                        </div>
 
-                                        <p class="mb-3">
-                                            <strong>Usuario:</strong>
-                                            {{ $lending->user
-                                                ? $lending->user->first_name . ' ' . $lending->user->last_name
-                                                : 'Usuario desconocido' }}
-                                        </p>
+                                        <div class="row g-3 small mb-3">
+                                            <div class="col-md-6">
+                                                <div>
+                                                    <span class="text-muted">Usuario:</span>
+                                                    <strong>
+                                                        {{ $lending->user
+                                                            ? $lending->user->first_name . ' ' . $lending->user->last_name
+                                                            : 'Usuario desconocido' }}
+                                                    </strong>
+                                                </div>
+                                                <div>
+                                                    <span class="text-muted">Total de artículos:</span>
+                                                    <strong>{{ $lending->items->count() }}</strong>
+                                                </div>
+                                                <div>
+                                                    <span class="text-muted">Cantidad total:</span>
+                                                    <strong>{{ $lending->items->sum('quantity') }}</strong>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div>
+                                                    <span class="text-muted">Recogida:</span>
+                                                    <strong>{{ \Carbon\Carbon::parse($lending->start_time)->format('m/d/Y h:i A') }}</strong>
+                                                </div>
+                                                <div>
+                                                    <span class="text-muted">Devolución:</span>
+                                                    <strong>{{ \Carbon\Carbon::parse($lending->end_time)->format('m/d/Y h:i A') }}</strong>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         <form method="POST"
-                                              action="{{ route('inventory_management.requests.return', $lending->id) }}"
-                                              class="return-form">
+                                            action="{{ route('inventory_management.requests.return', $lending->id) }}"
+                                            class="return-form">
                                             @csrf
                                             <button type="button" class="btn btn-outline-success mark-returned-btn w-100">
                                                 Marcar como devuelto

@@ -21,9 +21,9 @@ Route::get('/welcome', function () {
     return view('welcome');
 });
 
-Route::get('/my_profile', function () {
-    return view('my_profile');
-})->name('my_profile');
+// Route::get('/my_profile', function () {
+//     return view('my_profile');
+// })->name('my_profile');
 
 //Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
 
@@ -56,7 +56,7 @@ Route::get('/search_user', function () {
 // })->name('inventory_management');//->middleware('role:super,inventory,user')
 
 Route::get('/inventory_management', [EquipmentController::class, 'index'])
-    ->name('inventory_management')->middleware('role:super,inventory,user');
+    ->name('inventory_management')->middleware('role:admin super,admin inventory,user');
 
 Route::post('/inventory_management', [EquipmentController::class, 'store'])
     ->name('inventory.store');
@@ -144,7 +144,7 @@ Route::get('/kinemercado/mensaje', function () {
     return view('kinemercado_mensaje');
 })->name('kinemercado_mensaje');
 
-Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management');
+Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management')->middleware('role:admin super,admin facilidades');
 Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])->name('facility.rates.save');
 Route::post('/facility/events', [FacilityCostController::class, 'storeEvent'])->name('facility.events.store');
 Route::delete('/facility/events/{item}', [FacilityCostController::class, 'destroy'])->name('facility.events.destroy');
@@ -152,6 +152,15 @@ Route::delete('/facility/events/{item}', [FacilityCostController::class, 'destro
 Route::get('/facility_management/export/csv', [FacilityCostController::class, 'exportCsv'])->name('facility.export.csv');
 Route::get('/facility_management/export/pdf', [FacilityCostController::class, 'exportPdf'])->name('facility.export.pdf');
 
+Route::get('/my_profile', [EquipmentController::class, 'profile'])->name('my_profile');
+
+Route::get('/mock-eventflow/events', [FacilityCostController::class, 'mockExternalEvents'])
+    ->name('facility.mock.events');
+
+Route::post('/facility/import-mock-events', [FacilityCostController::class, 'importMockEvents'])
+    ->name('facility.import.mock');
+
+require __DIR__.'\saml2.php';
 
 Route::post('/terms-and-conditions/update', [TermsController::class, 'update'])
     ->name('terms.update');

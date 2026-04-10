@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const CATEGORY_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
     const LOCATION_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-\/]+$/;
 
+    const searchInput = document.getElementById('inventorySearchInput');
+    const searchBtn = document.getElementById('inventorySearchBtn');
+
     const addToastElement = document.getElementById('inventoryAddToast');
     const deleteToastElement = document.getElementById('inventoryDeleteToast');
     const editToastElement = document.getElementById('inventoryEditToast');
@@ -15,6 +18,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmDeleteModalElement = document.getElementById('confirmDeleteModal');
     const confirmDeleteText = document.getElementById('confirmDeleteText');
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+
+    const confirmDeleteWarningText = document.getElementById('confirmDeleteWarningText');
 
     const confirmEditModalElement = document.getElementById('confirmEditModal');
     const confirmEditText = document.getElementById('confirmEditText');
@@ -62,6 +67,13 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(tryScroll, 100);
     }
 
+    function updateSearchButtonState() {
+        if (!searchInput || !searchBtn) return;
+
+        const hasText = searchInput.value.trim().length > 0;
+        searchBtn.disabled = !hasText;
+    }
+
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', saveScroll);
     });
@@ -78,6 +90,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     window.addEventListener('load', restoreScroll);
+
+    if (searchInput) {
+        searchInput.addEventListener('input', updateSearchButtonState);
+    }
+
+    updateSearchButtonState();
 
     function getToastInstance(element) {
         if (!element || typeof bootstrap === 'undefined') return null;
@@ -329,6 +347,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     confirmDeleteText.textContent = `¿Seguro que quieres borrar "${itemName}"?`;
                 }
 
+                //This is where backend adds their stuff- Kevin
+                const hasActiveOrders = true ;
+
+                if (confirmDeleteWarningText) {
+                    confirmDeleteWarningText.classList.toggle('d-none', !hasActiveOrders);
+                }
+
                 showModal(confirmDeleteModalElement);
             });
         });
@@ -459,9 +484,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 errorElement: categoriaError,
                 emptyMessage: 'La categoría es obligatoria.',
                 invalidMessage: 'La categoría contiene caracteres no permitidos.',
-                minMessage: 'La categoría debe tener al menos 5 caracteres.',
+                minMessage: 'La categoría debe tener al menos 3 caracteres.',
                 maxMessage: 'La categoría no puede exceder 100 caracteres.',
-                min: MIN_TEXT_LENGTH,
+                min: 3,
                 max: MAX_TEXT_LENGTH,
                 regex: CATEGORY_REGEX,
                 showError
@@ -485,9 +510,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 errorElement: ubicacionError,
                 emptyMessage: 'La ubicación es obligatoria.',
                 invalidMessage: 'La ubicación contiene caracteres no permitidos.',
-                minMessage: 'La ubicación debe tener al menos 5 caracteres.',
+                minMessage: 'La ubicación debe tener al menos 3 caracteres.',
                 maxMessage: 'La ubicación no puede exceder 100 caracteres.',
-                min: MIN_TEXT_LENGTH,
+                min: 3,
                 max: MAX_TEXT_LENGTH,
                 regex: LOCATION_REGEX,
                 showError
@@ -694,9 +719,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 errorElement: errorCategory,
                 emptyMessage: 'La categoría es obligatoria.',
                 invalidMessage: 'La categoría contiene caracteres no permitidos.',
-                minMessage: 'La categoría debe tener al menos 5 caracteres.',
+                minMessage: 'La categoría debe tener al menos 3 caracteres.',
                 maxMessage: 'La categoría no puede exceder 100 caracteres.',
-                min: MIN_TEXT_LENGTH,
+                min: 3,
                 max: MAX_TEXT_LENGTH,
                 regex: CATEGORY_REGEX,
                 showError
@@ -720,9 +745,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 errorElement: errorLocation,
                 emptyMessage: 'La ubicación es obligatoria.',
                 invalidMessage: 'La ubicación contiene caracteres no permitidos.',
-                minMessage: 'La ubicación debe tener al menos 5 caracteres.',
+                minMessage: 'La ubicación debe tener al menos 3 caracteres.',
                 maxMessage: 'La ubicación no puede exceder 100 caracteres.',
-                min: MIN_TEXT_LENGTH,
+                min: 3,
                 max: MAX_TEXT_LENGTH,
                 regex: LOCATION_REGEX,
                 showError
