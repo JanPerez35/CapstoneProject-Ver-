@@ -58,15 +58,10 @@
                         </div>
                         <p class="text-muted fs-4 mb-0">Miembro de MAIKINE</p>
 
-                        @php
-                            $userRating = 4.3;
-                            $reviewCount = 8;
-                        @endphp
-
                         <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
                             <span class="text-muted fw-medium">Calificación:</span>
 
-                            <div class="rating-stars" style="--rating: {{ $userRating }};">
+                            <div class="rating-stars" style="--rating: {{ $sellerAverageRating }};">
                                 <div class="rating-stars-base">
                                     <i class="bi bi-star-fill"></i>
                                     <i class="bi bi-star-fill"></i>
@@ -84,8 +79,8 @@
                                 </div>
                             </div>
 
-                            <span class="fw-bold">{{ number_format($userRating, 1) }}</span>
-                            <span class="text-muted">({{ $reviewCount }})</span>
+                            <span class="fw-bold">{{ number_format($sellerAverageRating, 1) }}</span>
+                            <span class="text-muted">({{ $sellerReviewsCount }})</span>
                         </div>
                     </div>
                 </div>

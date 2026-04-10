@@ -12,15 +12,17 @@ class FacilityCostReportItem extends Model
     protected $fillable = [
         'facility_cost_report_id',
         'facility_cost_id',
+        'responsable',
+        'period_type',
+        'services',
+        'rate_mode',
         'start_time',
         'end_time',
         'event_date',
+        'end_date',
         'event_description',
         'hours_used',
         'calculated_cost',
-        'period_type',
-        'services',
-        'responsable',
     ];
 
     protected $casts = [

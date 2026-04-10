@@ -122,6 +122,8 @@ let allowReportClose = false;
 // Storage
 let allMarketplacePosts =[];
 
+let currentPostId = null;
+
 async function fetchPosts() {
     const res = await fetch('/posts');
     const data = await res.json();
@@ -463,6 +465,8 @@ function attachMarketplaceDetailsEvents() {
             );
 
             if (!selectedPost) return;
+
+            currentPostId = selectedPost.id;
 
             populatePostDetailsModal(selectedPost);
 
@@ -1218,14 +1222,53 @@ function initializeSellerRating() {
 
 // Event Listeners
 
-// Seller rating toast
+// Seller rating toast and submit
 if (submitSellerRatingBtn) {
-    submitSellerRatingBtn.addEventListener('click', () => {
+    submitSellerRatingBtn.addEventListener('click', async () => {
         const ratingValue = Number(document.getElementById('sellerRatingValue')?.value || 0);
 
-        if (!ratingValue) return;
+        if (!ratingValue || !currentPostId) {
+            alert('Selecciona una calificación válida.');
+            return;
+        }
 
-        ratingSentToast?.show();
+        try {
+            const response = await fetch(`/marketplace/${currentPostId}/review`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    rating: ratingValue
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Error al guardar la calificación.');
+            }
+
+            await fetchPosts();
+
+            // Update seller rating in modal
+            if (postDetailsSellerRating) {
+                postDetailsSellerRating.innerHTML = `
+                    <i class="bi bi-star-fill text-warning me-1"></i>
+                    ${data.seller_rating_average}
+                    <span class="text-muted">(${data.seller_rating_count} reseñas)</span>
+                `;
+            }
+
+            // Show toast
+            ratingSentToast?.show();
+
+        } catch (error) {
+            console.error(error);
+            alert(error.message);
+        }
     });
 }
 

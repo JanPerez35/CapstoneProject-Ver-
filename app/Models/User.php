@@ -79,4 +79,14 @@ class User extends Authenticatable
     {
         return in_array($this->role, ['market_admin', 'super_admin', 'user']);
     }
+
+    public function reviewsGiven()
+    {
+        return $this->hasMany(Review::class, 'user_id');
+    }
+
+    public function reviewsReceived()
+    {
+        return $this->hasMany(Review::class, 'seller_id');
+    }
 }

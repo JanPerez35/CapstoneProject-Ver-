@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Post;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use App\Models\Review;
+use App\Models\User;
 
 class PostController extends Controller
 {  
@@ -74,4 +76,43 @@ class PostController extends Controller
         $posts = Post::latest()->get();
         return view('kinemarket', compact('posts'));
     }
+
+    public function getPosts()
+    {
+        $posts = Post::with('user')
+            ->latest()
+            ->get()
+            ->map(function ($post) {
+                $averageRating = Review::where('seller_id', $post->user_id)->avg('rating');
+                $reviewsCount = Review::where('seller_id', $post->user_id)->count();
+
+                $sellerName = trim(($post->user->first_name ?? '') . ' ' . ($post->user->last_name ?? ''));
+                if ($sellerName === '') {
+                    $sellerName = $post->user->name ?? 'Usuario';
+                }
+
+                return [
+                    'id' => $post->id,
+                    'title' => $post->title,
+                    'description' => $post->description,
+                    'cost' => $post->cost,
+                    'category' => $post->category,
+                    'condition' => $post->condition,
+                    'status' => $post->status,
+                    'photo_1_url' => $post->photo_1_url,
+                    'photo_2_url' => $post->photo_2_url,
+                    'photo_3_url' => $post->photo_3_url,
+                    'time_ago' => $post->created_at?->diffForHumans(),
+                    'rating' => round($averageRating ?? 0, 1),
+                    'reviews' => $reviewsCount,
+                    'user' => [
+                        'id' => $post->user->id,
+                        'name' => $sellerName,
+                    ],
+                ];
+            });
+
+        return response()->json($posts);
+    }
+
 }

@@ -38,4 +38,9 @@ class Post extends Model
     {
         return $this->created_at->diffForHumans();
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
 }

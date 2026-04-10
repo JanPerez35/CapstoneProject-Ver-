@@ -94,10 +94,6 @@ class FacilityCostController extends Controller
                     'daily_cost_3' => $validated['daily_cost_3'],
                     'weekly_cost_3' => $validated['weekly_cost_3'],
                     'monthly_cost_3' => $validated['monthly_cost_3'],
-
-                    'lending_certificate_1' => $validated['daily_cost_1'],
-                    'lending_certificate_2' => $validated['daily_cost_2'],
-                    'lending_certificate_3' => $validated['daily_cost_3'],
                 ]
             );
         }
@@ -106,146 +102,200 @@ class FacilityCostController extends Controller
     ->with('rates_saved', 'Tarifas guardadas correctamente.');
     }
 
-    public function storeEvent(Request $request)
-    {
-        $validated = $request->validate([
-            'salon' => ['required', 'string'],
-            'fecha' => ['required', 'date'],
-            'responsable' => ['required', 'string', 'min:10', 'max:60'],
-            'hora_inicio' => ['required'],
-            'hora_fin' => ['required'],
-            'descripcion' => ['required', 'string', 'min:10', 'max:1000'],
-            'tipo_periodo' => ['required', 'string'],
-            'servicios' => ['required', 'array', 'min:1'],
-        ]);
-
-        $payload = [
-            'classroom' => $validated['salon'],
-            'event_date' => $validated['fecha'],
-            'start_time' => $validated['hora_inicio'],
-            'end_time' => $validated['hora_fin'],
-            'description' => $validated['descripcion'],
-            'responsable' => $validated['responsable'],
-            'period_type' => $validated['tipo_periodo'],
-            'services' => $validated['servicios'],
-        ];
-
-        $this->createFacilityReportItemFromPayload($payload);
-
-        return redirect()->route('facility_management')
-    ->with('rental_saved', 'Evento guardado correctamente.');
-    }
-
     // public function storeEvent(Request $request)
     // {
     //     $validated = $request->validate([
-    //         'salon' => ['required', 'string'],
-    //         'fecha' => ['required', 'date'],
-    //         'responsable' => ['required', 'string', 'min:10', 'max:60'],
-    //         'hora_inicio' => ['required'],
-    //         'hora_fin' => ['required'],
-    //         'descripcion' => ['required', 'string', 'min:10', 'max:1000'],
-    //         'tipo_periodo' => ['required', 'string'],
-    //         'servicios' => ['required', 'array', 'min:1'],
-    //     ]);
+    //     'classroom' => ['required', 'string'],
+    //     'event_date' => ['required', 'date'],
+    //     'event_end_date' => ['nullable', 'date', 'after_or_equal:event_date'],
+    //     'start_time' => ['required'],
+    //     'end_time' => ['required'],
+    //     'description' => ['required', 'string', 'min:10', 'max:1000'],
+    //     'responsable' => ['required', 'string', 'min:5', 'max:60'],
+    //     'period_type' => ['required', 'string'],
+    //     'rate_mode' => ['required', 'in:daily,weekly,monthly'],
+    //     'services' => ['required', 'array', 'min:1'],
+    // ]);
 
-    //     $facilityCost = FacilityCost::where('classroom_name', $validated['salon'])->firstOrFail();
+    //     $payload = [
+    //     'classroom' => $validated['classroom'],
+    //     'event_date' => $validated['event_date'],
+    //     'event_end_date' => $validated['event_end_date'] ?? $validated['event_date'],
+    //     'start_time' => $validated['start_time'],
+    //     'end_time' => $validated['end_time'],
+    //     'description' => $validated['description'],
+    //     'responsable' => $validated['responsable'],
+    //     'period_type' => $validated['period_type'],
+    //     'rate_mode' => $validated['rate_mode'],
+    //     'services' => $validated['services'],
+    // ];
 
-    //     $start = Carbon::parse($validated['fecha'] . ' ' . $validated['hora_inicio']);
-    //     $end = Carbon::parse($validated['fecha'] . ' ' . $validated['hora_fin']);
-    //     $hoursUsed = $start->diffInMinutes($end) / 60;
+    //     $this->createFacilityReportItemFromPayload($payload);
 
-    //     $rate = 0;
-    //     if ($validated['tipo_periodo'] === 'laborable') {
-    //         $rate = $facilityCost->daily_cost_1;
-    //     } elseif ($validated['tipo_periodo'] === 'no_laborable_sabado') {
-    //         $rate = $facilityCost->daily_cost_2;
-    //     } elseif ($validated['tipo_periodo'] === 'no_laborable_domingo_festivo') {
-    //         $rate = $facilityCost->daily_cost_3;
-    //     }
-
-    //     $total = $facilityCost->classroom_space * $rate;
-
-    //     if (in_array('utilidades', $validated['servicios'])) {
-    //         $total += $facilityCost->supply_cost * $hoursUsed;
-    //     }
-    //     if (in_array('electricidad', $validated['servicios'])) {
-    //         $total += $facilityCost->electricity_cost * $hoursUsed;
-    //     }
-    //     if (in_array('agua', $validated['servicios'])) {
-    //         $total += $facilityCost->water_cost * $hoursUsed;
-    //     }
-
-    //     $report = FacilityCostReport::firstOrCreate([
-    //         'user_id' => 1,
-    //     ]);
-
-    //     FacilityCostReportItem::create([
-    //         'facility_cost_report_id' => $report->id,
-    //         'facility_cost_id' => $facilityCost->id,
-    //         'responsable' => $validated['responsable'],
-    //         'period_type' => $validated['tipo_periodo'],
-    //         'services' => $validated['servicios'],
-    //         'start_time' => $start,
-    //         'end_time' => $end,
-    //         'event_date' => $validated['fecha'],
-    //         'event_description' => $validated['descripcion'],
-    //         'hours_used' => $hoursUsed,
-    //         'calculated_cost' => round($total, 2),
-    //     ]);
-
-    //     return redirect()->route('facility_management')->with('success', 'Evento guardado correctamente.');
+    //     return redirect()->route('facility_management')
+    // ->with('rental_saved', 'Evento guardado correctamente.');
     // }
 
-    private function createFacilityReportItemFromPayload(array $data)
+    public function storeEvent(Request $request)
+{
+    $validated = $request->validate([
+        'classroom' => ['required', 'string'],
+        'event_date' => ['required', 'date'],
+        'event_end_date' => ['nullable', 'date', 'after_or_equal:event_date'],
+        'start_time' => ['required'],
+        'end_time' => ['required'],
+        'description' => ['required', 'string', 'min:10', 'max:1000'],
+        'responsable' => ['required', 'string', 'min:5', 'max:60'],
+        'period_type' => ['required', 'string'],
+        'rate_mode' => ['required', 'in:daily,weekly,monthly'],
+        'services' => ['required', 'array', 'min:1'],
+    ]);
+
+    $payload = [
+        'classroom' => $validated['classroom'],
+        'event_date' => $validated['event_date'],
+        'event_end_date' => $validated['event_end_date'] ?? $validated['event_date'],
+        'start_time' => $validated['start_time'],
+        'end_time' => $validated['end_time'],
+        'description' => $validated['description'],
+        'responsable' => $validated['responsable'],
+        'period_type' => $validated['period_type'],
+        'rate_mode' => $validated['rate_mode'],
+        'services' => $validated['services'],
+    ];
+
+    $item = $this->createFacilityReportItemFromPayload($payload);
+
+    if ($request->expectsJson() || $request->is('api/*')) {
+        return response()->json([
+            'message' => 'Evento guardado correctamente.',
+            'item_id' => $item->id,
+            'calculated_cost' => $item->calculated_cost,
+        ], 201);
+    }
+
+    return redirect()->route('facility_management')
+        ->with('rental_saved', 'Evento guardado correctamente.');
+}
+
+private function createFacilityReportItemFromPayload(array $data)
+{
+    $facilityCost = FacilityCost::where('classroom_name', $data['classroom'])->firstOrFail();
+
+    $startDate = Carbon::parse($data['event_date'])->startOfDay();
+    $endDate = Carbon::parse($data['event_end_date'] ?? $data['event_date'])->startOfDay();
+
+    $startTime = Carbon::parse($data['start_time']);
+    $endTime = Carbon::parse($data['end_time']);
+
+    // If same-day times were entered backwards, treat as invalid
+    if ($endTime->lessThanOrEqualTo($startTime)) {
+        abort(422, 'La hora de finalización debe ser mayor que la hora de inicio.');
+    }
+
+    // Hours per day
+    $hoursPerDay = $startTime->diffInMinutes($endTime) / 60;
+
+    // Inclusive days in the range
+    $daysUsed = $startDate->diffInDays($endDate) + 1;
+
+    // Total service hours
+    $hoursUsed = $hoursPerDay * $daysUsed;
+
+    // Selected rate according to period_type + rate_mode
+    $rate = $this->getRateByPeriodAndMode(
+        $facilityCost,
+        $data['period_type'],
+        $data['rate_mode']
+    );
+
+    // Units according to mode
+    $unitsUsed = $this->getUnitsUsed($startDate, $endDate, $data['rate_mode']);
+
+    // Base cost
+    $baseCost = $facilityCost->classroom_space * $rate * $unitsUsed;
+
+    // Services by hour
+    $servicesCost = 0;
+
+    if (in_array('utilidades', $data['services'])) {
+        $servicesCost += $facilityCost->supply_cost * $hoursUsed;
+    }
+
+    if (in_array('electricidad', $data['services'])) {
+        $servicesCost += $facilityCost->electricity_cost * $hoursUsed;
+    }
+
+    if (in_array('agua', $data['services'])) {
+        $servicesCost += $facilityCost->water_cost * $hoursUsed;
+    }
+
+    $total = $baseCost + $servicesCost;
+
+    $report = FacilityCostReport::firstOrCreate([
+        'user_id' => auth()->id() ?? 1,
+    ]);
+
+    return FacilityCostReportItem::create([
+        'facility_cost_report_id' => $report->id,
+        'facility_cost_id' => $facilityCost->id,
+        'responsable' => $data['responsable'],
+        'period_type' => $data['period_type'],
+        'services' => $data['services'],
+        'rate_mode' => $data['rate_mode'],
+        'start_time' => $startDate->copy()->setTimeFrom($startTime),
+        'end_time' => $endDate->copy()->setTimeFrom($endTime),
+        'event_date' => $data['event_date'],
+        'end_date' => $data['event_end_date'] ?? $data['event_date'],
+        'event_description' => $data['description'],
+        'hours_used' => $hoursUsed,
+        'calculated_cost' => round($total, 2),
+    ]);
+}
+
+private function getUnitsUsed(Carbon $startDate, Carbon $endDate, string $rateMode): int
+{
+    $daysUsed = $startDate->diffInDays($endDate) + 1;
+
+    return match ($rateMode) {
+        'daily' => $daysUsed,
+        'weekly' => (int) ceil($daysUsed / 7),
+        'monthly' => $this->calculateMonthsCrossed($startDate, $endDate),
+        default => 1,
+    };
+}
+
+private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
+{
+    $startMonth = $startDate->copy()->startOfMonth();
+    $endMonth = $endDate->copy()->startOfMonth();
+
+    return $startMonth->diffInMonths($endMonth) + 1;
+}
+
+    private function getRateByPeriodAndMode($facilityCost, $periodType, $rateMode)
     {
-        $facilityCost = FacilityCost::where('classroom_name', $data['classroom'])->firstOrFail();
-
-        $start = Carbon::parse($data['event_date'] . ' ' . $data['start_time']);
-        $end = Carbon::parse($data['event_date'] . ' ' . $data['end_time']);
-        $hoursUsed = $start->diffInMinutes($end) / 60;
-
-        $rate = 0;
-
-        if ($data['period_type'] === 'laborable') {
-            $rate = $facilityCost->daily_cost_1;
-        } elseif ($data['period_type'] === 'no_laborable_sabado') {
-            $rate = $facilityCost->daily_cost_2;
-        } elseif ($data['period_type'] === 'no_laborable_domingo_festivo') {
-            $rate = $facilityCost->daily_cost_3;
-        }
-
-        $total = $facilityCost->classroom_space * $rate;
-
-        if (in_array('utilidades', $data['services'])) {
-            $total += $facilityCost->supply_cost * $hoursUsed;
-        }
-
-        if (in_array('electricidad', $data['services'])) {
-            $total += $facilityCost->electricity_cost * $hoursUsed;
-        }
-
-        if (in_array('agua', $data['services'])) {
-            $total += $facilityCost->water_cost * $hoursUsed;
-        }
-
-        $report = FacilityCostReport::firstOrCreate([
-            'user_id' => 1,
-        ]);
-
-        return FacilityCostReportItem::create([
-            'facility_cost_report_id' => $report->id,
-            'facility_cost_id' => $facilityCost->id,
-            'responsable' => $data['responsable'],
-            'period_type' => $data['period_type'],
-            'services' => $data['services'],
-            'start_time' => $start,
-            'end_time' => $end,
-            'event_date' => $data['event_date'],
-            'event_description' => $data['description'],
-            'hours_used' => $hoursUsed,
-            'calculated_cost' => round($total, 2),
-        ]);
+        return match ($periodType) {
+            'laborable' => match ($rateMode) {
+                'daily' => (float) $facilityCost->daily_cost_1,
+                'weekly' => (float) $facilityCost->weekly_cost_1,
+                'monthly' => (float) $facilityCost->monthly_cost_1,
+                default => 0,
+            },
+            'no_laborable_sabado' => match ($rateMode) {
+                'daily' => (float) $facilityCost->daily_cost_2,
+                'weekly' => (float) $facilityCost->weekly_cost_2,
+                'monthly' => (float) $facilityCost->monthly_cost_2,
+                default => 0,
+            },
+            'no_laborable_domingo_festivo' => match ($rateMode) {
+                'daily' => (float) $facilityCost->daily_cost_3,
+                'weekly' => (float) $facilityCost->weekly_cost_3,
+                'monthly' => (float) $facilityCost->monthly_cost_3,
+                default => 0,
+            },
+            default => 0,
+        };
     }
 
     public function mockExternalEvents()

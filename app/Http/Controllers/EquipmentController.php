@@ -11,6 +11,7 @@ use App\Models\LendingItem;
 use App\Models\ActivityLog;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\EmailService;
+use App\Models\Review;
 
 class EquipmentController extends Controller
 {
@@ -746,6 +747,18 @@ public function profile(Request $request)
         ));
     }
 
-    return view('my_profile', compact('user', 'requests'));
+    $sellerAverageRating = round(
+        Review::where('seller_id', $user->id)->avg('rating') ?? 0,
+        1
+    );
+
+    $sellerReviewsCount = Review::where('seller_id', $user->id)->count();
+
+    return view('my_profile', compact(
+        'user',
+        'requests',
+        'sellerAverageRating',
+        'sellerReviewsCount'
+    ));
 }
 }

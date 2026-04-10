@@ -8,8 +8,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\PostController;
 use App\Models\Post;
 use App\Http\Controllers\TermsController;
-
-
+use App\Http\Controllers\ReviewController;
 
 Route::get('/', function () {
     return view('login');
@@ -109,14 +108,16 @@ Route::get('/my_messages', function () {
 
 Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
 Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
-Route::get('/posts', function () {
-    return Post::with('user')->latest()->get();
-});
+// Route::get('/posts', function () {
+//     return Post::with('user')->latest()->get();
+// });
 
-Route::get('/reports', [UserReportController::class, 'index']);
+Route::get('/posts', [PostController::class, 'getPosts'])->name('posts.list');
 
-Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
-Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
+// Route::get('/reports', [UserReportController::class, 'index']);
+
+// Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
+// Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
 
 /*Route::get('/kinemercado/reportar_usuario', function () {
     return view('kinemercado');
@@ -125,6 +126,9 @@ Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
 Route::get('/kinemercado/mensaje', function () {
     return view('kinemercado_mensaje');
 })->name('kinemercado_mensaje');
+
+Route::middleware('auth')->post('/marketplace/{post}/review', [ReviewController::class, 'store'])
+    ->name('marketplace.review.store');
 
 Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management')->middleware('role:admin super,admin facilidades');
 Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])->name('facility.rates.save');
