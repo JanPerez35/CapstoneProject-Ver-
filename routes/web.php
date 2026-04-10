@@ -56,7 +56,7 @@ Route::put('/users/{user}/role', [UserController::class, 'updateRole']);
 // })->name('inventory_management');//->middleware('role:super,inventory,user')
 
 Route::get('/inventory_management', [EquipmentController::class, 'index'])
-    ->name('inventory_management')->middleware('role:admin super,admin inventory,user');
+    ->name('inventory_management')->middleware('role:Admin Super,admin inventory,user');
 
 Route::post('/inventory_management', [EquipmentController::class, 'store'])
     ->name('inventory.store');
@@ -142,7 +142,7 @@ Route::get('/kinemercado/mensaje', function () {
     return view('kinemercado_mensaje');
 })->name('kinemercado_mensaje');
 
-Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management')->middleware('role:admin super,admin facilidades');
+Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management')->middleware('role:Admin Super,admin facilidades');
 Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])->name('facility.rates.save');
 Route::post('/facility/events', [FacilityCostController::class, 'storeEvent'])->name('facility.events.store');
 Route::delete('/facility/events/{item}', [FacilityCostController::class, 'destroy'])->name('facility.events.destroy');

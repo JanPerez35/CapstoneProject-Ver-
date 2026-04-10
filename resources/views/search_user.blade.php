@@ -124,8 +124,8 @@
                                             {{ $user->name }}
                                         </span>
 
-                                        <span class="label-badge bg-secondary text-white px-2 py-1 rounded">
-                                            {{ $user->role}}
+                                        <span class="label-badge {{ $user->role_badge_class }}">
+                                            {{ $user->role_label}}
                                         </span>
                                     </div>
 
@@ -153,11 +153,11 @@
                             <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                             <div class="d-flex flex-column gap-2">
 
-                                <span class="badge bg-success">
+                                <span class="label-badge badge-active align-self-start">
                                     {{ $user->status }}
                                 </span>
 
-                                <button type="button" class="btn btn-danger btn-sm">
+                                <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
                                     <i class="bi bi-ban me-1"></i>
                                     Bloquear
                                 </button>
@@ -271,7 +271,7 @@
              style="width: auto; max-width: fit-content;">
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
-                    La cuenta ha sido baneada.
+                    La cuenta ha sido bloqueada.
                 </div>
 
                 <button type="button"
