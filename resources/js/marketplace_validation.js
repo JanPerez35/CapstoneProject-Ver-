@@ -1321,6 +1321,13 @@ if (marketplacePriceFilter) {
     });
 }
 
+if (marketplaceConditionFilter) {
+    marketplaceConditionFilter.addEventListener('change', () => {
+        currentMarketplacePage = 1;
+        renderMarketplace();
+    });
+}
+
 // Create post inputs
 if (postTitle) {
     postTitle.addEventListener('input', () => {
@@ -1330,7 +1337,7 @@ if (postTitle) {
             postTitle.value = value.slice(0, 100);
             setFieldError(postTitle, postTitleError, 'Has alcanzado el máximo de 100 caracteres. No puedes escribir más.');
         } else if (value.length === 100) {
-            setFieldError(postTitle, postTitleError, 'Has alcanzado el máximo de 100 caracteres.');
+            setFieldError(postTitle, postTitleError, 'Has alcanzado el máximo de 100 caracteres, puedes aún someter esa cantidad.');
         } else {
             validateTitle(true);
         }
@@ -1355,7 +1362,7 @@ if (postDescription) {
             setFieldError(
                 postDescription,
                 postDescriptionError,
-                'Has alcanzado el máximo de 500 caracteres.'
+                'Has alcanzado el máximo de 500 caracteres, puedes aún someter esa cantidad..'
             );
         } else {
             validateDescription(true);
@@ -1378,7 +1385,7 @@ if (reportDescription) {
         } else if (value.length === 500) {
             reportDescription.classList.add('is-invalid');
             reportDescriptionError.textContent =
-                'Has alcanzado el máximo de 500 caracteres.';
+                'Has alcanzado el máximo de 500 caracteres, puedes aún someter esa cantidad.';
         } else {
             validateReportDescription(true);
         }

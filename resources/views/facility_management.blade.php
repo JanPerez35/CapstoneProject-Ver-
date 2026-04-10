@@ -18,7 +18,7 @@
         <!--Header-->
         <div class="mb-4">
             <h1 class="fw-bold mb-1">Gestión de Costos de Facilidad</h1>
-            <p class="text-muted mb-0">Ver, filtrar y exportar costos estimados de uso de instalaciones.</p>
+            <p class="text mb-0">Aquí puedes ver, filtrar y exportar costos estimados de uso de instalaciones.</p>
         </div>
 
         <!--Warning-->
@@ -27,8 +27,8 @@
                 <div>
                     <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong> Los costos mostrados en esta página son
                     <strong>estimaciones</strong> calculadas según las tarifas configuradas, el salón,
-                    el horario y los servicios seleccionados. Estos valores pueden cambiar y deben ser
-                    validados administrativamente antes de considerarse finales.
+                    el horario y los servicios seleccionados. Todas las tarifas estan sujetas a cambios y deberan ser ratificadas por el area
+                    administrativa para ser consideradas como definitivas.
                 </div>
             </div>
         </div>
@@ -89,7 +89,7 @@
         </div>
 
         <!--Search and Filters-->
-            <div class="card-body p-4">
+            <div class="mb-4">
                 <form id="facilityCostFilterForm" method="GET" action="{{ route('facility_management') }}" class="mb-4">
                     @csrf
 
@@ -117,40 +117,43 @@
 
                         <div class="col-md-3">
                             <select id="reportType" name="report_type" class="form-select border-2 border-dark">
-                                <option value="" disabled {{ empty($reportType) ? 'selected' : '' }}>Tipo de reporte</option>
-                                <option value="monthly" {{ ($reportType ?? 'monthly') === 'monthly' ? 'selected' : '' }}>Mensual</option>
-                                <option value="annual" {{ ($reportType ?? 'monthly') === 'annual' ? 'selected' : '' }}>Anual</option>
+                                <option value="" selected>Tipo de reporte</option>
+                                <option value="monthly" >Mensual</option>
+                                <option value="annual" >Anual</option>
                             </select>
                         </div>
 
                         <div class="col-md-3" id="monthFilterWrapper">
                             <select id="reportMonth" name="report_month" class="form-select border-2 border-dark">
-                                <option value="1" {{ ($reportMonth ?? now()->month) == 1 ? 'selected' : '' }}>Enero</option>
-                                <option value="2" {{ ($reportMonth ?? now()->month) == 2 ? 'selected' : '' }}>Febrero</option>
-                                <option value="3" {{ ($reportMonth ?? now()->month) == 3 ? 'selected' : '' }}>Marzo</option>
-                                <option value="4" {{ ($reportMonth ?? now()->month) == 4 ? 'selected' : '' }}>Abril</option>
-                                <option value="5" {{ ($reportMonth ?? now()->month) == 5 ? 'selected' : '' }}>Mayo</option>
-                                <option value="6" {{ ($reportMonth ?? now()->month) == 6 ? 'selected' : '' }}>Junio</option>
-                                <option value="7" {{ ($reportMonth ?? now()->month) == 7 ? 'selected' : '' }}>Julio</option>
-                                <option value="8" {{ ($reportMonth ?? now()->month) == 8 ? 'selected' : '' }}>Agosto</option>
-                                <option value="9" {{ ($reportMonth ?? now()->month) == 9 ? 'selected' : '' }}>Septiembre</option>
-                                <option value="10" {{ ($reportMonth ?? now()->month) == 10 ? 'selected' : '' }}>Octubre</option>
-                                <option value="11" {{ ($reportMonth ?? now()->month) == 11 ? 'selected' : '' }}>Noviembre</option>
-                                <option value="12" {{ ($reportMonth ?? now()->month) == 12 ? 'selected' : '' }}>Diciembre</option>
+                                <option value="" selected>Mes</option>
+                                <option value="1">Enero</option>
+                                <option value="2" >Febrero</option>
+                                <option value="3">Marzo</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Mayo</option>
+                                <option value="6" >Junio</option>
+                                <option value="7" >Julio</option>
+                                <option value="8" >Agosto</option>
+                                <option value="9" >Septiembre</option>
+                                <option value="10" >Octubre</option>
+                                <option value="11" >Noviembre</option>
+                                <option value="12" >Diciembre</option>
                             </select>
                         </div>
 
                         <div class="col-md-3">
                             <select id="reportYear" name="report_year" class="form-select border-2 border-dark">
-                                <option value="2024" {{ ($reportYear ?? now()->year) == 2024 ? 'selected' : '' }}>2024</option>
-                                <option value="2025" {{ ($reportYear ?? now()->year) == 2025 ? 'selected' : '' }}>2025</option>
-                                <option value="2026" {{ ($reportYear ?? now()->year) == 2026 ? 'selected' : '' }}>2026</option>
+                                <option value="" selected>Año</option>
+                               @for($year = 2026; $year <= now()->year + 5; $year++)
+                                    <option value="{{$year}}">{{$year}}</option>
+                               @endfor
                             </select>
                         </div>
 
                         <div class="col-md-3">
                             <select id="filterClassroom" name="filter_classroom" class="form-select border-2 border-dark">
-                                <option value="all" {{ ($filterClassroom ?? 'all') === 'all' ? 'selected' : '' }}>Todos los salones</option>
+                                <option value="">Salón</option>
+                                <option value="all" >Todos los salones</option>
                                 @foreach ($facilityCosts as $cost)
                                     <option value="{{ $cost->classroom_name }}" {{ ($filterClassroom ?? 'all') === $cost->classroom_name ? 'selected' : '' }}>
                                         {{ $cost->classroom_name }}
@@ -371,7 +374,7 @@
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-3" id="configureRatesHelpNotice">
                                     <div class="d-flex align-items-start gap-3">
                                         <div>
-                                            <strong><i class="bi bi-warning-circle me-2"></i>Aviso:</strong>
+                                            <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
                                             Si el salón ya fue configurado anteriormente, se mostrarán sus tarifas guardadas para que puedas modificarlas.
                                             Si el salón nunca ha sido configurado, los campos aparecerán vacíos con ejemplos como referencia.
                                         </div>
@@ -404,9 +407,9 @@
                                                     >
                                                 </div>
                                                 <div class="invalid-feedback d-block" id="{{ $campo['id'] }}Error"></div>
-                                                @isset($campo['help'])
-                                                    <small class="text-muted d-block mt-2">{{ $campo['help'] }}</small>
-                                                @endisset
+                                                <small class="text-muted d-block mt-2">
+                                                    Escribe solo números y hasta 2 decimales. El máximo permitido es $500.00.
+                                                </small>
                                             </div>
                                         </div>
                                     @endforeach
@@ -467,6 +470,9 @@
                                                     >
                                                 </div>
                                                 <div class="invalid-feedback d-block" id="configDiaria{{ $periodo['sufijo'] }}Error"></div>
+                                                <small class="text-muted d-block mt-2">
+                                                    Escribe solo números y hasta 2 decimales. El máximo permitido es $500.00.
+                                                </small>
 
                                                 <label for="configSemanal{{ $periodo['sufijo'] }}" class="form-label fw-semibold">
                                                     Semanal <span class="text-danger">*</span>
@@ -483,6 +489,9 @@
                                                     >
                                                 </div>
                                                 <div class="invalid-feedback d-block" id="configSemanal{{ $periodo['sufijo'] }}Error"></div>
+                                                <small class="text-muted d-block mt-2">
+                                                    Escribe solo números y hasta 2 decimales. El máximo permitido es $500.00.
+                                                </small>
 
                                                 <label for="configMensual{{ $periodo['sufijo'] }}" class="form-label fw-semibold">
                                                     Mensual <span class="text-danger">*</span>
@@ -499,6 +508,9 @@
                                                     >
                                                 </div>
                                                 <div class="invalid-feedback d-block" id="configMensual{{ $periodo['sufijo'] }}Error"></div>
+                                                <small class="text-muted d-block mt-2">
+                                                    Escribe solo números y hasta 2 decimales. El máximo permitido es $500.00.
+                                                </small>
                                             </div>
                                         </div>
                                     @endforeach
@@ -565,7 +577,7 @@
                         @csrf
 
                         <div class="row g-3 mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label for="rentalClassroom" class="form-label fw-semibold">
                                     Salón <span class="text-danger">*</span>
                                 </label>
@@ -578,22 +590,7 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-4">
-                                <label for="rentalDate" class="form-label fw-semibold">
-                                    Fecha <span class="text-danger">*</span>
-                                </label>
-                                <input
-                                    type="date"
-                                    id="rentalDate"
-                                    name="fecha"
-                                    class="form-control form-control-lg"
-                                    min="{{now()->toDateString()}}"
-                                    required
-                                >
-                                <div class="invalid-feedback d-block" id="rentalDateError"></div>
-                            </div>
-
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label for="rentalResponsable" class="form-label fw-semibold">
                                     Responsable <span class="text-danger">*</span>
                                 </label>
@@ -614,6 +611,64 @@
                                     El responsable debe tener entre 10 y 40 caracteres.
                                 </div>
                             </div>
+
+                        </div>
+                        <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="rentalRangeType" class="form-label fw-semibold">
+                                        Duración del evento <span class="text-danger">*</span>
+                                    </label>
+                                    <select id="rentalRangeType" name="duracion_evento" class="form-select form-select-lg" required>
+                                        <option value="" selected disabled>Seleccionar duración</option>
+                                        <option value="day">Día</option>
+                                        <option value="week">Semana</option>
+                                        <option value="month">Mes</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="rentalStartDate" class="form-label fw-semibold" id="rentalStartDateLabel">
+                                        Fecha <span class="text-danger">*</span>
+                                    </label>
+                                    <input
+                                        type="date"
+                                        id="rentalStartDate"
+                                        name="fecha_inicio"
+                                        class="form-control form-control-lg"
+                                        min="{{ now()->toDateString() }}"
+                                        required
+                                    >
+                                    <div class="invalid-feedback d-block" id="rentalStartDateError"></div>
+                                </div>
+
+
+                            <div class="col-12">
+                            <div class="row g-3 mb-3 d-none" id="rentalEndDateRow">
+                                <div class="col-md-4">
+                                    <label for="rentalEndDate" class="form-label fw-semibold">
+                                        Fecha de fin <span class="text-danger">*</span>
+                                    </label>
+                                    <input
+                                        type="date"
+                                        id="rentalEndDate"
+                                        name="fecha_fin"
+                                        class="form-control form-control-lg"
+                                        min="{{ now()->toDateString() }}"
+                                    >
+                                    <div class="invalid-feedback d-block" id="rentalEndDateError"></div>
+                                </div>
+
+                                <div class="col-md-8">
+                                    <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-0 px-4 py-3 h-100 d-flex align-items-center">
+                                        <div>
+                                            <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
+                                            Si seleccionas semana o mes, debes indicar una fecha de inicio y una fecha de fin válida.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            </div>
+
                         </div>
 
                         <div class="row g-3 mb-4">
@@ -869,86 +924,64 @@
 
     <!--Notification Toasts-->
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
-        <div id="ratesSavedToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" style="width:auto; max-width:fit-content;">
-            <div class="d-flex align-items-center">
-                <div class="toast-body fw-semibold pe-1">Tarifas guardadas correctamente.</div>
-                <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar" style="transform:scale(0.8);"></button>
-            </div>
-        </div>
-
-        <div id="rentalSavedToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" style="width:auto; max-width:fit-content;">
-            <div class="d-flex align-items-center">
-                <div class="toast-body fw-semibold pe-1">Evento guardado correctamente.</div>
-                <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar" style="transform:scale(0.8);"></button>
-            </div>
-        </div>
-
         <div id="deleteEntryToast" class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" style="width:auto; max-width:fit-content;">
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold pe-1">Registro eliminado correctamente.</div>
                 <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar" style="transform:scale(0.8);"></button>
             </div>
         </div>
-    </div>
 
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-        @if(session('mock_imported'))
-            <div id="mockImportToast" class="toast align-items-center text-bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
+        <div id="downloadToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true" style="width:auto; max-width:fit-content;">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold pe-1">
+                    Tu documento se descargará en unos instantes.
+                </div>
+                <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar" style="transform:scale(0.8);"></button>
+            </div>
+        </div>
+
+            <!-- Tarifa Toast -->
+            <div id="ratesSavedToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2" role="alert">
+                <div class="d-flex align-items-center">
                     <div class="toast-body">
-                        {{ session('mock_imported') }}
+                        Tarifas guardadas correctamente.
                     </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast"></button>
                 </div>
             </div>
-        @endif
+
+            <!-- Evento Toast -->
+            <div id="rentalSavedToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2" role="alert">
+                <div class="d-flex align-items-center">
+                    <div class="toast-body">
+                        Evento creado correctamente.
+                    </div>
+                    <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+
+
+            <!--Eventflow toast-->
+
+            @if(session('mock_imported'))
+                <div id="mockImportToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+                     role="alert" aria-live="assertive" aria-atomic="true" style="width:auto; max-width:fit-content;">
+                    <div class="d-flex align-items-center">
+                        <div class="toast-body fw-semibold pe-1">
+                            {{ session('mock_imported') }}
+                        </div>
+                        <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar" style="transform:scale(0.8);"></button>
+                    </div>
+                </div>
+            @endif
+
     </div>
 
     <form id="deleteCostEntryForm" method="POST" class="d-none">
         @csrf
         @method('DELETE')
     </form>
-    <div id="downloadToast"
-         class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-         role="alert"
-         aria-live="assertive"
-         aria-atomic="true"
-         style="width:auto; max-width:fit-content;">
-        <div class="d-flex align-items-center">
-            <div class="toast-body fw-semibold pe-1">
-                Tu documento se descargará en unos instantes.
-            </div>
-            <button type="button"
-                    class="btn-close p-0 ms-1 me-2"
-                    data-bs-dismiss="toast"
-                    aria-label="Cerrar"
-                    style="transform:scale(0.8);"></button>
-        </div>
-    </div>
-
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-
-        <!-- Tarifa Toast -->
-        <div id="ratesSavedToast" class="toast align-items-center text-bg-success border-0" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    Tarifas guardadas correctamente.
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-
-        <!-- Evento Toast -->
-        <div id="rentalSavedToast" class="toast align-items-center text-bg-success border-0" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">
-                    Evento creado correctamente.
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-
-    </div>
 
     <style>
 
@@ -1154,5 +1187,20 @@
         const tarifasPorSalon = @json($tarifasPorSalon);
 
     </script>
+
+    <style>
+        .classroom-name {
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 180px;
+        }
+
+        .multi-classroom-card label {
+            min-width: 0;
+            flex: 1;
+        }
+    </style>
 
 </x-layout>

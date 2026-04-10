@@ -162,7 +162,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
+        if (value.length === MAX_LENGTH) {
+            input.classList.add('is-invalid');
+            errorEl.textContent = `Has alcanzado el máximo de ${MAX_LENGTH} caracteres, puedes aún someter esa cantidad.`;
+            errorEl.dataset.errorType = 'maxlength-limit';
+            return true;
+        }
+
         clearValidationError('maxlength');
+        clearValidationError('maxlength-limit');
         return true;
     }
 

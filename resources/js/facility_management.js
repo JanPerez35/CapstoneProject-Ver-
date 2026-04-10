@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const downloadCsvBtn = $('downloadCsvBtn');
     const downloadPdfBtn = $('downloadPdfBtn');
-    const downloadToastEl = $('downloadToast');
 
     const newClassroomName = $('newClassroomName');
     const newClassroomNameError = $('newClassroomNameError');
@@ -68,12 +67,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const configPreviewDomingo = $('configPreviewDomingo');
 
     const rentalClassroom = $('rentalClassroom');
-    const rentalDate = $('rentalDate');
     const rentalResponsable = $('rentalResponsable');
     const rentalStartTime = $('rentalStartTime');
     const rentalEndTime = $('rentalEndTime');
     const rentalDescripcion = $('rentalDescripcion');
     const rentalPeriodType = $('rentalPeriodType');
+
+    const rentalRangeType = $('rentalRangeType');
+    const rentalStartDate = $('rentalStartDate');
+    const rentalEndDate = $('rentalEndDate');
+    const rentalEndDateRow = $('rentalEndDateRow');
+    const rentalStartDateLabel = $('rentalStartDateLabel');
 
     const rentalUtilities = $('rentalUtilities');
     const rentalElectricity = $('rentalElectricity');
@@ -175,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!allowedRegex.test(value)) {
             if (showError) {
-                setAddClassroomError('Solo se permiten letras, números, espacios, coma, punto y guion.');
+                setAddClassroomError('Solo se permiten letras, números, espacios, punto, coma y guion.');
             }
             return false;
         }
@@ -216,7 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!trimmedValue) {
                 setAddClassroomError('');
             } else if (!allowedRegex.test(value)) {
-                setAddClassroomError('Solo se permiten letras, números, espacios, coma, punto y guion.');
+                setAddClassroomError('Solo se permiten letras, números, espacios, punto, coma y guion.');
             } else if (trimmedValue.length < 6) {
                 setAddClassroomError('El nombre del salón debe tener al menos 6 caracteres.');
             } else if (exceeded) {
@@ -308,6 +312,99 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function requiresEndDate() {
+        return ['week', 'month'].includes(rentalRangeType?.value);
+    }
+
+    function toggleRentalDateRangeUI() {
+        const showEndDate = requiresEndDate();
+
+        rentalEndDateRow.classList.toggle('d-none', !showEndDate);
+        rentalStartDateLabel.innerHTML = showEndDate
+            ? 'Fecha de inicio <span class="text-danger">*</span>'
+            : 'Fecha <span class="text-danger">*</span>';
+
+        if (!showEndDate) {
+            rentalEndDate.value = '';
+            clearFieldError(rentalEndDate, $('rentalEndDateError'));
+        }
+
+        if (rentalStartDate.value && requiresEndDate()) {
+            const nextDay = new Date(`${rentalStartDate.value}T00:00:00`);
+            nextDay.setDate(nextDay.getDate() + 1);
+            rentalEndDate.min = nextDay.toISOString().split('T')[0];
+        } else if (rentalStartDate.value) {
+            rentalEndDate.min = rentalStartDate.value;
+        } else {
+            rentalEndDate.min = new Date().toISOString().split('T')[0];
+        }
+    }
+
+    function validateRentalDates(showError = true) {
+        const startError = $('rentalStartDateError');
+        const endError = $('rentalEndDateError');
+
+        if (showError) {
+            clearFieldError(rentalStartDate, startError);
+            clearFieldError(rentalEndDate, endError);
+        }
+
+        const startValue = rentalStartDate.value;
+        const endValue = rentalEndDate.value;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (!startValue) {
+            if (showError) {
+                setFieldError(rentalStartDate, startError, 'La fecha de inicio es requerida.');
+            }
+            return false;
+        }
+
+        const startDate = new Date(`${startValue}T00:00:00`);
+
+        if (startDate < today) {
+            if (showError) {
+                setFieldError(rentalStartDate, startError, 'No puedes seleccionar una fecha anterior a hoy.');
+            }
+            return false;
+        }
+
+        if (!requiresEndDate()) {
+            return true;
+        }
+
+        if (!endValue) {
+            if (showError) {
+                setFieldError(rentalEndDate, endError, 'La fecha de fin es requerida.');
+            }
+            return false;
+        }
+
+        const endDate = new Date(`${endValue}T00:00:00`);
+
+        if (endDate < today) {
+            if (showError) {
+                setFieldError(rentalEndDate, endError, 'No puedes seleccionar una fecha anterior a hoy.');
+            }
+            return false;
+        }
+
+        if (endDate <= startDate) {
+            if (showError) {
+                setFieldError(
+                    rentalEndDate,
+                    endError,
+                    'La fecha de fin debe ser posterior a la fecha de inicio para eventos semanales o mensuales.'
+                );
+                rentalStartDate.classList.add('is-invalid');
+                rentalEndDate.classList.add('is-invalid');
+            }
+            return false;
+        }
+        return true;
+    }
+
     const formatMoney = (value) => Number(value).toLocaleString('en-US', {
         style: 'currency',
         currency: 'USD',
@@ -318,26 +415,84 @@ document.addEventListener('DOMContentLoaded', () => {
     const parseMoney = (text) => Number(String(text).replace(/[^0-9.]/g, '')) || 0;
     const toNumber = (value) => Number(String(value).replace(/[^0-9.]/g, '')) || 0;
 
+    const MAX_RATE_PRICE = 500;
+
     function sanitizeMoneyInput(input) {
         let value = input.value.replace(/[^0-9.]/g, '');
 
-        const firstDot = value.indexOf('.');
-
-        if (firstDot !== -1) {
-            let integerPart = value.slice(0, firstDot + 1);
-            let decimalPart = value.slice(firstDot + 1).replace(/\./g, '');
-
-            decimalPart = decimalPart.slice(0, 2);
-            value = integerPart + decimalPart;
+        if (value.startsWith('.')) {
+            value = '0' + value;
         }
 
-        if (value.startsWith('.')) value = '0' + value;
+        const parts = value.split('.');
+        if (parts.length > 2) {
+            value = parts[0] + '.' + parts.slice(1).join('');
+        }
 
-        input.value = value;
+        const firstDotIndex = value.indexOf('.');
+        if (firstDotIndex !== -1) {
+            const integerPart = value.slice(0, firstDotIndex);
+            const decimalPart = value.slice(firstDotIndex + 1).slice(0, 2);
+            value = integerPart + '.' + decimalPart;
+        }
+
+        const numericValue = Number(value);
+
+        if (value && !Number.isNaN(numericValue) && numericValue > MAX_RATE_PRICE) {
+            const errorElement = document.getElementById(`${input.id}Error`);
+            const inputGroup = input.closest('.money-input-group');
+
+            setFieldError(
+                input,
+                errorElement,
+                'El valor no puede exceder $500.00.'
+            );
+            inputGroup?.classList.add('is-invalid');
+
+            const previousValidValue = input.dataset.previousValidValue || '';
+            input.value = previousValidValue;
+        } else {
+            input.value = value;
+            input.dataset.previousValidValue = value;
+            validateMoneyField(input, true);
+        }
     }
 
     function normalizeMoneyInput(input) {
-        input.value = toNumber(input.value).toFixed(2);
+        const rawValue = input.value.trim();
+
+        if (!rawValue){
+            validateMoneyField(input, true);
+            return;
+        }
+
+        const numericValue = Number(rawValue);
+        const errorElement = document.getElementById(`${input.id}Error`);
+        const inputGroup = input.closest('.money-input-group');
+
+
+        if (Number.isNaN(numericValue)) {
+            input.value = '';
+            validateMoneyField(input, true);
+            return;
+        }
+
+        if (numericValue > MAX_RATE_PRICE) {
+            input.value = input.dataset.previousValidValue || '';
+            setFieldError(
+                input,
+                errorElement,
+                'El valor no puede exceder $500.00.'
+            );
+
+            inputGroup?.classList.add('is-invalid');
+            return;
+
+        }
+            input.value = numericValue.toFixed(2);
+            input.dataset.previousValidValue = input.value;
+            validateMoneyField(input, true);
+
     }
 
     function timeToMinutes(timeValue) {
@@ -610,15 +765,15 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
-        return true;
-    }
+        if (Number(value) > MAX_RATE_PRICE) {
+            if (showError) {
+                setFieldError(input, errorElement, 'El valor no puede exceder $500.00.');
+                inputGroup?.classList.add('is-invalid');
+            }
+            return false;
+        }
 
-    function capitalizeWords(value) {
-        return value
-            .toLowerCase()
-            .replace(/\s+/g, ' ')
-            .trimStart()
-            .replace(/(^|\s)([A-Za-zÁÉÍÓÚáéíóúÑñ])/g, (match, space, letter) => `${space}${letter.toUpperCase()}`);
+        return true;
     }
 
     function validateResponsable(showError = true) {
@@ -638,7 +793,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!regex.test(value)){
             if (showError){
-                setFieldError(rentalResponsable, rentalResponsableError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+                setFieldError(rentalResponsable, rentalResponsableError, 'Solo se permiten letras y espacios.');
             }
             return false;
         }
@@ -688,7 +843,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (value.length > 500) {
-            if (showError) setFieldError(rentalDescripcion, rentalDescripcionError, 'La descripción no puede exceder 1000 caracteres.');
+            if (showError) setFieldError(rentalDescripcion, rentalDescripcionError, 'La descripción no puede exceder 500 caracteres.');
             return false;
         }
 
@@ -754,7 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const validResponsable = validateResponsable(false);
         const validDescription = validateDescripcion(false);
         const validServices = hasSelectedServices();
-        const validDate = validateRentalDate(false);
+        const validDates = validateRentalDates(false);
 
         if(servicesTouched){
             toggleServicesError(!validServices);
@@ -763,7 +918,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return !!(
             rentalClassroom.value &&
-            validDate &&
+            validDates &&
             rentalPeriodType.value &&
             validTimes &&
             validResponsable &&
@@ -777,7 +932,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleMonthFilter() {
-        monthFilterWrapper.classList.toggle('d-none', reportType.value !== 'monthly');
+       const isMonthly = reportType.value === 'monthly';
+
+       monthFilterWrapper.classList.toggle('d-none', !isMonthly);
+
+       if(!isMonthly && reportMonth) {
+           reportMonth.value = '';
+       }
     }
 
     function renderLocalPagination(container, currentPage, totalItems, itemsPerPage, onPageChange) {
@@ -839,7 +1000,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toasts.download.show();
         }
 
-        const selectedType = reportType.value === 'annual' ? 'anual' : 'mensual';
+        const selectedType = reportType.value === 'annual' ? 'annual' : 'mensual';
         const selectedYear = reportYear.value;
         const selectedMonth = reportMonth.options[reportMonth.selectedIndex]?.text || '';
         const selectedClassroom = filterClassroom.options[filterClassroom.selectedIndex]?.text || 'Todos los salones';
@@ -918,10 +1079,10 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
     function applyTableFilters() {
         const searchValue = (facilitySearch?.value || '').toLowerCase().trim();
-        const type = reportType.value;
-        const month = reportMonth.value;
-        const year = reportYear.value;
-        const classroom = filterClassroom.value;
+        const type = reportType?.value || '';
+        const month = reportMonth?.value || '';
+        const year = reportYear?.value || '';
+        const classroom = filterClassroom?.value || '';
 
         const allRows = [...facilityCostTableBody.querySelectorAll('tr')];
 
@@ -929,42 +1090,21 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             const rowMonth = row.dataset.month;
             const rowYear = row.dataset.year;
             const rowClassroom = row.dataset.classroom;
-
-            const matchesType = type === 'annual'
-                ? rowYear === year
-                : (rowYear === year && rowMonth === month);
-
-            const matchesClassroom = classroom === 'all' ? true : rowClassroom === classroom;
-
             const rowText = row.textContent.toLowerCase();
 
+            const matchesType = !type || (type === 'annual' && (!year || rowYear === year)) ||
+                (type === 'monthly' && (!year || rowYear === year) && (!month || rowMonth === month));
+
+            const matchesClassroom = !classroom ||
+            classroom === 'all' || rowClassroom === classroom;
+
+
             const matchesSearch =
-                searchValue === '' ||
+                !searchValue ||
                 rowText.includes(searchValue);
 
             return matchesType && matchesClassroom && matchesSearch;
         });
-
-        if (facilitySearch) {
-            facilitySearch.addEventListener('input', () => {
-                updateFacilitySearchButtonState();
-            });
-
-            facilitySearch.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !searchFacilityBtn.disabled) {
-                    e.preventDefault();
-                    currentFacilityCostsPage = 1;
-                    applyTableFilters();
-                }
-            });
-        }
-
-        if (searchFacilityBtn) {
-            searchFacilityBtn.addEventListener('click', () => {
-                currentFacilityCostsPage = 1;
-                applyTableFilters();
-            });
-        }
 
         const totalPages = Math.max(1, Math.ceil(filteredRows.length / FACILITY_COSTS_PER_PAGE));
 
@@ -1007,14 +1147,25 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         );
     }
 
-    function createServiceBadges(services) {
-        return services.map(service => `<span class="badge rounded-0 px-3 py-2 me-2 mb-1 service-badge-table">${service}</span>`).join('');
+    if (facilitySearch) {
+        facilitySearch.addEventListener('input', () => {
+            updateFacilitySearchButtonState();
+        });
+
+        facilitySearch.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !searchFacilityBtn.disabled) {
+                e.preventDefault();
+                currentFacilityCostsPage = 1;
+                applyTableFilters();
+            }
+        });
     }
 
-    function formatDisplayDate(dateValue) {
-        const date = new Date(`${dateValue}T12:00:00`);
-        const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    if (searchFacilityBtn) {
+        searchFacilityBtn.addEventListener('click', () => {
+            currentFacilityCostsPage = 1;
+            applyTableFilters();
+        });
     }
 
     function formatDisplayTime24To12(timeValue) {
@@ -1107,35 +1258,6 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         }
     }
 
-    function validateRentalDate(showError = true) {
-        const errorElement = document.getElementById('rentalDateError');
-        const value = rentalDate.value;
-
-        if (showError) {
-            clearFieldError(rentalDate, errorElement);
-        }
-
-        if (!value) {
-            if (showError) {
-                setFieldError(rentalDate, errorElement, 'La fecha es requerida.');
-            }
-            return false;
-        }
-
-        const selectedDate = new Date(`${value}T00:00:00`);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (selectedDate < today) {
-            if (showError) {
-                setFieldError(rentalDate, errorElement, 'No puedes seleccionar una fecha anterior a hoy.');
-            }
-            return false;
-        }
-
-        return true;
-    }
-
     function configureHasChanges() {
         return (
             getSelectedClassrooms().length > 0 ||
@@ -1151,7 +1273,9 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     function rentalHasChanges() {
         return (
             (rentalClassroom?.value || '') !== '' ||
-            (rentalDate?.value || '') !== '' ||
+            (rentalRangeType?.value || '') !== '' ||
+            (rentalStartDate?.value || '') !== '' ||
+            (rentalEndDate?.value || '') !== '' ||
             (rentalResponsable?.value || '').trim() !== '' ||
             (rentalStartTime?.value || '') !== '' ||
             (rentalEndTime?.value || '') !== '' ||
@@ -1200,6 +1324,9 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         toggleServicesError(false);
         clearFieldError(rentalResponsable, rentalResponsableError);
         clearFieldError(rentalDescripcion, rentalDescripcionError);
+        clearFieldError(rentalStartDate, $('rentalStartDateError'));
+        clearFieldError(rentalEndDate, $('rentalEndDateError'));
+        toggleRentalDateRangeUI();
 
         rentalEstimatedTotal.textContent = formatMoney(0);
         rentalEstimatedTotalInput.value = '0.00';
@@ -1244,39 +1371,33 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     }
 
     moneyInputs.forEach((input) => {
-        input.addEventListener('input', () => {
+        input.addEventListener('keydown', (e) => {
+            if(['e', 'E', '+', '-'].includes(e.key)){
+                e.preventDefault();
+            }
+        });
+
+        input.addEventListener('input', () =>{
             sanitizeMoneyInput(input);
             configureDirty = true;
-            validateMoneyField(input, true);
             updateConfigPreview();
             updateConfigureSaveState();
         });
 
         input.addEventListener('blur', () => {
-            const value = input.value.trim();
-
-            if (!value) {
-                validateMoneyField(input, true);
-                return;
-            }
-
             normalizeMoneyInput(input);
             validateMoneyField(input, true);
-
             updateConfigPreview();
             updateConfigureSaveState();
         });
-
-        input.addEventListener('keydown', (e) => {
-            if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
-        });
     });
 
-    [rentalClassroom, rentalDate, rentalStartTime, rentalEndTime, rentalPeriodType].forEach((el) => {
+    [rentalClassroom, rentalRangeType,rentalStartDate, rentalEndDate,rentalStartTime, rentalEndTime, rentalPeriodType].forEach((el) => {
         el.addEventListener('change', () => {
             rentalDirty = true;
             calculateRentalEstimate();
             updateRentalSaveState();
+            toggleRentalDateRangeUI();
         });
     });
 
@@ -1284,9 +1405,11 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     rentalDescripcion.addEventListener('input', () => {
         rentalDirty = true;
 
-        const value = rentalDescripcion.value;
+        let value = rentalDescripcion.value;
 
-        if (value.length > 500) {
+        const exceeded = value.length > 500;
+
+        if (exceeded) {
             rentalDescripcion.value = value.slice(0, 500);
             setFieldError(
                 rentalDescripcion,
@@ -1297,7 +1420,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             setFieldError(
                 rentalDescripcion,
                 rentalDescripcionError,
-                'Has alcanzado el máximo de 500 caracteres.'
+                'Has alcanzado el máximo de 500 caracteres, puedes aún someter esa cantidad.'
             );
         } else {
             validateDescripcion(true);
@@ -1325,9 +1448,10 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     rentalResponsable.addEventListener('input', () => {
         rentalDirty = true;
 
-        const value = rentalResponsable.value;
+        let value = rentalResponsable.value;
+        const exceeded = value.length > 40;
 
-        if (value.length > 40) {
+        if (exceeded) {
             rentalResponsable.value = value.slice(0, 40);
             setFieldError(
                 rentalResponsable,
@@ -1338,7 +1462,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             setFieldError(
                 rentalResponsable,
                 rentalResponsableError,
-                'Has alcanzado el máximo de 40 caracteres.'
+                'Has alcanzado el máximo de 40 caracteres, puedes aún someter esa cantidad.'
             );
         } else {
             validateResponsable(true);
@@ -1353,11 +1477,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         el.addEventListener('change', () => {
             currentFacilityCostsPage = 1;
             toggleMonthFilter();
-
-            const filterForm = $('facilityCostFilterForm');
-            if (filterForm) {
-                filterForm.submit();
-            }
+            applyTableFilters();
         });
     });
 
@@ -1419,13 +1539,6 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         });
     });
 
-    if (rentalDate) {
-        rentalDate.addEventListener('change', () => {
-            validateRentalDate(true);
-            updateRentalSaveState();
-        });
-    }
-
     const confirmCancelConfigureBtn = $('confirmCancelConfigureBtn');
     const confirmCancelRentalBtn = $('confirmCancelRentalBtn');
     const confirmCancelConfigureModal = $('confirmCancelConfigureModal');
@@ -1463,12 +1576,6 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     buildTimeOptions(rentalStartTime, 7, 30, 21, 30);
     buildTimeOptions(rentalEndTime, 7, 45, 21, 45);
 
-    bindDeleteButtons();
-    bindClassroomCheckboxes();
-    toggleMonthFilter();
-    resetConfigureFormState();
-    resetRentalFormState();
-    applyTableFilters();
 
     if (downloadCsvBtn) {
         downloadCsvBtn.addEventListener('click', () => {
@@ -1482,5 +1589,11 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         });
     }
 
+    bindDeleteButtons();
+    bindClassroomCheckboxes();
+    toggleMonthFilter();
     updateFacilitySearchButtonState();
+    resetConfigureFormState();
+    resetRentalFormState();
+    applyTableFilters();
 });
