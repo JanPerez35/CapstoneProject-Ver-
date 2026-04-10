@@ -19,6 +19,7 @@ class MessageController extends Controller
             'chat_id' => $request->chat_id,
             'user_id' => auth()->id(),
             'content' => $request->content,
+            'isMine' => $message->user_id == auth()->id(),
             'status' => 'sent',
             'sent_at' => now(),
         ]);
@@ -30,5 +31,25 @@ class MessageController extends Controller
         // ))->toOthers();
 
         return response()->json($message);
+    }
+    public function getMessages($chatId)
+    {
+        $userId = auth()->id();
+
+        $messages = Message::where('chat_id', $chatId)
+        ->with('user')
+        ->orderBy('created_at')
+        ->get()
+        ->map(function ($msg) {
+            return [
+                'id' => $msg->id,
+                'content' => $msg->content,
+                'sender_id' => $msg->user_id,
+                'isMine' => $msg->user_id == auth()->id(),
+                'created_at' => $msg->created_at,
+            ];
+        });
+
+        return response()->json($messages);
     }
 }

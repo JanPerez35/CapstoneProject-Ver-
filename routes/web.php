@@ -123,6 +123,8 @@ Route::delete('/posts/{post}', [PostController::class, 'destroy']);
 
 Route::get('/my_messages', [ChatController::class, 'index'])->name('my_messages');
 Route::get('/chat/{chatId}', [ChatController::class, 'show'])->name('chat.show');
+Route::post('/chats/open', [ChatController::class, 'openOrCreate'])
+    ->name('chat.open');
 Route::post('/messages', [MessageController::class, 'store']);
 Route::get('/messages/{chatId}', function ($chatId) {
     return \App\Models\Message::with('user')

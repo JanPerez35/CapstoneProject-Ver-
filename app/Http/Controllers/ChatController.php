@@ -28,11 +28,6 @@ class ChatController extends Controller
             $selectedChat = $chats->firstWhere('id', $request->chat_id);
         }
 
-        // fallback
-        if (!$selectedChat && $chats->count()) {
-            $selectedChat = $chats->first();
-        }
-
         return view('my_messages', compact('chats', 'selectedChat'));
     }
 

@@ -40,6 +40,7 @@
         class="container-fluid py-4"
         id="messagesView"
         data-chat-id="{{ request('chat_id', '') }}"
+        data-current-user-id="{{ auth()->id() }}"
         data-post-id="{{ $selectedChat?->post_id ?? '' }}"
         data-current-user-id="{{ auth()->id() ?? '' }}"
     >
@@ -85,6 +86,8 @@
                                 class="p-4 border-start border-4 border-success chat-list-item"
                                 data-chat-id="{{ $chat->id }}"
                                 data-post-id="{{ $chat->post_id }}"
+                                data-user-name="{{ $chat->otherUser()->name ?? 'Usuario' }}"
+                                data-post-title="{{ $chat->post->title ?? 'Sin título' }}"
                             >
                                 <div class="d-flex align-items-start">
                                     <div

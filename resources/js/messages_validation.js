@@ -73,6 +73,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-¿?¡!()]+$/;
     const allowedReportRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-¿?¡!()]+$/;
     const frontendMessages = [];
+    const chatId = messagesView?.dataset.chatId;
+    const currentUserId = messagesView?.dataset.currentUserId;
 
     let isReportDirty = false;
     let allowReportClose = false;
@@ -204,15 +206,15 @@ document.addEventListener('DOMContentLoaded', () => {
             emptyState.classList.add('d-none');
         }
 
-        const isMine = messageObj.isMine ?? true;
+        const isMine = messageObj.isMine === true;
 
         const alignment = isMine ? 'justify-content-end' : 'justify-content-start';
         const bg = isMine ? 'bg-success text-white' : 'bg-light text-dark';
 
         messagesContainer.insertAdjacentHTML('beforeend', `
-            <div class="d-flex justify-content-end mb-3">
+            <div class="d-flex ${alignment} mb-3">
                 <div
-                    class="bg-success text-white px-3 py-2 rounded-4 shadow-sm"
+                    class="${bg} px-3 py-2 rounded-4 shadow-sm"
                     style="max-width: 75%; word-break: break-word;"
                     data-message-id="${messageObj.id}"
                     data-conversation-id="${messageObj.conversationId}"
@@ -330,6 +332,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const query = messagesSearchInput.value.trim().toLowerCase();
         const items = chatListContainer.querySelectorAll('.chat-list-item');
 
+        
         let visibleCount = 0;
 
         items.forEach((item) => {
@@ -657,7 +660,8 @@ async function loadMessages(chatId) {
                 time: new Date(msg.created_at).toLocaleTimeString([], {
                     hour: '2-digit',
                     minute: '2-digit'
-                })
+                }),
+                isMine: msg.user_id == currentUserId
             });
         });
 
@@ -725,6 +729,11 @@ async function loadMessages(chatId) {
 
                 const chatId = item.dataset.chatId;
                 const postId = item.dataset.postId;
+                const userName = item.dataset.userName;
+                const postTitle = item.dataset.postTitle;
+
+                chatHeaderParticipantName.textContent = userName;
+                chatHeaderPostSummary.textContent = postTitle;
 
                 if (!chatId) {
                     console.error('No hay chat_id');
@@ -739,8 +748,6 @@ async function loadMessages(chatId) {
                 messagesView.dataset.postId = postId;
 
                 loadMessages(chatId);
-
-                populateChatContextFromPost();
 
                 currentChannel = `chat.${chatId}`;
 
@@ -972,7 +979,10 @@ async function loadMessages(chatId) {
         });
     }
 
-    populateChatContextFromPost();
+    if (chatId) {
+        loadMessages(chatId);
+    }
+
     filterChats();
     updateSendButtonState();
     updateCounter();
