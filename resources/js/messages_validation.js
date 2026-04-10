@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatPostSummary = document.getElementById('chatPostSummary');
     const chatHeaderParticipantName = document.getElementById('chatHeaderParticipantName');
     const chatHeaderPostSummary = document.getElementById('chatHeaderPostSummary');
+    const chatHeaderParticipantInitial = document.getElementById('chatHeaderParticipantInitial');
 
     const messagesSearchInput = document.getElementById('messagesSearchInput');
     const chatListContainer = document.getElementById('chatListContainer');
@@ -73,9 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-¿?¡!()]+$/;
     const allowedReportRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-¿?¡!()]+$/;
     const frontendMessages = [];
+    const chatId = messagesView?.dataset.chatId;
+    const currentUserId = messagesView?.dataset.currentUserId;
 
     let isReportDirty = false;
     let allowReportClose = false;
+    let reportedUserId = null;
 
     function truncateText(text, maxLength = 40) {
         if (!text) return '';
@@ -198,15 +202,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function renderMessage(messageObj) {
+   function renderMessage(messageObj) {
         if (emptyState) {
             emptyState.classList.add('d-none');
         }
 
+        const isMine = messageObj.isMine === true;
+
+        const alignment = isMine ? 'justify-content-end' : 'justify-content-start';
+        const bg = isMine ? 'bg-success text-white' : 'bg-light text-dark';
+
         messagesContainer.insertAdjacentHTML('beforeend', `
-            <div class="d-flex justify-content-end mb-3">
+            <div class="d-flex ${alignment} mb-3">
                 <div
-                    class="bg-success text-white px-3 py-2 rounded-4 shadow-sm"
+                    class="${bg} px-3 py-2 rounded-4 shadow-sm"
                     style="max-width: 75%; word-break: break-word;"
                     data-message-id="${messageObj.id}"
                     data-conversation-id="${messageObj.conversationId}"
@@ -274,68 +283,50 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function populateChatContextFromPost() {
+    async function populateChatContextFromPost() {
         if (!messagesView) return;
 
         const postId = Number(messagesView.dataset.postId);
         if (!postId) return;
 
-        const posts = getStoredMarketplacePosts();
-        const post = posts.find((p) => Number(p.id) === postId);
+        try {
+            const response = await fetch(`/posts/${postId}`);
+            const post = await response.json();
 
-        if (!post) {
-            if (chatParticipantName) chatParticipantName.textContent = 'Usuario';
-            if (chatHeaderParticipantName) chatHeaderParticipantName.textContent = 'Usuario';
+            if (!post) return;
+
+            const sellerName = (post.user?.name || 'Usuario').trim();
+            const postTitle = (post.title || 'Publicación').trim();
+            const sellerInitial = sellerName.charAt(0).toUpperCase() || 'U';
+
+            // Header
+            if (chatParticipantName) {
+                chatParticipantName.textContent = sellerName;
+            }
+
+            if (chatHeaderParticipantName) {
+                chatHeaderParticipantName.textContent = sellerName;
+            }
+            if (chatHeaderParticipantInitial) {
+                chatHeaderParticipantInitial.textContent = sellerInitial;
+            }
 
             if (chatPostSummary) {
-                chatPostSummary.textContent = 'Publicación no encontrada';
-                chatPostSummary.title = 'Publicación no encontrada';
+                chatPostSummary.textContent = truncateText(postTitle, 35);
+                chatPostSummary.title = postTitle;
             }
 
             if (chatHeaderPostSummary) {
-                chatHeaderPostSummary.textContent = 'Publicación no encontrada';
-                chatHeaderPostSummary.title = 'Publicación no encontrada';
-            }
-
-            if (chatListItem) {
-                chatListItem.dataset.searchText = 'usuario publicación no encontrada';
+                chatHeaderPostSummary.textContent = truncateText(postTitle, 60);
+                chatHeaderPostSummary.title = postTitle;
             }
 
             document.querySelectorAll('.chat-user-initial').forEach((el) => {
-                el.textContent = 'U';
+                el.textContent = sellerInitial;
             });
 
-            return;
-        }
-
-        const sellerName = (post.seller || 'Usuario').trim();
-        const postTitle = (post.title || 'Publicación').trim();
-        const sellerInitial = sellerName.charAt(0).toUpperCase() || 'U';
-
-        if (chatParticipantName) {
-            chatParticipantName.textContent = sellerName;
-        }
-
-        if (chatHeaderParticipantName) {
-            chatHeaderParticipantName.textContent = sellerName;
-        }
-
-        if (chatPostSummary) {
-            chatPostSummary.textContent = truncateText(postTitle, 35);
-            chatPostSummary.title = postTitle;
-        }
-
-        if (chatHeaderPostSummary) {
-            chatHeaderPostSummary.textContent = truncateText(postTitle, 60);
-            chatHeaderPostSummary.title = postTitle;
-        }
-
-        document.querySelectorAll('.chat-user-initial').forEach((el) => {
-            el.textContent = sellerInitial;
-        });
-
-        if (chatListItem) {
-            chatListItem.dataset.searchText = `${sellerName} ${postTitle}`.toLowerCase();
+        } catch (error) {
+            console.error('Error cargando post:', error);
         }
     }
 
@@ -345,6 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const query = messagesSearchInput.value.trim().toLowerCase();
         const items = chatListContainer.querySelectorAll('.chat-list-item');
 
+        
         let visibleCount = 0;
 
         items.forEach((item) => {
@@ -414,14 +406,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populatePostDetailsModal(post) {
+        if (post.user?.id) {
+            reportedUserId = post.user.id;
+        }
         if (!post) return;
 
+        console.log('Populando modal con post:', post);
         if (postDetailsModalLabel) {
-            postDetailsModalLabel.textContent = post.title || 'Detalle de la publicación';
+            postDetailsModalLabel.textContent = `${post.title || 'Detalle de la publicación'}`;
         }
 
         if (postDetailsDescription) {
-            const description = (post.description || '').trim();
+            const description = `${post.description || ''}`.trim();
 
             if (description) {
                 postDetailsDescription.textContent = description;
@@ -432,20 +428,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // if (postDetailsRatingStars) {
+        //     postDetailsRatingStars.innerHTML = buildStarsHTML(post.rating);
+        // }
+
+        // if (postDetailsRatingValue) {
+        //     postDetailsRatingValue.textContent = post.rating || '0.0';
+        // }
+
+        // if (postDetailsReviewCount) {
+        //     postDetailsReviewCount.textContent = `(${post.reviews || 0})`;
+        // }
+
         if (postDetailsPrice) {
-            postDetailsPrice.textContent = `$${post.price || '0.00'}`;
+            postDetailsPrice.textContent = `${post.cost || '0.00'}`;
         }
 
         if (postDetailsStatus) {
-            postDetailsStatus.textContent = post.status || 'Disponible';
+            postDetailsStatus.textContent = `${post.status || 'Disponible'}`;
         }
 
         if (postDetailsCondition) {
-            postDetailsCondition.textContent = post.condition || 'Sin especificar';
+            postDetailsCondition.textContent = `${post.condition || 'Sin especificar'}`;
         }
 
         if (postDetailsSeller) {
-            postDetailsSeller.textContent = post.seller || 'Usuario';
+            postDetailsSeller.textContent = `${post.user?.name || 'Usuaaaaario'}`;
         }
 
         if (postDetailsSellerRating) {
@@ -454,16 +462,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (postDetailsCategory) {
-            postDetailsCategory.textContent = post.category || 'Sin categoría';
+            postDetailsCategory.textContent = `${post.category || 'Sin categoría'}`;
         }
 
-        if (reportUserNameText) {
-            reportUserNameText.textContent = post.seller || 'Usuario';
-        }
-
-        const images = Array.isArray(post.images) && post.images.length
-            ? post.images
-            : (post.image ? [post.image] : []);
+        const images = [
+            post.photo_1_url,
+            post.photo_2_url,
+            post.photo_3_url
+        ].filter(Boolean).map(img => '/storage/' + img);
 
         renderPostDetailsCarousel(images);
     }
@@ -646,6 +652,28 @@ document.addEventListener('DOMContentLoaded', () => {
         isReportDirty = hasReason || hasDescription;
     }
 
+async function loadMessages(chatId) {
+    try {
+        const response = await fetch(`/messages/${chatId}`);
+        const messages = await response.json();
+        messagesContainer.innerHTML = '';
+
+        messages.forEach(msg => {
+            renderMessage({
+                message: msg.content,
+                time: new Date(msg.created_at).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                }),
+                isMine: msg.user_id == currentUserId
+            });
+        });
+
+    } catch (error) {
+        console.error('ERROR:', error);
+    }
+}
+
     function tryCloseReportModal() {
         if (!reportUserModal) return;
 
@@ -673,26 +701,73 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (openChatPostDetailsBtn) {
-        openChatPostDetailsBtn.addEventListener('click', () => {
-            const postId = Number(openChatPostDetailsBtn.dataset.postId);
+        openChatPostDetailsBtn.addEventListener('click', async () => {
+            const postId = Number(messagesView.dataset.postId);
             if (!postId) return;
+            console.log('FINAL USER ID:', reportedUserId);
+            try {
+                const response = await fetch(`/posts/${postId}`);
+                const post = await response.json();
 
-            const posts = getStoredMarketplacePosts();
-            const post = posts.find((p) => Number(p.id) === postId);
+                populatePostDetailsModal(post);
 
-            if (!post) return;
+                if (postDetailsModal) {
+                    const modalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
+                    modalInstance.show();
+                }
 
-            populatePostDetailsModal(post);
-
-            if (postDetailsModal) {
-                const modalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
-                modalInstance.show();
+            } catch (error) {
+                console.error('Error cargando post:', error);
             }
         });
     }
 
     if (messagesSearchInput) {
         messagesSearchInput.addEventListener('input', filterChats);
+
+       let currentChannel = null;
+
+        document.querySelectorAll('.chat-list-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+
+                const chatId = item.dataset.chatId;
+                const postId = item.dataset.postId;
+                const userName = item.dataset.userName;
+                const postTitle = item.dataset.postTitle;
+
+                chatHeaderParticipantName.textContent = userName;
+                chatHeaderPostSummary.textContent = postTitle;
+                chatHeaderParticipantInitial.textContent = userName.charAt(0).toUpperCase();
+
+                if (!chatId) {
+                    console.error('No hay chat_id');
+                    return;
+                }
+
+                if (currentChannel) {
+                    window.Echo.leave(currentChannel);
+                }
+
+                messagesView.dataset.chatId = chatId;
+                messagesView.dataset.postId = postId;
+
+                loadMessages(chatId);
+
+                currentChannel = `chat.${chatId}`;
+
+                window.Echo.private(currentChannel)
+                    .listen('MessageSent', (e) => {
+                        renderMessage({
+                            message: e.content,
+                            time: new Date().toLocaleTimeString()
+                        });
+                    });
+
+                console.log('Chat seleccionado:', chatId);
+                console.log('Post relacionado:', postId);
+            });
+        });
     }
 
     input.addEventListener('input', () => {
@@ -713,7 +788,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    sendBtn.addEventListener('click', (event) => {
+    sendBtn.addEventListener('click', async (event) => {
         event.preventDefault();
 
         const isRequiredValid = validateRequired();
@@ -727,7 +802,32 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        sendFrontendMessage();
+        const message = input.value.trim();
+        const chatId = messagesView.dataset.chatId;
+
+        if (!chatId) {
+            console.error('No hay chat seleccionado');
+            return;
+        }
+
+        try {
+            await fetch('/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    content: message
+                })
+            });
+
+            sendFrontendMessage();
+
+        } catch (error) {
+            console.error('Error enviando mensaje:', error);
+        }
     });
 
     initializeSellerRating();
@@ -772,7 +872,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (submitReportBtn) {
-        submitReportBtn.addEventListener('click', (e) => {
+        submitReportBtn.addEventListener('click', async (e) => {
             e.preventDefault();
 
             const isReasonValid = validateReportReason(true);
@@ -783,20 +883,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            allowReportClose = true;
+            try {
+                
+                await fetch('/reports', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        reported_user_id: reportedUserId,
+                        report_reason: reportReason.value,
+                        description: reportDescription.value
+                    })
+                });
 
-            const reportModalInstance = bootstrap.Modal.getOrCreateInstance(reportUserModal);
-            reportModalInstance.hide();
+                allowReportClose = true;
 
-            setTimeout(() => {
-                reportSentToast?.show();
-            }, 250);
+                const reportModalInstance = bootstrap.Modal.getOrCreateInstance(reportUserModal);
+                reportModalInstance.hide();
 
-            if (postDetailsModal) {
                 setTimeout(() => {
-                    const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
-                    postModalInstance.show();
-                }, 300);
+                    reportSentToast?.show();
+                }, 250);
+
+                if (postDetailsModal) {
+                    setTimeout(() => {
+                        const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
+                        postModalInstance.show();
+                    }, 300);
+                }
+            } 
+            catch (error) {
+                console.error('Error enviando reporte:', error);
             }
         });
     }
@@ -865,7 +984,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    populateChatContextFromPost();
+    if (chatId) {
+        loadMessages(chatId);
+    }
+
     filterChats();
     updateSendButtonState();
     updateCounter();
