@@ -57,7 +57,7 @@ Route::put('/users/{user}/role', [UserController::class, 'updateRole']);
 // })->name('inventory_management');//->middleware('role:super,inventory,user')
 
 Route::get('/inventory_management', [EquipmentController::class, 'index'])
-    ->name('inventory_management')->middleware('role:Admin Super,admin inventory,user');
+    ->name('inventory_management')->middleware('role:admin super,admin inventory,user');
 
 Route::post('/inventory_management', [EquipmentController::class, 'store'])
     ->name('inventory.store');
@@ -169,6 +169,9 @@ Route::post('/facility/import-mock-events', [FacilityCostController::class, 'imp
     ->name('facility.import.mock');
 
 require __DIR__.'\saml2.php';
+
+Route::middleware('auth')->post('/marketplace/{post}/review', [ReviewController::class, 'store'])
+    ->name('marketplace.review.store');
 
 Route::post('/terms-and-conditions/update', [TermsController::class, 'update'])
     ->name('terms.update');

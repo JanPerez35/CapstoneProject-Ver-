@@ -288,7 +288,8 @@
                         </div>
                     </div>
                 </div>
-
+            </div> {{-- closes #postsGrid --}}
+        </div> {{-- closes #posts-pane --}}
 
             {{-- Requests tab --}}
             <div class="tab-pane fade {{ request('tab') === 'requests' ? 'show active' : '' }}" id="requests-pane" role="tabpanel" aria-labelledby="requests-tab">
@@ -417,12 +418,6 @@
                             </div>
                         @endif
                     </div>
-                </div>
-
-                <div class="mt-4 d-flex justify-content-center">
-                    <nav aria-label="Paginación de solicitudes">
-                        <ul class="pagination profile-pagination mb-0" id="requestsPagination"></ul>
-                    </nav>
                 </div>
             </div>
 
