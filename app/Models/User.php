@@ -66,12 +66,12 @@ class User extends Authenticatable
     public function getRoleBadgeClassAttribute()
     {
         return match ($this->role_label) {
-            'Usuario' => 'bg-primary-subtle text-primary-emphasis',
-            'Admin Super' => 'bg-danger-subtle text-danger-emphasis',
-            'Admin Inventario' => 'bg-success-subtle text-success-emphasis',
-            'Admin Facilidades' => 'bg-info-subtle text-info-emphasis',
-            'Admin Mercado' => 'bg-warning-subtle text-warning-emphasis',
-            default => 'bg-secondary-subtle text-secondary-emphasis',
+            'Usuario' => 'badge-user',
+            'Admin Super' => 'badge-super-admin',
+            'Admin Inventario' => 'badge-inventory-admin',
+            'Admin Facilidades' => 'badge-facility-admin',
+            'Admin Mercado' => 'badge-market-admin',
+            default => 'badge-user',
         };
     }
 
