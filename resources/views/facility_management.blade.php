@@ -96,9 +96,9 @@
                     <div class="row mb-4 g-3">
                         <div class="col-md-10">
                             <div class="input-group search-group">
-                <span class="input-group-text bg-white border-0">
-                    <i class="bi bi-search"></i>
-                </span>
+                                <span class="input-group-text bg-white border-0">
+                                    <i class="bi bi-search"></i>
+                                </span>
 
                                 <input
                                     type="text"
@@ -106,69 +106,72 @@
                                     name="search"
                                     class="form-control border-0"
                                     placeholder="Buscar por fecha, salón, hora, periodo, servicios o total..."
-                                >
+                                    value="{{ request('search') }}"
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="col-md-2 d-grid">
+                                <button type="submit" id="searchFacilityBtn" class="btn btn-success">
+                                    Buscar
+                                </button>
+                            </div>
+
+                            <div class="col-md-3">
+                                <select id="reportType" name="report_type" class="form-select border-2 border-dark">
+                                    <option value="" {{ $reportType === '' ? 'selected' : '' }}>Tipo de reporte</option>
+                                    <option value="monthly" {{ $reportType === 'monthly' ? 'selected' : '' }}>Mensual</option>
+                                    <option value="annual" {{ $reportType === 'annual' ? 'selected' : '' }}>Anual</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 {{ $reportType !== 'monthly' ? 'd-none' : '' }}" id="monthFilterWrapper">
+                                <select id="reportMonth" name="report_month" class="form-select border-2 border-dark">
+                                    <option value="" {{ $reportMonth === '' ? 'selected' : '' }}>Mes</option>
+                                    <option value="1" {{ (string)$reportMonth === '1' ? 'selected' : '' }}>Enero</option>
+                                    <option value="2" {{ (string)$reportMonth === '2' ? 'selected' : '' }}>Febrero</option>
+                                    <option value="3" {{ (string)$reportMonth === '3' ? 'selected' : '' }}>Marzo</option>
+                                    <option value="4" {{ (string)$reportMonth === '4' ? 'selected' : '' }}>Abril</option>
+                                    <option value="5" {{ (string)$reportMonth === '5' ? 'selected' : '' }}>Mayo</option>
+                                    <option value="6" {{ (string)$reportMonth === '6' ? 'selected' : '' }}>Junio</option>
+                                    <option value="7" {{ (string)$reportMonth === '7' ? 'selected' : '' }}>Julio</option>
+                                    <option value="8" {{ (string)$reportMonth === '8' ? 'selected' : '' }}>Agosto</option>
+                                    <option value="9" {{ (string)$reportMonth === '9' ? 'selected' : '' }}>Septiembre</option>
+                                    <option value="10" {{ (string)$reportMonth === '10' ? 'selected' : '' }}>Octubre</option>
+                                    <option value="11" {{ (string)$reportMonth === '11' ? 'selected' : '' }}>Noviembre</option>
+                                    <option value="12" {{ (string)$reportMonth === '12' ? 'selected' : '' }}>Diciembre</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <select id="reportYear" name="report_year" class="form-select border-2 border-dark">
+                                    <option value="" {{ $reportYear === '' ? 'selected' : '' }}>Año</option>
+                                    @for($year = $minYear; $year <= $maxYear; $year++)
+                                        <option value="{{ $year }}" {{ (string)$reportYear === (string)$year ? 'selected' : '' }}>
+                                            {{ $year }}
+                                        </option>
+                                    @endfor
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <select id="filterClassroom" name="filter_classroom" class="form-select border-2 border-dark">
+                                    <option value="" {{ $filterClassroom === '' ? 'selected' : '' }}>Salón</option>
+                                    <option value="all" {{ ($filterClassroom ?? 'all') === 'all' ? 'selected' : '' }}>Todos los salones</option>
+                                    @foreach ($facilityCosts as $cost)
+                                        <option value="{{ $cost->classroom_name }}" {{ ($filterClassroom ?? 'all') === $cost->classroom_name ? 'selected' : '' }}>
+                                            {{ $cost->classroom_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="col-12 d-flex gap-2">
+                                <button type="button" class="btn btn-outline-secondary" id="clearFacilityFilters">
+                                    Limpiar filtros
+                                </button>
                             </div>
                         </div>
-
-                        <div class="col-md-2 d-grid">
-                            <button type="submit" id="searchFacilityBtn" class="btn btn-success">
-                                Buscar
-                            </button>
-                        </div>
-
-                        <div class="col-md-3">
-                            <select id="reportType" name="report_type" class="form-select border-2 border-dark">
-                                <option value="" selected>Tipo de reporte</option>
-                                <option value="monthly" >Mensual</option>
-                                <option value="annual" >Anual</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-3" id="monthFilterWrapper">
-                            <select id="reportMonth" name="report_month" class="form-select border-2 border-dark">
-                                <option value="" selected>Mes</option>
-                                <option value="1">Enero</option>
-                                <option value="2" >Febrero</option>
-                                <option value="3">Marzo</option>
-                                <option value="4">Abril</option>
-                                <option value="5">Mayo</option>
-                                <option value="6" >Junio</option>
-                                <option value="7" >Julio</option>
-                                <option value="8" >Agosto</option>
-                                <option value="9" >Septiembre</option>
-                                <option value="10" >Octubre</option>
-                                <option value="11" >Noviembre</option>
-                                <option value="12" >Diciembre</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-3">
-                            <select id="reportYear" name="report_year" class="form-select border-2 border-dark">
-                                <option value="" selected>Año</option>
-                               @for($year = 2026; $year <= now()->year + 5; $year++)
-                                    <option value="{{$year}}">{{$year}}</option>
-                               @endfor
-                            </select>
-                        </div>
-
-                        <div class="col-md-3">
-                            <select id="filterClassroom" name="filter_classroom" class="form-select border-2 border-dark">
-                                <option value="">Salón</option>
-                                <option value="all" >Todos los salones</option>
-                                @foreach ($facilityCosts as $cost)
-                                    <option value="{{ $cost->classroom_name }}" {{ ($filterClassroom ?? 'all') === $cost->classroom_name ? 'selected' : '' }}>
-                                        {{ $cost->classroom_name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-12 d-flex gap-2">
-                            <button type="button" class="btn btn-outline-secondary" id="clearFacilityFilters">
-                                Limpiar filtros
-                            </button>
-                        </div>
-                    </div>
                 </form>
             </div>
 

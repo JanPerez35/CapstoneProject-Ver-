@@ -13,9 +13,9 @@ class FacilityCostController extends Controller
 {
     public function index(Request $request)
     {
-        $reportType = $request->input('report_type', 'monthly');
-        $reportMonth = (int) $request->input('report_month', now()->month);
-        $reportYear = (int) $request->input('report_year', now()->year);
+        $reportType = $request->input('report_type', '');
+        $reportMonth = $request->input('report_month', '');
+        $reportYear = $request->input('report_year', '');
         $filterClassroom = $request->input('filter_classroom', 'all');
 
         $facilityCosts = FacilityCost::orderBy('classroom_name')->get();
@@ -23,14 +23,14 @@ class FacilityCostController extends Controller
         $query = FacilityCostReportItem::with('facilityCost')
             ->orderBy('event_date', 'desc');
 
-        if ($reportType === 'monthly') {
-            $query->whereYear('event_date', $reportYear)
-                ->whereMonth('event_date', $reportMonth);
-        } else {
-            $query->whereYear('event_date', $reportYear);
+        if ($reportType === 'monthly' && !empty($reportYear) && !empty($reportMonth)) {
+            $query->whereYear('event_date', (int) $reportYear)
+                ->whereMonth('event_date', (int) $reportMonth);
+        } elseif ($reportType === 'annual' && !empty($reportYear)) {
+            $query->whereYear('event_date', (int) $reportYear);
         }
 
-        if ($filterClassroom !== 'all') {
+        if ($filterClassroom !== 'all' && !empty($filterClassroom)) {
             $query->whereHas('facilityCost', function ($q) use ($filterClassroom) {
                 $q->where('classroom_name', $filterClassroom);
             });
@@ -39,6 +39,12 @@ class FacilityCostController extends Controller
         $items = $query->get();
         $grandTotal = $items->sum('calculated_cost');
 
+        $minYear = FacilityCostReportItem::selectRaw('MIN(YEAR(event_date)) as min_year')->value('min_year');
+        $maxYear = FacilityCostReportItem::selectRaw('MAX(YEAR(event_date)) as max_year')->value('max_year');
+
+        $minYear = $minYear ? (int) $minYear : now()->year;
+        $maxYear = $maxYear ? max((int) $maxYear, now()->year + 1) : now()->year + 1;
+
         return view('facility_management', compact(
             'facilityCosts',
             'items',
@@ -46,7 +52,9 @@ class FacilityCostController extends Controller
             'reportType',
             'reportMonth',
             'reportYear',
-            'filterClassroom'
+            'filterClassroom',
+            'minYear',
+            'maxYear'
         ));
     }
 
@@ -243,7 +251,9 @@ private function createFacilityReportItemFromPayload(array $data)
 
     // Total service hours
     $hoursUsed = $hoursPerDay * $daysUsed;
-
+    
+    $rateMode = $data['rate_mode'] ?? 'daily';
+    
     // Selected rate according to period_type + rate_mode
     $rate = $this->getRateByPeriodAndMode(
         $facilityCost,
