@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Services\EmailService;
+
+
 
 class UserController extends Controller
 {
@@ -23,6 +26,45 @@ class UserController extends Controller
 
         return response()->json([
                 'message' => 'Rol actualizado correctamente'
-            ]);    
+            ]);
+    }
+
+    public function __construct(EmailService $emailService)
+    {
+        $this->emailService = $emailService;
+    }
+
+    //Temporary update status for gmail testing
+    public function updateStatus(Request $request, User $user)
+    {
+        $request->validate([
+            'status' => 'required|string|in:Activo,Bloqueado'
+        ]);
+
+        $previousStatus = $user->status;
+        $user->status = $request->status;
+        $user->save();
+
+        if ($request->status === 'Bloqueado' && $previousStatus !== 'Bloqueado') {
+            $this->emailService->send(
+                $user->email,
+                'Cuenta bloqueada',
+                'Tu cuenta ha sido bloqueada de la plataforma MAIKINE. Si entiendes que esto fue un error, comunícate con el super administrador (administrador@upr.edu).'
+            );
+        }
+
+        if ($request->status === 'Activo' && $previousStatus !== 'Activo') {
+            $this->emailService->send(
+                $user->email,
+                'Cuenta desbloqueada',
+                'Tu cuenta ha sido reactivada en la plataforma MAIKINE. Ya puedes acceder nuevamente y continuar utilizando los servicios con normalidad.'
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Estado actualizado correctamente',
+            'status' => $user->status
+        ]);
     }
 }

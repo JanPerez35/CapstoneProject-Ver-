@@ -51,6 +51,8 @@ Route::post('/cart/checkout', [EquipmentController::class, 'checkoutCart'])->nam
 Route::get('/search_user', [UserController::class, 'index'])->name('search_user');
 Route::put('/users/{user}/role', [UserController::class, 'updateRole']);
 
+Route::put('/users/{user}/status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
+
 // Route::get('/inventory_management', function () {
 //     return view('inventory_management');
 // })->name('inventory_management');//->middleware('role:super,inventory,user')

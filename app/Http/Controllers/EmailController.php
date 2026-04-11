@@ -79,6 +79,17 @@ class EmailController extends Controller
         return 'Correo de cuenta suspendida enviado.';
     }
 
+    public function userUnbanned()
+    {
+        $this->emailService->send(
+            'jan.perez21@upr.edu',
+            'Cuenta desbloqueada',
+            'Tu cuenta ha sido reactivada en la plataforma MAIKINE. Ya puedes acceder nuevamente y continuar utilizando los servicios con normalidad.'
+        );
+
+        return 'Correo de cuenta desbloqueada enviado.';
+    }
+
     public function unreadMessagesReminder()
     {
         $this->emailService->send(
