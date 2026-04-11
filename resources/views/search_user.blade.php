@@ -99,243 +99,76 @@
 
         {{-- Users list --}}
         <div id="usersList" class="d-grid gap-3">
-
-            {{-- User 1 --}}
+            @foreach ($users as $user)
             <div class="card border-0 shadow-sm rounded-4 user-card"
-                 data-name="John Davis"
-                 data-email="john.davis@university.edu"
-                 data-role="Usuario"
-                 data-status="Activo">
+                data-user-id="{{ $user->id }}"
+                data-name="{{ $user->name }}"
+                data-email="{{ $user->email }}"
+                data-role="{{ $user->role_label ?? 'Usuario' }}"
+                data-status="{{ $user->status ?? 'Activo' }}">
+
                 <div class="card-body p-3">
                     <div class="row g-2 align-items-center">
+
+                        <!-- USER INFO -->
                         <div class="col-lg-7">
                             <div class="d-flex align-items-start gap-2">
-                                <div class="bg-light rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
-                                     style="width: 40px; height: 40px;">
+                                <div class="bg-light rounded-4 d-flex align-items-center justify-content-center"
+                                    style="width: 40px; height: 40px;">
                                     <i class="bi bi-person-fill"></i>
                                 </div>
 
                                 <div>
                                     <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                        <a href="{{ route('my_profile') }}"
-                                           class="fw-semibold fs-5 text-decoration-none user-name-link">
-                                            John Davis
-                                        </a>
+                                        <span class="fw-semibold fs-5 user-name-link">
+                                            {{ $user->name }}
+                                        </span>
 
-                                        <span class="label-badge badge-user">
-    Usuario
-</span>
+                                        <span class="label-badge {{ $user->role_badge_class }}">
+                                            {{ $user->role_label}}
+                                        </span>
                                     </div>
 
-                                    <div class="text-muted small">john.davis@university.edu</div>
+                                    <div class="text-muted small">
+                                        {{ $user->email }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- ROLE -->
                         <div class="col-lg-3">
                             <label class="form-label fw-semibold small mb-1">Cambiar Rol</label>
                             <select class="form-select rounded-0 role-select">
-                                <option selected>Usuario</option>
-                                <option>Admin Super</option>
-                                <option>Admin Inventario</option>
-                                <option>Admin Facilidades</option>
-                                <option>Admin Mercado</option>
+                                <option {{ ($user->role_label ?? '') == 'Usuario' ? 'selected' : '' }}>Usuario</option>
+                                <option {{ ($user->role_label ?? '') == 'Admin Super' ? 'selected' : '' }}>Admin Super</option>
+                                <option {{ ($user->role_label ?? '') == 'Admin Inventario' ? 'selected' : '' }}>Admin Inventario</option>
+                                <option {{ ($user->role_label ?? '') == 'Admin Facilidades' ? 'selected' : '' }}>Admin Facilidades</option>
+                                <option {{ ($user->role_label ?? '') == 'Admin Mercado' ? 'selected' : '' }}>Admin Mercado</option>
                             </select>
                         </div>
 
+                        <!-- STATUS -->
                         <div class="col-lg-2">
                             <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                             <div class="d-flex flex-column gap-2">
+
                                 <span class="label-badge badge-active align-self-start">
-                                Activo
+                                    {{ $user->status }}
                                 </span>
 
                                 <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
                                     <i class="bi bi-ban me-1"></i>
                                     Bloquear
                                 </button>
+
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
-
-            {{-- User 2 --}}
-            <div class="card border-0 shadow-sm rounded-4 user-card"
-                 data-name="Sarah Chen"
-                 data-email="sarah.chen@university.edu"
-                 data-role="Usuario"
-                 data-status="Activo">
-                <div class="card-body p-3">
-                    <div class="row g-2 align-items-center">
-                        <div class="col-lg-7">
-                            <div class="d-flex align-items-start gap-2">
-                                <div class="bg-light rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
-                                     style="width: 40px; height: 40px;">
-                                    <i class="bi bi-person-fill"></i>
-                                </div>
-
-                                <div>
-                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                        <a href="{{ route('my_profile') }}"
-                                           class="fw-semibold fs-5 text-decoration-none user-name-link">
-                                            Sarah Chen
-                                        </a>
-
-                                        <span class="label-badge badge-user">
-    Usuario
-</span>
-                                    </div>
-
-                                    <div class="text-muted small">sarah.chen@university.edu</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-3">
-                            <label class="form-label fw-semibold small mb-1">Cambiar Rol</label>
-                            <select class="form-select rounded-0 role-select">
-                                <option selected>Usuario</option>
-                                <option>Admin Super</option>
-                                <option>Admin Inventario</option>
-                                <option>Admin Facilidades</option>
-                                <option>Admin Mercado</option>
-                            </select>
-                        </div>
-
-                        <div class="col-lg-2">
-                            <label class="form-label fw-semibold small d-block mb-1">Estado</label>
-                            <div class="d-flex flex-column gap-2">
-<span class="label-badge badge-active align-self-start">
-    Activo
-</span>
-                                <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
-                                    <i class="bi bi-ban me-1"></i>
-                                    Bloquear
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- User 3 --}}
-            <div class="card border-0 shadow-sm rounded-4 user-card"
-                 data-name="Mike Johnson"
-                 data-email="mike.johnson@university.edu"
-                 data-role="Admin Inventario"
-                 data-status="Activo">
-                <div class="card-body p-3">
-                    <div class="row g-2 align-items-center">
-                        <div class="col-lg-7">
-                            <div class="d-flex align-items-start gap-2">
-                                <div class="bg-light rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
-                                     style="width: 40px; height: 40px;">
-                                    <i class="bi bi-person-fill"></i>
-                                </div>
-                                <div>
-                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                        <a href="{{ route('my_profile') }}"
-                                           class="fw-semibold fs-5 text-decoration-none user-name-link">
-                                            Mike Johnson
-                                        </a>
-
-                                        <span class="label-badge badge-inventory-admin">
-    Admin Inventario
-</span>
-                                    </div>
-
-                                    <div class="text-muted small">mike.johnson@university.edu</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-3">
-                            <label class="form-label fw-semibold small mb-1">Cambiar Rol</label>
-                            <select class="form-select rounded-0 role-select">
-                                <option>Usuario</option>
-                                <option>Admin Super</option>
-                                <option selected>Admin Inventario</option>
-                                <option>Admin Facilidades</option>
-                                <option>Admin Mercado</option>
-                            </select>
-                        </div>
-
-                        <div class="col-lg-2">
-                            <label class="form-label fw-semibold small d-block mb-1">Estado</label>
-                            <div class="d-flex flex-column gap-2">
-<span class="label-badge badge-active align-self-start">
-    Activo
-</span>
-                                <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
-                                    <i class="bi bi-ban me-1"></i>
-                                    Bloquear
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- User 4 --}}
-            <div class="card border-0 shadow-sm rounded-4 user-card"
-                 data-name="Laura Gómez"
-                 data-email="laura.gomez@university.edu"
-                 data-role="Admin Mercado"
-                 data-status="Bloqueado">
-                <div class="card-body p-3">
-                    <div class="row g-2 align-items-center">
-                        <div class="col-lg-7">
-                            <div class="d-flex align-items-start gap-2">
-                                <div class="bg-light rounded-4 d-flex align-items-center justify-content-center flex-shrink-0"
-                                     style="width: 40px; height: 40px;">
-                                    <i class="bi bi-person-fill"></i>
-                                </div>
-
-                                <div>
-                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                        <a href="{{ route('my_profile') }}"
-                                           class="fw-semibold fs-5 text-decoration-none user-name-link">
-                                            Laura Gómez
-                                        </a>
-
-                                        <span class="label-badge badge-market-admin">
-    Admin Mercado
-</span>
-                                    </div>
-
-                                    <div class="text-muted small">laura.gomez@university.edu</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-lg-3">
-                            <label class="form-label fw-semibold small mb-1">Cambiar Rol</label>
-                            <select class="form-select rounded-0 role-select">
-                                <option>Usuario</option>
-                                <option>Admin Super</option>
-                                <option>Admin Inventario</option>
-                                <option>Admin Facilidades</option>
-                                <option selected>Admin Mercado</option>
-                            </select>
-                        </div>
-
-                        <div class="col-lg-2">
-                            <label class="form-label fw-semibold small d-block mb-1">Estado</label>
-                            <div class="d-flex flex-column gap-2">
-<span class="label-badge badge-blocked align-self-start">
-    Bloqueado
-</span>
-                                <button type="button" class="btn btn-outline-success rounded-3 ban-toggle-btn btn-sm">
-                                    <i class="bi bi-arrow-counterclockwise rounded-3 me-1"></i>
-                                    Desbloquear
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+            @endforeach
         </div>
 
         {{-- Pagination --}}
@@ -438,7 +271,7 @@
              style="width: auto; max-width: fit-content;">
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
-                    La cuenta ha sido baneada.
+                    La cuenta ha sido bloqueada.
                 </div>
 
                 <button type="button"

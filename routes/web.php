@@ -8,8 +8,11 @@ use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\PostController;
 use App\Models\Post;
 use App\Http\Controllers\TermsController;
-
-
+use App\Http\Controllers\ChatController;
+use App\Models\Chat;
+use App\Http\Controllers\UserReportController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return view('login');
@@ -45,16 +48,15 @@ Route::get('/cart', [EquipmentController::class, 'cart'])->name('cart.index');
 Route::delete('/cart/remove/{id}', [EquipmentController::class, 'removeFromCart'])->name('cart.remove');
 Route::post('/cart/checkout', [EquipmentController::class, 'checkoutCart'])->name('cart.checkout');
 
-Route::get('/search_user', function () {
-    return view('search_user');
-})->name('search_user');
+Route::get('/search_user', [UserController::class, 'index'])->name('search_user');
+Route::put('/users/{user}/role', [UserController::class, 'updateRole']);
 
 // Route::get('/inventory_management', function () {
 //     return view('inventory_management');
 // })->name('inventory_management');//->middleware('role:super,inventory,user')
 
 Route::get('/inventory_management', [EquipmentController::class, 'index'])
-    ->name('inventory_management')->middleware('role:admin super,admin inventory,user');
+    ->name('inventory_management')->middleware('role:Admin Super,admin inventory,user');
 
 Route::post('/inventory_management', [EquipmentController::class, 'store'])
     ->name('inventory.store');
@@ -103,22 +105,28 @@ Route::get('/access_logs', [EquipmentController::class, 'accessLogs'])
 //     return view('facility_management');
 // })->name('facility_management');
 
-Route::get('/my_messages', function () {
-    return view('my_messages');
-})->name('my_messages');
-
 Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
 Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
 Route::get('/posts', function () {
     return Post::with('user')->latest()->get();
 });
+Route::get('/posts/{id}', function ($id) {
+    return \App\Models\Post::with('user')->findOrFail($id);
+});
 
 Route::get('/reports', [UserReportController::class, 'index']);
-
+Route::post('/reports', [UserReportController::class, 'store']);
 Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
 Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
 
 Route::delete('/posts/{post}', [PostController::class, 'destroy']);
+
+Route::get('/my_messages', [ChatController::class, 'index'])->name('my_messages');
+Route::get('/chat/{chatId}', [ChatController::class, 'show'])->name('chat.show');
+Route::post('/chats/open', [ChatController::class, 'openOrCreate'])
+    ->name('chat.open');
+Route::post('/messages', [MessageController::class, 'store']);
+Route::get('/messages/{chatId}', [MessageController::class, 'getMessages']);
 
 require __DIR__ . '\saml2.php';
 /*Route::get('/kinemercado/reportar_usuario', function () {
@@ -129,7 +137,7 @@ Route::get('/kinemercado/mensaje', function () {
     return view('kinemercado_mensaje');
 })->name('kinemercado_mensaje');
 
-Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management')->middleware('role:admin super,admin facilidades');
+Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management')->middleware('role:Admin Super,admin facilidades');
 Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])->name('facility.rates.save');
 Route::post('/facility/events', [FacilityCostController::class, 'storeEvent'])->name('facility.events.store');
 Route::delete('/facility/events/{item}', [FacilityCostController::class, 'destroy'])->name('facility.events.destroy');
