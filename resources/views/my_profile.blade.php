@@ -54,21 +54,16 @@
                             <h1 class="fw-bold mb-0">{{ $user->first_name }} {{ $user->last_name }}</h1>
 
                             <span class="label-badge {{ $user->role_badge_class }}">
-    {{ $user->role_label }}
-</span>
+                                {{ $user->role_label }}
+                            </span>
 
                         </div>
                         <p class="text-muted fs-4 mb-0">Miembro de MAIKINE</p>
 
-                        @php
-                            $userRating = 4.3;
-                            $reviewCount = 8;
-                        @endphp
-
                         <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
                             <span class="text-muted fw-medium">Calificación:</span>
 
-                            <div class="rating-stars" style="--rating: {{ $userRating }};">
+                            <div class="rating-stars" style="--rating: {{ $sellerAverageRating }};">
                                 <div class="rating-stars-base">
                                     <i class="bi bi-star-fill"></i>
                                     <i class="bi bi-star-fill"></i>
@@ -86,8 +81,8 @@
                                 </div>
                             </div>
 
-                            <span class="fw-bold">{{ number_format($userRating, 1) }}</span>
-                            <span class="text-muted">({{ $reviewCount }})</span>
+                            <span class="fw-bold">{{ number_format($sellerAverageRating, 1) }}</span>
+                            <span class="text-muted">({{ $sellerReviewsCount }})</span>
                         </div>
                     </div>
                 </div>
@@ -107,7 +102,7 @@
                     aria-controls="posts-pane"
                     aria-selected="{{ request('tab') === 'requests' ? 'false' : 'true' }}"
                 >
-                    <i class="bi bi-bag me-2"></i> Publicaciones (<span id="postsTabCount">3</span>)
+                    <i class="bi bi-bag me-2"></i> Publicaciones (<span id="postsTabCount">{{ $posts->count() }}</span>)
                 </button>
                             </li>
 
@@ -201,170 +196,87 @@
                 </div>
 
                 <div class="row g-4" id="postsGrid">
-                    <div class="col-md-6 col-lg-4 post-card-wrapper"
-                         data-title="Baloncesto - Spalding"
-                         data-description="Balón de baloncesto tamaño oficial, uso interior/exterior."
-                         data-sport="Baloncesto"
-                         data-price="25">
-                        <div class="card h-100 shadow-sm rounded-4 overflow-hidden border-0">
-                            <img
-                                src="{{ asset('images/kinventory_images/Baloncesto.jpg') }}"
-                                class="card-img-top"
-                                alt="Baloncesto - Spalding"
-                                style="height: 300px; object-fit: cover;"
-                            >
+                    @forelse($posts as $post)
+                        <div class="col-md-6 col-lg-4 post-card-wrapper"
+                            data-title="{{ strtolower($post->title ?? '') }}"
+                            data-description="{{ strtolower($post->description ?? '') }}"
+                            data-sport="{{ strtolower($post->category ?? '') }}"
+                            data-price="{{ $post->cost ?? 0 }}">
 
-                            <div class="card-body d-flex flex-column p-4">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="fw-bold mb-0">Baloncesto - Spalding</h5>
-                                    <span class="label-badge badge-available">
-    Disponible
-</span>
-                                </div>
+                            <div class="card h-100 shadow-sm rounded-4 overflow-hidden border-0">
+                                <img
+                                    src="{{ $post->photo_1_url ? asset('storage/' . $post->photo_1_url) : asset('images/kinventory_images/default.jpg') }}"
+                                    class="card-img-top"
+                                    alt="{{ $post->title }}"
+                                    style="height: 300px; object-fit: cover;"
+                                >
 
-                                <p class="text-muted mb-3">
-                                    Balón de baloncesto tamaño oficial, uso interior/exterior.
-                                </p>
+                                <div class="card-body d-flex flex-column p-4">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="fw-bold mb-0">{{ $post->title }}</h5>
 
-                                <h3 class="fw-bold text-success mb-3">$25</h3>
+                                        <span class="label-badge badge-available">
+                                            {{ $post->status ?? 'Disponible' }}
+                                        </span>
+                                    </div>
 
-                                <div class="d-flex gap-2 mb-3 flex-wrap">
-<span class="label-badge badge-available">
-    Muy Bueno
-</span>
-                                    <span class="label-badge badge-available">
-    Baloncesto
-</span>
-                                </div>
+                                    <p class="text-muted mb-3">
+                                        {{ $post->description ?: 'Sin descripción.' }}
+                                    </p>
 
-                                <div class="small text-muted mb-3">
-                                    <div><i class="bi bi-person me-2"></i> John Davis</div>
-                                    <div><i class="bi bi-star-fill text-warning me-2"></i> 4.3 (8)</div>
-                                    <div><i class="bi bi-clock me-2"></i> hace 2 días</div>
-                                </div>
+                                    <h3 class="fw-bold text-success mb-3">
+                                        ${{ number_format($post->cost, 2) }}
+                                    </h3>
 
-                                <div class="mt-auto d-grid">
-                                    <button
-                                        type="button"
-                                        class="btn btn-danger rounded-3 open-delete-post-modal"
-                                        data-post-title="Baloncesto - Spalding"
-                                    >
-                                        Borrar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                    <div class="d-flex gap-2 mb-3 flex-wrap">
+                                        <span class="label-badge badge-available">
+                                            {{ $post->condition }}
+                                        </span>
 
-                    <div class="col-md-6 col-lg-4 post-card-wrapper"
-                         data-title="Raqueta Wilson Pro"
-                         data-description="Raqueta liviana ideal para entrenamiento y partidos recreativos."
-                         data-sport="Tenis"
-                         data-price="45">
-                        <div class="card h-100 shadow-sm rounded-4 overflow-hidden border-0">
-                            <img
-                                src="{{ asset('images/kinventory_images/default.jpg') }}"
-                                class="card-img-top"
-                                alt="Raqueta Wilson Pro"
-                                style="height: 300px; object-fit: cover;"
-                            >
+                                        <span class="label-badge badge-available">
+                                            {{ $post->category }}
+                                        </span>
+                                    </div>
 
-                            <div class="card-body d-flex flex-column p-4">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="fw-bold mb-0">Raqueta Wilson Pro</h5>
-                                    <span class="label-badge badge-available">
-    Disponible
-</span>
-                                </div>
+                                    <div class="small text-muted mb-3">
+                                        <div>
+                                            <i class="bi bi-person me-2"></i>
+                                            {{ $user->first_name }} {{ $user->last_name }}
+                                        </div>
+                                        <div>
+                                            <i class="bi bi-star-fill text-warning me-2"></i>
+                                            {{ number_format($sellerAverageRating, 1) }} ({{ $sellerReviewsCount }})
+                                        </div>
+                                        <div>
+                                            <i class="bi bi-clock me-2"></i>
+                                            {{ $post->created_at?->diffForHumans() }}
+                                        </div>
+                                    </div>
 
-                                <p class="text-muted mb-3">
-                                    Raqueta liviana ideal para entrenamiento y partidos recreativos.
-                                </p>
-
-                                <h3 class="fw-bold text-success mb-3">$45</h3>
-
-                                <div class="d-flex gap-2 mb-3 flex-wrap">
-                                    <span class="label-badge badge-available">
-    Muy Bueno
-</span>
-                                    <span class="label-badge badge-available">
-    Tenis
-</span>
-                                </div>
-
-                                <div class="small text-muted mb-3">
-                                    <div><i class="bi bi-person me-2"></i> John Davis</div>
-                                    <div><i class="bi bi-star-fill text-warning me-2"></i> 4.3 (8)</div>
-                                    <div><i class="bi bi-clock me-2"></i> hace 4 días</div>
-                                </div>
-
-                                <div class="mt-auto d-grid">
-                                    <button
-                                        type="button"
-                                        class="btn btn-danger rounded-3 open-delete-post-modal"
-                                        data-post-title="Raqueta Wilson Pro"
-                                    >
-                                        Borrar
-                                    </button>
+                                    <div class="mt-auto d-grid">
+                                        <button
+                                            type="button"
+                                            class="btn btn-danger rounded-3 open-delete-post-modal"
+                                            data-post-id="{{ $post->id }}"
+                                            data-post-title="{{ $post->title }}"
+                                        >
+                                            Borrar
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="col-md-6 col-lg-4 post-card-wrapper"
-                         data-title="Mancuernas Ajustables"
-                         data-description="Set ajustable para rutinas de fuerza y levantamiento."
-                         data-sport="Levantamiento de Pesas"
-                         data-price="120">
-                        <div class="card h-100 shadow-sm rounded-4 overflow-hidden border-0">
-                            <img
-                                src="{{ asset('images/kinventory_images/default.jpg') }}"
-                                class="card-img-top"
-                                alt="Mancuernas Ajustables"
-                                style="height: 300px; object-fit: cover;"
-                            >
-
-                            <div class="card-body d-flex flex-column p-4">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <h5 class="fw-bold mb-0">Mancuernas Ajustables</h5>
-                                    <span class="label-badge badge-available">
-    Disponible
-</span>
-                                </div>
-
-                                <p class="text-muted mb-3">
-                                    Set ajustable para rutinas de fuerza y levantamiento.
-                                </p>
-
-                                <h3 class="fw-bold text-success mb-3">$120</h3>
-
-                                <div class="d-flex gap-2 mb-3 flex-wrap">
-                                   <span class="label-badge badge-available">
-    Excelente
-</span>
-                                    <span class="label-badge badge-available">
-    Levantamiento de Pesas
-</span>
-                                </div>
-
-                                <div class="small text-muted mb-3">
-                                    <div><i class="bi bi-person me-2"></i> John Davis</div>
-                                    <div><i class="bi bi-star-fill text-warning me-2"></i> 4.3 (8)</div>
-                                    <div><i class="bi bi-clock me-2"></i> hace 1 semana</div>
-                                </div>
-
-                                <div class="mt-auto d-grid">
-                                    <button
-                                        type="button"
-                                        class="btn btn-danger rounded-3 open-delete-post-modal"
-                                        data-post-title="Mancuernas Ajustables"
-                                    >
-                                        Borrar
-                                    </button>
+                    @empty
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm rounded-4">
+                                <div class="card-body py-5 text-center">
+                                    <i class="bi bi-bag-x fs-1 text-muted"></i>
+                                    <h4 class="fw-bold mt-3">No tienes publicaciones todavía</h4>
+                                    <p class="text-muted mb-0">Cuando crees una publicación, aparecerá aquí.</p>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    @endforelse
 
                     <div id="postsEmptyState" class="col-12 d-none">
                         <div class="card border-0 shadow-sm rounded-4">
@@ -376,8 +288,8 @@
                         </div>
                     </div>
                 </div>
-            </div>
-
+            </div> {{-- closes #postsGrid --}}
+        </div> {{-- closes #posts-pane --}}
 
             {{-- Requests tab --}}
             <div class="tab-pane fade {{ request('tab') === 'requests' ? 'show active' : '' }}" id="requests-pane" role="tabpanel" aria-labelledby="requests-tab">
@@ -480,15 +392,10 @@
                                         };
                                     @endphp
 
-                                    @if(in_array($request->status, ['returned', 'finished']))
-                                        <span class="badge rounded-0 px-3 py-2" style="background-color:#e5e7eb; color:#374151;">
-                                            Finalizado
-                                        </span>
-                                    @else
-                                        <span class="label-badge {{ $statusClass }}">
-    {{ in_array($request->status, ['returned', 'finished']) ? 'Finalizado' : ucfirst($request->status) }}
-</span>
-                                    @endif
+                                    <span class="label-badge {{ $statusClass }}">
+                                        {{ in_array($request->status, ['returned', 'finished']) ? 'Finalizado' : ucfirst($request->status) }}
+                                    </span>
+                                    
                                 </div>
                             </div>
                         @empty
@@ -511,12 +418,6 @@
                             </div>
                         @endif
                     </div>
-                </div>
-
-                <div class="mt-4 d-flex justify-content-center">
-                    <nav aria-label="Paginación de solicitudes">
-                        <ul class="pagination profile-pagination mb-0" id="requestsPagination"></ul>
-                    </nav>
                 </div>
             </div>
 

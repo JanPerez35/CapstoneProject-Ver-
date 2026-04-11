@@ -13,6 +13,7 @@ use App\Models\Chat;
 use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ReviewController;
 
 Route::get('/', function () {
     return view('login');
@@ -58,7 +59,7 @@ Route::put('/users/{user}/status', [UserController::class, 'updateStatus'])->nam
 // })->name('inventory_management');//->middleware('role:super,inventory,user')
 
 Route::get('/inventory_management', [EquipmentController::class, 'index'])
-    ->name('inventory_management')->middleware('role:Admin Super,admin inventory,user');
+    ->name('inventory_management')->middleware('role:admin super,admin inventory,user');
 
 Route::post('/inventory_management', [EquipmentController::class, 'store'])
     ->name('inventory.store');
@@ -115,7 +116,16 @@ Route::get('/posts', function () {
 Route::get('/posts/{id}', function ($id) {
     return \App\Models\Post::with('user')->findOrFail($id);
 });
+// Route::get('/posts', function () {
+//     return Post::with('user')->latest()->get();
+// });
 
+Route::get('/posts', [PostController::class, 'getPosts'])->name('posts.list');
+
+// Route::get('/reports', [UserReportController::class, 'index']);
+
+// Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
+// Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
 Route::get('/reports', [UserReportController::class, 'index']);
 Route::post('/reports', [UserReportController::class, 'store']);
 Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
@@ -139,10 +149,14 @@ Route::get('/kinemercado/mensaje', function () {
     return view('kinemercado_mensaje');
 })->name('kinemercado_mensaje');
 
-Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management')->middleware('role:Admin Super,admin facilidades');
+Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management')->middleware('role:admin super,admin facilidades');
 Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])->name('facility.rates.save');
 Route::post('/facility/events', [FacilityCostController::class, 'storeEvent'])->name('facility.events.store');
 Route::delete('/facility/events/{item}', [FacilityCostController::class, 'destroy'])->name('facility.events.destroy');
+Route::post('/facility/classrooms', [FacilityCostController::class, 'storeClassroom'])
+    ->name('facility.classrooms.store');
+Route::delete('/facility/classrooms', [FacilityCostController::class, 'destroyClassrooms'])
+    ->name('facility.classrooms.destroy');
 
 Route::get('/facility_management/export/csv', [FacilityCostController::class, 'exportCsv'])->name('facility.export.csv');
 Route::get('/facility_management/export/pdf', [FacilityCostController::class, 'exportPdf'])->name('facility.export.pdf');
@@ -156,6 +170,9 @@ Route::post('/facility/import-mock-events', [FacilityCostController::class, 'imp
     ->name('facility.import.mock');
 
 require __DIR__.'\saml2.php';
+
+Route::middleware('auth')->post('/marketplace/{post}/review', [ReviewController::class, 'store'])
+    ->name('marketplace.review.store');
 
 Route::post('/terms-and-conditions/update', [TermsController::class, 'update'])
     ->name('terms.update');

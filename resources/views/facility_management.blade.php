@@ -103,6 +103,7 @@
                                 <input
                                     type="text"
                                     id="facilitySearch"
+                                    name="search"
                                     class="form-control border-0"
                                     placeholder="Buscar por fecha, salón, hora, periodo, servicios o total..."
                                 >
@@ -110,7 +111,7 @@
                         </div>
 
                         <div class="col-md-2 d-grid">
-                            <button type="button" id="searchFacilityBtn" class="btn btn-success" disabled>
+                            <button type="submit" id="searchFacilityBtn" class="btn btn-success">
                                 Buscar
                             </button>
                         </div>
@@ -395,20 +396,25 @@
                                                     {{ $campo['label'] }} <span class="text-danger">*</span>
                                                 </label>
                                                 <div class="input-group input-group-lg money-input-group">
-                                                    <span class="input-group-text">$</span>
+                                                    <span class="input-group-text">
+                                                        {{ $campo['id'] === 'configAreaSalon' ? 'ft²' : '$' }}
+                                                    </span>
                                                     <input
                                                         type="text"
-                                                        class="form-control money-input"
+                                                        class="form-control {{ $campo['id'] !== 'configAreaSalon' ? 'money-input' : '' }}"
                                                         id="{{ $campo['id'] }}"
                                                         name="{{ $campo['name'] }}"
-{{--                                                        value = "0.00"--}}
-                                                        placeholder="Ej. 25.00"
+                                                        placeholder="{{ $campo['id'] === 'configAreaSalon' ? 'Ej. 1200.00' : 'Ej. 25.00' }}"
                                                         required
                                                     >
                                                 </div>
                                                 <div class="invalid-feedback d-block" id="{{ $campo['id'] }}Error"></div>
                                                 <small class="text-muted d-block mt-2">
-                                                    Escribe solo números y hasta 2 decimales. El máximo permitido es $500.00.
+                                                    @if($campo['id'] === 'configAreaSalon')
+                                                        Ingresa el área en pies cuadrados (ft²). Solo números y hasta 2 decimales.
+                                                    @else
+                                                        Escribe solo números y hasta 2 decimales. El máximo permitido es $500.00.
+                                                    @endif
                                                 </small>
                                             </div>
                                         </div>
@@ -581,7 +587,7 @@
                                 <label for="rentalClassroom" class="form-label fw-semibold">
                                     Salón <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalClassroom" name="salon" class="form-select form-select-lg" required>
+                                <select id="rentalClassroom" name="classroom" class="form-select form-select-lg" required>
                                     <option value="" selected disabled>Seleccionar salón</option>
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
@@ -618,11 +624,11 @@
                                     <label for="rentalRangeType" class="form-label fw-semibold">
                                         Duración del evento <span class="text-danger">*</span>
                                     </label>
-                                    <select id="rentalRangeType" name="duracion_evento" class="form-select form-select-lg" required>
+                                    <select id="rentalRangeType" name="rate_mode" class="form-select form-select-lg" required>
                                         <option value="" selected disabled>Seleccionar duración</option>
-                                        <option value="day">Día</option>
-                                        <option value="week">Semana</option>
-                                        <option value="month">Mes</option>
+                                        <option value="daily">Dia</option>
+                                        <option value="weekly">Semana</option>
+                                        <option value="monthly">Mes</option>
                                     </select>
                                 </div>
 
@@ -633,7 +639,7 @@
                                     <input
                                         type="date"
                                         id="rentalStartDate"
-                                        name="fecha_inicio"
+                                        name="event_date"
                                         class="form-control form-control-lg"
                                         min="{{ now()->toDateString() }}"
                                         required
@@ -651,7 +657,7 @@
                                     <input
                                         type="date"
                                         id="rentalEndDate"
-                                        name="fecha_fin"
+                                        name="event_end_date"
                                         class="form-control form-control-lg"
                                         min="{{ now()->toDateString() }}"
                                     >
@@ -676,14 +682,14 @@
                                 <label for="rentalStartTime" class="form-label fw-semibold">
                                     Horario inicio <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalStartTime" name="hora_inicio" class="form-select form-select-lg" required></select>
+                                <select id="rentalStartTime" name="start_time" class="form-select form-select-lg" required></select>
                             </div>
 
                             <div class="col-md-6">
                                 <label for="rentalEndTime" class="form-label fw-semibold">
                                     Horario fin <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalEndTime" name="hora_fin" class="form-select form-select-lg" required></select>
+                                <select id="rentalEndTime" name="end_time" class="form-select form-select-lg" required></select>
                                 <div class="invalid-feedback d-block" id="rentalTimeError"></div>
                             </div>
                         </div>
@@ -694,7 +700,7 @@
                             </label>
                             <textarea
                                 id="rentalDescripcion"
-                                name="descripcion"
+                                name="description"
                                 class="form-control form-control-lg"
                                 rows="4"
                                 placeholder="Descripción del evento"
@@ -714,7 +720,7 @@
                             <label for="rentalPeriodType" class="form-label fw-semibold">
                                 Tipo de período <span class="text-danger">*</span>
                             </label>
-                            <select id="rentalPeriodType" name="tipo_periodo" class="form-select form-select-lg" required>
+                            <select id="rentalPeriodType" name="period_type" class="form-select form-select-lg" required>
                                 <option value="" selected disabled>Seleccionar tipo de período</option>
                                 <option value="laborable">Laborable</option>
                                 <option value="no_laborable_sabado">No laborable sábado</option>
@@ -730,7 +736,7 @@
                             <div class="row g-4">
                                 <div class="col-md-6 col-lg-4">
                                     <label class="service-toggle-card w-100" for="rentalUtilities">
-                                        <input class="service-toggle-input rental-service-check" type="checkbox" value="utilidades" id="rentalUtilities" name="servicios[]">
+                                        <input class="service-toggle-input rental-service-check" type="checkbox" value="utilidades" id="rentalUtilities" name="services[]">
                                         <div class="service-toggle-content service-toggle-content-lg">
                                             <span class="service-toggle-check"><i class="bi bi-check-lg"></i></span>
                                             <span class="fw-semibold">Utilidades</span>
@@ -740,7 +746,7 @@
 
                                 <div class="col-md-6 col-lg-4">
                                     <label class="service-toggle-card w-100" for="rentalElectricity">
-                                        <input class="service-toggle-input rental-service-check" type="checkbox" value="electricidad" id="rentalElectricity" name="servicios[]">
+                                        <input class="service-toggle-input rental-service-check" type="checkbox" value="electricidad" id="rentalElectricity" name="services[]">
                                         <div class="service-toggle-content service-toggle-content-lg">
                                             <span class="service-toggle-check"><i class="bi bi-check-lg"></i></span>
                                             <span class="fw-semibold">Electricidad</span>
@@ -750,7 +756,7 @@
 
                                 <div class="col-md-6 col-lg-4">
                                     <label class="service-toggle-card w-100" for="rentalWater">
-                                        <input class="service-toggle-input rental-service-check" type="checkbox" value="agua" id="rentalWater" name="servicios[]">
+                                        <input class="service-toggle-input rental-service-check" type="checkbox" value="agua" id="rentalWater" name="services[]">
                                         <div class="service-toggle-content service-toggle-content-lg">
                                             <span class="service-toggle-check"><i class="bi bi-check-lg"></i></span>
                                             <span class="fw-semibold">Agua</span>
@@ -784,7 +790,7 @@
 
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-outline-secondary px-4 rental-cancel-btn">Cancelar</button>
-                    <button type="submit" form="addRentalForm" class="btn btn-success px-4" id="saveRentalBtn" disabled>
+                    <button type="submit" form="addRentalForm" class="btn btn-success px-4" id="saveRentalBtn">
                         Guardar Evento
                     </button>
                 </div>
@@ -885,6 +891,10 @@
                     <button type="button" class="btn btn-success" id="confirmAddClassroomBtn" disabled>
                         Agregar salón
                     </button>
+                    <form id="addClassroomForm" method="POST" action="{{ route('facility.classrooms.store') }}" class="d-none">
+                        @csrf
+                        <input type="hidden" name="classroom_name" id="hiddenNewClassroomName">
+                    </form>
                 </div>
             </div>
         </div>
@@ -975,10 +985,14 @@
                     </div>
                 </div>
             @endif
-
     </div>
 
     <form id="deleteCostEntryForm" method="POST" class="d-none">
+        @csrf
+        @method('DELETE')
+    </form>
+
+    <form id="deleteClassroomsForm" method="POST" action="{{ route('facility.classrooms.destroy') }}" class="d-none">
         @csrf
         @method('DELETE')
     </form>

@@ -495,3 +495,8 @@
     background-color: #e2e3e5;
     color: #41464b;
 }
+
+.badge-request-special {
+    background-color: #facc15; /* yellow */
+    color: #78350f;
+}
