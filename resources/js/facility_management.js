@@ -17,10 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentFacilityCostsPage = 1;
     const facilityCostPagination = $('facilityCostPagination');
 
-    const classroomIds = ['Cancha CM', 'Lateral 1', 'Lateral 2', 'CM 201', 'CM 202', 'CM 203', 'CM 204', 'CM 210'];
-    const academicRooms = ['CM 201', 'CM 202', 'CM 203', 'CM 204', 'CM 210'];
-    const lateralRooms = ['Lateral 1', 'Lateral 2'];
-
     const reportType = $('reportType');
     const monthFilterWrapper = $('monthFilterWrapper');
     const reportMonth = $('reportMonth');
@@ -198,6 +194,20 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmAddClassroomBtn.disabled = !validateNewClassroomName(false);
     }
 
+    function getAllRenderedClassrooms() {
+        return [...document.querySelectorAll('.classroom-card-col')]
+            .map(card => card.dataset.classroomName)
+            .filter(Boolean);
+        }
+
+        function getAcademicRenderedClassrooms() {
+            return getAllRenderedClassrooms().filter(name => /^CM\s?\d+/i.test(name));
+        }
+
+        function getLateralRenderedClassrooms() {
+            return getAllRenderedClassrooms().filter(name => /lateral/i.test(name));
+        }
+
     if (newClassroomName) {
         newClassroomName.addEventListener('input', () => {
             let value = newClassroomName.value;
@@ -252,68 +262,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (confirmAddClassroomBtn) {
-        confirmAddClassroomBtn.addEventListener('click', () => {
-            if (!validateNewClassroomName(true)) {
-                updateAddClassroomButtonState();
-                return;
-            }
+    confirmAddClassroomBtn.addEventListener('click', () => {
+        if (!validateNewClassroomName(true)) {
+            updateAddClassroomButtonState();
+            return;
+        }
 
-            const classroomName = newClassroomName.value.trim();
+        document.getElementById('hiddenNewClassroomName').value =
+            newClassroomName.value.trim();
 
-
-            const safeId = `cfg${classroomName.replace(/\s+/g, '')}`;
-
-            const cardCol = document.createElement('div');
-            cardCol.className = 'col-md-4 classroom-card-col';
-            cardCol.dataset.classroomName = classroomName;
-            cardCol.innerHTML = `
-            <div class="multi-classroom-card">
-                <label class="d-flex align-items-start gap-3 mb-0 flex-grow-1" for="${safeId}">
-                    <input
-                        class="form-check-input config-classroom-check prominent-checkbox"
-                        type="checkbox"
-                        id="${safeId}"
-                        name="classrooms[]"
-                        value="${classroomName}"
-                    >
-                    <span class="fw-medium classroom-name" title="${classroomName}">
-                        ${classroomName}
-                    </span>
-                </label>
-            </div>
-        `;
-
-            const configClassroomGroup = $('configClassroomGroup');
-            if (configClassroomGroup) {
-                configClassroomGroup.appendChild(cardCol);
-            }
-
-            const filterOption = document.createElement('option');
-            filterOption.value = classroomName;
-            filterOption.textContent = classroomName;
-            filterClassroom.appendChild(filterOption);
-
-            const rentalOption = document.createElement('option');
-            rentalOption.value = classroomName;
-            rentalOption.textContent = classroomName;
-            rentalClassroom.appendChild(rentalOption);
-
-            bindClassroomCheckboxes();
-
-            setAddClassroomError('');
-            newClassroomName.value = '';
-            newClassroomName.classList.remove('is-invalid');
-            confirmAddClassroomBtn.disabled = true;
-            configureDirty = true;
-            updateConfigureSaveState();
-
-            bootstrap.Modal.getOrCreateInstance(addClassroomModal).hide();
-            bootstrap.Modal.getOrCreateInstance(configureRatesModal).show();
-        });
-    }
+        document.getElementById('addClassroomForm').submit();
+    });
+}
 
     function requiresEndDate() {
-        return ['week', 'month'].includes(rentalRangeType?.value);
+        return ['weekly', 'monthly'].includes(rentalRangeType?.value);
     }
 
     function toggleRentalDateRangeUI() {
@@ -576,17 +539,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (confirmDeleteClassroomBtn && $('deleteClassroomModal')) {
-        confirmDeleteClassroomBtn.addEventListener('click', () => {
-            if (!selectedClassroomsToDelete.length) return;
+    confirmDeleteClassroomBtn.addEventListener('click', () => {
+        if (!selectedClassroomsToDelete.length) return;
 
-            removeSelectedClassroomsFromUI(selectedClassroomsToDelete);
+        const deleteForm = document.getElementById('deleteClassroomsForm');
+        deleteForm.innerHTML = `
+            <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]')?.content || ''}">
+            <input type="hidden" name="_method" value="DELETE">
+        `;
 
-            selectedClassroomsToDelete = [];
-            bootstrap.Modal.getOrCreateInstance($('deleteClassroomModal')).hide();
-
-            configureDirty = true;
-            updateConfigureSaveState();
+        selectedClassroomsToDelete.forEach((classroomName) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'classrooms[]';
+            input.value = classroomName;
+            deleteForm.appendChild(input);
         });
+
+        deleteForm.submit();
+    });
     }
 
     function setSelectionByList(list) {
@@ -654,16 +625,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function isConfigureFormValid(showError = false) {
-        if (!getSelectedClassrooms().length) return false;
+    if (!getSelectedClassrooms().length) return false;
 
-        const requiredInputs = [
-            configAreaSalon, configUtilidades, configElectricidad, configAgua,
-            configDiaria1, configSemanal1, configMensual1,
-            configDiaria2, configSemanal2, configMensual2,
-            configDiaria3, configSemanal3, configMensual3,
-        ];
+    const moneyFields = [
+        configUtilidades, configElectricidad, configAgua,
+        configDiaria1, configSemanal1, configMensual1,
+        configDiaria2, configSemanal2, configMensual2,
+        configDiaria3, configSemanal3, configMensual3,
+    ];
 
-        return requiredInputs.every((input) => validateMoneyField(input, showError));
+    return (
+        validateAreaField(configAreaSalon, showError) &&
+        moneyFields.every((input) => validateMoneyField(input, showError))
+    );
     }
 
     function updateConfigureSaveState() {
@@ -776,6 +750,53 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
+    function validateAreaField(input, showError = true) {
+    if (!input) return true;
+
+    const errorElement = document.getElementById(`${input.id}Error`);
+    const inputGroup = input.closest('.money-input-group');
+    const value = input.value.trim();
+
+    if (showError) {
+        clearFieldError(input, errorElement);
+        inputGroup?.classList.remove('is-invalid');
+    }
+
+    if (!value) {
+        if (showError) {
+            setFieldError(input, errorElement, 'Este campo es obligatorio.');
+            inputGroup?.classList.add('is-invalid');
+        }
+        return false;
+    }
+
+    if (/[eE+\-]/.test(value)) {
+        if (showError) {
+            setFieldError(input, errorElement, 'No se permite usar e, E, + ni -.');
+            inputGroup?.classList.add('is-invalid');
+        }
+        return false;
+    }
+
+    if (!/^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(value)) {
+        if (showError) {
+            setFieldError(input, errorElement, 'Ingresa un valor válido usando solo números y hasta 2 decimales.');
+            inputGroup?.classList.add('is-invalid');
+        }
+        return false;
+    }
+
+    if (Number(value) <= 0) {
+        if (showError) {
+            setFieldError(input, errorElement, 'El área debe ser mayor que 0.');
+            inputGroup?.classList.add('is-invalid');
+        }
+        return false;
+    }
+
+    return true;
+    }
+
     function validateResponsable(showError = true) {
         const value = rentalResponsable.value.trim();
         const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
@@ -871,7 +892,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const area = toNumber(data.area);
         const periodRates = getPeriodRateData(classroomId, periodType);
 
-        let total = area * periodRates.diaria;
+        let selectedRate = 0;
+
+        if (rentalRangeType.value === 'daily') {
+            selectedRate = periodRates.diaria;
+        } else if (rentalRangeType.value === 'weekly') {
+            selectedRate = periodRates.semanal;
+        } else if (rentalRangeType.value === 'monthly') {
+            selectedRate = periodRates.mensual;
+        }
+
+        let total = area * selectedRate;
+
         if (rentalUtilities.checked) total += toNumber(data.utilidades) * hours;
         if (rentalElectricity.checked) total += toNumber(data.electricidad) * hours;
         if (rentalWater.checked) total += toNumber(data.agua) * hours;
@@ -918,6 +950,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return !!(
             rentalClassroom.value &&
+            rentalRangeType.value &&
             validDates &&
             rentalPeriodType.value &&
             validTimes &&
@@ -1336,10 +1369,21 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         updateRentalSaveState();
     }
 
-    $('selectAllClassroomsBtn').addEventListener('click', () => setSelectionByList(classroomIds));
-    $('selectAcademicClassroomsBtn').addEventListener('click', () => setSelectionByList(academicRooms));
-    $('selectLateralClassroomsBtn').addEventListener('click', () => setSelectionByList(lateralRooms));
-    $('clearClassroomsSelectionBtn').addEventListener('click', () => setSelectionByList([]));
+    $('selectAllClassroomsBtn').addEventListener('click', () => {
+    setSelectionByList(getAllRenderedClassrooms());
+    });
+
+    $('selectAcademicClassroomsBtn').addEventListener('click', () => {
+        setSelectionByList(getAcademicRenderedClassrooms());
+    });
+
+    $('selectLateralClassroomsBtn').addEventListener('click', () => {
+        setSelectionByList(getLateralRenderedClassrooms());
+    });
+
+    $('clearClassroomsSelectionBtn').addEventListener('click', () => {
+        setSelectionByList([]);
+    });
 
     // configClassroomChecks.forEach((check) => {
     //     check.addEventListener('change', () => {
@@ -1493,18 +1537,18 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     });
 
     addRentalForm.addEventListener('submit', (e) => {
-        addRentalForm.classList.add('was-validated');
+    addRentalForm.classList.add('was-validated');
 
-        const responsableOk = validateResponsable(true);
-        const descripcionOk = validateDescripcion(true);
-        const servicesOk = hasSelectedServices();
-        toggleServicesError(!servicesOk);
+    const responsableOk = validateResponsable(true);
+    const descripcionOk = validateDescripcion(true);
+    const servicesOk = hasSelectedServices();
+    toggleServicesError(!servicesOk);
 
-        if (!(isRentalFormValid() && responsableOk && descripcionOk && servicesOk)) {
-            e.preventDefault();
-            updateRentalSaveState();
-        }
-    });
+    if (!(isRentalFormValid() && responsableOk && descripcionOk && servicesOk)) {
+        e.preventDefault();
+        updateRentalSaveState();
+    }
+});
 
     if (confirmDeleteCostEntryBtn) {
         confirmDeleteCostEntryBtn.addEventListener('click', () => {

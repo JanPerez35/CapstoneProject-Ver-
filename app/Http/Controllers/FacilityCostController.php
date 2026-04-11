@@ -102,6 +102,48 @@ class FacilityCostController extends Controller
     ->with('rates_saved', 'Tarifas guardadas correctamente.');
     }
 
+    public function storeClassroom(Request $request)
+    {
+        $validated = $request->validate([
+            'classroom_name' => ['required', 'string', 'min:6', 'max:40', 'unique:facility_costs,classroom_name'],
+        ]);
+
+        FacilityCost::create([
+            'classroom_name' => $validated['classroom_name'],
+            'classroom_space' => 0,
+            'supply_cost' => 0,
+            'electricity_cost' => 0,
+            'water_cost' => 0,
+            'daily_cost_1' => 0,
+            'weekly_cost_1' => 0,
+            'monthly_cost_1' => 0,
+            'daily_cost_2' => 0,
+            'weekly_cost_2' => 0,
+            'monthly_cost_2' => 0,
+            'daily_cost_3' => 0,
+            'weekly_cost_3' => 0,
+            'monthly_cost_3' => 0,
+        ]);
+
+        return redirect()
+            ->route('facility_management')
+            ->with('success', 'Salón agregado correctamente.');
+    }
+
+    public function destroyClassrooms(Request $request)
+    {
+        $validated = $request->validate([
+            'classrooms' => ['required', 'array', 'min:1'],
+            'classrooms.*' => ['string'],
+        ]);
+
+        FacilityCost::whereIn('classroom_name', $validated['classrooms'])->delete();
+
+        return redirect()
+            ->route('facility_management')
+            ->with('success', 'Salón(es) eliminado(s) correctamente.');
+    }
+
     // public function storeEvent(Request $request)
     // {
     //     $validated = $request->validate([

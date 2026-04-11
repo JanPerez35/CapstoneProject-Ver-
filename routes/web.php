@@ -156,6 +156,10 @@ Route::get('/facility_management', [FacilityCostController::class, 'index'])->na
 Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])->name('facility.rates.save');
 Route::post('/facility/events', [FacilityCostController::class, 'storeEvent'])->name('facility.events.store');
 Route::delete('/facility/events/{item}', [FacilityCostController::class, 'destroy'])->name('facility.events.destroy');
+Route::post('/facility/classrooms', [FacilityCostController::class, 'storeClassroom'])
+    ->name('facility.classrooms.store');
+Route::delete('/facility/classrooms', [FacilityCostController::class, 'destroyClassrooms'])
+    ->name('facility.classrooms.destroy');
 
 Route::get('/facility_management/export/csv', [FacilityCostController::class, 'exportCsv'])->name('facility.export.csv');
 Route::get('/facility_management/export/pdf', [FacilityCostController::class, 'exportPdf'])->name('facility.export.pdf');
