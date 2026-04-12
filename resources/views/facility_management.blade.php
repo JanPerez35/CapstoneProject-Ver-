@@ -119,7 +119,7 @@
 
                             <div class="col-md-3">
                                 <select id="reportType" name="report_type" class="form-select border-2 border-dark">
-                                    <option value="" {{ $reportType === '' ? 'selected' : '' }}>Tipo de reporte</option>
+                                    <option value="" {{ $reportType === '' ? 'selected' : '' }}>Tipo de Reporte</option>
                                     <option value="monthly" {{ $reportType === 'monthly' ? 'selected' : '' }}>Mensual</option>
                                     <option value="annual" {{ $reportType === 'annual' ? 'selected' : '' }}>Anual</option>
                                 </select>
@@ -157,7 +157,7 @@
                             <div class="col-md-3">
                                 <select id="filterClassroom" name="filter_classroom" class="form-select border-2 border-dark">
                                     <option value="" {{ $filterClassroom === '' ? 'selected' : '' }}>Salón</option>
-                                    <option value="all" {{ ($filterClassroom ?? 'all') === 'all' ? 'selected' : '' }}>Todos los salones</option>
+                                    <option value="all" {{ ($filterClassroom ?? 'all') === 'all' ? 'selected' : '' }}>Todos los Salones</option>
                                     @foreach ($facilityCosts as $cost)
                                         <option value="{{ $cost->classroom_name }}" {{ ($filterClassroom ?? 'all') === $cost->classroom_name ? 'selected' : '' }}>
                                             {{ $cost->classroom_name }}
@@ -168,7 +168,7 @@
 
                             <div class="col-12 d-flex gap-2">
                                 <button type="button" class="btn btn-outline-secondary" id="clearFacilityFilters">
-                                    Limpiar filtros
+                                    Limpiar Filtros
                                 </button>
                             </div>
                         </div>
@@ -314,13 +314,13 @@
 
                                 <div class="d-flex flex-wrap gap-2 mb-3">
                                     <button type="button" class="btn btn-outline-success btn-sm" id="selectAllClassroomsBtn">
-                                        <i class="bi bi-check2-square me-1"></i>Seleccionar todos
+                                        <i class="bi bi-check2-square me-1"></i>Seleccionar Todos
                                     </button>
                                     <button type="button" class="btn btn-outline-success btn-sm" id="selectAcademicClassroomsBtn">
-                                        <i class="bi bi-building me-1"></i>Solo salones
+                                        <i class="bi bi-building me-1"></i>Solo Salones
                                     </button>
                                     <button type="button" class="btn btn-outline-success btn-sm" id="selectLateralClassroomsBtn">
-                                        <i class="bi bi-grid me-1"></i>Solo laterales
+                                        <i class="bi bi-grid me-1"></i>Solo Laterales
                                     </button>
                                     <button type="button" class="btn btn-outline-success btn-sm" id="clearClassroomsSelectionBtn">
                                         <i class="bi bi-eraser me-1"></i>Limpiar Selección
@@ -329,10 +329,10 @@
                                    <div class="d-flex flex-wrap gap-2 ms-md-2">
                                        <button type="button" class="btn btn-success btn-sm" id="openAddClassroomModalBtn"
                                                data-bs-toggle="modal" data-bs-target="#addClassroomModal">
-                                           <i class="bi bi-plus-lg me-1"></i>Agregar salón
+                                           <i class="bi bi-plus-lg me-1"></i>Agregar Salón
                                        </button>
                                        <button type="button" class="btn btn-danger btn-sm" id="openDiscardSelectedClassroomsBtn">
-                                           <i class="bi bi-trash me-1"></i>Descartar salones
+                                           <i class="bi bi-trash me-1"></i>Descartar Salones
                                        </button>
                                    </div>
                                 </div>
@@ -818,8 +818,8 @@
                     Tienes información escrita. Si cancelas, perderás los cambios no guardados.
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir editando</button>
-                    <button type="button" class="btn btn-danger" id="confirmCancelConfigureBtn">Sí, cancelar</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelConfigureBtn">Sí, Cancelar</button>
                 </div>
             </div>
         </div>
@@ -837,8 +837,8 @@
                     Tienes información escrita. Si cancelas, perderás los cambios no guardados.
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir editando</button>
-                    <button type="button" class="btn btn-danger" id="confirmCancelRentalBtn">Sí, cancelar</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelRentalBtn">Sí, Cancelar</button>
                 </div>
             </div>
         </div>
@@ -897,7 +897,7 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-success" id="confirmAddClassroomBtn" disabled>
-                        Agregar salón
+                        Agregar Salón
                     </button>
                     <form id="addClassroomForm" method="POST" action="{{ route('facility.classrooms.store') }}" class="d-none">
                         @csrf
@@ -932,7 +932,7 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteClassroomBtn">
-                        Eliminar salón
+                        Eliminar Salón
                     </button>
                 </div>
             </div>

@@ -40,7 +40,7 @@
             <div class="row g-3">
                 <div class="col-md-6 col-lg-4">
                     <select name="category" class="form-select border-2 border-dark" onchange="this.form.submit()">
-                        <option value="">Todas las categorías</option>
+                        <option value="">Todas las Categorías</option>
                         @foreach($categories as $cat)
                             <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>
                                 {{ $cat }}
@@ -51,7 +51,7 @@
 
                 <div class="col-md-auto">
                     <a href="{{ route('kinventory') }}" class="btn btn-outline-secondary">
-                        Limpiar filtros
+                        Limpiar Filtros
                     </a>
                 </div>
             </div>
@@ -102,7 +102,7 @@
                                     data-bs-target="#borrowModal"
                                     {{ $item->available_quantity == 0 ? 'disabled' : '' }}
                                 >
-                                    Pedir prestado
+                                    Pedir Prestado
                                 </button>
                             </div>
                         </div>
@@ -183,7 +183,7 @@
                             Cancelar
                         </button>
                         <button type="button" class="btn btn-success" id="confirmAddToCart">
-                            <i class="bi bi-cart-plus me-1"></i> Añadir al carrito
+                            <i class="bi bi-cart-plus me-1"></i> Añadir al Carrito
                         </button>
                     </div>
                 </form>

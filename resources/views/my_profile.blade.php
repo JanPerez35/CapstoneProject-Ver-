@@ -229,9 +229,9 @@
 
                                         <p
                                             class="text-muted mb-3 marketplace-card-description"
-                                            title="{{ $post->description ?: 'Sin descripción.' }}"
+                                            title="{{ $post->description }}"
                                         >
-                                            {{ $post->description ?: 'Sin descripción.' }}
+                                            {{ $post->description  }}
                                         </p>
 
                                     </div>
@@ -271,10 +271,10 @@
                                     <div class="mt-auto d-grid gap-2">
                                         <button
                                             type="button"
-                                            class="btn btn-outline-success rounded-3 open-profile-post-details"
+                                            class="btn btn-success rounded-3 open-profile-post-details"
                                             data-post-id="{{ $post->id }}"
                                         >
-                                            Ver detalles
+                                            Ver Detalles
                                         </button>
 
                                         <button
@@ -283,7 +283,7 @@
                                             data-post-id="{{ $post->id }}"
                                             data-post-title="{{ $post->title }}"
                                         >
-                                            Borrar
+                                            Eliminar Publicación
                                         </button>
                                     </div>
                                 </div>

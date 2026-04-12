@@ -38,7 +38,7 @@
 
                     <div class="col-md-6 col-lg-4">
                         <select id="filterReason" class="form-select border-2 border-dark">
-                            <option value="">Todas las razones</option>
+                            <option value="">Todas las Razones</option>
                             <option value="Fraude o estafa">Fraude o estafa</option>
                             <option value="Información falsa">Información falsa</option>
                             <option value="Lenguaje ofensivo">Lenguaje ofensivo</option>
@@ -56,7 +56,7 @@
                     </div>
                     <div class="col-md-3 d-flex align-items-end">
                         <button type="button" class="btn btn-outline-secondary" id="clearReportsFilters">
-                            Limpiar filtros
+                            Limpiar Filtros
                         </button>
                     </div>
                 </div>
@@ -71,28 +71,28 @@
                     <div class="col-sm-6 col-lg-3">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-eye fs-5 text-secondary"></i>
-                            <span>Ver publicación</span>
+                            <span>Ver Publicación</span>
                         </div>
                     </div>
 
                     <div class="col-sm-6 col-lg-3">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-check-circle fs-5 text-success"></i>
-                            <span>Resolver querella</span>
+                            <span>Resolver Querella</span>
                         </div>
                     </div>
 
                     <div class="col-sm-6 col-lg-3">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-trash fs-5 text-danger"></i>
-                            <span>Eliminar publicación</span>
+                            <span>Eliminar Publicación</span>
                         </div>
                     </div>
 
                     <div class="col-sm-6 col-lg-3">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-ban fs-5 text-danger"></i>
-                            <span>Bloquear usuario</span>
+                            <span>Bloquear Usuario</span>
                         </div>
                     </div>
                 </div>

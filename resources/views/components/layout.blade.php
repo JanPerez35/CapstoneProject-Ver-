@@ -469,7 +469,7 @@
                 <button type="button"
                         class="btn btn-danger"
                         id="confirmRemoveCartItem">
-                    Sí, remover
+                    Sí, Remover
                 </button>
             </div>
         </div>

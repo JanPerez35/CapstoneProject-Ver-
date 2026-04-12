@@ -85,7 +85,7 @@
                         class="form-select border-2 border-dark"
                         onchange="this.form.submit()"
                     >
-                        <option value="">Todas las categorías</option>
+                        <option value="">Todas las Categorías</option>
 
                         @foreach($categories as $cat)
                             <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>
@@ -97,7 +97,7 @@
 
                 <div class="col-auto">
                     <a href="{{ route('inventory_management') }}" class="btn btn-outline-secondary">
-                        Limpiar filtros
+                        Limpiar Filtros
                     </a>
                 </div>
             </div>
@@ -334,7 +334,7 @@
                                             Cancelar
                                         </button>
                                         <button type="submit" class="btn btn-warning">
-                                            Guardar cambios
+                                            Guardar Cambios
                                         </button>
                                     </div>
                                 </form>
@@ -771,7 +771,7 @@
                         Cancelar
                     </button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-                        Sí, borrar
+                        Sí, Borrar
                     </button>
                 </div>
             </div>
@@ -797,7 +797,7 @@
                         Cancelar
                     </button>
                     <button type="button" class="btn btn-warning" id="confirmEditBtn">
-                        Sí, guardar cambios
+                        Sí, Guardar Cambios
                     </button>
                 </div>
             </div>
