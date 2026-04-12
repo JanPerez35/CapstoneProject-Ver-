@@ -56,8 +56,8 @@
                             <span class="label-badge {{ $user->role_badge_class }}">
                                 {{ $user->role_label }}
                             </span>
-
                         </div>
+
                         <p class="text-muted fs-4 mb-0">Miembro de MAIKINE</p>
 
                         <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
@@ -104,7 +104,7 @@
                 >
                     <i class="bi bi-bag me-2"></i> Publicaciones (<span id="postsTabCount">{{ $posts->count() }}</span>)
                 </button>
-                            </li>
+            </li>
 
             <li class="nav-item" role="presentation">
                 <button
@@ -153,11 +153,9 @@
                                 </div>
 
                                 <div class="col-lg-2 d-grid">
-
                                     <button type="submit" id="postsSearchBtn" class="btn btn-success h-100 fw-semibold" disabled>
                                         Buscar
                                     </button>
-
                                 </div>
                             </div>
 
@@ -197,32 +195,40 @@
 
                 <div class="row g-4" id="postsGrid">
                     @forelse($posts as $post)
-                        <div class="col-md-6 col-lg-4 post-card-wrapper"
+                        <div
+                            class="col-md-6 col-lg-4 post-card-wrapper"
                             data-title="{{ strtolower($post->title ?? '') }}"
                             data-description="{{ strtolower($post->description ?? '') }}"
                             data-sport="{{ strtolower($post->category ?? '') }}"
-                            data-price="{{ $post->cost ?? 0 }}">
-
-                            <div class="card h-100 shadow-sm rounded-4 overflow-hidden border-0">
+                            data-price="{{ $post->cost ?? 0 }}"
+                        >
+                            <div class="card h-100 shadow-sm rounded-4 overflow-hidden item-card border-0 marketplace-card-shell">
                                 <img
-                                    src="{{ $post->photo_1_url ? asset('storage/' . $post->photo_1_url) : asset('images/kinventory_images/default.jpg') }}"
+                                    src="{{ $post->photo_1_url ? asset('storage/' . $post->photo_1_url) : asset('images/marketplace_images/picture-not-available.png') }}"
                                     class="card-img-top"
                                     alt="{{ $post->title }}"
-                                    style="height: 300px; object-fit: cover;"
+                                    style="height: 220px; object-fit: contain;"
+                                    onerror="this.onerror=null;this.src='{{ asset('images/marketplace_images/picture-not-available.png') }}';"
                                 >
 
-                                <div class="card-body d-flex flex-column p-4">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <h5 class="fw-bold mb-0">{{ $post->title }}</h5>
+                                <div class="card-body p-4 marketplace-card-body">
+                                    <div class="marketplace-card-top">
 
-                                        <span class="label-badge badge-available">
-                                            {{ $post->status ?? 'Disponible' }}
-                                        </span>
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="fw-bold mb-0">{{ $post->title }}</h5>
+
+                                            <span class="label-badge badge-available">
+            {{ $post->status ?? 'Disponible' }}
+        </span>
+                                        </div>
+
+                                        <p class="text-muted mb-3">
+                                            {{ $post->description ?: 'Sin descripción.' }}
+                                        </p>
+
                                     </div>
 
-                                    <p class="text-muted mb-3">
-                                        {{ $post->description ?: 'Sin descripción.' }}
-                                    </p>
+                                    <div class="marketplace-card-meta mt-auto">
 
                                     <h3 class="fw-bold text-success mb-3">
                                         ${{ number_format($post->cost, 2) }}
@@ -251,9 +257,18 @@
                                             <i class="bi bi-clock me-2"></i>
                                             {{ $post->created_at?->diffForHumans() }}
                                         </div>
+                                    </div> {{-- marketplace-card-meta --}}
                                     </div>
 
-                                    <div class="mt-auto d-grid">
+                                    <div class="mt-auto d-grid gap-2">
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-success rounded-3 open-profile-post-details"
+                                            data-post-id="{{ $post->id }}"
+                                        >
+                                            Ver detalles
+                                        </button>
+
                                         <button
                                             type="button"
                                             class="btn btn-danger rounded-3 open-delete-post-modal"
@@ -288,8 +303,11 @@
                         </div>
                     </div>
                 </div>
-            </div> {{-- closes #postsGrid --}}
-        </div> {{-- closes #posts-pane --}}
+
+                <nav aria-label="Paginación de publicaciones" class="mt-4">
+                    <ul class="pagination justify-content-center mb-0 profile-pagination" id="postsPagination"></ul>
+                </nav>
+            </div>
 
             {{-- Requests tab --}}
             <div class="tab-pane fade {{ request('tab') === 'requests' ? 'show active' : '' }}" id="requests-pane" role="tabpanel" aria-labelledby="requests-tab">
@@ -299,66 +317,70 @@
                         <p class="text-muted mb-4">
                             Busca tus solicitudes y filtra por estado.
                         </p>
-                            <form method="GET" action="{{ route('my_profile') }}" id="requestsFilterForm" class="mb-4">
-                                <input type="hidden" name="tab" value="requests">
 
-                                <div class="row g-3 align-items-stretch mb-3">
-                                    <div class="col-lg-10">
-                                        <div class="input-group search-group h-100">
-                                            <span class="input-group-text bg-white border-0">
-                                                <i class="bi bi-search"></i>
-                                            </span>
+                        <form method="GET" action="{{ route('my_profile') }}" id="requestsFilterForm" class="mb-4">
+                            <input type="hidden" name="tab" value="requests">
 
-                                            <input
-                                                type="text"
-                                                id="requestSearch"
-                                                name="request_search"
-                                                class="form-control border-0"
-                                                placeholder="Buscar solicitudes..."
-                                                value="{{ request('request_search') }}"
-                                            >
-                                        </div>
-                                    </div>
+                            <div class="row g-3 align-items-stretch mb-3">
+                                <div class="col-lg-10">
+                                    <div class="input-group search-group h-100">
+                                        <span class="input-group-text bg-white border-0">
+                                            <i class="bi bi-search"></i>
+                                        </span>
 
-                                    <div class="col-lg-2 d-grid">
-                                        <button type="submit" id="requestsSearchBtn" class="btn btn-success h-100 fw-semibold" disabled>
-                                            Buscar
-                                        </button>
+                                        <input
+                                            type="text"
+                                            id="requestSearch"
+                                            name="request_search"
+                                            class="form-control border-0"
+                                            placeholder="Buscar solicitudes..."
+                                            value="{{ request('request_search') }}"
+                                        >
                                     </div>
                                 </div>
 
-                                <div class="row g-3 align-items-end">
-                                    <div class="col-md-6 col-lg-4">
-                                        <select id="statusFilter" name="request_status" class="form-select border-2 border-dark">
-                                            <option value="">Todos los estados</option>
-                                            <option value="pending" {{ request('request_status') == 'pending' ? 'selected' : '' }}>Pendiente</option>
-                                            <option value="approved" {{ request('request_status') == 'approved' ? 'selected' : '' }}>Aprobada</option>
-                                            <option value="rejected" {{ request('request_status') == 'rejected' ? 'selected' : '' }}>Rechazada</option>
-                                            <option value="finished" {{ request('request_status') == 'finished' ? 'selected' : '' }}>Finalizado</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-auto">
-                                        <a href="{{ route('my_profile', ['tab' => 'requests']) }}" class="btn btn-outline-secondary">
-                                            Limpiar filtros
-                                        </a>
-                                    </div>
+                                <div class="col-lg-2 d-grid">
+                                    <button type="submit" id="requestsSearchBtn" class="btn btn-success h-100 fw-semibold" disabled>
+                                        Buscar
+                                    </button>
                                 </div>
-                            </form>
+                            </div>
+
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-6 col-lg-4">
+                                    <select id="statusFilter" name="request_status" class="form-select border-2 border-dark">
+                                        <option value="">Todos los estados</option>
+                                        <option value="pending" {{ request('request_status') == 'pending' ? 'selected' : '' }}>Pendiente</option>
+                                        <option value="approved" {{ request('request_status') == 'approved' ? 'selected' : '' }}>Aprobada</option>
+                                        <option value="rejected" {{ request('request_status') == 'rejected' ? 'selected' : '' }}>Rechazada</option>
+                                        <option value="finished" {{ request('request_status') == 'finished' ? 'selected' : '' }}>Finalizado</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-auto">
+                                    <a href="{{ route('my_profile', ['tab' => 'requests']) }}" class="btn btn-outline-secondary">
+                                        Limpiar filtros
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+
                         @forelse($requests as $request)
-                                @php
-                                    $itemsText = $request->items->count()
-                                        ? $request->items->map(fn($item) => $item->equipment->description . ' x' . $item->quantity)->implode(' ')
-                                        : 'sin articulos';
+                            @php
+                                $itemsText = $request->items->count()
+                                    ? $request->items->map(fn($item) => $item->equipment->description . ' x' . $item->quantity)->implode(' ')
+                                    : 'sin articulos';
 
-                                    $normalizedStatus = in_array($request->status, ['returned', 'finished'])
-                                        ? 'finished'
-                                        : strtolower($request->status);
-                                @endphp
+                                $normalizedStatus = in_array($request->status, ['returned', 'finished'])
+                                    ? 'finished'
+                                    : strtolower($request->status);
+                            @endphp
 
-                                <div class="border rounded-4 p-4 mb-3 request-card"
-                                    data-title="{{ strtolower($itemsText) }}"
-                                    data-status="{{ $normalizedStatus }}">
+                            <div
+                                class="border rounded-4 p-4 mb-3 request-card"
+                                data-title="{{ strtolower($itemsText) }}"
+                                data-status="{{ $normalizedStatus }}"
+                            >
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                     <div>
                                         <h5 class="fw-bold mb-1">
@@ -395,7 +417,6 @@
                                     <span class="label-badge {{ $statusClass }}">
                                         {{ in_array($request->status, ['returned', 'finished']) ? 'Finalizado' : ucfirst($request->status) }}
                                     </span>
-                                    
                                 </div>
                             </div>
                         @empty
@@ -403,6 +424,7 @@
                                 No tienes solicitudes registradas todavía.
                             </div>
                         @endforelse
+
                         <div id="requestsEmptyState" class="d-none">
                             <div class="card border-0 shadow-sm rounded-4">
                                 <div class="card-body py-5 text-center">
@@ -412,6 +434,7 @@
                                 </div>
                             </div>
                         </div>
+
                         @if($requests->hasPages())
                             <div class="mt-4 d-flex justify-content-center">
                                 {{ $requests->appends(request()->except('page'))->links() }}
@@ -420,7 +443,89 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
+    {{-- Profile Post Details Modal --}}
+    <div class="modal fade" id="profilePostDetailsModal" tabindex="-1" aria-labelledby="profilePostDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow overflow-hidden">
+                <div class="modal-header border-0 pt-4 px-4 pb-2 align-items-start position-relative">
+                    <div class="pe-5">
+                        <h4 class="modal-title fw-bold mb-1" id="profilePostDetailsModalLabel">Detalle de la publicación</h4>
+                        <p class="text-muted mb-0">Detalles de tu publicación</p>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn-close position-absolute top-0 end-0 m-3"
+                        data-bs-dismiss="modal"
+                        aria-label="Cerrar"
+                    ></button>
+                </div>
+
+                <div class="modal-body px-4 pt-2 pb-4 post-details-body">
+                    <div id="profilePostImagesCarousel" class="carousel slide mb-4">
+                        <div class="carousel-indicators" id="profilePostImagesCarouselIndicators"></div>
+
+                        <div class="carousel-inner rounded-4 overflow-hidden post-carousel-inner" id="profilePostImagesCarouselInner"></div>
+
+                        <button
+                            class="carousel-control-prev"
+                            type="button"
+                            data-bs-target="#profilePostImagesCarousel"
+                            data-bs-slide="prev"
+                            id="profilePostImagesCarouselPrev"
+                        >
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Anterior</span>
+                        </button>
+
+                        <button
+                            class="carousel-control-next"
+                            type="button"
+                            data-bs-target="#profilePostImagesCarousel"
+                            data-bs-slide="next"
+                            id="profilePostImagesCarouselNext"
+                        >
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Siguiente</span>
+                        </button>
+                    </div>
+
+                    <p class="mb-3 text-muted" id="profilePostDetailsDescription"></p>
+                    <hr>
+
+                    <div class="row gy-3 pb-2">
+                        <div class="col-6 text-muted">Precio:</div>
+                        <div class="col-6 text-end fw-bold text-success" id="profilePostDetailsPrice">$0.00</div>
+
+                        <div class="col-6 text-muted">Estado:</div>
+                        <div class="col-6 text-end">
+                            <span class="label-badge badge-available" id="profilePostDetailsStatus">Disponible</span>
+                        </div>
+
+                        <div class="col-6 text-muted">Condición:</div>
+                        <div class="col-6 text-end">
+                            <span class="label-badge badge-available" id="profilePostDetailsCondition">Sin especificar</span>
+                        </div>
+
+                        <div class="col-6 text-muted">Vendedor:</div>
+                        <div class="col-6 text-end fw-bold" id="profilePostDetailsSeller">Usuario</div>
+
+                        <div class="col-6 text-muted">Calificación del Vendedor:</div>
+                        <div class="col-6 text-end" id="profilePostDetailsSellerRating">
+                            <i class="bi bi-star-fill text-warning me-1"></i>
+                            0.0 <span class="text-muted">(0 reseñas)</span>
+                        </div>
+
+                        <div class="col-6 text-muted">Categoría:</div>
+                        <div class="col-6 text-end">
+                            <span class="label-badge badge-available" id="profilePostDetailsCategory">Sin categoría</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -457,60 +562,64 @@
     </div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const postsTab = document.getElementById('posts-tab');
-        const requestsTab = document.getElementById('requests-tab');
-        const profileTabButtons = document.querySelectorAll('#profileTabs button');
+        document.addEventListener('DOMContentLoaded', function () {
+            const postsTab = document.getElementById('posts-tab');
+            const requestsTab = document.getElementById('requests-tab');
+            const profileTabButtons = document.querySelectorAll('#profileTabs button');
 
-        function syncTabButtonStyles(activeButton) {
-            profileTabButtons.forEach((btn) => {
-                btn.classList.remove('btn-success');
-                btn.classList.add('btn-outline-success');
+            function syncTabButtonStyles(activeButton) {
+                profileTabButtons.forEach((btn) => {
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-success');
+                });
+
+                activeButton.classList.remove('btn-outline-success');
+                activeButton.classList.add('btn-success');
+            }
+
+            function activateTab(tabButton) {
+                const tabInstance = new bootstrap.Tab(tabButton);
+                tabInstance.show();
+                syncTabButtonStyles(tabButton);
+            }
+
+            if (window.location.search.includes('tab=requests')) {
+                activateTab(requestsTab);
+            } else {
+                activateTab(postsTab);
+            }
+
+            postsTab.addEventListener('click', function () {
+                syncTabButtonStyles(postsTab);
             });
 
-            activeButton.classList.remove('btn-outline-success');
-            activeButton.classList.add('btn-success');
-        }
-
-        function activateTab(tabButton) {
-            const tabInstance = new bootstrap.Tab(tabButton);
-            tabInstance.show();
-            syncTabButtonStyles(tabButton);
-        }
-
-        if (window.location.search.includes('tab=requests')) {
-            activateTab(requestsTab);
-        } else {
-            activateTab(postsTab);
-        }
-
-        postsTab.addEventListener('click', function () {
-            syncTabButtonStyles(postsTab);
+            requestsTab.addEventListener('click', function () {
+                syncTabButtonStyles(requestsTab);
+            });
         });
+    </script>
 
-        requestsTab.addEventListener('click', function () {
-            syncTabButtonStyles(requestsTab);
-        });
-    });
-</script>
     {{-- Toasts --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
-        <div id="deletePostToast"
-             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-             role="alert"
-             aria-live="assertive"
-             aria-atomic="true"
-             style="width: auto; max-width: fit-content;">
+        <div
+            id="deletePostToast"
+            class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
+            style="width: auto; max-width: fit-content;"
+        >
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1">
                     Item borrado correctamente.
                 </div>
-                <button type="button"
-                        class="btn-close p-0 ms-1 me-2"
-                        data-bs-dismiss="toast"
-                        aria-label="Cerrar"
-                        style="background-color: transparent; border: none; transform: scale(0.8);">
-                </button>
+                <button
+                    type="button"
+                    class="btn-close p-0 ms-1 me-2"
+                    data-bs-dismiss="toast"
+                    aria-label="Cerrar"
+                    style="background-color: transparent; border: none; transform: scale(0.8);"
+                ></button>
             </div>
         </div>
     </div>
