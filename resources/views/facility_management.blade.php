@@ -186,8 +186,10 @@
                 <table class="table align-middle mb-0" id="facilityCostTable">
                     <thead class="table-light">
                     <tr>
-                        <th class="fw-bold">Fecha</th>
+                        <th class="fw-bold">Fecha (mm/dd/yyyy)</th>
+                        <th class="fw-bold">Responsable</th>
                         <th class="fw-bold">Salón</th>
+                        <th class="fw-bold">Descripción</th>
                         <th class="fw-bold">Hora</th>
                         <th class="fw-bold">Periodo</th>
                         <th class="fw-bold">Servicios</th>
@@ -205,8 +207,10 @@
                                 data-year="{{ \Carbon\Carbon::parse($item->event_date)->format('Y') }}"
                                 data-classroom="{{ $item->facilityCost->classroom_name }}"
                             >
-                                <td>{{ \Carbon\Carbon::parse($item->event_date)->translatedFormat('j M Y') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($item->event_date)->format('m/d/Y') }}</td>
+                                <td>{{ $item->responsable }}</td>
                                 <td>{{ $item->facilityCost->classroom_name }}</td>
+                                <td>{{ $item->event_description }}</td>
                                 <td>
                                     {{ \Carbon\Carbon::parse($item->start_time)->format('h:i A') }}
                                     -
@@ -225,7 +229,8 @@
                                 </td>
                                 <td>
                                     @foreach (($item->services ?? []) as $service)
-                                        <span class="label-badge badge-available me-2 mb-1">                                            @if ($service === 'utilidades')
+                                        <span class="label-badge badge-available me-2 mb-1">
+                @if ($service === 'utilidades')
                                                 Utilidades
                                             @elseif ($service === 'electricidad')
                                                 Electricidad
@@ -234,7 +239,7 @@
                                             @else
                                                 {{ ucfirst($service) }}
                                             @endif
-                                        </span>
+            </span>
                                     @endforeach
                                 </td>
                                 <td class="text-end fw-semibold">${{ number_format($item->calculated_cost, 2) }}</td>
@@ -257,7 +262,7 @@
 
                     <tfoot class="table-light">
                     <tr>
-                        <th colspan="5" class="fw-bold">Total estimado del período</th>
+                        <th colspan="7" class="fw-bold">Total estimado del período</th>
                         <th class="text-end fw-bold" id="facilityCostGrandTotal">${{ number_format($grandTotal, 2) }}</th>
                         <th></th>
                     </tr>

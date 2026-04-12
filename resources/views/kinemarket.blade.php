@@ -3,7 +3,6 @@
 
     @vite('resources/js/pages/marketplace_profanity.js')
     @vite('resources/js/marketplace_validation.js')
-    <input type="hidden" id="returnPostId" value="{{ request('post_id') }}">
     <div
         id="marketplaceHome"
         class="container py-4"
@@ -335,16 +334,13 @@
             </div>
         </div>
 
-        <!-- Card Template for empty search, no publications, and filter results -->
-
-
 
         <!-- Pagination -->
         <nav aria-label="Paginación de publicaciones" class="mt-4">
             <ul class="pagination justify-content-center mb-0" id="marketplacePagination"></ul>
         </nav>
 
-        
+
 
         <!-- Post Details Modal -->
         <div class="modal fade" id="postDetailsModal" tabindex="-1" aria-labelledby="postDetailsModalLabel" aria-hidden="true">
@@ -503,8 +499,8 @@
                             </h4>
 
 
-                            <p class="text-muted mb-1">
-                                Reportar a John Davis por comportamiento sospechoso
+                            <p class="text-muted mb-1" id="reportUserText">
+                                Reportar a Usuario por comportamiento sospechoso
                             </p>
 
 
