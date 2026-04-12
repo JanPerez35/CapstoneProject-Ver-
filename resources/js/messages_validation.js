@@ -248,7 +248,8 @@ document.addEventListener('DOMContentLoaded', () => {
             senderId: sendBtn.dataset.senderId || '',
             message: messageText,
             time: getCurrentTime(),
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            isMine: true
         };
     }
 
@@ -673,7 +674,7 @@ async function loadMessages(chatId) {
                     hour: '2-digit',
                     minute: '2-digit'
                 }),
-                isMine: msg.user_id == currentUserId
+                isMine: msg.isMine
             });
         });
 

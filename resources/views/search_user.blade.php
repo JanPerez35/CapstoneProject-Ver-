@@ -61,7 +61,6 @@
                 </div>
 
                 <div class="col-lg-2 d-grid">
-
                     <button type="button" class="btn btn-success h-100 fw-semibold" id="searchUsersBtn" disabled>
                         Buscar
                     </button>
@@ -100,74 +99,87 @@
         {{-- Users list --}}
         <div id="usersList" class="d-grid gap-3">
             @foreach ($users as $user)
-            <div class="card border-0 shadow-sm rounded-4 user-card"
-                data-user-id="{{ $user->id }}"
-                data-name="{{ $user->name }}"
-                data-email="{{ $user->email }}"
-                data-role="{{ $user->role_label ?? 'Usuario' }}"
-                data-status="{{ $user->status ?? 'Activo' }}">
+                @php
+                    $isBlocked = in_array($user->status, ['Bloqueado', 'Blocked']);
+                    $isActive = in_array($user->status, ['Activo', 'Active']) || !$isBlocked;
+                    $statusLabel = $isBlocked ? 'Bloqueado' : 'Activo';
+                @endphp
 
-                <div class="card-body p-3">
-                    <div class="row g-2 align-items-center">
+                <div class="card border-0 shadow-sm rounded-4 user-card"
+                     data-user-id="{{ $user->id }}"
+                     data-name="{{ $user->name }}"
+                     data-email="{{ $user->email }}"
+                     data-role="{{ $user->role_label ?? 'Usuario' }}"
+                     data-status="{{ $statusLabel }}">
 
-                        <!-- USER INFO -->
-                        <div class="col-lg-7">
-                            <div class="d-flex align-items-start gap-2">
-                                <div class="bg-light rounded-4 d-flex align-items-center justify-content-center"
-                                    style="width: 40px; height: 40px;">
-                                    <i class="bi bi-person-fill"></i>
-                                </div>
+                    <div class="card-body p-3">
+                        <div class="row g-2 align-items-center">
 
-                                <div>
-                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                        <span class="fw-semibold fs-5 user-name-link">
-                                            {{ $user->name }}
-                                        </span>
-
-                                        <span class="label-badge {{ $user->role_badge_class }}">
-                                            {{ $user->role_label}}
-                                        </span>
+                            <!-- USER INFO -->
+                            <div class="col-lg-7">
+                                <div class="d-flex align-items-start gap-2">
+                                    <div class="bg-light rounded-4 d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px;">
+                                        <i class="bi bi-person-fill"></i>
                                     </div>
 
-                                    <div class="text-muted small">
-                                        {{ $user->email }}
+                                    <div>
+                                        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                            <span class="fw-semibold fs-5 user-name-link">
+                                                {{ $user->name }}
+                                            </span>
+
+                                            <span class="label-badge {{ $user->role_badge_class }}">
+                                                {{ $user->role_label }}
+                                            </span>
+                                        </div>
+
+                                        <div class="text-muted small">
+                                            {{ $user->email }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- ROLE -->
-                        <div class="col-lg-3">
-                            <label class="form-label fw-semibold small mb-1">Cambiar Rol</label>
-                            <select class="form-select rounded-0 role-select">
-                                <option {{ ($user->role_label ?? '') == 'Usuario' ? 'selected' : '' }}>Usuario</option>
-                                <option {{ ($user->role_label ?? '') == 'Admin Super' ? 'selected' : '' }}>Admin Super</option>
-                                <option {{ ($user->role_label ?? '') == 'Admin Inventario' ? 'selected' : '' }}>Admin Inventario</option>
-                                <option {{ ($user->role_label ?? '') == 'Admin Facilidades' ? 'selected' : '' }}>Admin Facilidades</option>
-                                <option {{ ($user->role_label ?? '') == 'Admin Mercado' ? 'selected' : '' }}>Admin Mercado</option>
-                            </select>
-                        </div>
-
-                        <!-- STATUS -->
-                        <div class="col-lg-2">
-                            <label class="form-label fw-semibold small d-block mb-1">Estado</label>
-                            <div class="d-flex flex-column gap-2">
-
-                                <span class="label-badge badge-active align-self-start">
-                                    {{ $user->status }}
-                                </span>
-
-                                <button type="button" class="btn btn-danger rounded-3 ban-toggle-btn btn-sm">
-                                    <i class="bi bi-ban me-1"></i>
-                                    Bloquear
-                                </button>
-
+                            <!-- ROLE -->
+                            <div class="col-lg-3">
+                                <label class="form-label fw-semibold small mb-1">Cambiar Rol</label>
+                                <select class="form-select rounded-0 role-select">
+                                    <option {{ ($user->role_label ?? '') == 'Usuario' ? 'selected' : '' }}>Usuario</option>
+                                    <option {{ ($user->role_label ?? '') == 'Admin Super' ? 'selected' : '' }}>Admin Super</option>
+                                    <option {{ ($user->role_label ?? '') == 'Admin Inventario' ? 'selected' : '' }}>Admin Inventario</option>
+                                    <option {{ ($user->role_label ?? '') == 'Admin Facilidades' ? 'selected' : '' }}>Admin Facilidades</option>
+                                    <option {{ ($user->role_label ?? '') == 'Admin Mercado' ? 'selected' : '' }}>Admin Mercado</option>
+                                </select>
                             </div>
-                        </div>
 
+                            <!-- STATUS -->
+                            <div class="col-lg-2">
+                                <label class="form-label fw-semibold small d-block mb-1">Estado</label>
+                                <div class="d-flex flex-column gap-2">
+
+                                    <span class="label-badge {{ $isBlocked ? 'badge-blocked' : 'badge-active' }} align-self-start">
+                                        {{ $statusLabel }}
+                                    </span>
+
+                                    <button
+                                        type="button"
+                                        class="{{ $isBlocked ? 'btn btn-outline-success rounded-3 ban-toggle-btn btn-sm' : 'btn btn-danger rounded-3 ban-toggle-btn btn-sm' }}">
+                                        @if ($isBlocked)
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                            Desbloquear
+                                        @else
+                                            <i class="bi bi-ban me-1"></i>
+                                            Bloquear
+                                        @endif
+                                    </button>
+
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
-            </div>
             @endforeach
         </div>
 

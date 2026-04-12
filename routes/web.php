@@ -52,6 +52,8 @@ Route::post('/cart/checkout', [EquipmentController::class, 'checkoutCart'])->nam
 Route::get('/search_user', [UserController::class, 'index'])->name('search_user');
 Route::put('/users/{user}/role', [UserController::class, 'updateRole']);
 
+Route::put('/users/{user}/status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
+
 // Route::get('/inventory_management', function () {
 //     return view('inventory_management');
 // })->name('inventory_management');//->middleware('role:super,inventory,user')
@@ -133,12 +135,7 @@ Route::get('/chat/{chatId}', [ChatController::class, 'show'])->name('chat.show')
 Route::post('/chats/open', [ChatController::class, 'openOrCreate'])
     ->name('chat.open');
 Route::post('/messages', [MessageController::class, 'store']);
-Route::get('/messages/{chatId}', function ($chatId) {
-    return \App\Models\Message::with('user')
-        ->where('chat_id', $chatId)
-        ->orderBy('created_at')
-        ->get();
-});
+Route::get('/messages/{chatId}', [MessageController::class, 'getMessages']);
 
 require __DIR__ . '\saml2.php';
 /*Route::get('/kinemercado/reportar_usuario', function () {

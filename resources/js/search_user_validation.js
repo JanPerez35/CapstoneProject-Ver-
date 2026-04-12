@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const userId = card.dataset.userId;
             const userName = card.dataset.name;
             const newRole = select.value;
-            const previousRole = select.dataset.previousValue;            
+            const previousRole = select.dataset.previousValue;
 
             pendingRoleChange = {
                 card,
@@ -268,7 +268,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             console.log('Rol actualizado correctamente');
 
-            } 
+            }
             catch (error) {
                 console.error('Error:', error);
             }
@@ -322,49 +322,71 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     if (confirmBanBtn) {
-        confirmBanBtn.addEventListener('click', function () {
+        confirmBanBtn.addEventListener('click', async function () {
             if (!pendingBanAction) return;
 
             const { card, button, currentStatus } = pendingBanAction;
             const statusBadge = getStatusBadgeElement(card);
+            const userId = card.dataset.userId;
+            const newStatus = currentStatus === 'Activo' ? 'Bloqueado' : 'Activo';
 
-            if (currentStatus === 'Activo') {
-                card.dataset.status = 'Bloqueado';
+            try {
+                const response = await fetch(`/users/${userId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        status: newStatus
+                    })
+                });
 
-                if (statusBadge) {
-                    statusBadge.textContent = 'Bloqueado';
-                    statusBadge.className = 'label-badge badge-blocked align-self-start';
+                const data = await response.json();
+
+                if (!response.ok) {
+                    console.error('Error:', data);
+                    return;
                 }
 
-                button.className = 'btn btn-outline-success rounded-3 ban-toggle-btn btn-sm';
-                button.innerHTML = '<i class="bi bi-arrow-counterclockwise me-1"></i> Desbloquear';
+                card.dataset.status = newStatus;
 
-                if (banToastEl) {
-                    const toast = window.bootstrap.Toast.getOrCreateInstance(banToastEl);
-                    toast.show();
+                if (newStatus === 'Bloqueado') {
+                    if (statusBadge) {
+                        statusBadge.textContent = 'Bloqueado';
+                        statusBadge.className = 'label-badge badge-blocked align-self-start';
+                    }
+
+                    button.className = 'btn btn-outline-success rounded-3 ban-toggle-btn btn-sm';
+                    button.innerHTML = '<i class="bi bi-arrow-counterclockwise me-1"></i> Desbloquear';
+
+                    if (banToastEl) {
+                        const toast = window.bootstrap.Toast.getOrCreateInstance(banToastEl);
+                        toast.show();
+                    }
+                } else {
+                    if (statusBadge) {
+                        statusBadge.textContent = 'Activo';
+                        statusBadge.className = 'label-badge badge-active align-self-start';
+                    }
+
+                    button.className = 'btn btn-danger rounded-3 ban-toggle-btn btn-sm';
+                    button.innerHTML = '<i class="bi bi-ban me-1"></i> Bloquear';
+
+                    if (unbanToastEl) {
+                        const toast = window.bootstrap.Toast.getOrCreateInstance(unbanToastEl);
+                        toast.show();
+                    }
                 }
-            } else {
-                card.dataset.status = 'Activo';
 
-                if (statusBadge) {
-                    statusBadge.textContent = 'Activo';
-                    statusBadge.className = 'label-badge badge-active align-self-start';
-                }
+                const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmBanModal);
+                modalInstance.hide();
 
-                button.className = 'btn btn-danger rounded-3 ban-toggle-btn btn-sm';
-                button.innerHTML = '<i class="bi bi-ban me-1"></i> Bloquear';
-
-                if (unbanToastEl) {
-                    const toast = window.bootstrap.Toast.getOrCreateInstance(unbanToastEl);
-                    toast.show();
-                }
+                pendingBanAction = null;
+                filterUsers();
+            } catch (error) {
+                console.error('Error:', error);
             }
-
-            const modalInstance = window.bootstrap.Modal.getOrCreateInstance(confirmBanModal);
-            modalInstance.hide();
-
-            pendingBanAction = null;
-            filterUsers();
         });
     }
 

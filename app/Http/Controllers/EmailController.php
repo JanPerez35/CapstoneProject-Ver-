@@ -79,14 +79,25 @@ class EmailController extends Controller
         return 'Correo de cuenta suspendida enviado.';
     }
 
-    public function unreadMessagesReminder()
+    public function userUnbanned()
     {
         $this->emailService->send(
             'jan.perez21@upr.edu',
-            'Tienes mensajes sin leer',
-            'Hola, tienes mensajes sin leer en MAIKINE. Entra a la plataforma para revisarlos.'
+            'Cuenta desbloqueada',
+            'Tu cuenta ha sido reactivada en la plataforma MAIKINE. Ya puedes acceder nuevamente y continuar utilizando los servicios con normalidad.'
         );
 
-        return 'Correo de recordatorio de mensajes sin leer enviado.';
+        return 'Correo de cuenta desbloqueada enviado.';
     }
+
+//    public function unreadMessagesReminder()
+//    {
+//        $this->emailService->send(
+//            'jan.perez21@upr.edu',
+//            'Tienes mensajes sin leer',
+//            'Hola, tienes mensajes sin leer en MAIKINE. Entra a la plataforma para revisarlos.'
+//        );
+//
+//        return 'Correo de recordatorio de mensajes sin leer enviado.';
+//    }
 }
