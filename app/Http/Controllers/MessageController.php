@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Message;
+use App\Models\Chat;
 use App\Events\MessageSent;
+use App\Jobs\SendUnreadMessageReminder;
 
 class MessageController extends Controller
 {
@@ -21,33 +23,46 @@ class MessageController extends Controller
             'content' => $request->content,
             'status' => 'sent',
             'sent_at' => now(),
+            'read_at' => null,
         ]);
 
-        // broadcast(new MessageSent(
-        //     $message->user->name,
-        //     $message->content,
-        //     $message->chat_id
-        // ))->toOthers();
+        SendUnreadMessageReminder::dispatch($message->id)
+            ->delay(now()->addSeconds(15));
 
         return response()->json($message);
     }
+
     public function getMessages($chatId)
     {
         $userId = auth()->id();
 
+        Message::where('chat_id', $chatId)
+            ->where('user_id', '!=', $userId)
+            ->whereNull('read_at')
+            ->update([
+                'read_at' => now(),
+                'status' => 'read',
+            ]);
+
+        Chat::where('id', $chatId)->update([
+            'unread_reminder_sent_at' => null,
+        ]);
+
         $messages = Message::where('chat_id', $chatId)
-        ->with('user')
-        ->orderBy('created_at')
-        ->get()
-        ->map(function ($msg) {
-            return [
-                'id' => $msg->id,
-                'content' => $msg->content,
-                'sender_id' => $msg->user_id,
-                'isMine' => $msg->user_id == auth()->id(),
-                'created_at' => $msg->created_at,
-            ];
-        });
+            ->with('user')
+            ->orderBy('created_at')
+            ->get()
+            ->map(function ($msg) use ($userId) {
+                return [
+                    'id' => $msg->id,
+                    'content' => $msg->content,
+                    'sender_id' => $msg->user_id,
+                    'isMine' => $msg->user_id == $userId,
+                    'created_at' => $msg->created_at,
+                    'read_at' => $msg->read_at,
+                    'status' => $msg->status,
+                ];
+            });
 
         return response()->json($messages);
     }

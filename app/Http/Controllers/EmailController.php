@@ -90,14 +90,14 @@ class EmailController extends Controller
         return 'Correo de cuenta desbloqueada enviado.';
     }
 
-    public function unreadMessagesReminder()
-    {
-        $this->emailService->send(
-            'jan.perez21@upr.edu',
-            'Tienes mensajes sin leer',
-            'Hola, tienes mensajes sin leer en MAIKINE. Entra a la plataforma para revisarlos.'
-        );
-
-        return 'Correo de recordatorio de mensajes sin leer enviado.';
-    }
+//    public function unreadMessagesReminder()
+//    {
+//        $this->emailService->send(
+//            'jan.perez21@upr.edu',
+//            'Tienes mensajes sin leer',
+//            'Hola, tienes mensajes sin leer en MAIKINE. Entra a la plataforma para revisarlos.'
+//        );
+//
+//        return 'Correo de recordatorio de mensajes sin leer enviado.';
+//    }
 }

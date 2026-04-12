@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<h2>{{ $subjectText }}</h2>
+{{--<h2>{{ $subjectText }}</h2>--}}
 
 <p>Saludos,</p>
 
