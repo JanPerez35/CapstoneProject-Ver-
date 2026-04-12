@@ -21,6 +21,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const deletePostToastEl = document.getElementById('deletePostToast');
     const postsTabCount = document.getElementById('postsTabCount');
 
+    const profileDetailsModalEl = document.getElementById('profilePostDetailsModal');
+    const profileDetailsModal = profileDetailsModalEl && window.bootstrap
+        ? window.bootstrap.Modal.getOrCreateInstance(profileDetailsModalEl)
+        : null;
+
+    const carouselInner = document.getElementById('profilePostImagesCarouselInner');
+    const carouselIndicators = document.getElementById('profilePostImagesCarouselIndicators');
+    const carouselPrev = document.getElementById('profilePostImagesCarouselPrev');
+    const carouselNext = document.getElementById('profilePostImagesCarouselNext');
+
+    const detailsModalLabel = document.getElementById('profilePostDetailsModalLabel');
+    const detailsDescription = document.getElementById('profilePostDetailsDescription');
+    const detailsPrice = document.getElementById('profilePostDetailsPrice');
+    const detailsStatus = document.getElementById('profilePostDetailsStatus');
+    const detailsCondition = document.getElementById('profilePostDetailsCondition');
+    const detailsSeller = document.getElementById('profilePostDetailsSeller');
+    const detailsSellerRating = document.getElementById('profilePostDetailsSellerRating');
+    const detailsCategory = document.getElementById('profilePostDetailsCategory');
+
     let postCardToDelete = null;
     let currentPostsPage = 1;
 
@@ -71,9 +90,9 @@ document.addEventListener('DOMContentLoaded', function () {
         createItem('»', currentPage + 1, currentPage === totalPages);
     }
 
-    function paginateItems(items, currentPage, paginationContainer, onPageChange) {
+    function paginateItems(items, currentPageValue, paginationContainer, onPageChange) {
         const totalPages = Math.max(1, Math.ceil(items.length / ITEMS_PER_PAGE));
-        const safePage = Math.min(currentPage, totalPages);
+        const safePage = Math.min(currentPageValue, totalPages);
         const start = (safePage - 1) * ITEMS_PER_PAGE;
         const end = start + ITEMS_PER_PAGE;
 
@@ -86,6 +105,120 @@ document.addEventListener('DOMContentLoaded', function () {
         return safePage;
     }
 
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    document.querySelectorAll('.open-profile-post-details').forEach((button) => {
+        button.addEventListener('click', async function () {
+            const postId = this.dataset.postId;
+            if (!postId) return;
+
+            try {
+                const response = await fetch(`/posts/${postId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('No se pudo cargar la publicación.');
+                }
+
+                const post = await response.json();
+
+                const title = post.title || 'Detalle de la publicación';
+                const description = post.description || 'Sin descripción.';
+                const price = Number(post.cost || 0).toFixed(2);
+                const status = post.status || 'Disponible';
+                const condition = post.condition || 'Sin especificar';
+                const category = post.category || 'Sin categoría';
+                const seller = post.user
+                    ? `${post.user.first_name ?? ''} ${post.user.last_name ?? ''}`.trim()
+                    : 'Usuario';
+
+                const rating = post.user?.average_rating ?? '{{ number_format($sellerAverageRating, 1, ".", "") }}';
+                const reviews = post.user?.reviews_count ?? '{{ $sellerReviewsCount }}';
+
+                const images = [
+                    post.photo_1_url ? `/storage/${post.photo_1_url}` : null,
+                    post.photo_2_url ? `/storage/${post.photo_2_url}` : null,
+                    post.photo_3_url ? `/storage/${post.photo_3_url}` : null
+                ].filter(Boolean);
+
+                if (detailsModalLabel) detailsModalLabel.textContent = title;
+                if (detailsDescription) detailsDescription.textContent = description;
+                if (detailsPrice) detailsPrice.textContent = `$${price}`;
+                if (detailsStatus) detailsStatus.textContent = status;
+                if (detailsCondition) detailsCondition.textContent = condition;
+                if (detailsCategory) detailsCategory.textContent = category;
+                if (detailsSeller) detailsSeller.textContent = seller;
+
+                if (detailsSellerRating) {
+                    detailsSellerRating.innerHTML = `
+                    <i class="bi bi-star-fill text-warning me-1"></i>
+                    ${escapeHtml(rating)} <span class="text-muted">(${escapeHtml(reviews)} reseñas)</span>
+                `;
+                }
+
+                if (carouselInner) carouselInner.innerHTML = '';
+                if (carouselIndicators) carouselIndicators.innerHTML = '';
+
+                images.forEach((img, index) => {
+                    if (carouselIndicators) {
+                        carouselIndicators.insertAdjacentHTML(
+                            'beforeend',
+                            `
+                        <button
+                            type="button"
+                            data-bs-target="#profilePostImagesCarousel"
+                            data-bs-slide-to="${index}"
+                            class="${index === 0 ? 'active' : ''}"
+                            ${index === 0 ? 'aria-current="true"' : ''}
+                            aria-label="Slide ${index + 1}"
+                        ></button>
+                        `
+                        );
+                    }
+
+                    if (carouselInner) {
+                        carouselInner.insertAdjacentHTML(
+                            'beforeend',
+                            `
+        <div class="carousel-item ${index === 0 ? 'active' : ''} post-carousel-item">
+            <div class="carousel-image-box">
+                <img
+                    src="${img}"
+                    alt="Imagen ${index + 1}"
+                    class="post-carousel-img"
+                >
+            </div>
+        </div>
+        `
+                        );
+                    }
+                });
+
+                const showControls = images.length > 1;
+
+                if (carouselPrev) carouselPrev.classList.toggle('d-none', !showControls);
+                if (carouselNext) carouselNext.classList.toggle('d-none', !showControls);
+                if (carouselIndicators) carouselIndicators.classList.toggle('d-none', !showControls);
+
+                if (profileDetailsModal) {
+                    profileDetailsModal.show();
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        });
+    });
     document.querySelectorAll('.open-delete-post-modal').forEach((button) => {
         button.addEventListener('click', function () {
             const postTitle = this.dataset.postTitle || 'esta publicación';
@@ -124,8 +257,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const postsFilterForm = document.getElementById('postsFilterForm');
     const postSearch = document.getElementById('postSearch');
-
     const postsSearchBtn = document.getElementById('postsSearchBtn');
+
     const requestSearch = document.getElementById('requestSearch');
     const requestsSearchBtn = document.getElementById('requestsSearchBtn');
 
@@ -150,21 +283,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updatePostsSearchButtonState() {
         if (!postSearch || !postsSearchBtn) return;
-
         const hasText = postSearch.value.trim().length > 0;
         postsSearchBtn.disabled = !hasText;
     }
 
     function updateRequestsSearchButtonState() {
         if (!requestSearch || !requestsSearchBtn) return;
-
         const hasText = requestSearch.value.trim().length > 0;
         requestsSearchBtn.disabled = !hasText;
     }
 
     function filterPosts(resetPage = false) {
         const searchValue = postSearch ? postSearch.value.trim().toLowerCase() : '';
-        const sportValue = sportFilter ? sportFilter.value : '';
+        const sportValue = sportFilter ? sportFilter.value.toLowerCase() : '';
         const priceValue = priceFilter ? priceFilter.value : '';
 
         const allCards = Array.from(document.querySelectorAll('.post-card-wrapper'));
@@ -173,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function () {
         allCards.forEach((card) => {
             const title = (card.dataset.title || '').toLowerCase();
             const description = (card.dataset.description || '').toLowerCase();
-            const sport = card.dataset.sport || '';
+            const sport = (card.dataset.sport || '').toLowerCase();
             const price = card.dataset.price || '0';
 
             const matchesSearch =
@@ -193,10 +324,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (resetPage) {
             currentPostsPage = 1;
-        }
-//Odd
-        if (requestSearch) {
-            requestSearch.addEventListener('input', updateRequestsSearchButtonState);
         }
 
         if (postsEmptyState) {
@@ -247,6 +374,10 @@ document.addEventListener('DOMContentLoaded', function () {
             filterPosts();
             updatePostsSearchButtonState();
         });
+    }
+
+    if (requestSearch) {
+        requestSearch.addEventListener('input', updateRequestsSearchButtonState);
     }
 
     if (clearPostsFilters) {
