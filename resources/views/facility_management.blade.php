@@ -1211,27 +1211,39 @@
     </script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
 
-            // 🔹 Restore scroll after reload
-            const savedScroll = sessionStorage.getItem('facilityScroll');
+        // 🔹 Restore scroll
+        const savedScroll = sessionStorage.getItem('facilityScroll');
 
-            if (savedScroll) {
-                window.scrollTo(0, parseInt(savedScroll));
-                sessionStorage.removeItem('facilityScroll');
-            }
+        if (savedScroll) {
+            window.scrollTo({
+                top: parseInt(savedScroll),
+                behavior: 'smooth'
+            });
+            sessionStorage.removeItem('facilityScroll');
+        }
 
-            // 🔹 Save scroll before submitting filters
-            const filterForm = document.getElementById('facilityCostFilterForm');
+        // 🔹 Save scroll on filter submit
+        const filterForm = document.getElementById('facilityCostFilterForm');
 
-            if (filterForm) {
-                filterForm.addEventListener('submit', () => {
-                    sessionStorage.setItem('facilityScroll', window.scrollY);
-                });
-            }
+        if (filterForm) {
+            filterForm.addEventListener('submit', () => {
+                sessionStorage.setItem('facilityScroll', window.scrollY);
+            });
+        }
 
-        });
-        </script>
+        // 🔹 Save scroll on clear filters
+        const clearBtn = document.getElementById('clearFacilityFilters');
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                sessionStorage.setItem('facilityScroll', window.scrollY);
+            });
+        }
+
+    });
+    </script>
 
     <style>
         .classroom-name {
