@@ -215,14 +215,22 @@
                                     <div class="marketplace-card-top">
 
                                         <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h5 class="fw-bold mb-0">{{ $post->title }}</h5>
 
+                                            <h5
+                                                class="fw-bold mb-0 marketplace-card-title"
+                                                title="{{ $post->title }}"
+                                            >
+                                                {{ $post->title }}
+                                            </h5>
                                             <span class="label-badge badge-available">
             {{ $post->status ?? 'Disponible' }}
         </span>
                                         </div>
 
-                                        <p class="text-muted mb-3">
+                                        <p
+                                            class="text-muted mb-3 marketplace-card-description"
+                                            title="{{ $post->description ?: 'Sin descripción.' }}"
+                                        >
                                             {{ $post->description ?: 'Sin descripción.' }}
                                         </p>
 
