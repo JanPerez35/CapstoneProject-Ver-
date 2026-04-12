@@ -9,20 +9,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const counterEl = document.getElementById('chatMessageCounter');
 
     const messagesView = document.getElementById('messagesView');
-    const chatParticipantName = document.getElementById('chatParticipantName');
-    const chatPostSummary = document.getElementById('chatPostSummary');
     const chatHeaderParticipantName = document.getElementById('chatHeaderParticipantName');
     const chatHeaderPostSummary = document.getElementById('chatHeaderPostSummary');
     const chatHeaderParticipantInitial = document.getElementById('chatHeaderParticipantInitial');
 
     const messagesSearchInput = document.getElementById('messagesSearchInput');
     const chatListContainer = document.getElementById('chatListContainer');
-    const chatListItem = document.getElementById('chatListItem');
     const chatSearchEmptyState = document.getElementById('chatSearchEmptyState');
 
+    const messagesVolverBtn = document.getElementById('messagesVolverBtn');
     const postDetailsModal = document.getElementById('postDetailsModal');
     const postDetailsModalLabel = document.getElementById('postDetailsModalLabel');
     const postDetailsDescription = document.getElementById('postDetailsDescription');
+    const postDetailsRatingStars = document.getElementById('postDetailsRatingStars');
+    const postDetailsRatingValue = document.getElementById('postDetailsRatingValue');
+    const postDetailsReviewCount = document.getElementById('postDetailsReviewCount');
     const postDetailsPrice = document.getElementById('postDetailsPrice');
     const postDetailsStatus = document.getElementById('postDetailsStatus');
     const postDetailsCondition = document.getElementById('postDetailsCondition');
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ratingSentToastEl = document.getElementById('ratingSentToast');
     const reportSentToastEl = document.getElementById('reportSentToast');
 
+
     const ratingSentToast = ratingSentToastEl
         ? bootstrap.Toast.getOrCreateInstance(ratingSentToastEl)
         : null;
@@ -65,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeReportModalBtn = document.getElementById('closeReportModalBtn');
     const cancelReportConfirmModal = document.getElementById('cancelReportConfirmModal');
     const confirmCancelReport = document.getElementById('confirmCancelReport');
-    const reportUserNameText = document.getElementById('reportUserNameText');
+    const reportUserText = document.getElementById('reportUserText');
 
     if (!input || !errorEl || !sendBtn || !messagesContainer) return;
 
@@ -80,6 +82,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let isReportDirty = false;
     let allowReportClose = false;
     let reportedUserId = null;
+
+    if (messagesVolverBtn) {
+        messagesVolverBtn.addEventListener('click', () => {
+            const returnPostId = messagesVolverBtn.dataset.returnPostId;
+
+            if (returnPostId) {
+                sessionStorage.setItem('marketplaceReturnPostId', returnPostId);
+            } else {
+                sessionStorage.removeItem('marketplaceReturnPostId');
+            }
+        });
+    }
+
+    if (!messagesView?.dataset.chatId) {
+        chatHeaderParticipantInitial?.classList.add('d-none');
+    }
+
+    if (!messagesView?.dataset.chatId && openChatPostDetailsBtn) {
+        openChatPostDetailsBtn.disabled = true;
+    }
 
     function truncateText(text, maxLength = 40) {
         if (!text) return '';
@@ -218,19 +240,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const isMine = messageObj.isMine === true;
 
         const alignment = isMine ? 'justify-content-end' : 'justify-content-start';
-        const bg = isMine ? 'bg-success text-white' : 'bg-light text-dark';
+        const bubbleClass = isMine ? 'bg-success-subtle text-dark border border-success-subtle' : 'bg-success-subtle text-dark border border-success-subtle';
+        const timeClass = 'small mt-1 text-end text-muted';
 
         messagesContainer.insertAdjacentHTML('beforeend', `
             <div class="d-flex ${alignment} mb-3">
                 <div
-                    class="${bg} px-3 py-2 rounded-4 shadow-sm"
+                    class="${bubbleClass} px-3 py-2 rounded-4 shadow-sm"
                     style="max-width: 75%; word-break: break-word;"
-                    data-message-id="${messageObj.id}"
-                    data-conversation-id="${messageObj.conversationId}"
-                    data-sender-id="${messageObj.senderId}"
+                    data-message-id="${messageObj.id ?? ''}"
+                    data-conversation-id="${messageObj.conversationId ?? ''}"
+                    data-sender-id="${messageObj.senderId ?? ''}"
                 >
                     <div>${escapeHtml(messageObj.message)}</div>
-                    <div class="small text-white-50 mt-1 text-end">${messageObj.time}</div>
+                    <div class=" ${timeClass}">${messageObj.time}</div>
                 </div>
             </div>
         `);
@@ -309,21 +332,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const sellerInitial = sellerName.charAt(0).toUpperCase() || 'U';
 
             // Header
-            if (chatParticipantName) {
-                chatParticipantName.textContent = sellerName;
-            }
 
             if (chatHeaderParticipantName) {
                 chatHeaderParticipantName.textContent = sellerName;
             }
-            if (chatHeaderParticipantInitial) {
-                chatHeaderParticipantInitial.textContent = sellerInitial;
+            if (chatHeaderParticipantInitial && sellerName) {
+                chatHeaderParticipantInitial.textContent = sellerName.charAt(0).toUpperCase();
             }
 
-            if (chatPostSummary) {
-                chatPostSummary.textContent = truncateText(postTitle, 35);
-                chatPostSummary.title = postTitle;
-            }
 
             if (chatHeaderPostSummary) {
                 chatHeaderPostSummary.textContent = truncateText(postTitle, 60);
@@ -345,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const query = messagesSearchInput.value.trim().toLowerCase();
         const items = chatListContainer.querySelectorAll('.chat-list-item');
 
-        
+
         let visibleCount = 0;
 
         items.forEach((item) => {
@@ -362,6 +378,29 @@ document.addEventListener('DOMContentLoaded', () => {
         if (chatSearchEmptyState) {
             chatSearchEmptyState.classList.toggle('d-none', visibleCount !== 0);
         }
+    }
+
+    function buildStarsHTML(value) {
+        const rating = Number(value) || 0;
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+        let starsHTML = '';
+
+        for (let i = 0; i < fullStars; i++) {
+            starsHTML += '<i class="bi bi-star-fill"></i>';
+        }
+
+        if (hasHalfStar) {
+            starsHTML += '<i class="bi bi-star-half"></i>';
+        }
+
+        for (let i = 0; i < emptyStars; i++) {
+            starsHTML += '<i class="bi bi-star"></i>';
+        }
+
+        return starsHTML;
     }
 
     function renderPostDetailsCarousel(images = []) {
@@ -418,15 +457,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (post.user?.id) {
             reportedUserId = post.user.id;
         }
+
         if (!post) return;
 
-        console.log('Populando modal con post:', post);
         if (postDetailsModalLabel) {
-            postDetailsModalLabel.textContent = `${post.title || 'Detalle de la publicación'}`;
+            postDetailsModalLabel.textContent = post.title || 'Detalle de la publicación';
         }
 
         if (postDetailsDescription) {
-            const description = `${post.description || ''}`.trim();
+            const description = (post.description || '').trim();
 
             if (description) {
                 postDetailsDescription.textContent = description;
@@ -436,6 +475,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 postDetailsDescription.classList.add('d-none');
             }
         }
+
+        if (postDetailsRatingStars) {
+            postDetailsRatingStars.innerHTML = buildStarsHTML(post.rating);
+        }
+
+        if (postDetailsRatingValue) {
+            postDetailsRatingValue.textContent = post.rating || '0.0';
+        }
+
+        if (postDetailsReviewCount) {
+            postDetailsReviewCount.textContent = `(${post.reviews || 0})`;
+        }
+
+        if (postDetailsPrice) {
+            postDetailsPrice.textContent = `$${post.cost || '0.00'}`;
+        }
+
+        if (postDetailsSeller) {
+            postDetailsSeller.textContent = post.user?.name || 'Usuario';
+        }
+
+        if (reportUserText) {
+            reportUserText.textContent = `Reportar a ${post.user?.name || 'Usuario'} por comportamiento sospechoso`;
+        }
+
+        if (postDetailsSellerRating) {
+            postDetailsSellerRating.innerHTML =
+                `<i class="bi bi-star-fill text-warning me-1"></i> ${post.rating || '0.0'} <span class="text-muted">(${post.reviews || 0} reseñas)</span>`;
+        }
+
+        if (postDetailsStatus) {
+            postDetailsStatus.textContent = post.status || 'Disponible';
+            postDetailsStatus.className = 'label-badge badge-available';
+        }
+
+        if (postDetailsCondition) {
+            postDetailsCondition.textContent = post.condition || 'Sin especificar';
+            postDetailsCondition.className = 'label-badge badge-available';
+        }
+
+        if (postDetailsCategory) {
+            postDetailsCategory.textContent = post.category || 'Sin categoría';
+            postDetailsCategory.className = 'label-badge badge-available';
+        }
+
+        const images = [
+            post.photo_1_url,
+            post.photo_2_url,
+            post.photo_3_url
+        ].filter(Boolean).map(img => '/storage/' + img);
+
+        renderPostDetailsCarousel(images);
+    }
+
+
 
         // if (postDetailsRatingStars) {
         //     postDetailsRatingStars.innerHTML = buildStarsHTML(post.rating);
@@ -448,40 +542,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // if (postDetailsReviewCount) {
         //     postDetailsReviewCount.textContent = `(${post.reviews || 0})`;
         // }
-
-        if (postDetailsPrice) {
-            postDetailsPrice.textContent = `${post.cost || '0.00'}`;
-        }
-
-        if (postDetailsStatus) {
-            postDetailsStatus.textContent = `${post.status || 'Disponible'}`;
-        }
-
-        if (postDetailsCondition) {
-            postDetailsCondition.textContent = `${post.condition || 'Sin especificar'}`;
-        }
-
-        if (postDetailsSeller) {
-            postDetailsSeller.textContent = `${post.user?.name || 'Usuaaaaario'}`;
-        }
-
-        if (postDetailsSellerRating) {
-            postDetailsSellerRating.innerHTML =
-                `<i class="bi bi-star-fill text-warning me-1"></i> ${post.rating || '0.0'} <span class="text-muted">(${post.reviews || 0} reseñas)</span>`;
-        }
-
-        if (postDetailsCategory) {
-            postDetailsCategory.textContent = `${post.category || 'Sin categoría'}`;
-        }
-
-        const images = [
-            post.photo_1_url,
-            post.photo_2_url,
-            post.photo_3_url
-        ].filter(Boolean).map(img => '/storage/' + img);
-
-        renderPostDetailsCarousel(images);
-    }
 
     function initializeSellerRating() {
         if (!ratingContainer || !ratingInput || !ratingText) return;
@@ -556,7 +616,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (showError) {
             if (!isValid) {
                 reportReason.classList.add('is-invalid');
-                reportReasonError.textContent = 'Selecciona una razón.';
+                reportReasonError.textContent = 'Seleciona una razón.';
             } else {
                 reportReason.classList.remove('is-invalid');
                 reportReasonError.textContent = '';
@@ -667,6 +727,18 @@ async function loadMessages(chatId) {
         const messages = await response.json();
         messagesContainer.innerHTML = '';
 
+        if (!messages.length) {
+            if (emptyState) {
+                emptyState.classList.remove('d-none');
+            }
+            return;
+        }
+
+        if (emptyState) {
+            emptyState.classList.add('d-none');
+        }
+
+
         messages.forEach(msg => {
             renderMessage({
                 message: msg.content,
@@ -740,6 +812,35 @@ async function loadMessages(chatId) {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
 
+                document.querySelectorAll('.chat-list-item').forEach(chat => {
+                    chat.classList.remove('bg-success-subtle', 'border-success', 'shadow-sm');
+                    chat.classList.add('bg-white', 'border-success-subtle');
+                });
+
+                item.classList.remove('bg-white', 'border-success-subtle');
+                item.classList.add('bg-success-subtle', 'border-success', 'shadow-sm');
+
+                const isMobile = window.innerWidth < 768;
+
+                document.querySelectorAll('.chat-list-item').forEach(chat => {
+                    chat.classList.remove('d-none-selected-mobile');
+                });
+
+                if (isMobile) {
+                    item.classList.add('d-none-selected-mobile');
+
+                    const sidebar = document.querySelector('.messages-sidebar');
+                    const chatColumn = document.querySelector('.messages-chat-column');
+
+                    if (sidebar) {
+                        sidebar.classList.add('d-none');
+                    }
+
+                    if (chatColumn) {
+                        chatColumn.classList.remove('mobile-hidden');
+                    }
+                }
+
                 const chatId = item.dataset.chatId;
                 const postId = item.dataset.postId;
                 const userName = item.dataset.userName;
@@ -748,6 +849,7 @@ async function loadMessages(chatId) {
                 chatHeaderParticipantName.textContent = userName;
                 chatHeaderPostSummary.textContent = postTitle;
                 chatHeaderParticipantInitial.textContent = userName.charAt(0).toUpperCase();
+                chatHeaderParticipantInitial.classList.remove('d-none');
 
                 if (!chatId) {
                     console.error('No hay chat_id');
@@ -760,6 +862,11 @@ async function loadMessages(chatId) {
 
                 messagesView.dataset.chatId = chatId;
                 messagesView.dataset.postId = postId;
+
+                if (openChatPostDetailsBtn) {
+                    openChatPostDetailsBtn.disabled = false;
+                    openChatPostDetailsBtn.dataset.postId = postId || '';
+                }
 
                 loadMessages(chatId);
 
@@ -777,6 +884,30 @@ async function loadMessages(chatId) {
                 console.log('Post relacionado:', postId);
             });
         });
+    }
+
+    const backBtn = document.getElementById('backToChatsBtn');
+
+    if (backBtn) {
+        backBtn.addEventListener('click', () => {
+            const sidebar = document.querySelector('.messages-sidebar');
+            const chatColumn = document.querySelector('.messages-chat-column');
+
+            if (sidebar) {
+                sidebar.classList.remove('d-none');
+            }
+
+            if (window.innerWidth < 768 && chatColumn) {
+                chatColumn.classList.add('mobile-hidden');
+            }
+        });
+    }
+
+    if (!chatId && window.innerWidth < 768) {
+        const chatColumn = document.querySelector('.messages-chat-column');
+        if (chatColumn) {
+            chatColumn.classList.add('mobile-hidden');
+        }
     }
 
     input.addEventListener('input', () => {
@@ -860,10 +991,16 @@ async function loadMessages(chatId) {
     if (reportDescription) {
         reportDescription.addEventListener('input', () => {
             const value = reportDescription.value;
+            const currentLength = value.length;
 
-            if (value.length > MAX_REPORT_LENGTH) {
+            if (currentLength > MAX_REPORT_LENGTH) {
                 reportDescription.value = value.slice(0, MAX_REPORT_LENGTH);
-                validateReportDescription(true);
+                reportDescription.classList.add('is-invalid');
+                reportDescriptionError.textContent = `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres. No puedes escribir más.`;
+            } else if (currentLength === MAX_REPORT_LENGTH) {
+                reportDescription.classList.add('is-invalid');
+                reportDescriptionError.textContent =
+                    `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres, puedes aún someter esa cantidad.`;
             } else {
                 validateReportDescription(true);
             }
@@ -875,7 +1012,15 @@ async function loadMessages(chatId) {
         reportDescription.addEventListener('change', updateReportDirtyState);
 
         reportDescription.addEventListener('blur', () => {
-            validateReportDescription(true);
+            const value = reportDescription.value;
+
+            if (value.length === MAX_REPORT_LENGTH) {
+                reportDescription.classList.add('is-invalid');
+                reportDescriptionError.textContent =
+                    `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres, puedes aún someter esa cantidad.`;
+            } else{
+                validateReportDescription(true);
+            }
             updateReportButtonState();
         });
     }
@@ -893,7 +1038,7 @@ async function loadMessages(chatId) {
             }
 
             try {
-                
+
                 await fetch('/reports', {
                     method: 'POST',
                     headers: {
@@ -922,7 +1067,7 @@ async function loadMessages(chatId) {
                         postModalInstance.show();
                     }, 300);
                 }
-            } 
+            }
             catch (error) {
                 console.error('Error enviando reporte:', error);
             }
@@ -991,6 +1136,10 @@ async function loadMessages(chatId) {
                 }, 200);
             }
         });
+    }
+
+    if (!chatId && emptyState) {
+        emptyState.classList.remove('d-none');
     }
 
     if (chatId) {

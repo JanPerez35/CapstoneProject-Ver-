@@ -54,7 +54,9 @@ class ChatController extends Controller
         );
 
         return redirect()->route('my_messages', [
-            'chat_id' => $chat->id
+            'chat_id' => $chat->id,
+            'post_id' => $postId,
+            'return_to' => route('kinemarket'),
         ]);
     }
 

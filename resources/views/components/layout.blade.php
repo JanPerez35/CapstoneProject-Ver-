@@ -42,6 +42,9 @@
     data-reopen-cart-modal="{{ session('reopen_cart_modal') ? '1' : '0' }}"
     data-current-user-id="{{ auth()->id() ?? '' }}"
 
+
+    data-unread-count="{{ $totalUnreadMessages ?? 0 }}"
+
 >
 <div class="container-fluid px-0">
     <header class="d-flex flex-wrap align-items-center justify-content-between py-2 px-2 border-bottom bg-light">
@@ -69,8 +72,15 @@
                 </a>
 
                 <a href="{{ route('my_messages', ['return_to' => url()->full()]) }}"
-                   class="btn {{ request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success' }}">
+                   class="btn position-relative {{ request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success' }}">
                     <i class="bi bi-chat-left-text"></i> Mis Chats
+
+                    <span
+                        id="miChatsUnreadBadge"
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
+                    >
+                        0
+                    </span>
                 </a>
 
                 <button
