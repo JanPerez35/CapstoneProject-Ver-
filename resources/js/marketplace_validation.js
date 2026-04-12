@@ -133,6 +133,7 @@ async function fetchPosts() {
 
     allMarketplacePosts = data;
     renderMarketplace();
+    openReturnedPostIfNeeded();
 }
 
 // Helpers
@@ -377,10 +378,15 @@ function populatePostDetailsModal(post) {
                 });
 
                 if (response.redirected) {
-                    window.location.href = response.url;
+                    const redirectUrl = new URL(response.url, window.location.origin);
+
+                    redirectUrl.searchParams.set('return_to', '/kinemarket');
+                    redirectUrl.searchParams.set('post_id', String(post.id));
+
+                    window.location.href = redirectUrl.toString();
                 }
 
-            } 
+            }
             catch (error) {
                 console.error('Error creando chat:', error);
             }
@@ -457,15 +463,14 @@ function populatePostDetailsModal(post) {
 }
 
 function openReturnedPostIfNeeded() {
-    const returnPostIdInput = document.getElementById('returnPostId');
-    if (!returnPostIdInput) return;
-
-    const returnPostId = Number(returnPostIdInput.value);
-    if (!returnPostId) return;
+    const storedPostId = Number(sessionStorage.getItem('marketplaceReturnPostId'));
+    if (!storedPostId) return;
 
     const matchedPost = allMarketplacePosts.find(
-        (post) => Number(post.id) === returnPostId
+        (post) => Number(post.id) === storedPostId
     );
+
+    sessionStorage.removeItem('marketplaceReturnPostId');
 
     if (!matchedPost || !postDetailsModal) return;
 
@@ -474,10 +479,11 @@ function openReturnedPostIfNeeded() {
     const modalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
     modalInstance.show();
 
-    const matchingCard = document.querySelector(`.marketplace-card[data-id="${returnPostId}"]`);
+    const matchingCard = document.querySelector(`.marketplace-card[data-id="${storedPostId}"]`);
     if (matchingCard) {
         matchingCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+
 }
 
 
@@ -550,6 +556,7 @@ if (deletePostModal && confirmDeletePost) {
         });
 
         await fetchPosts();
+
         const modalInstance = bootstrap.Modal.getOrCreateInstance(deletePostModal);
         modalInstance.hide();
 
@@ -1642,10 +1649,9 @@ if (publishBtn && createPostForm) {
             body: formData
         });
 
-        await fetchPosts();
 
         currentMarketplacePage = 1;
-        renderMarketplace();
+        await fetchPosts();
 
         const createModalInstance = bootstrap.Modal.getOrCreateInstance(createPostModal);
         allowCreatePostClose = true;
@@ -1786,13 +1792,13 @@ if (submitReportBtn) {
                         postModalInstance.show();
                     }, 300);
                 }
-            
+
             }
             catch (error) {
                 console.error('Error enviando reporte:', error);
             }
         });
-    } 
+    }
 
 // Report modal behavior
 if (reportUserModal) {
@@ -1864,4 +1870,3 @@ initializeSellerRating();
 updatePublishButtonState();
 updateReportButtonState();
 fetchPosts();
-openReturnedPostIfNeeded();

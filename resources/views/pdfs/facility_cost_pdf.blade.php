@@ -162,14 +162,14 @@
     @forelse($items as $item)
         <tr>
             <td>{{ \Carbon\Carbon::parse($item->event_date)->format('m/d/Y') }}</td>
-            <td class="text-left">{{ $item->responsable }}</td>
+            <td>{{ $item->responsable }}</td>
             <td>{{ $item->facilityCost->classroom_name ?? 'N/A' }}</td>
             <td class="text-left">{{ $item->event_description }}</td>
             <td>{{ \Carbon\Carbon::parse($item->start_time)->format('h:i A') }}</td>
             <td>{{ \Carbon\Carbon::parse($item->end_time)->format('h:i A') }}</td>
             <td>{{ number_format($item->hours_used, 2) }}</td>
             <td>{{ translatePeriodType($item->period_type) }}</td>
-            <td class="text-left">{{ translateServices($item->services) }}</td>
+            <td>{{ translateServices($item->services) }}</td>
             <td class="text-right">${{ number_format($item->calculated_cost, 2) }}</td>
 
         </tr>

@@ -151,7 +151,12 @@
                 <table class="table align-middle mb-0" id="accessLogsTable">
                     <thead class="bg-light">
                     <tr>
-                        <th class="px-4 py-3 fw-bold">Marca de Tiempo</th>
+                        <th class="px-4 py-3 fw-bold text-nowrap" style="min-width: 220px;">
+                            Marca de Tiempo
+                            <div class="small mt-1">
+                                (mm/dd/yyyy) (hh:mm AM/PM)
+                            </div>
+                        </th>
                         <th class="px-4 py-3 fw-bold">Usuario</th>
                         <th class="px-4 py-3 fw-bold">Rol</th>
                         <th class="px-4 py-3 fw-bold">Evento</th>

@@ -4,8 +4,13 @@
     @vite(['resources/js/pages/messages_profanity.js', 'resources/js/messages_validation.js', 'resources/js/echo.js'])
 
     @php
-        $volverUrl = request('return_to', route('kinemarket'));
         $chatPostId = request('post_id');
+         $volverBaseUrl = request('return_to', route('kinemarket'));
+
+          $volverUrl = $chatPostId
+                 ? $volverBaseUrl . (str_contains($volverBaseUrl, '?') ? '&' : '?') . 'post_id=' . $chatPostId
+                : $volverBaseUrl;
+
     @endphp
     <style>
         .messages-search-group {
@@ -34,6 +39,131 @@
             border-color: #86b7fe;
             box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
         }
+
+        .messages-card {
+            height: calc(100vh - 140px);
+            min-height: 600px;
+        }
+
+        .messages-sidebar,
+        .messages-chat-column {
+            height: 100%;
+        }
+
+        .messages-container {
+            min-height: 0;
+        }
+
+        .chat-input-area {
+            background: #fff;
+            flex-shrink: 0;
+        }
+
+        .min-w-0 {
+            min-width: 0;
+        }
+
+        @media (max-width: 767.98px) {
+            .messages-card {
+                height: auto;
+                min-height: 0;
+                border-radius: 1rem;
+            }
+
+            .messages-sidebar,
+            .messages-chat-column {
+                height: auto;
+                max-height: none;
+                min-height: 0;
+            }
+
+            .messages-sidebar {
+                overflow: visible;
+                border-right: 0 !important;
+                border-bottom: 1px solid var(--bs-border-color);
+            }
+
+            .messages-chat-column {
+                min-height: 70vh;
+            }
+
+            #chatListContainer {
+                max-height: 280px;
+                overflow-y: auto;
+            }
+
+            #chatMessagesContainer {
+                max-height: 38vh;
+                min-height: 220px;
+            }
+
+            .chat-input-area {
+                position: sticky;
+                bottom: 0;
+                z-index: 2;
+                background: #fff;
+            }
+
+            #openChatPostDetailsBtn {
+                width: 100%;
+            }
+
+            .messages-sidebar .p-4.border-bottom {
+                padding-bottom: 1rem !important;
+            }
+
+            .messages-chat-column > .border-bottom {
+                padding-top: 1rem !important;
+                padding-bottom: 1rem !important;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .chat-input-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-counter-wrap {
+                justify-self: end;
+            }
+        }
+
+        .messages-person-item {
+            border-bottom: 1px solid #d6dde5;
+            background-color: #fff;
+            transition: background-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .messages-person-item:hover {
+            background-color: #f8fafc;
+        }
+
+        #chatListContainer .text-decoration-none:last-child .messages-person-item {
+            border-bottom: 0;
+        }
+
+        @media (max-width: 767.98px) {
+            .d-none-selected-mobile {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .mobile-hidden {
+                display: none !important;
+            }
+        }
+
+        #chatListContainer {
+            overflow-y: auto;
+            max-height: calc(100vh - 260px);
+        }
+
+        .messages-sidebar {
+            display: flex;
+            flex-direction: column;
+        }
+
     </style>
 
     <div
@@ -42,14 +172,15 @@
         data-chat-id="{{ request('chat_id', '') }}"
         data-current-user-id="{{ auth()->id() }}"
         data-post-id="{{ $selectedChat?->post_id ?? '' }}"
-        data-current-user-id="{{ auth()->id() ?? '' }}"
     >
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="height: 650px;">
-            <div class="row g-0" style="height: 100%;">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden messages-card">
+            <div class="row g-0 h-100">
 
-                <div class="col-md-4 border-end">
+                <div class="col-md-4 border-end messages-sidebar">
                     <div class="p-4 border-bottom">
-                        <a href="{{ $volverUrl }}" class="btn btn-outline-secondary rounded-3 px-4">
+                        <a href="{{ request('return_to', route('kinemarket')) }}" class="btn btn-outline-secondary rounded-3 px-4"  id="messagesVolverBtn"
+                           data-return-post-id="{{ request('post_id', '') }}">
+
                             <i class="bi bi-arrow-left me-2"></i>Volver
                         </a>
 
@@ -66,24 +197,25 @@
                                 type="text"
                                 id="messagesSearchInput"
                                 class="form-control border-start-0"
-                                placeholder="Buscar chats..."
+                                placeholder="Buscar conversación..."
                                 autocomplete="off"
                             >
                         </div>
                     </div>
 
-                   <div id="chatListContainer">
+                   <div id="chatListContainer" class="flex-grow-1">
 
                        @foreach($chats as $chat)
-                        <a 
+                        <a
                             href="{{ route('my_messages', [
                                 'chat_id' => $chat->id,
-                                'post_id' => $chat->post_id
+                                'post_id' => $chat->post_id,
+                                 'return_to' => request('return_to', route('kinemarket'))
                             ]) }}"
                             class="text-decoration-none text-dark"
                         >
                             <div
-                                class="p-4 border-start border-4 border-success chat-list-item"
+                                class="p-4 border border-3 chat-list-item {{ request('chat_id') == $chat->id ? 'bg-success-subtle border-success shadow-sm' : 'bg-white border-success-subtle' }}"
                                 data-chat-id="{{ $chat->id }}"
                                 data-post-id="{{ $chat->post_id }}"
                                 data-user-name="{{ $chat->otherUser()->name ?? 'Usuario' }}"
@@ -109,7 +241,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>   
+                            </div>
                         </a>
                         @endforeach
 
@@ -124,67 +256,100 @@
                     </div>
                 </div>
 
-                <div class="col-md-8 d-flex flex-column" style="height: 100%;">
-                    <div class="p-4 border-bottom">
+                <div class="col-12 col-md-8 d-flex flex-column messages-chat-column">
+
+                    <!--Header-->
+                    <div class="p-3 p-md-4 border-bottom">
                         <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-                            <div class="d-flex align-items-center">
+                            <button
+                                type="button"
+                                class="btn btn-outline-secondary d-md-none"
+                                id="backToChatsBtn"
+                            >
+                                <i class="bi bi-arrow-left"></i>
+                            </button>
+
+                            <div class="d-flex align-items-center min-w-0">
+
                                 <div
-                                    class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3 chat-user-initial"
+                                    class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3 flex-shrink-0 chat-user-initial {{ $selectedChat ? '' : 'd-none' }}"
                                     style="width: 48px; height: 48px;"
                                     id="chatHeaderParticipantInitial"
                                 >
                                     {{ strtoupper(substr($selectedChat?->otherUser()->name ?? 'U', 0, 1)) }}
                                 </div>
 
-                                <div>
-                                    <h4 class="mb-1 fw-bold" id="chatHeaderParticipantName">
+                                <div class="min-w-0">
+                                    <h4 class="mb-1 fw-bold text-truncate" id="chatHeaderParticipantName">
                                         {{ $selectedChat?->otherUser()->name ?? 'Selecciona un chat' }}
                                     </h4>
-                                    <div class="text-muted" id="chatHeaderPostSummary">
+
+                                    <div class="text-muted text-truncate" id="chatHeaderPostSummary">
                                         {{ $selectedChat?->post->title ?? '' }}
                                     </div>
                                 </div>
+
                             </div>
 
                             <button
                                 type="button"
-                                class="btn btn-success rounded-3 px-4"
+                                class="btn btn-success rounded-3 px-4 flex-shrink-0"
                                 id="openChatPostDetailsBtn"
                                 data-bs-toggle="modal"
                                 data-bs-target="#postDetailsModal"
                                 data-post-id="{{ request('post_id', '') }}"
+                                {{ $selectedChat ? '' : 'disabled' }}
                             >
                                 <i class="bi bi-eye me-2"></i> Ver Publicación
-                            </button>   
+                            </button>
+
                         </div>
                     </div>
-                <div id="chatMessagesContainer" class="flex-grow-1 p-4 overflow-auto">
-                    <div id="chatEmptyState" class="text-center text-muted">
-                        No hay mensajes aún
-                    </div>
-                </div>
 
-                <div class="p-4 border-top">
-                    <div class="input-group">
-                        <input
-                            id="chatMessageInput"
-                            type="text"
-                            class="form-control form-control-lg"
-                            placeholder="Escribe un mensaje..."
-                        >
-                        <button id="sendChatMessageBtn" class="btn btn-success">
-                            <i class="bi bi-send"></i>
-                        </button>
-                    </div>
-                </div>
-                    </div>
+                    <!--Messages-->
+                    <div id="chatMessagesContainer" class="flex-grow-1 p-4 overflow-auto messages-container">
 
-                    <div class="p-4 border-top">
-                        <div class="d-flex justify-content-between mt-1">
-                            <div class="invalid-feedback d-block" id="chatMessageError"></div>
-                            <small id="chatMessageCounter" class="text-muted d-block text-end">0 / 255</small>
+                        <div id="chatEmptyState" class="d-none">
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <div class="card border-0 shadow-sm rounded-0">
+                                        <div class="card-body py-5 text-center">
+                                            <i class="bi bi-chat-dots fs-1 text-muted"></i>
+                                            <h4 class="fw-bold mt-3">No hay mensajes aún.</h4>
+                                            <p class="text-muted mb-0">Selecciona un chat para comenzar la conversación.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                     </div>
+
+                    <!--Input-->
+                    <div class="p-3 p-md-4 border-top chat-input-area">
+
+                                <div class="input-group">
+                                    <input
+                                        id="chatMessageInput"
+                                        type="text"
+                                        class="form-control form-control-lg"
+                                        placeholder="Escribe un mensaje..."
+                                    >
+
+                                    <button id="sendChatMessageBtn" class="btn btn-success">
+                                        <i class="bi bi-send"></i>
+                                    </button>
+                                </div>
+
+                                <div class="position-relative mt-2" style="min-height: 1.5rem;">
+                                    <div class="invalid-feedback d-block m-0 pe-5" id="chatMessageError"></div>
+                                    <small id="chatMessageCounter" class="text-muted position-absolute end-0 top-0 text-end">
+                                        0 / 255
+                                    </small>
+                                </div>
+
+                    </div>
+
                 </div>
 
                 <div class="toast-container position-fixed bottom-0 start-0 p-3">
@@ -200,16 +365,17 @@
                             <div class="toast-body fw-semibold">
                                 Se detectó lenguaje inapropiado. Revisa el mensaje.
                             </div>
-                            <button
+                                <button
                                 type="button"
                                 class="btn-close me-2 m-auto"
                                 data-bs-dismiss="toast"
                                 aria-label="Cerrar"
-                            ></button>
-                        </div>
+                                ></button>
+                            </div>
+                         </div>
                     </div>
-                </div>
 
+                 </div>
             </div>
         </div>
     </div>
@@ -230,6 +396,7 @@
                         aria-label="Cerrar"
                     ></button>
                 </div>
+
 
                 <div class="modal-body px-4 pt-2 pb-4 post-details-body">
                     <div id="postImagesCarousel" class="carousel slide mb-4">
@@ -273,8 +440,7 @@
                         <div class="col-6 text-muted">Estado:</div>
                         <div class="col-6 text-end">
                             <span
-                                class="badge rounded-0 px-3 py-2"
-                                style="background-color:#6FC21F; color:white;"
+                                class="label-badge badge-available"
                                 id="postDetailsStatus"
                             >
                                 Disponible
@@ -284,8 +450,7 @@
                         <div class="col-6 text-muted">Condición:</div>
                         <div class="col-6 text-end">
                             <span
-                                class="badge rounded-0 px-3 py-2"
-                                style="background-color:#6FC21F; color:white;"
+                                class="label-badge badge-available"
                                 id="postDetailsCondition"
                             >
                                 Sin especificar
@@ -304,8 +469,7 @@
                         <div class="col-6 text-muted">Categoría:</div>
                         <div class="col-6 text-end">
                             <span
-                                class="badge rounded-0 px-3 py-2"
-                                style="background-color:#6FC21F; color:white;"
+                                class="label-badge badge-available"
                                 id="postDetailsCategory"
                             >
                                 Sin categoría
@@ -365,8 +529,8 @@
     <div class="modal fade" id="reportUserModal" tabindex="-1" aria-labelledby="reportUserModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow overflow-hidden">
-                <div class="modal-header border-0 pb-0 position-relative">
-                    <div class="w-100 pe-5">
+                <div class="modal-header border-0 pt-4 px-4 pb-2 align-items-start position-relative">
+                    <div class="pe-3">
                         <h4 class="modal-title fw-bold mb-2 d-flex align-items-center" id="reportUserModalLabel">
                             <img
                                 src="{{ asset('images/icons/warning-triangle.png') }}"
@@ -375,6 +539,13 @@
                             >
                             Reportar Usuario
                         </h4>
+                        <p class="text-muted mb-1" id="reportUserText">
+                            Reportar a Usuario por comportamiento sospechoso
+                        </p>
+
+                        <small class="text-muted">
+                            <span class="text-danger">*</span> Campos requeridos
+                        </small>
                     </div>
 
                     <button
@@ -388,47 +559,61 @@
                 <div class="modal-body px-4 pt-2 pb-4">
                     <form id="reportUserForm" novalidate>
                         <div class="mb-3">
-                            <label for="reportReason" class="form-label fw-semibold">Razón</label>
-                            <select id="reportReason" class="form-select form-select-lg" required>
-                                <option value="" selected>Selecciona una razón</option>
-                                <option value="fraude">Fraude</option>
-                                <option value="contenido">Contenido inapropiado</option>
-                                <option value="spam">Spam</option>
-                                <option value="acoso">Acoso</option>
-                                <option value="otro">Otro</option>
+                            <label for="reportReason" class="form-label fw-semibold">
+                                Razón <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-lg" id="reportReason" required>
+                                <option value="" selected disabled>Seleccionar una razón</option>
+                                <option value="Fraude">Fraude o estafa</option>
+                                <option value="Información falsa">Información falsa</option>
+                                <option value="Lengiaje ofensivo">Lenguaje ofensivo</option>
+                                <option value="Contenido inapropiado">Contenido inapropiado</option>
+                                <option value="Otros">Otros</option>
                             </select>
-                            <div class="invalid-feedback d-block" id="reportReasonError">Selecciona una razón.</div>
+                            <div class="invalid-feedback" id="reportReasonError">Seleciona una razón.</div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="reportDescription" class="form-label fw-semibold">Descripción</label>
+                            <label for="reportDescription" class="form-label fw-semibold">
+                                Descripción <span class="text-danger">*</span>
+                            </label>
                             <textarea
                                 id="reportDescription"
                                 class="form-control form-control-lg"
                                 rows="4"
-                                placeholder="Describe el problema..."
+                                placeholder="Proporciona detalles sobre el comportamiento sospechoso."
+                                minlength="10"
+                                required
                             ></textarea>
+                            <small class="text-muted d-block fst-italic">
+                                Entre 10 y 500 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                            </small>
                             <div class="invalid-feedback d-block" id="reportDescriptionError"></div>
+                        </div>
+
+                        <div class="alert alert-warning rounded-4 mb-0">
+                            <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
+                            Los querellas son revisados por los administradores de mercado.
+                            Las querellas válidas pueden resultar en restricciones de cuenta.
                         </div>
                     </form>
                 </div>
-
-                <div class="modal-footer border-0 px-4 pb-4 pt-2 d-flex flex-column gap-3">
+                <div class="modal-footer border-0 px-4 pb-4 pt-2">
                     <button
                         type="button"
-                        class="btn btn-success w-100 rounded-3"
-                        id="submitReportBtn"
-                        disabled
+                        class="btn btn-outline-secondary px-4"
+                        id="cancelReportBtn"
                     >
-                        Enviar Reporte
+                        Cancelar
                     </button>
 
                     <button
                         type="button"
-                        class="btn btn-outline-secondary w-100 rounded-3"
-                        id="cancelReportBtn"
+                        class="btn btn-danger px-4"
+                        id="submitReportBtn"
+                        disabled
                     >
-                        Cancelar
+                        Enviar Querella
                     </button>
                 </div>
             </div>
@@ -436,34 +621,38 @@
     </div>
 
     <!-- Cancel Report Confirmation Modal -->
-    <div class="modal fade" id="cancelReportConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="cancelReportConfirmModal" tabindex="-1" aria-labelledby="cancelReportConfirmLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
-                <div class="modal-body text-center py-4">
-                    <h5 class="fw-bold mb-3">¿Cancelar reporte?</h5>
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold" id="cancelReportConfirmLabel">
+                        ¿Seguro que deseas cancelar?
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
 
-                    <p class="text-muted">
-                        Se perderá la información ingresada.
-                    </p>
 
-                    <div class="d-flex gap-2 mt-4">
+                    <div class="modal-body">
+                        Se perderán los datos que hayas escrito en este formulario.
+                    </div>
+
+                    <div class="modal-footer border-0">
                         <button
                             type="button"
-                            class="btn btn-outline-secondary w-50"
+                            class="btn btn-outline-secondary"
                             data-bs-dismiss="modal"
                         >
-                            Volver
+                            Seguir editando
                         </button>
 
                         <button
                             type="button"
-                            class="btn btn-danger w-50"
+                            class="btn btn-danger"
                             id="confirmCancelReport"
                         >
                             Sí, cancelar
                         </button>
                     </div>
-                </div>
             </div>
         </div>
     </div>
