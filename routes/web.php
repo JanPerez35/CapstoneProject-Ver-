@@ -71,7 +71,7 @@ Route::put('/equipment/{id}', [EquipmentController::class, 'update'])
     ->name('equipment.update');
 
 Route::get('/inventory_management/borrows', [EquipmentController::class, 'borrows'])
-    ->name('inventory_management.borrows');
+    ->name('inventory_management.borrows')->middleware('role:Admin Super,Admin Inventario');
 
 Route::post('/inventory_management/requests/{id}/approve', [EquipmentController::class, 'approveRequest'])
     ->name('inventory_management.requests.approve');
@@ -83,10 +83,10 @@ Route::post('/inventory_management/requests/{id}/return', [EquipmentController::
     ->name('inventory_management.requests.return');
 
 Route::get('/inventory_management/inventory_statistics', [EquipmentController::class, 'statistics'])
-    ->name('inventory_management.inventory_statistics');
+    ->name('inventory_management.inventory_statistics')->middleware('role:Admin Super,Admin Inventario');
 
 Route::get('/inventory_management/inventory_statistics/export', [EquipmentController::class, 'exportStatistics'])
-    ->name('inventory_management.inventory_statistics.export');
+    ->name('inventory_management.inventory_statistics.export')->middleware('role:Admin Super,Admin Inventario');
 
 Route::get('/kinemarket', [PostController::class, 'index'])->name('kinemarket');
 
@@ -173,6 +173,19 @@ Route::middleware('auth')->post('/marketplace/{post}/review', [ReviewController:
 
 Route::post('/terms-and-conditions/update', [TermsController::class, 'update'])
     ->name('terms.update');
+
+//temporary route for test the IPv6
+Route::get('/test-log-ipv6', function () {
+    \App\Models\ActivityLog::create([
+        'user_id' => 3,
+        'role' => 'Admin Super',
+        'action' => 'IPv4 test',
+        'ip_address' => '24.48.231.194',
+        'comment' => 'IPv4 test My IPv4',
+    ]);
+
+    return 'IPv6 test';
+});
 
 // Temporary routes until user tables are connected
 Route::get('/test-email/request-approved', [EmailController::class, 'requestApproved']);
