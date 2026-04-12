@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!post) return;
 
-            const sellerName = (post.user?.name || 'Usuario').trim();
+            const sellerName = `${post.user?.first_name ?? ''} ${post.user?.last_name ?? ''}`.trim() || 'Usuario';
             const postTitle = (post.title || 'Publicación').trim();
             const sellerInitial = sellerName.charAt(0).toUpperCase() || 'U';
 
@@ -460,6 +460,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!post) return;
 
+        const sellerRating = Number(post.user?.average_rating ?? 0);
+        const sellerReviews = Number(post.user?.reviews_count ?? 0);
+
         if (postDetailsModalLabel) {
             postDetailsModalLabel.textContent = post.title || 'Detalle de la publicación';
         }
@@ -477,15 +480,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (postDetailsRatingStars) {
-            postDetailsRatingStars.innerHTML = buildStarsHTML(post.rating);
+            postDetailsRatingStars.innerHTML = buildStarsHTML(sellerRating);
         }
 
         if (postDetailsRatingValue) {
-            postDetailsRatingValue.textContent = post.rating || '0.0';
+            postDetailsRatingValue.textContent = sellerRating.toFixed(1);
         }
 
         if (postDetailsReviewCount) {
-            postDetailsReviewCount.textContent = `(${post.reviews || 0})`;
+            postDetailsReviewCount.textContent = `(${sellerReviews})`;
         }
 
         if (postDetailsPrice) {
@@ -493,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (postDetailsSeller) {
-            postDetailsSeller.textContent = post.user?.name || 'Usuario';
+            postDetailsSeller.textContent =`${post.user?.first_name ?? ''} ${post.user?.last_name ?? ''}`.trim() || 'Usuario';
         }
 
         if (reportUserText) {
@@ -502,7 +505,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (postDetailsSellerRating) {
             postDetailsSellerRating.innerHTML =
-                `<i class="bi bi-star-fill text-warning me-1"></i> ${post.rating || '0.0'} <span class="text-muted">(${post.reviews || 0} reseñas)</span>`;
+                `<i class="bi bi-star-fill text-warning me-1"></i> ${sellerRating.toFixed(1)} <span class="text-muted">(${sellerReviews} reseñas)</span>`;
         }
 
         if (postDetailsStatus) {
@@ -973,10 +976,43 @@ async function loadMessages(chatId) {
     initializeSellerRating();
 
     if (submitSellerRatingBtn) {
-        submitSellerRatingBtn.addEventListener('click', () => {
+        submitSellerRatingBtn.addEventListener('click', async () => {
             const ratingValue = Number(ratingInput?.value || 0);
-            if (!ratingValue) return;
-            ratingSentToast?.show();
+            const postId = Number(messagesView?.dataset.postId || 0);
+
+            if (!ratingValue || !postId) return;
+
+            submitSellerRatingBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/marketplace/${postId}/review`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        rating: ratingValue
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error guardando rating');
+                }
+
+                const updatedResponse = await fetch(`/posts/${postId}`);
+                const updatedPost = await updatedResponse.json();
+
+                populatePostDetailsModal(updatedPost);
+
+                ratingSentToast?.show();
+
+            } catch (error) {
+                console.error(error);
+            } finally {
+                submitSellerRatingBtn.disabled = false;
+            }
         });
     }
 

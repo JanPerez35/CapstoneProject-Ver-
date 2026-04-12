@@ -1210,6 +1210,29 @@
 
     </script>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // 🔹 Restore scroll after reload
+            const savedScroll = sessionStorage.getItem('facilityScroll');
+
+            if (savedScroll) {
+                window.scrollTo(0, parseInt(savedScroll));
+                sessionStorage.removeItem('facilityScroll');
+            }
+
+            // 🔹 Save scroll before submitting filters
+            const filterForm = document.getElementById('facilityCostFilterForm');
+
+            if (filterForm) {
+                filterForm.addEventListener('submit', () => {
+                    sessionStorage.setItem('facilityScroll', window.scrollY);
+                });
+            }
+
+        });
+        </script>
+
     <style>
         .classroom-name {
             display: block;

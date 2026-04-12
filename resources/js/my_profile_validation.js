@@ -143,8 +143,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     ? `${post.user.first_name ?? ''} ${post.user.last_name ?? ''}`.trim()
                     : 'Usuario';
 
-                const rating = post.user?.average_rating ?? '{{ number_format($sellerAverageRating, 1, ".", "") }}';
-                const reviews = post.user?.reviews_count ?? '{{ $sellerReviewsCount }}';
+                const rating = post.user?.average_rating ?? 0;
+                const reviews = post.user?.reviews_count ?? 0;
 
                 const images = [
                     post.photo_1_url ? `/storage/${post.photo_1_url}` : null,

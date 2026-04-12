@@ -115,4 +115,35 @@ class PostController extends Controller
         return response()->json($posts);
     }
 
+    public function show($id)
+    {
+        $post = Post::with('user')->findOrFail($id);
+
+        $averageRating = round(
+            Review::where('seller_id', $post->user->id)->avg('rating') ?? 0,
+            1
+        );
+
+        $reviewsCount = Review::where('seller_id', $post->user->id)->count();
+
+        return response()->json([
+            'id' => $post->id,
+            'title' => $post->title,
+            'description' => $post->description,
+            'cost' => $post->cost,
+            'status' => $post->status,
+            'condition' => $post->condition,
+            'category' => $post->category,
+            'photo_1_url' => $post->photo_1_url,
+            'photo_2_url' => $post->photo_2_url,
+            'photo_3_url' => $post->photo_3_url,
+            'user' => [
+                'first_name' => $post->user->first_name,
+                'last_name' => $post->user->last_name,
+                'average_rating' => $averageRating,
+                'reviews_count' => $reviewsCount,
+            ]
+        ]);
+    }
+
 }

@@ -110,9 +110,8 @@ Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.
 Route::get('/posts', function () {
     return Post::with('user')->latest()->get();
 });
-Route::get('/posts/{id}', function ($id) {
-    return \App\Models\Post::with('user')->findOrFail($id);
-});
+
+Route::get('/posts/{id}', [PostController::class, 'show'])->name('posts.show');
 // Route::get('/posts', function () {
 //     return Post::with('user')->latest()->get();
 // });
