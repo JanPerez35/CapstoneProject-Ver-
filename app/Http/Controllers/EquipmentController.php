@@ -313,8 +313,31 @@ public function borrow(Request $request)
 public function cart()
 {
     $cart = session()->get('cart', []);
+    $updatedCart = [];
+    $removedItems = [];
 
-    return view('cart.index', compact('cart'));
+    foreach ($cart as $item) {
+        $equipment = Equipment::find($item['equipment_id']);
+
+        if (!$equipment || $equipment->available_quantity <= 0) {
+            $removedItems[] = $item['description'] ?? 'equipo';
+            continue;
+        }
+
+        if ($item['quantity'] > $equipment->available_quantity) {
+            $item['quantity'] = $equipment->available_quantity;
+        }
+
+        $item['available_quantity'] = $equipment->available_quantity;
+        $updatedCart[$item['equipment_id']] = $item;
+    }
+
+    session()->put('cart', $updatedCart);
+
+    return view('cart.index', [
+        'cart' => $updatedCart,
+        'removedItems' => $removedItems,
+    ]);
 }
 
     public function removeFromCart($id)
@@ -379,6 +402,24 @@ public function cart()
         }
         unset($cartItem);
 
+        foreach ($cart as $cartItem) {
+            $equipment = Equipment::find($cartItem['equipment_id']);
+
+            if (!$equipment || $equipment->available_quantity <= 0) {
+                $sessionCart = session()->get('cart', []);
+                unset($sessionCart[$cartItem['equipment_id']]);
+                session()->put('cart', $sessionCart);
+
+                return redirect()->route('kinventory')
+                    ->with('error', 'Uno de los equipos ya no está disponible y fue removido del carrito.');
+            }
+
+            if ($cartItem['quantity'] > $equipment->available_quantity) {
+                return redirect()->route('kinventory')
+                    ->with('error', 'La cantidad solicitada para "' . $equipment->description . '" excede la cantidad disponible.');
+            }
+        }
+
         $startDateTime = $validated['pickup_date'] . ' ' . $validated['pickup_time'];
 
         $endDateTime = $isSpecialCase
@@ -402,24 +443,25 @@ public function cart()
             ]);
 
             foreach ($cart as $cartItem) {
-                $equipment = Equipment::lockForUpdate()->findOrFail($cartItem['equipment_id']);
+                $equipment = Equipment::find($cartItem['equipment_id']);
 
-                if ($cartItem['quantity'] > $equipment->available_quantity) {
-                    throw new \Exception(
-                        'La cantidad solicitada excede la cantidad disponible para ' . $equipment->description
-                    );
+                if (!$equipment || $equipment->available_quantity <= 0) {
+                    $sessionCart = session()->get('cart', []);
+                    unset($sessionCart[$cartItem['equipment_id']]);
+                    session()->put('cart', $sessionCart);
+
+                    return redirect()->route('kinventory')
+                        ->with('error', 'Uno de los equipos ya no está disponible y fue removido del carrito.');
                 }
 
-                LendingItem::create([
-                    'lending_id' => $lending->id,
-                    'equipment_id' => $equipment->id,
-                    'quantity' => $cartItem['quantity'],
-                    'item_status' => $itemStatus,
-                ]);
+                if ($cartItem['quantity'] > $equipment->available_quantity) {
+                    $sessionCart = session()->get('cart', []);
+                    $sessionCart[$cartItem['equipment_id']]['quantity'] = $equipment->available_quantity;
+                    $sessionCart[$cartItem['equipment_id']]['available_quantity'] = $equipment->available_quantity;
+                    session()->put('cart', $sessionCart);
 
-                if (!$isSpecialCase) {
-                    $equipment->available_quantity -= $cartItem['quantity'];
-                    $equipment->save();
+                    return redirect()->route('kinventory')
+                        ->with('error', 'La cantidad disponible para "' . $equipment->description . '" cambió. Tu carrito fue actualizado.');
                 }
             }
         });
