@@ -328,16 +328,18 @@ public function cart()
             $item['quantity'] = $equipment->available_quantity;
         }
 
+        if ($item['quantity'] <= 0) {
+            $removedItems[] = $item['description'] ?? 'equipo';
+            continue;
+        }
+
         $item['available_quantity'] = $equipment->available_quantity;
         $updatedCart[$item['equipment_id']] = $item;
     }
 
     session()->put('cart', $updatedCart);
 
-    return view('cart.index', [
-        'cart' => $updatedCart,
-        'removedItems' => $removedItems,
-    ]);
+    return view('cart.index',['cart' => $updatedCart,'removedItems' => $removedItems,]);
 }
 
     public function removeFromCart($id)
@@ -402,22 +404,33 @@ public function cart()
         }
         unset($cartItem);
 
+        $updatedCart = [];
+
         foreach ($cart as $cartItem) {
             $equipment = Equipment::find($cartItem['equipment_id']);
 
             if (!$equipment || $equipment->available_quantity <= 0) {
-                $sessionCart = session()->get('cart', []);
-                unset($sessionCart[$cartItem['equipment_id']]);
-                session()->put('cart', $sessionCart);
-
-                return redirect()->route('kinventory')
-                    ->with('error', 'Uno de los equipos ya no está disponible y fue removido del carrito.');
+                continue; // remove from cart completely
             }
 
             if ($cartItem['quantity'] > $equipment->available_quantity) {
-                return redirect()->route('kinventory')
-                    ->with('error', 'La cantidad solicitada para "' . $equipment->description . '" excede la cantidad disponible.');
+                $cartItem['quantity'] = $equipment->available_quantity;
             }
+
+            if ($cartItem['quantity'] <= 0) {
+                continue; // never keep zero-quantity items
+            }
+
+            $cartItem['available_quantity'] = $equipment->available_quantity;
+            $updatedCart[$cartItem['equipment_id']] = $cartItem;
+        }
+
+        session()->put('cart', $updatedCart);
+        $cart = $updatedCart;
+
+        if (empty($cart)) {
+            return redirect()->route('kinventory')
+                ->with('error', 'Los equipos del carrito ya no están disponibles.');
         }
 
         $startDateTime = $validated['pickup_date'] . ' ' . $validated['pickup_time'];
@@ -443,25 +456,24 @@ public function cart()
             ]);
 
             foreach ($cart as $cartItem) {
-                $equipment = Equipment::find($cartItem['equipment_id']);
-
-                if (!$equipment || $equipment->available_quantity <= 0) {
-                    $sessionCart = session()->get('cart', []);
-                    unset($sessionCart[$cartItem['equipment_id']]);
-                    session()->put('cart', $sessionCart);
-
-                    return redirect()->route('kinventory')
-                        ->with('error', 'Uno de los equipos ya no está disponible y fue removido del carrito.');
-                }
+                $equipment = Equipment::lockForUpdate()->findOrFail($cartItem['equipment_id']);
 
                 if ($cartItem['quantity'] > $equipment->available_quantity) {
-                    $sessionCart = session()->get('cart', []);
-                    $sessionCart[$cartItem['equipment_id']]['quantity'] = $equipment->available_quantity;
-                    $sessionCart[$cartItem['equipment_id']]['available_quantity'] = $equipment->available_quantity;
-                    session()->put('cart', $sessionCart);
+                    throw new \Exception(
+                        'La cantidad solicitada excede la cantidad disponible para ' . $equipment->description
+                    );
+                }
 
-                    return redirect()->route('kinventory')
-                        ->with('error', 'La cantidad disponible para "' . $equipment->description . '" cambió. Tu carrito fue actualizado.');
+                LendingItem::create([
+                    'lending_id' => $lending->id,
+                    'equipment_id' => $equipment->id,
+                    'quantity' => $cartItem['quantity'],
+                    'item_status' => $itemStatus,
+                ]);
+
+                if (!$isSpecialCase) {
+                    $equipment->available_quantity -= $cartItem['quantity'];
+                    $equipment->save();
                 }
             }
         });
