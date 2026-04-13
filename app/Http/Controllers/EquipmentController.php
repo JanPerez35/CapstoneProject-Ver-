@@ -43,8 +43,15 @@ class EquipmentController extends Controller
 
     public function index(Request $request)
     {
-        // Build base query
-        $query = Equipment::where('pending_deletion', false);
+
+        $query = Equipment::where('pending_deletion', false)
+        ->withCount([
+            'lendingItems as open_lendings_count' => function ($q) {
+                $q->whereHas('lending', function ($lendingQuery) {
+                    $lendingQuery->whereIn('status', ['pending', 'approved', 'active']);
+                });
+            }
+        ]);
 
         // Search filter
         if ($request->filled('search')) {
