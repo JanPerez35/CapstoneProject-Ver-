@@ -202,4 +202,15 @@ Route::get('/test-log-ipv6', function () {
 Route::get('/test-email/request-approved', [EmailController::class, 'requestApproved']);
 Route::get('/test-email/request-denied', [EmailController::class, 'requestDenied']);
 Route::get('/test-email/user-banned', [EmailController::class, 'userBanned']);
-Route::get('/test-email/unread-messages-reminder', [EmailController::class, 'unreadMessagesReminder']);
+Route::get('/test-email/user-unbanned', [EmailController::class, 'userUnbanned']);
+
+
+//This is to test emails with Mailpit
+Route::get('/test-email', function () {
+    \Mail::raw('Esto es un test desde MAIKINE', function ($message) {
+        $message->to('test@test.com')
+            ->subject('TEST MAIKINE');
+    });
+
+    return 'Email enviado';
+});

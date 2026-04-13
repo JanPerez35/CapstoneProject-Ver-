@@ -16,7 +16,7 @@ class FacilityCostController extends Controller
         $reportType = $request->input('report_type', '');
         $reportMonth = $request->input('report_month', '');
         $reportYear = $request->input('report_year', '');
-        $filterClassroom = $request->input('filter_classroom', 'all');
+        $filterClassroom = $request->input('filter_classroom', '');
 
         $facilityCosts = FacilityCost::orderBy('classroom_name')->get();
 
@@ -251,9 +251,9 @@ private function createFacilityReportItemFromPayload(array $data)
 
     // Total service hours
     $hoursUsed = $hoursPerDay * $daysUsed;
-    
+
     $rateMode = $data['rate_mode'] ?? 'daily';
-    
+
     // Selected rate according to period_type + rate_mode
     $rate = $this->getRateByPeriodAndMode(
         $facilityCost,

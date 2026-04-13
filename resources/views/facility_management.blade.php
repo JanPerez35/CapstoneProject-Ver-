@@ -156,10 +156,9 @@
 
                             <div class="col-md-3">
                                 <select id="filterClassroom" name="filter_classroom" class="form-select border-2 border-dark">
-                                    <option value="" {{ $filterClassroom === '' ? 'selected' : '' }}>Salón</option>
-                                    <option value="all" {{ ($filterClassroom ?? 'all') === 'all' ? 'selected' : '' }}>Todos los Salones</option>
+                                    <option value="" {{ ($filterClassroom ?? '') === '' ? 'selected' : '' }}>Salón</option>
                                     @foreach ($facilityCosts as $cost)
-                                        <option value="{{ $cost->classroom_name }}" {{ ($filterClassroom ?? 'all') === $cost->classroom_name ? 'selected' : '' }}>
+                                        <option value="{{ $cost->classroom_name }}" {{ $filterClassroom === $cost->classroom_name ? 'selected' : '' }}>
                                             {{ $cost->classroom_name }}
                                         </option>
                                     @endforeach
@@ -186,7 +185,7 @@
                 <table class="table align-middle mb-0" id="facilityCostTable">
                     <thead class="table-light">
                     <tr>
-                        <th class="fw-bold">Fecha (mm/dd/yyyy)</th>
+                        <th class="fw-bold">Fecha del Evento (mm/dd/yyyy)</th>
                         <th class="fw-bold">Responsable</th>
                         <th class="fw-bold">Salón</th>
                         <th class="fw-bold">Descripción</th>
@@ -385,7 +384,7 @@
                                         <div>
                                             <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
                                             Si el salón ya fue configurado anteriormente, se mostrarán sus tarifas guardadas para que puedas modificarlas.
-                                            Si el salón nunca ha sido configurado, los campos aparecerán vacíos con ejemplos como referencia.
+                                            Si el salón nunca ha sido configurado, los campos aparecerán vacíos con ejemplos de como llenarlos como referencia.
                                         </div>
                                     </div>
                                 </div>
@@ -419,9 +418,9 @@
                                                 <div class="invalid-feedback d-block" id="{{ $campo['id'] }}Error"></div>
                                                 <small class="text-muted d-block mt-2">
                                                     @if($campo['id'] === 'configAreaSalon')
-                                                        Ingresa el área en pies cuadrados (ft²). Solo números y hasta 2 decimales.
+                                                        Ingresa el área en pies cuadrados (ft²). Solo números y hasta 2 decimales. El máximo permitido es 25,000,000.00 ft².
                                                     @else
-                                                        Escribe solo números y hasta 2 decimales. El máximo permitido es $500.00.
+                                                        Escribe solo números y hasta 2 decimales. El máximo permitido es $500.00
                                                     @endif
                                                 </small>
                                             </div>
@@ -677,6 +676,7 @@
                                         <div>
                                             <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
                                             Si seleccionas semana o mes, debes indicar una fecha de inicio y una fecha de fin válida.
+                                            Los eventos en estas fechas duran solo la cantidad de horas selecionadas por día.
                                         </div>
                                     </div>
                                 </div>
@@ -848,16 +848,16 @@
     <div class="modal fade" id="deleteCostEntryModal" tabindex="-1" aria-labelledby="deleteCostEntryModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
-                <div class="modal-header border-0">
+                <div class="modal-header border-0 pt-4 px-4 pb-2 align-items-start position-relative">
                     <div class="pe-3">
                         <h5 class="modal-title fw-bold mb-1" id="deleteCostEntryModalLabel">Eliminar registro</h5>
                         <p class="text-muted mb-0">¿Estás seguro de que deseas eliminar este registro de costo?</p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-outline-secondary"  data-bs-dismiss="modal">Sí, Cancelar</button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteCostEntryBtn">Eliminar</button>
                 </div>
             </div>
@@ -870,10 +870,13 @@
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 align-items-start">
                     <div class="pe-3">
-                        <h5 class="modal-title fw-bold mb-1" id="addClassroomModalLabel">Agregar salón</h5>
-                        <p class="text-muted mb-0">Escribe el nombre del nuevo salón.</p>
+                        <h5 class="modal-title fw-bold mb-2">Agregar salón</h5>
+                        <p class="text-muted mb-1">Escribe el nombre del nuevo salón.</p>
+                        <small class="text-muted">
+                            <span class="text-danger">*</span> Campos requeridos
+                        </small>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <button type="button" class="btn-close"  id="closeAddClassroomBtn" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
 
@@ -895,7 +898,7 @@
 
 
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-outline-secondary" id="cancelAddClassroomBtn" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-success" id="confirmAddClassroomBtn" disabled>
                         Agregar Salón
                     </button>
@@ -962,7 +965,7 @@
             <!-- Tarifa Toast -->
             <div id="ratesSavedToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2" role="alert">
                 <div class="d-flex align-items-center">
-                    <div class="toast-body">
+                    <div class="toast-body fw-semibold pe-1" >
                         Tarifas guardadas correctamente.
                     </div>
                     <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast"></button>
@@ -972,7 +975,7 @@
             <!-- Evento Toast -->
             <div id="rentalSavedToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2" role="alert">
                 <div class="d-flex align-items-center">
-                    <div class="toast-body">
+                    <div class="toast-body fw-semibold pe-1">
                         Evento creado correctamente.
                     </div>
                     <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast"></button>

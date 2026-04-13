@@ -523,3 +523,17 @@
     background-color: #facc15; /* yellow */
     color: #78350f;
 }
+
+.chat-message-group {
+    border-radius: 0.75rem;
+    transition: box-shadow 0.15s ease;
+}
+
+.chat-message-group .form-control:focus {
+    box-shadow: none !important;
+}
+
+.chat-message-group:focus-within {
+    border-radius: 0.75rem;
+    box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+}
