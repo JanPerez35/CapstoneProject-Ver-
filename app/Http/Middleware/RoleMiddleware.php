@@ -17,7 +17,7 @@ class RoleMiddleware
     {
         // 1. Verifica si el usuario está autenticado
         if (!auth()->check()) {
-            abort(403, 'No Autenticado');
+            return redirect()->route('saml.login');
         }
 
         // 2. Obtiene el usuario autenticado
