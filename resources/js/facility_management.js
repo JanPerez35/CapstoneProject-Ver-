@@ -24,6 +24,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterClassroom = $('filterClassroom');
     const clearFacilityFilters = $('clearFacilityFilters');
 
+    const cancelAddClassroomBtn = $('cancelAddClassroomBtn');
+    const closeAddClassroomBtn = $('closeAddClassroomBtn');
+
     const facilityCostTable = $('facilityCostTable');
     const facilityCostTableBody = $('facilityCostTableBody');
     const facilityCostEmptyState = $('facilityCostEmptyState');
@@ -142,6 +145,43 @@ document.addEventListener('DOMContentLoaded', () => {
         updateConfigPreview();
     }
 
+    if (addClassroomModal && configureRatesModal) {
+        let shouldReturnToConfigureRates = false;
+
+        const openAddClassroomModalBtn = $('openAddClassroomModalBtn');
+
+        if (openAddClassroomModalBtn) {
+            openAddClassroomModalBtn.addEventListener('click', () => {
+                shouldReturnToConfigureRates = true;
+            });
+        }
+
+        if (cancelAddClassroomBtn) {
+            cancelAddClassroomBtn.addEventListener('click', () => {
+                shouldReturnToConfigureRates = true;
+            });
+
+        }
+
+        if (closeAddClassroomBtn) {
+            closeAddClassroomBtn.addEventListener('click', () => {
+                shouldReturnToConfigureRates = true;
+            });
+        }
+
+        addClassroomModal.addEventListener('hidden.bs.modal', () => {
+            newClassroomName.value = '';
+            newClassroomName.classList.remove('is-invalid');
+            newClassroomNameError.textContent = '';
+            confirmAddClassroomBtn.disabled = true;
+
+            if (shouldReturnToConfigureRates) {
+                bootstrap.Modal.getOrCreateInstance(configureRatesModal).show();
+                shouldReturnToConfigureRates = false;
+            }
+        });
+    }
+
     function setAddClassroomError(message = '') {
         if (!newClassroomName || !newClassroomNameError) return;
 
@@ -245,35 +285,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (addClassroomModal) {
-        addClassroomModal.addEventListener('show.bs.modal', () => {
-            newClassroomName.value = '';
-            newClassroomName.classList.remove('is-invalid');
-            newClassroomNameError.textContent = '';
-            confirmAddClassroomBtn.disabled = true;
-        });
-
-        addClassroomModal.addEventListener('hidden.bs.modal', () => {
-            newClassroomName.value = '';
-            newClassroomName.classList.remove('is-invalid');
-            newClassroomNameError.textContent = '';
-            confirmAddClassroomBtn.disabled = true;
-        });
-    }
 
     if (confirmAddClassroomBtn) {
-    confirmAddClassroomBtn.addEventListener('click', () => {
-        if (!validateNewClassroomName(true)) {
-            updateAddClassroomButtonState();
-            return;
-        }
+        confirmAddClassroomBtn.addEventListener('click', () => {
+            if (!validateNewClassroomName(true)) {
+                updateAddClassroomButtonState();
+                return;
+            }
 
-        document.getElementById('hiddenNewClassroomName').value =
-            newClassroomName.value.trim();
+            document.getElementById('hiddenNewClassroomName').value =
+                newClassroomName.value.trim();
 
-        document.getElementById('addClassroomForm').submit();
-    });
-}
+            sessionStorage.setItem('reopenConfigureRatesModal', 'true');
+            document.getElementById('addClassroomForm').submit();
+        });
+    }
 
     function requiresEndDate() {
         return ['weekly', 'monthly'].includes(rentalRangeType?.value);
@@ -379,6 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const toNumber = (value) => Number(String(value).replace(/[^0-9.]/g, '')) || 0;
 
     const MAX_RATE_PRICE = 500;
+    const MAX_AREA_SQFT = 25000000.00;
 
     function sanitizeMoneyInput(input) {
         let value = input.value.replace(/[^0-9.]/g, '');
@@ -413,7 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
             inputGroup?.classList.add('is-invalid');
 
             const previousValidValue = input.dataset.previousValidValue || '';
-            input.value = previousValidValue;
+            input.value = previousValidValue || '';
         } else {
             input.value = value;
             input.dataset.previousValidValue = value;
@@ -456,6 +483,72 @@ document.addEventListener('DOMContentLoaded', () => {
             input.dataset.previousValidValue = input.value;
             validateMoneyField(input, true);
 
+    }
+
+    function sanitizeAreaInput(input) {
+        let value = input.value.replace(/[^0-9.]/g, '');
+
+        if (value.startsWith('.')) {
+            value = '0' + value;
+        }
+
+        const parts = value.split('.');
+        if (parts.length > 2) {
+            value = parts[0] + '.' + parts.slice(1).join('');
+        }
+
+        const firstDotIndex = value.indexOf('.');
+        if (firstDotIndex !== -1) {
+            const integerPart = value.slice(0, firstDotIndex);
+            const decimalPart = value.slice(firstDotIndex + 1).slice(0, 2);
+            value = integerPart + '.' + decimalPart;
+        }
+
+        const numericValue = Number(value);
+        const errorElement = document.getElementById(`${input.id}Error`);
+        const inputGroup = input.closest('.money-input-group');
+
+        if (value && !Number.isNaN(numericValue) && numericValue > MAX_AREA_SQFT) {
+            setFieldError(input, errorElement, `El área no puede exceder ${MAX_AREA_SQFT.toFixed(2)} ft².`);
+            inputGroup?.classList.add('is-invalid');
+
+            const previousValidValue = input.dataset.previousValidValue || '';
+            input.value = previousValidValue || '';
+        } else {
+            input.value = value;
+            input.dataset.previousValidValue = value;
+            validateAreaField(input, true);
+        }
+    }
+
+    function normalizeAreaInput(input) {
+        const rawValue = input.value.trim();
+        const errorElement = document.getElementById(`${input.id}Error`);
+        const inputGroup = input.closest('.money-input-group');
+
+        if (!rawValue) {
+            validateAreaField(input, true);
+            return;
+        }
+
+        const numericValue = Number(rawValue);
+
+        if (Number.isNaN(numericValue)) {
+            input.value = '';
+            validateAreaField(input, true);
+            return;
+        }
+
+        if (numericValue > MAX_AREA_SQFT) {
+            input.value = input.dataset.previousValidValue || '';
+            setFieldError(input, errorElement, `El área no puede exceder ${MAX_AREA_SQFT.toFixed(2)} ft².`);
+            inputGroup?.classList.add('is-invalid');
+            return;
+        }
+
+        input.value = numericValue.toFixed(2);
+        input.dataset.previousValidValue = input.value;
+        validateAreaField(input, true);
     }
 
     function timeToMinutes(timeValue) {
@@ -539,25 +632,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (confirmDeleteClassroomBtn && $('deleteClassroomModal')) {
-    confirmDeleteClassroomBtn.addEventListener('click', () => {
-        if (!selectedClassroomsToDelete.length) return;
+        confirmDeleteClassroomBtn.addEventListener('click', () => {
+            if (!selectedClassroomsToDelete.length) return;
 
-        const deleteForm = document.getElementById('deleteClassroomsForm');
-        deleteForm.innerHTML = `
+            const deleteForm = document.getElementById('deleteClassroomsForm');
+            deleteForm.innerHTML = `
             <input type="hidden" name="_token" value="${document.querySelector('meta[name="csrf-token"]')?.content || ''}">
             <input type="hidden" name="_method" value="DELETE">
         `;
 
-        selectedClassroomsToDelete.forEach((classroomName) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'classrooms[]';
-            input.value = classroomName;
-            deleteForm.appendChild(input);
-        });
+            selectedClassroomsToDelete.forEach((classroomName) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'classrooms[]';
+                input.value = classroomName;
+                deleteForm.appendChild(input);
+            });
 
-        deleteForm.submit();
-    });
+            sessionStorage.setItem('reopenConfigureRatesModal', 'true');
+            deleteForm.submit();
+        });
     }
 
     function setSelectionByList(list) {
@@ -794,6 +888,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
 
+        if (Number(value) > MAX_AREA_SQFT) {
+            if (showError) {
+                setFieldError(input, errorElement, `El área no puede exceder ${MAX_AREA_SQFT.toFixed(2)} ft².`);
+                inputGroup?.classList.add('is-invalid');
+            }
+            return false;
+        }
+
     return true;
     }
 
@@ -870,6 +972,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         return true;
+    }
+
+    if (configAreaSalon) {
+        configAreaSalon.addEventListener('input', () => {
+            sanitizeAreaInput(configAreaSalon);
+            configureDirty = true;
+            updateConfigPreview();
+            updateConfigureSaveState();
+        });
+
+        configAreaSalon.addEventListener('blur', () => {
+            normalizeAreaInput(configAreaSalon);
+            updateConfigPreview();
+            updateConfigureSaveState();
+        });
     }
 
     function calculateRentalEstimate() {
@@ -1158,8 +1275,8 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         });
 
         const totalAmount = filteredRows.reduce((sum, row) => {
-            const amountCell = row.querySelector('td:nth-child(6)');
-            return sum + parseMoney(amountCell.textContent);
+            const amountCell = row.querySelector('td:nth-child(8)');
+            return sum + parseMoney(amountCell.textContent || '0');
         }, 0);
 
         facilityCostGrandTotal.textContent = formatMoney(totalAmount);
@@ -1640,4 +1757,9 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     resetConfigureFormState();
     resetRentalFormState();
     applyTableFilters();
+
+    if (sessionStorage.getItem('reopenConfigureRatesModal') === 'true' && configureRatesModal) {
+        bootstrap.Modal.getOrCreateInstance(configureRatesModal).show();
+        sessionStorage.removeItem('reopenConfigureRatesModal');
+    }
 });

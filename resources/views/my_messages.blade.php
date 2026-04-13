@@ -104,8 +104,27 @@
                 background: #fff;
             }
 
+            .chat-header-row {
+                flex-wrap: wrap !important;
+                align-items: flex-start !important;
+            }
+
+            .chat-header-main {
+                flex: 0 0 100%;
+                width: 100%;
+                min-width: 0;
+                order: 2;
+            }
+
+            #backToChatsBtn {
+                order: 1;
+                flex-shrink: 0;
+            }
+
             #openChatPostDetailsBtn {
                 width: 100%;
+                margin-top: 0.25rem;
+                order: 3;
             }
 
             .messages-sidebar .p-4.border-bottom {
@@ -162,6 +181,28 @@
         .messages-sidebar {
             display: flex;
             flex-direction: column;
+        }
+
+        .chat-header-text-wrap {
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+
+        .chat-header-post-summary {
+            min-width: 0;
+            max-width: 100%;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            white-space: normal;
+            text-overflow: ellipsis;
+            word-break: break-word;
+            line-height: 1.35;
+        }
+
+        #openChatPostDetailsBtn {
+            flex-shrink: 0;
         }
 
     </style>
@@ -237,7 +278,7 @@
                                         </div>
 
                                         <div class="text-muted mb-2">
-                                            {{ Str::limit($chat->post->title ?? 'Sin título', 35) }}
+                                            {{ Str::limit($chat->post->title ?? 'Sin título', 20) }}
                                         </div>
                                     </div>
                                 </div>
@@ -260,16 +301,16 @@
 
                     <!--Header-->
                     <div class="p-3 p-md-4 border-bottom">
-                        <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                        <div class="d-flex justify-content-between align-items-center gap-3 flex-nowrap chat-header-row">
                             <button
                                 type="button"
                                 class="btn btn-outline-secondary d-md-none"
                                 id="backToChatsBtn"
                             >
-                                <i class="bi bi-arrow-left"></i>
+                                <i class="bi bi-arrow-left"></i> Volver
                             </button>
 
-                            <div class="d-flex align-items-center min-w-0">
+                            <div class="d-flex align-items-center min-w-0 flex-grow-1 chat-header-main">
 
                                 <div
                                     class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3 flex-shrink-0 chat-user-initial {{ $selectedChat ? '' : 'd-none' }}"
@@ -279,12 +320,12 @@
                                     {{ strtoupper(substr($selectedChat?->otherUser()->name ?? 'U', 0, 1)) }}
                                 </div>
 
-                                <div class="min-w-0">
-                                    <h4 class="mb-1 fw-bold text-truncate" id="chatHeaderParticipantName">
+                                <div class="min-w-0 chat-header-text-wrap">
+                                    <h4 class="mb-1 fw-bold text-truncate w-100" id="chatHeaderParticipantName">
                                         {{ $selectedChat?->otherUser()->name ?? 'Selecciona un chat' }}
                                     </h4>
 
-                                    <div class="text-muted text-truncate" id="chatHeaderPostSummary">
+                                    <div class="text-muted chat-header-post-summary" id="chatHeaderPostSummary" title="{{ $selectedChat?->post->title ?? '' }}">
                                         {{ $selectedChat?->post->title ?? '' }}
                                     </div>
                                 </div>
@@ -293,7 +334,7 @@
 
                             <button
                                 type="button"
-                                class="btn btn-success rounded-3 px-4 flex-shrink-0"
+                                class="btn btn-success rounded-3 px-4 flex-shrink-0 chat-header-post-btn"
                                 id="openChatPostDetailsBtn"
                                 data-bs-toggle="modal"
                                 data-bs-target="#postDetailsModal"
@@ -328,7 +369,7 @@
                     <!--Input-->
                     <div class="p-3 p-md-4 border-top chat-input-area">
 
-                                <div class="input-group">
+                                <div class="input-group chat-message-group">
                                     <input
                                         id="chatMessageInput"
                                         type="text"
