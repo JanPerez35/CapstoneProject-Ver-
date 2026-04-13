@@ -155,7 +155,12 @@
                                     Editar
                                 </button>
 
-                                <form action="{{ route('equipment.destroy', $item->id) }}" method="POST" class="d-grid deleteItemForm">
+                                <form
+                                    action="{{ route('equipment.destroy', $item->id) }}"
+                                    method="POST"
+                                    class="d-grid deleteItemForm"
+                                    data-has-active-orders="{{ $item->open_lendings_count > 0 ? '1' : '0' }}"
+                                >
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger w-100">

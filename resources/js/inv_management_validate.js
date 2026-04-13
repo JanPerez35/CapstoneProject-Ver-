@@ -348,7 +348,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 //This is where backend adds their stuff- Kevin
-                const hasActiveOrders = true ;
+                const hasActiveOrders = form.dataset.hasActiveOrders === '1';
 
                 if (confirmDeleteWarningText) {
                     confirmDeleteWarningText.classList.toggle('d-none', !hasActiveOrders);
