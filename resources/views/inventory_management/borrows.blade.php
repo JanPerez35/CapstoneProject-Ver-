@@ -83,7 +83,7 @@
 
                     <div>
                         <a href="{{ route('inventory_management.borrows') }}" class="btn btn-outline-secondary py-2 px-4">
-                            Limpiar filtros
+                            Limpiar Filtros
                         </a>
                     </div>
                 </div>
@@ -311,8 +311,8 @@
                                             action="{{ route('inventory_management.requests.return', $lending->id) }}"
                                             class="return-form">
                                             @csrf
-                                            <button type="button" class="btn btn-outline-success mark-returned-btn w-100">
-                                                Marcar como devuelto
+                                            <button type="button" class="btn btn-success mark-returned-btn w-100">
+                                                Marcar como Devuelto
                                             </button>
                                         </form>
                                     </div>
@@ -354,7 +354,7 @@
                         Cancelar
                     </button>
                     <button type="button" class="btn btn-success" id="confirmApproveBtn">
-                        Sí, aprobar
+                        Sí, Aprobar
                     </button>
                 </div>
             </div>
@@ -386,7 +386,7 @@
                         Cancelar
                     </button>
                     <button type="button" class="btn btn-danger" id="confirmDenyBtn">
-                        Sí, denegar
+                        Sí, Denegar
                     </button>
                 </div>
             </div>
@@ -401,7 +401,7 @@
                     <div class="w-100">
                         <div class="d-flex justify-content-between align-items-center">
                             <h4 class="modal-title fw-bold mb-0" id="returnConfirmModalLabel">
-                                Confirmar devolución
+                                Confirmar Devolución
                             </h4>
 
                             <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -418,7 +418,7 @@
                         Cancelar
                     </button>
                     <button type="button" class="btn btn-success" id="confirmReturnBtn">
-                        Sí, confirmar devolución
+                        Sí, Confirmar Devolución
                     </button>
                 </div>
             </div>

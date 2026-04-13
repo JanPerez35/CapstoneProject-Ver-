@@ -97,9 +97,12 @@
                     </span>
                 </button>
 
-                <a href="/" class="btn btn-success">
-                    <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                    </button>
+                </form>
             </div>
         </div>
     </header>
@@ -469,7 +472,7 @@
                 <button type="button"
                         class="btn btn-danger"
                         id="confirmRemoveCartItem">
-                    Sí, remover
+                    Sí, Remover
                 </button>
             </div>
         </div>

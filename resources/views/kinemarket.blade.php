@@ -234,10 +234,10 @@
 
                     <div class="modal-footer border-0">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Seguir editando
+                            Seguir Editando
                         </button>
                         <button type="button" class="btn btn-danger" id="confirmCancelCreatePost">
-                            Sí, cancelar
+                            Sí, Cancelar
                         </button>
                     </div>
                 </div>
@@ -317,7 +317,7 @@
             </div>
                 <div class="col-12 d-flex gap-2">
                     <button type="button" class="btn btn-outline-secondary" id="clearMarketplaceFilters">
-                        Limpiar filtros
+                        Limpiar Filtros
                     </button>
                 </div>
         </div>
@@ -595,10 +595,10 @@
 
                     <div class="modal-footer border-0">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                            Seguir editando
+                            Seguir Editando
                         </button>
                         <button type="button" class="btn btn-danger" id="confirmCancelReport">
-                            Sí, cancelar
+                            Sí, Cancelar
                         </button>
                     </div>
                 </div>

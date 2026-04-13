@@ -215,15 +215,23 @@
                                     <div class="marketplace-card-top">
 
                                         <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <h5 class="fw-bold mb-0">{{ $post->title }}</h5>
 
+                                            <h5
+                                                class="fw-bold mb-0 marketplace-card-title"
+                                                title="{{ $post->title }}"
+                                            >
+                                                {{ $post->title }}
+                                            </h5>
                                             <span class="label-badge badge-available">
             {{ $post->status ?? 'Disponible' }}
         </span>
                                         </div>
 
-                                        <p class="text-muted mb-3">
-                                            {{ $post->description ?: 'Sin descripción.' }}
+                                        <p
+                                            class="text-muted mb-3 marketplace-card-description"
+                                            title="{{ $post->description }}"
+                                        >
+                                            {{ $post->description  }}
                                         </p>
 
                                     </div>
@@ -263,10 +271,10 @@
                                     <div class="mt-auto d-grid gap-2">
                                         <button
                                             type="button"
-                                            class="btn btn-outline-success rounded-3 open-profile-post-details"
+                                            class="btn btn-success rounded-3 open-profile-post-details"
                                             data-post-id="{{ $post->id }}"
                                         >
-                                            Ver detalles
+                                            Ver Detalles
                                         </button>
 
                                         <button
@@ -275,7 +283,7 @@
                                             data-post-id="{{ $post->id }}"
                                             data-post-title="{{ $post->title }}"
                                         >
-                                            Borrar
+                                            Eliminar Publicación
                                         </button>
                                     </div>
                                 </div>

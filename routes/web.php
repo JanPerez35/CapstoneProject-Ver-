@@ -15,6 +15,18 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReviewController;
 
+use Illuminate\Support\Facades\Auth;
+
+Route::post('/logout', function () {
+    Auth::logout(); // destruye la sesión
+
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+
+    return redirect('/'); // vuelve al login
+})->name('logout');
+
+
 Route::get('/', function () {
     return view('login');
 });

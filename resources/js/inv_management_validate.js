@@ -6,7 +6,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const TEXT_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
     const CATEGORY_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
-    const LOCATION_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-\/]+$/;
+    //Here
+    const LOCATION_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-\-\/]+$/;
 
     const searchInput = document.getElementById('inventorySearchInput');
     const searchBtn = document.getElementById('inventorySearchBtn');

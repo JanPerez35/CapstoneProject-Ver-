@@ -77,7 +77,7 @@
 
                 <div class="col-md-auto">
                     <button type="button" id="clearAccessLogsFiltersBtn" class="btn btn-outline-secondary">
-                        Limpiar filtros
+                        Limpiar Filtros
                     </button>
                 </div>
             </div>
