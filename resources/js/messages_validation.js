@@ -500,7 +500,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (reportUserText) {
-            reportUserText.textContent = `Reportar a ${post.user?.name || 'Usuario'} por comportamiento sospechoso`;
+            const reportedUserName = `${post.user?.first_name ?? ''} ${post.user?.last_name ?? ''}`.trim() || 'Usuario';
+            reportUserText.textContent = `Reportar a ${reportedUserName} por comportamiento sospechoso`;
         }
 
         if (postDetailsSellerRating) {
@@ -850,7 +851,8 @@ async function loadMessages(chatId) {
                 const postTitle = item.dataset.postTitle;
 
                 chatHeaderParticipantName.textContent = userName;
-                chatHeaderPostSummary.textContent = postTitle;
+                chatHeaderPostSummary.textContent = truncateText(postTitle, 60);
+                chatHeaderPostSummary.title = postTitle;
                 chatHeaderParticipantInitial.textContent = userName.charAt(0).toUpperCase();
                 chatHeaderParticipantInitial.classList.remove('d-none');
 

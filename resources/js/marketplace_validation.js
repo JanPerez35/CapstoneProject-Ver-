@@ -41,6 +41,8 @@ const postImagesCarouselInner = document.getElementById('postImagesCarouselInner
 const postImagesCarouselPrev = document.getElementById('postImagesCarouselPrev');
 const postImagesCarouselNext = document.getElementById('postImagesCarouselNext');
 
+const reportUserText = document.getElementById('reportUserText');
+
 // Toasts
 const submitSellerRatingBtn = document.getElementById('submitSellerRatingBtn');
 const ratingSentToastEl = document.getElementById('ratingSentToast');
@@ -430,6 +432,10 @@ function populatePostDetailsModal(post) {
 
     if (postDetailsSeller) {
         postDetailsSeller.textContent = post.user?.name || 'Usuario';
+    }
+
+    if (reportUserText) {
+        reportUserText.textContent = `Reportar a ${post.user?.name || 'Usuario'} por comportamiento sospechoso`;
     }
 
     if (postDetailsSellerRating) {
