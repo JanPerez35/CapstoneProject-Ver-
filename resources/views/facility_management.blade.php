@@ -57,20 +57,12 @@
                 Agregar Evento
             </button>
 
-            <a
-                href="{{ route('facility.export.csv', request()->query()) }}"
-                id="downloadCsvBtn"
-                class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
-            >
+            <a href="{{ route('facility.export.csv') }}" id="downloadCsvBtn" class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
                 <i class="bi bi-download"></i>
                 Exportar a CSV
             </a>
 
-            <a
-                href="{{ route('facility.export.pdf', request()->query()) }}"
-                id="downloadPdfBtn"
-                class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
-            >
+            <a href="{{ route('facility.export.pdf') }}" id="downloadPdfBtn" class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
                 <i class="bi bi-download"></i>
                 Exportar a PDF
             </a>
@@ -185,12 +177,14 @@
                 <table class="table align-middle mb-0" id="facilityCostTable">
                     <thead class="table-light">
                     <tr>
-                        <th class="fw-bold">Fecha del Evento (mm/dd/yyyy)</th>
+                        <th class="fw-bold">Fecha Inicio (mm/dd/yyyy)</th>
+                        <th class="fw-bold">Fecha Fin (mm/dd/yyyy)</th>
                         <th class="fw-bold">Responsable</th>
                         <th class="fw-bold">Salón</th>
                         <th class="fw-bold">Descripción</th>
                         <th class="fw-bold">Hora</th>
                         <th class="fw-bold">Periodo</th>
+                        <th class="fw-bold">Modo de tarifa</th>
                         <th class="fw-bold">Servicios</th>
                         <th class="fw-bold text-end">Total</th>
                         <th class="fw-bold text-center">Acciones</th>
@@ -207,6 +201,7 @@
                                 data-classroom="{{ $item->facilityCost->classroom_name }}"
                             >
                                 <td>{{ \Carbon\Carbon::parse($item->event_date)->format('m/d/Y') }}</td>
+                                <td>{{ \Carbon\Carbon::parse($item->end_date ?? $item->event_date)->format('m/d/Y') }}</td>
                                 <td>{{ $item->responsable }}</td>
                                 <td>{{ $item->facilityCost->classroom_name }}</td>
                                 <td>{{ $item->event_description }}</td>
@@ -226,10 +221,32 @@
                                         {{ $item->period_type }}
                                     @endif
                                 </td>
+
+                                <td>
+                                    @if ($item->rate_mode === 'daily')
+                                        Diario
+                                    @elseif ($item->rate_mode === 'weekly')
+                                        Semanal
+                                    @elseif ($item->rate_mode === 'monthly')
+                                        Mensual
+                                    @else
+                                        {{ $item->rate_mode }}
+                                    @endif
+                                </td>
+
                                 <td>
                                     @foreach (($item->services ?? []) as $service)
-                                        <span class="label-badge badge-available me-2 mb-1">
-                @if ($service === 'utilidades')
+                                        @php
+                                            $badgeClass = match($service) {
+                                                'electricidad' => 'badge-electricidad',
+                                                'agua' => 'badge-agua',
+                                                'utilidades' => 'badge-available',
+                                                default => 'badge-available',
+                                            };
+                                        @endphp
+
+                                        <span class="label-badge {{ $badgeClass }} me-2 mb-1">
+                                            @if ($service === 'utilidades')
                                                 Utilidades
                                             @elseif ($service === 'electricidad')
                                                 Electricidad
@@ -238,7 +255,7 @@
                                             @else
                                                 {{ ucfirst($service) }}
                                             @endif
-            </span>
+                                        </span>
                                     @endforeach
                                 </td>
                                 <td class="text-end fw-semibold">${{ number_format($item->calculated_cost, 2) }}</td>
@@ -261,7 +278,7 @@
 
                     <tfoot class="table-light">
                     <tr>
-                        <th colspan="7" class="fw-bold">Total estimado del período</th>
+                        <th colspan="9" class="fw-bold text-end">Total estimado del período</th>
                         <th class="text-end fw-bold" id="facilityCostGrandTotal">${{ number_format($grandTotal, 2) }}</th>
                         <th></th>
                     </tr>
@@ -675,8 +692,10 @@
                                     <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-0 px-4 py-3 h-100 d-flex align-items-center">
                                         <div>
                                             <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
-                                            Si seleccionas semana o mes, debes indicar una fecha de inicio y una fecha de fin válida.
-                                            Los eventos en estas fechas duran solo la cantidad de horas selecionadas por día.
+                                            Si seleccionas semana o mes, debes indicar una fecha de inicio y una fecha de fin válidas.
+                                            El horario seleccionado (hora de inicio y fin) se aplicará a cada día dentro del rango de 
+                                            fechas indicado, por lo que el evento representará la misma cantidad de horas en cada uno 
+                                            de esos días.
                                         </div>
                                     </div>
                                 </div>

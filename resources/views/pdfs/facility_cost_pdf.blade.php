@@ -123,6 +123,15 @@
 
         return implode(', ', $translated);
     }
+
+        function translateRateMode($value) {
+        return match($value) {
+            'daily' => 'Diario',
+            'weekly' => 'Semanal',
+            'monthly' => 'Mensual',
+            default => $value,
+        };
+    }
 @endphp
 
 
@@ -146,7 +155,8 @@
 <table>
     <thead>
     <tr>
-        <th>Fecha</th>
+        <th>Fecha Inicio</th>
+        <th>Fecha Fin</th>
         <th>Responsable</th>
         <th>Salón</th>
         <th>Descripción</th>
@@ -154,6 +164,7 @@
         <th>Hora Fin</th>
         <th>Horas</th>
         <th>Período</th>
+        <th>Modo de tarifa</th>
         <th>Servicios</th>
         <th>Costo</th>
     </tr>
@@ -162,6 +173,7 @@
     @forelse($items as $item)
         <tr>
             <td>{{ \Carbon\Carbon::parse($item->event_date)->format('m/d/Y') }}</td>
+            <td>{{ \Carbon\Carbon::parse($item->end_date ?? $item->event_date)->format('m/d/Y') }}</td>
             <td>{{ $item->responsable }}</td>
             <td>{{ $item->facilityCost->classroom_name ?? 'N/A' }}</td>
             <td class="text-left">{{ $item->event_description }}</td>
@@ -169,21 +181,25 @@
             <td>{{ \Carbon\Carbon::parse($item->end_time)->format('h:i A') }}</td>
             <td>{{ number_format($item->hours_used, 2) }}</td>
             <td>{{ translatePeriodType($item->period_type) }}</td>
+            <td>{{ translateRateMode($item->rate_mode) }}</td>
             <td>{{ translateServices($item->services) }}</td>
             <td class="text-right">${{ number_format($item->calculated_cost, 2) }}</td>
 
         </tr>
     @empty
         <tr>
-            <td colspan="10">Sin datos</td>
+            <td colspan="12">Sin datos</td>
         </tr>
     @endforelse
     </tbody>
-    <tfoot>
-    <tr class="total-row">
-        <td colspan="9" class="text-right">Total estimado del período</td>
-        <td class="text-right">${{ number_format($grandTotal, 2) }}</td>
-    </tr>
+    <tfoot class="table-light">
+        <tr>
+            <th colspan="9" class="fw-bold text-end pe-3">Total estimado del período</th>
+            <th class="text-end fw-bold" id="facilityCostGrandTotal">
+                ${{ number_format($grandTotal, 2) }}
+            </th>
+            <th></th>
+        </tr>
     </tfoot>
 </table>
 </body>

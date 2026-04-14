@@ -537,3 +537,44 @@
     border-radius: 0.75rem;
     box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
 }
+
+/* Electricity */
+.badge-electricidad {
+    background-color: #FFC107;
+    color: #000;
+}
+
+/* Water */
+.badge-agua {
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* Avoid overflow on description table */
+#facilityCostTable {
+    width: 100%;
+    min-width: 1400px;
+    table-layout: fixed;
+}
+
+#facilityCostTable th,
+#facilityCostTable td {
+    white-space: normal;
+    vertical-align: middle;
+}
+
+#facilityCostTable th:nth-child(5),
+#facilityCostTable td:nth-child(5) {
+    width: 300px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+#facilityCostTable th:nth-child(1),
+#facilityCostTable td:nth-child(1),
+#facilityCostTable th:nth-child(2),
+#facilityCostTable td:nth-child(2),
+#facilityCostTable th:nth-child(10),
+#facilityCostTable td:nth-child(10) {
+    white-space: nowrap;
+}

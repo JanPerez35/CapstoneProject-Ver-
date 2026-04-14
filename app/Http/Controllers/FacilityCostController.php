@@ -505,7 +505,7 @@ private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
             'reportMonth',
             'reportYear',
             'filterClassroom'
-        ));
+        ))->setPaper('a4', 'landscape');
 
         return $pdf->download('facility_costs_' . now()->format('Ymd_His') . '.pdf');
     }
