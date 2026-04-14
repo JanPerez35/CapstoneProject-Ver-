@@ -1,10 +1,12 @@
 <x-layout title="Kinventario">
     <x-navbar>
     </x-navbar>
+{{--    Load JS responsible for the validation in kinventory, includes modal behaviour and scroll persistence--}}
     @vite('resources/js/kinventory_validation.js')
 
     <div class= "container py-4">
 
+    {{--Page header introducing the Kinventory/Kinventario page--}}
         <div class="mb-4">
             <h1 class="fw-bold" >Bienvenido al Kinventario</h1>
             <p>Aquí puedes pedir prestado equipo deportivo
@@ -12,7 +14,10 @@
             </p>
         </div>
 
+        {{--Search and filter form for browsing equipment, connects to the backend to do the requests.--}}
         <form method="GET" action="{{ route('kinventory') }}" class="mb-5">
+
+            {{--This is the Search bar--}}
             <div class="row g-3 mb-3 align-items-stretch">
                 <div class="col-lg-10">
                     <div class="input-group search-group h-100">
@@ -30,13 +35,14 @@
                         >
                     </div>
                 </div>
-
+                {{--Search button that appears disabled until the user inputs text.--}}
                 <div class="col-lg-2 d-grid">
                     <button type="submit" id="kinventorySearchBtn" class="btn btn-success h-100" disabled>                        Buscar
                     </button>
                 </div>
             </div>
 
+            {{--Category filter and clean filters connects with backend to request categories available.--}}
             <div class="row g-3">
                 <div class="col-md-6 col-lg-4">
                     <select name="category" class="form-select border-2 border-dark" onchange="this.form.submit()">
@@ -49,6 +55,7 @@
                     </select>
                 </div>
 
+                {{-- Reset for all filters and reloads the page--}}
                 <div class="col-md-auto">
                     <a href="{{ route('kinventory') }}" class="btn btn-outline-secondary">
                         Limpiar Filtros
@@ -57,30 +64,36 @@
             </div>
         </form>
 
+        {{--Equipment grid display, where all the inventory items are displayed.--}}
         <div class="row g-4 mt-2">
             @forelse($items as $item)
+
+                {{--How the card looks individually--}}
                 <div class="col-md-6 col-lg-4">
                     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
+
+                        {{--Equipment image with a fall back if none exists.--}}
                         <img
                             src="{{ $item->equipment_photo_url ? asset('storage/' . $item->equipment_photo_url) : asset('images/kinventory_images/default.jpg') }}"
                             class="card-img-top"
                             alt="{{ $item->description }}"
                             style="height: 300px; object-fit: contain; object-position: center; background-color:#f8f9fa;"
                         >
-
+                        {{--Title and badge of current availability for item--}}
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h5 class="card-title mb-0 fw-bold">
                                     {{ $item->description }}
                                 </h5>
 
-
+                                {{-- Badge changes based on stock availability --}}
                                 <span class="label-badge {{ $item->available_quantity > 0 ? 'badge-available' : 'badge-unavailable' }}">
-    {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
-</span>
+                                {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
+                                </span>
 
                             </div>
 
+                            {{--Display for currently available stock--}}
                             <div class="small mb-3">
                                 <div class="d-flex justify-content-between">
                                     <span class="text-muted">Cantidad Disponible:</span>
@@ -89,6 +102,7 @@
 
                             </div>
 
+                            {{-- Borrow button (disabled if no stock is currently available)--}}
                             <div class="mt-auto d-grid gap-2">
                                 <button
                                     type="button"
@@ -108,6 +122,8 @@
                         </div>
                     </div>
                 </div>
+
+            {{--Displays an empty state when no items are matching the filters.--}}
             @empty
                 <div class="col-12">
                     <div id="itemsEmptyState" class="card border-0 shadow-sm rounded-4">
@@ -121,6 +137,7 @@
             @endforelse
         </div>
 
+        {{-- Control for pagination--}}
         @if ($items->hasPages())
             <div class="mt-4 d-flex justify-content-center">
                 {{ $items->links('pagination::bootstrap-5') }}
@@ -129,9 +146,12 @@
 
     </div>
 
+    {{--Borrow modal to add items to the cart--}}
     <div class="modal fade" id="borrowModal" tabindex="-1" aria-labelledby="borrowModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
+
+                {{-- Modal header--}}
                 <div class="modal-header border-0 pb-0">
                     <div>
                         <h4 class="modal-title fw-bold" id="borrowModalLabel">Agregar al carrito</h4>
@@ -142,12 +162,16 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
+                {{--Form that submits the selected quantity to the cart--}}
                 <form method="POST" action="{{ route('cart.add') }}" id="borrowForm" novalidate>
                     @csrf
+                    {{--Used to keep the user in the same filtered tab after submission, for usability purposes.--}}
                     <input type="hidden" name="redirect_back" value="{{ url()->full() }}">
                     <div class="modal-body">
+                    {{--Equipment ID is sent to backend for tracking--}}
                         <input type="hidden" name="equipment_id" id="borrowEquipmentId">
 
+                        {{--Equipment preview image --}}
                         <img
                             id="borrowModalImage"
                             src=""
@@ -156,6 +180,7 @@
                             style="height: 280px; width: 100%; object-fit: contain; object-position: center; background-color:#f8f9fa;"
                         >
 
+                        {{--Shows available stock inside modal of item--}}
                         <div class="d-flex justify-content-between mb-3">
                             <span class="text-muted">Cantidad Disponible:</span>
                             <strong class="text-success">
@@ -163,6 +188,7 @@
                             </strong>
                         </div>
 
+                        {{--Validates quantity input with JS--}}
                         <div class="mb-3">
                             <label for="borrowQuantity" class="form-label fw-semibold">Cantidad</label>
                             <input
@@ -174,14 +200,17 @@
                                 value="1"
                                 required
                             >
+                            {{-- Displays error if theres invalid inputs in the quantity input--}}
                             <div class="invalid-feedback" id="borrowQuantityError"></div>
                         </div>
                     </div>
 
+                    {{--Modal actions to cancel or add to cart.--}}
                     <div class="modal-footer border-0 pt-0">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                             Cancelar
                         </button>
+                        {{-- Triggers validation before submitting form --}}
                         <button type="button" class="btn btn-success" id="confirmAddToCart">
                             <i class="bi bi-cart-plus me-1"></i> Añadir al Carrito
                         </button>
