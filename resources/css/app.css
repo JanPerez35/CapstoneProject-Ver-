@@ -559,8 +559,20 @@
 
 #facilityCostTable th,
 #facilityCostTable td {
-    white-space: normal;
     vertical-align: middle;
+}
+
+#facilityCostTable td {
+    white-space: normal;
+}
+
+#facilityCostTable th {
+    white-space: nowrap;
+}
+
+#facilityCostTable th.wrap-header {
+    white-space: normal;
+    line-height: 1.2;
 }
 
 #facilityCostTable th:nth-child(5),

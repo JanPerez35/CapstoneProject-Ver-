@@ -1568,20 +1568,20 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
         let value = rentalDescripcion.value;
 
-        const exceeded = value.length > 500;
+        const exceeded = value.length > 250;
 
         if (exceeded) {
-            rentalDescripcion.value = value.slice(0, 500);
+            rentalDescripcion.value = value.slice(0, 250);
             setFieldError(
                 rentalDescripcion,
                 rentalDescripcionError,
                 'Has alcanzado el máximo de 500 caracteres. No puedes escribir más.'
             );
-        } else if (value.length === 500) {
+        } else if (value.length === 250) {
             setFieldError(
                 rentalDescripcion,
                 rentalDescripcionError,
-                'Has alcanzado el máximo de 500 caracteres, puedes aún someter esa cantidad.'
+                'Has alcanzado el máximo de 250 caracteres, puedes aún someter esa cantidad.'
             );
         } else {
             validateDescripcion(true);

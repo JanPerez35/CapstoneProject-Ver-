@@ -177,14 +177,24 @@
                 <table class="table align-middle mb-0" id="facilityCostTable">
                     <thead class="table-light">
                     <tr>
-                        <th class="fw-bold">Fecha Inicio (mm/dd/yyyy)</th>
-                        <th class="fw-bold">Fecha Fin (mm/dd/yyyy)</th>
+                        <th class="fw-bold">
+                            Fecha Inicio <br>
+                            <small>(mm/dd/yyyy)</small>
+                        </th>
+
+                        <th class="fw-bold">
+                            Fecha Fin <br>
+                            <small>(mm/dd/yyyy)</small>
+                        </th>
                         <th class="fw-bold">Responsable</th>
                         <th class="fw-bold">Salón</th>
                         <th class="fw-bold">Descripción</th>
                         <th class="fw-bold">Hora</th>
                         <th class="fw-bold">Periodo</th>
-                        <th class="fw-bold">Modo de tarifa</th>
+                        <th class="fw-bold">
+                            Modo <br>
+                            <small>de tarifa</small>
+                        </th>
                         <th class="fw-bold">Servicios</th>
                         <th class="fw-bold text-end">Total</th>
                         <th class="fw-bold text-center">Acciones</th>
@@ -732,14 +742,14 @@
                                 rows="4"
                                 placeholder="Descripción del evento"
                                 minlength="10"
-                                maxlength="500"
+                                maxlength="250"
                                 required
                             ></textarea>
                             <small class="text-muted d-block fst-italic">
-                                Entre 10 y 500 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                Entre 10 y 250 caracteres. Solo letras, números, espacios, punto, coma y guion.
                             </small>
                             <div class="invalid-feedback" id="rentalDescripcionError">
-                                La descripción debe tener entre 10 y 500 caracteres y solo usar caracteres permitidos.
+                                La descripción debe tener entre 10 y 250 caracteres y solo usar caracteres permitidos.
                             </div>
                         </div>
 
