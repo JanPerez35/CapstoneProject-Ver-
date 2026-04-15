@@ -99,6 +99,10 @@
                                     <span class="text-muted">Cantidad Disponible:</span>
                                     <strong class="text-success">{{ $item->available_quantity }}</strong>
                                 </div>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-muted">Categoría:</span>
+                                    <strong class="inventory-category">{{ $item->category }}</strong>
+                                </div>
 
                             </div>
 
