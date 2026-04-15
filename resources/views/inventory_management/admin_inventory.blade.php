@@ -23,7 +23,7 @@
 
             <a href="{{ route('inventory_management.borrows') }}"
                class="btn btn-outline-success px-4 fw-semibold">
-                <i class="bi bi-card-checklist"></i>                Préstamos
+                <i class="bi bi-card-checklist"></i> Préstamos
             </a>
 
             <a href="{{ route('inventory_management.inventory_statistics') }}"
@@ -73,7 +73,8 @@
                 </div>
 
                 <div class="col-lg-2 d-grid">
-                    <button type="submit" id="inventorySearchBtn" class="btn btn-success h-100 fw-semibold" disabled>                        Buscar
+                    <button type="submit" id="inventorySearchBtn" class="btn btn-success h-100 fw-semibold" disabled>
+                        Buscar
                     </button>
                 </div>
             </div>
@@ -122,8 +123,8 @@
                                 </h5>
 
                                 <span class="label-badge inventory-status-badge {{ $item->available_quantity > 0 ? 'badge-available' : 'badge-unavailable' }}">
-        {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
-    </span>
+                                    {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
+                                </span>
                             </div>
 
                             <div class="small mb-3">
@@ -191,7 +192,7 @@
 
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">
-                                            Nombre / Descripción<span class="text-danger">*</span>
+                                            Nombre del Item <span class="text-danger">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -199,10 +200,11 @@
                                             class="form-control form-control-lg"
                                             value="{{ $item->description }}"
                                             placeholder="Ejemplo: Bola de Volibol"
+                                            maxlength="100"
                                             required
                                         >
                                         <div class="form-text">
-                                            Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                            Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
                                         </div>
                                         <div class="invalid-feedback d-block error-description"></div>
                                     </div>
@@ -225,6 +227,7 @@
                                             type="text"
                                             class="form-control form-control-lg edit-category-new"
                                             placeholder="O escribe una categoría nueva"
+                                            maxlength="100"
                                         >
 
                                         <input
@@ -258,6 +261,7 @@
                                             type="text"
                                             class="form-control form-control-lg edit-location-new"
                                             placeholder="O escribe una ubicación nueva"
+                                            maxlength="100"
                                         >
 
                                         <input
@@ -415,6 +419,7 @@
                                 name="description"
                                 class="form-control form-control-lg"
                                 placeholder="Ejemplo: Bola de Volibol"
+                                maxlength="100"
                                 required
                             >
                             <div class="form-text">
@@ -440,6 +445,7 @@
                                 id="categoria_nueva"
                                 class="form-control form-control-lg"
                                 placeholder="O escribe una categoría nueva"
+                                maxlength="100"
                             >
 
                             <input type="hidden" id="categoria" name="category">
@@ -459,194 +465,7 @@
                                 <option value="">Selecciona una ubicación existente</option>
                                 @foreach($locations as $location)
                                     <option value="{{ $location }}">{{ $location }}</option>
-                                    document.addEventListener('DOMContentLoaded', function () {
-                                    const borrowDateFilter = document.getElementById('borrowDateFilter');
-                                    const borrowSearch = document.getElementById('borrowSearch');
-
-                                    const pendingEmptyState = document.getElementById('pendingEmptyState');
-                                    const activeEmptyState = document.getElementById('activeEmptyState');
-
-                                    const pendingRequestsList = document.getElementById('pendingRequestsList');
-                                    const activeRequestsList = document.getElementById('activeRequestsList');
-
-                                    const approveToastEl = document.getElementById('approveToast');
-                                    const denyToastEl = document.getElementById('denyToast');
-                                    const returnedToastEl = document.getElementById('returnedToast');
-
-                                    const approveConfirmModalEl = document.getElementById('approveConfirmModal');
-                                    const approveConfirmText = document.getElementById('approveConfirmText');
-                                    const confirmApproveBtn = document.getElementById('confirmApproveBtn');
-
-                                    const denyConfirmModalEl = document.getElementById('denyConfirmModal');
-                                    const denyConfirmText = document.getElementById('denyConfirmText');
-                                    const confirmDenyBtn = document.getElementById('confirmDenyBtn');
-
-                                    const returnConfirmModalEl = document.getElementById('returnConfirmModal');
-                                    const returnConfirmText = document.getElementById('returnConfirmText');
-                                    const confirmReturnBtn = document.getElementById('confirmReturnBtn');
-
-                                    let approveFormToSubmit = null;
-                                    let denyFormToSubmit = null;
-                                    let returnFormToSubmit = null;
-
-                                    function getAllRequests() {
-                                    return document.querySelectorAll('.borrow-request');
-                                    }
-
-                                    function updateEmptyStates() {
-                                    const pendingVisible = [...document.querySelectorAll('.pending-request')]
-                                    .filter(card => !card.classList.contains('d-none'));
-
-                                    const activeVisible = [...document.querySelectorAll('.active-request')]
-                                    .filter(card => !card.classList.contains('d-none'));
-
-                                    if (pendingEmptyState) {
-                                    pendingEmptyState.classList.toggle('d-none', pendingVisible.length !== 0);
-                                    }
-
-                                    if (activeEmptyState) {
-                                    activeEmptyState.classList.toggle('d-none', activeVisible.length !== 0);
-                                    }
-                                    }
-
-                                    function filterRequests() {
-                                    const selectedDate = borrowDateFilter ? borrowDateFilter.value : '';
-                                    const searchValue = borrowSearch ? borrowSearch.value.trim().toLowerCase() : '';
-
-                                    getAllRequests().forEach(card => {
-                                    const cardDate = card.dataset.date || '';
-                                    const cardSearch = (card.dataset.search || '').toLowerCase();
-
-                                    const matchesDate = !selectedDate || cardDate === selectedDate;
-                                    const matchesSearch = !searchValue || cardSearch.includes(searchValue);
-
-                                    card.classList.toggle('d-none', !(matchesDate && matchesSearch));
-                                    });
-
-                                    updateEmptyStates();
-                                    }
-
-                                    function showToast(toastElement) {
-                                    if (!toastElement || !window.bootstrap) return;
-                                    const toast = window.bootstrap.Toast.getOrCreateInstance(toastElement);
-                                    toast.show();
-                                    }
-
-                                    function attachApproveEvents() {
-                                    document.querySelectorAll('.approve-special-btn').forEach(button => {
-                                    if (button.dataset.bound === 'true') return;
-                                    button.dataset.bound = 'true';
-
-                                    button.addEventListener('click', function () {
-                                    const form = button.closest('form');
-                                    const card = button.closest('.borrow-request');
-                                    const itemName = card?.querySelector('h5')?.textContent?.trim() || 'este caso especial';
-
-                                    approveFormToSubmit = form;
-                                    approveConfirmText.textContent = `¿Seguro que quieres aprobar "${itemName}"?`;
-
-                                    const modal = window.bootstrap.Modal.getOrCreateInstance(approveConfirmModalEl);
-                                    modal.show();
-                                    });
-                                    });
-                                    }
-
-                                    function attachDenyEvents() {
-                                    document.querySelectorAll('.deny-special-btn').forEach(button => {
-                                    if (button.dataset.bound === 'true') return;
-                                    button.dataset.bound = 'true';
-
-                                    button.addEventListener('click', function () {
-                                    const form = button.closest('form');
-                                    const card = button.closest('.borrow-request');
-                                    const itemName = card?.querySelector('h5')?.textContent?.trim() || 'este caso especial';
-
-                                    denyFormToSubmit = form;
-                                    denyConfirmText.textContent = `¿Seguro que quieres denegar "${itemName}"?`;
-
-                                    const modal = window.bootstrap.Modal.getOrCreateInstance(denyConfirmModalEl);
-                                    modal.show();
-                                    });
-                                    });
-                                    }
-
-                                    function attachReturnEvents() {
-                                    document.querySelectorAll('.mark-returned-btn').forEach(button => {
-                                    if (button.dataset.bound === 'true') return;
-                                    button.dataset.bound = 'true';
-
-                                    button.addEventListener('click', function () {
-                                    const form = button.closest('form');
-                                    const card = button.closest('.borrow-request');
-                                    const itemName = card?.querySelector('h5')?.textContent?.trim() || 'el equipo';
-
-                                    returnFormToSubmit = form;
-                                    returnConfirmText.textContent = `¿Estás seguro de que "${itemName}" fue devuelto?`;
-
-                                    const modal = window.bootstrap.Modal.getOrCreateInstance(returnConfirmModalEl);
-                                    modal.show();
-                                    });
-                                    });
-                                    }
-
-                                    if (confirmApproveBtn) {
-                                    confirmApproveBtn.addEventListener('click', function () {
-                                    if (!approveFormToSubmit) return;
-
-                                    const modal = window.bootstrap.Modal.getOrCreateInstance(approveConfirmModalEl);
-                                    modal.hide();
-
-                                    showToast(approveToastEl);
-
-                                    setTimeout(() => {
-                                    approveFormToSubmit.submit();
-                                    }, 500);
-                                    });
-                                    }
-
-                                    if (confirmDenyBtn) {
-                                    confirmDenyBtn.addEventListener('click', function () {
-                                    if (!denyFormToSubmit) return;
-
-                                    const modal = window.bootstrap.Modal.getOrCreateInstance(denyConfirmModalEl);
-                                    modal.hide();
-
-                                    showToast(denyToastEl);
-
-                                    setTimeout(() => {
-                                    denyFormToSubmit.submit();
-                                    }, 500);
-                                    });
-                                    }
-
-                                    if (confirmReturnBtn) {
-                                    confirmReturnBtn.addEventListener('click', function () {
-                                    if (!returnFormToSubmit) return;
-
-                                    const modal = window.bootstrap.Modal.getOrCreateInstance(returnConfirmModalEl);
-                                    modal.hide();
-
-                                    showToast(returnedToastEl);
-
-                                    setTimeout(() => {
-                                    returnFormToSubmit.submit();
-                                    }, 500);
-                                    });
-                                    }
-
-                                    if (borrowSearch) {
-                                    borrowSearch.addEventListener('input', filterRequests);
-                                    }
-
-                                    if (borrowDateFilter) {
-                                    borrowDateFilter.addEventListener('change', filterRequests);
-                                    }
-
-                                    attachApproveEvents();
-                                    attachDenyEvents();
-                                    attachReturnEvents();
-                                    updateEmptyStates();
-                                    });@endforeach
+                                @endforeach
                             </select>
 
                             <input
@@ -654,6 +473,7 @@
                                 id="ubicacion_nueva"
                                 class="form-control form-control-lg"
                                 placeholder="O escribe una ubicación nueva"
+                                maxlength="100"
                             >
 
                             <input type="hidden" id="ubicacion" name="location">
@@ -761,10 +581,10 @@
                         <h4 class="modal-title fw-bold" id="confirmDeleteModalLabel">Eliminar Item</h4>
                         <p class="text-muted mb-0" id="confirmDeleteText">
                             ¿Seguro que quieres borrar este item?
+                        </p>
 
                         <p class="text-danger fw-semibold mb-0 d-none" id="confirmDeleteWarningText">
                             *Este item tiene un pedido atado.
-                        </p>
                         </p>
                     </div>
 
