@@ -3,6 +3,15 @@
 ])
 
 @php
+
+/*
+ * These variables prepare the user-facing header and footer data.
+ *
+ * If a specific admin user is not available, default contact emails are used as
+ * safe fallbacks.  Essentially they serve as defaults values when that data is not yet
+ * available.
+ *
+ * */
     $currentUser = auth()->user();
 
     $currentUserName = $currentUser?->name ?? 'Usuario';
@@ -24,10 +33,11 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title }}</title>
 
+    {{--Flag used by layout_validation.js to activate layout behaviours like toasts and pop ups--}}
     <script>
         window.useDedicatedLayoutValidation = true;
     </script>
-
+    {{-- Global app styles and scripts for validation logic, handle things like badge styles and toasts--}}
     @vite([
         'resources/css/app.css',
         'resources/js/app.js',
@@ -35,6 +45,7 @@
     ])
 </head>
 <body
+    {{-- Success and UI state data passed to JavaScript through body dataset. Details the cart, user, and terms & conditions states --}}
     data-cart-success="{{ session('cart_success') }}"
     data-request-success="{{ session('request_success') }}"
     data-cart-removed-success="{{ session('cart_removed_success') }}"
@@ -46,9 +57,11 @@
     data-unread-count="{{ $totalUnreadMessages ?? 0 }}"
 
 >
+{{-- Top navigation bar with branding, user info, quick actions, and logout --}}
 <div class="container-fluid px-0">
     <header class="d-flex flex-wrap align-items-center justify-content-between py-2 px-2 border-bottom bg-light">
 
+        {{-- Application logo and home link --}}
         <a href="/kinemarket" class="d-flex align-items-center mb-2 mb-md-0 text-decoration-none">
             <img src="/images/kine_logo.png"
                  alt="Logo"
@@ -60,17 +73,20 @@
 
         <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2 gap-lg-3">
 
+            {{-- Logged-in user identity summary: Shows the name and role of the current user logged in --}}
             <div class="text-start text-lg-end">
                 <div class="fw-semibold">{{ $currentUserName }}</div>
                 <small class="text-muted">{{ $currentUserRole }}</small>
             </div>
 
+            {{-- Navigation/action buttons  for profile chats and cart--}}
             <div class="d-flex flex-wrap gap-2 justify-content-start justify-content-lg-end">
                 <a href="{{ route('my_profile') }}"
                    class="btn {{ request()->routeIs('my_profile') ? 'btn-success' : 'btn-outline-success' }}">
                     <i class="bi bi-person-fill"></i> Mi Perfil
                 </a>
 
+                {{-- Messages button with unread badge updated by JS --}}
                 <a href="{{ route('my_messages', ['return_to' => url()->full()]) }}"
                    class="btn position-relative {{ request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success' }}">
                     <i class="bi bi-chat-left-text"></i> Mis Chats
@@ -83,6 +99,7 @@
                     </span>
                 </a>
 
+                {{-- Opens the borrowing cart modal: badge shows total selected quantity dynamically --}}
                 <button
                     type="button"
                     class="btn btn-outline-success position-relative"
@@ -97,6 +114,7 @@
                     </span>
                 </button>
 
+                {{-- Logout form --}}
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="btn btn-success">
@@ -108,18 +126,22 @@
     </header>
 </div>
 
+{{-- Main page content injected by each individual view: For example for Kinventory it displays the inventory view before the footer --}}
 <main>{{ $slot }}</main>
 
+{{-- Borrowing cart modal used to review selected items and submit a loan request --}}
 <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
         <div class="modal-content rounded-4 border-0 shadow">
 
+            {{-- Main checkout form for submitting the borrowing request of the user --}}
             <form method="POST"
                   action="{{ route('cart.checkout') }}"
                   class="d-flex flex-column flex-grow-1 overflow-hidden"
                   id="checkoutCartForm">
                 @csrf
 
+                {{-- Server-side validation errors shown at the top of the modal --}}
                 @if ($errors->any())
                     <div class="alert alert-danger mx-3 mt-3">
                         <ul class="mb-0">
@@ -130,6 +152,7 @@
                     </div>
                 @endif
 
+                {{-- Cart Modal title and short description for user --}}
                 <div class="modal-header border-0 pb-0 align-items-start">
                     <div class="w-100">
                         <div class="d-flex justify-content-between align-items-center">
@@ -151,11 +174,13 @@
 
                 <div class="modal-body pt-3">
                     <div class="mb-4">
+                        {{-- Cart contents summary --}}
                         <h4 class="fw-bold mb-3">
                             Equipos Seleccionados ({{ count($cart) }} ítems)
                         </h4>
 
                         <div class="border rounded-4 overflow-hidden">
+                            {{-- Cart table header --}}
                             <div class="row g-0 px-3 py-3 fw-semibold border-bottom bg-light">
                                 <div class="col-6">Equipo</div>
                                 <div class="col-3 text-center">Cantidad</div>
@@ -164,6 +189,7 @@
 
                             <div id="cartItemsContainer">
                                 @if(empty($cart))
+                                    {{-- Empty state shown when the cart has no selected items currently--}}
                                     <div class="text-center py-5">
                                         <i class="bi bi-cart-x fs-1 text-muted mb-3"></i>
                                         <h5 class="fw-bold">Tu carrito está vacío</h5>
@@ -178,13 +204,22 @@
                                 @else
                                     @foreach($cart as $index => $item)
                                         @php
-                                            $itemQuantity = (int) ($item['quantity'] ?? 1);
-                                            $itemStock = (int) ($item['available_quantity'] ?? $itemQuantity);
-                                            if ($itemStock < 1) {
-                                                $itemStock = 1;
-                                            }
+
+                                        /*
+                                         * This is a safeguard for the current quantity and available stock.
+                                         * This is so the cart always has a valid minimum quantity range for
+                                         * frontend.
+                                         *
+                                         * */
+
+                                                $itemQuantity = (int) ($item['quantity'] ?? 1);
+                                                $itemStock = (int) ($item['available_quantity'] ?? $itemQuantity);
+                                                if ($itemStock < 1) {
+                                                    $itemStock = 1;
+                                                }
                                         @endphp
 
+                                        {{-- Single cart item row with image, quantity controls, and remove action --}}
                                         <div class="row align-items-center px-3 py-3 border-bottom cart-item-row"
                                              data-index="{{ $index }}"
                                              data-max-quantity="{{ $itemStock }}">
@@ -199,32 +234,38 @@
                                             </div>
 
                                             <div class="col-3">
+                                                {{-- Quantity controls adjusted in JS --}}
                                                 <div class="d-flex flex-column align-items-center">
                                                     <div class="d-flex justify-content-center align-items-center gap-2">
+
+                                                        {{--Minus button--}}
                                                         <button type="button"
                                                                 class="btn btn-outline-secondary btn-sm decrease-cart-item">
                                                             -
                                                         </button>
 
                                                         <span class="fw-bold fs-6 cart-quantity-display">{{ $itemQuantity }}</span>
-
+                                                        {{--Plus button--}}
                                                         <button type="button"
                                                                 class="btn btn-outline-secondary btn-sm increase-cart-item">
                                                             +
                                                         </button>
                                                     </div>
 
+                                                    {{-- Hidden input that submits the final quantity to the backend as an update --}}
                                                     <input type="hidden"
                                                            name="cart_quantities[{{ $item['equipment_id'] }}]"
                                                            value="{{ $itemQuantity }}"
                                                            class="cart-quantity-input">
 
+                                                    {{-- Per-item validation message populated dynamically --}}
                                                     <div class="text-danger small mt-2 cart-item-error text-center"
                                                          style="min-height: 20px;"></div>
                                                 </div>
                                             </div>
 
                                             <div class="col-3 text-center">
+                                                {{-- Opens a confirmation modal before removing the cart item --}}
                                                 <button
                                                     type="button"
                                                     class="btn btn-sm btn-danger open-remove-cart-confirm"
@@ -245,8 +286,10 @@
                         <hr class="my-4">
 
                         <div class="mb-4">
+                            {{-- Loan request details section --}}
                             <h3 class="fw-bold mb-2">Detalles del Préstamo</h3>
 
+                            {{-- Service rules and operating hours --}}
                             <div class="border rounded-4 p-4 mb-4 bg-light-subtle">
                                 <h5 class="fw-bold text-secondary mb-3">
                                     Horario de Servicio :
@@ -265,10 +308,12 @@
                                 </p>
                             </div>
 
+                            {{-- Required fields note --}}
                             <p class="text-muted mb-4">
                                 <span class="text-danger">*</span> Campos requeridos
                             </p>
 
+                            {{-- Pickup date --}}
                             <div class="mb-3">
                                 <label for="pickup_date" class="form-label fw-semibold">
                                     Fecha de Recogida <span class="text-danger">*</span>
@@ -284,6 +329,7 @@
                                 </div>                                <div class="invalid-feedback d-block" id="pickup_date_error"></div>
                             </div>
 
+                            {{-- Pickup time --}}
                             <div class="mb-3">
                                 <label for="pickup_time" class="form-label fw-semibold">
                                     Hora de Recogida <span class="text-danger">*</span>
@@ -311,6 +357,7 @@
 
                             <hr class="my-4">
 
+                            {{-- Optional special case toggle for requests outside regular rules --}}
                             <div class="form-check mb-2">
                                 <input class="form-check-input"
                                        type="checkbox"
@@ -326,6 +373,7 @@
                                 Los casos especiales requieren aprobación manual del administrador
                             </p>
 
+                            {{-- Extra fields shown only when special case is checked --}}
                             <div id="specialCaseFields" class="d-none">
                                 <div class="mb-3">
                                     <label for="return_date" class="form-label fw-semibold">
@@ -335,7 +383,8 @@
                                            class="form-control form-control-lg"
                                            id="return_date"
                                            name="return_date">
-                                    <div class="form-text">Debe ser una fecha futura. No se permiten viernes, sábados ni domingos.</div>                                    <div class="invalid-feedback d-block" id="return_date_error"></div>
+                                    <div class="form-text">Debe ser una fecha futura. No se permiten viernes, sábados ni domingos.</div>
+                                    <div class="invalid-feedback d-block" id="return_date_error"></div>
                                 </div>
 
                                 <div class="mb-3">
@@ -353,6 +402,7 @@
                                     <div class="invalid-feedback d-block" id="special_reason_error"></div>
                                 </div>
 
+                                {{-- Warning reminding the user that the request needs manual approval --}}
                                 <div class="alert alert-warning border-warning-subtle rounded-4">
                                     <strong><i class="bi bi-exclamation-circle me-2"></i>Caso Especial:</strong>
                                     Tu solicitud requerirá aprobación manual del administrador de inventario.
@@ -361,6 +411,7 @@
 
                             <hr class="my-4">
 
+                            {{-- Loan conditions and acceptance checkbox --}}
                             <div class="border rounded-4 p-4 bg-light-subtle">
                                 <h5 class="fw-bold text-secondary mb-3">
                                     <i class="bi bi-file-earmark-text me-2"></i>
@@ -410,7 +461,9 @@
                     @endif
                 </div>
 
+                {{-- Cart modal action buttons --}}
                 <div class="modal-footer border-0 pt-0">
+                    {{-- Cancel button which simply closes modal --}}
                     <button type="button"
                             class="btn btn-outline-secondary btn-lg"
                             data-bs-dismiss="modal">
@@ -418,6 +471,7 @@
                     </button>
 
                     @if(!empty($cart))
+                        {{-- Confirmation button to submit request--}}
                         <button type="submit"
                                 class="btn btn-success btn-lg"
                                 id="submitLoanRequest">
@@ -431,6 +485,7 @@
     </div>
 </div>
 
+{{-- Hidden delete forms used when removing a cart item after confirmation --}}
 @foreach($cart as $item)
     <form
         id="remove-cart-item-{{ $item['equipment_id'] }}"
@@ -443,12 +498,14 @@
     </form>
 @endforeach
 
+{{-- Confirmation modal shown before removing an item from the cart --}}
 <div class="modal fade" id="removeCartConfirmModal" tabindex="-1" aria-labelledby="removeCartConfirmModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow">
-            <div class="modal-header border-0 pb-0">
+
+            <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-start">
                 <div>
-                    <h4 class="modal-title fw-bold" id="removeCartConfirmModalLabel">
+                    <h4 class="modal-title fw-bold mb-0" id="removeCartConfirmModalLabel">
                         Remover del carrito
                     </h4>
                     <p class="text-muted mb-0" id="removeCartConfirmText">
@@ -463,12 +520,14 @@
             </div>
 
             <div class="modal-footer border-0 pt-0">
+                {{-- Button to cancel removal of item--}}
                 <button type="button"
                         class="btn btn-outline-secondary"
                         data-bs-dismiss="modal">
                     Cancelar
                 </button>
 
+                {{-- Button to accept removal of item--}}
                 <button type="button"
                         class="btn btn-danger"
                         id="confirmRemoveCartItem">
@@ -479,6 +538,7 @@
     </div>
 </div>
 
+{{-- Toast notifications for success feedback across cart, requests, and terms updates --}}
 <div class="toast-container position-fixed bottom-0 start-0 p-3">
 
     <div id="cartToast"
@@ -569,10 +629,12 @@
 
 </div>
 
+{{-- Footer with institutional support, department location, and additional contact information --}}
 <footer class="bg-light text-dark mt-5 pt-4 border-top">
     <div class="container">
         <div class="row text-start align-items-start">
 
+            {{-- General support contact information --}}
             <div class="col-md-4 mb-3">
                 <h5 class="d-flex align-items-center mb-2">
                     <i class="bi bi-question-circle me-2 text-success"></i>
@@ -595,6 +657,7 @@
                 </p>
             </div>
 
+            {{-- Department physical address --}}
             <div class="col-md-4 mb-3">
                 <h5>Departamento de Kinesiología</h5>
                 <p class="text-muted mb-0 d-flex">
@@ -607,6 +670,7 @@
                 </p>
             </div>
 
+            {{-- Additional section-specific contact emails --}}
             <div class="col-md-4 mb-3">
                 <h5 class="mb-2">Contactos Adicionales</h5>
 
@@ -628,6 +692,7 @@
 
         <hr>
 
+        {{-- Footer bottom section with institutional note and terms link --}}
         <div class="text-center pb-3">
             <p class="mb-1">
                 © 2026 MAIKINE - Portal del Departamento de Kinesiología | Colegio de Artes y Ciencias | Recinto Universitario de Mayagüez |<br> Universidad de Puerto Rico.
@@ -646,6 +711,7 @@
     </div>
 </footer>
 
+{{-- Terms and conditions modal with embedded PDF preview and update form --}}
 <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content rounded-4 border-0 shadow">
@@ -728,6 +794,7 @@
     </div>
 </div>
 
+{{-- Final confirmation modal before replacing the terms PDF --}}
 <div class="modal fade" id="confirmTermsUpdateModal" tabindex="-1" aria-labelledby="confirmTermsUpdateModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content rounded-4 border-0 shadow">
