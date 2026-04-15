@@ -360,6 +360,9 @@ function populatePostDetailsModal(post) {
     if (post.user?.id) {
         reportedUserId = post.user.id;
     }
+    if (postDetailsModal) {
+    postDetailsModal.dataset.postId = post.id;
+    }
     const postDetailsChatLink = document.getElementById('postDetailsChatLink');
 
     if (postDetailsChatLink && post) {
@@ -1763,21 +1766,31 @@ if (submitReportBtn) {
             return;
         }
         try {
+                const postId = document.getElementById('postDetailsModal')?.dataset.postId;
                 const response = await fetch('/reports', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
                     body: JSON.stringify({
                         reported_user_id: reportedUserId,
                         report_reason: reportReason.value,
-                        description: reportDescription.value
+                        description: reportDescription.value,
+                        post_id: postId
                     })
                 });
 
-                const data = await response.json();
+                let data;
 
+                try {
+                    data = await response.json();
+                } catch (e) {
+                    const text = await response.text();
+                    console.error('Respuesta NO JSON:', text);
+                    return;
+                }
                 if (!response.ok) {
                     console.error('ERROR BACKEND:', data);
                     return;

@@ -14,6 +14,7 @@ use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReviewController;
+use App\Models\User;
 
 use Illuminate\Support\Facades\Auth;
 
@@ -110,9 +111,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/kinemarket', [PostController::class, 'index'])->name('kinemarket');
 
-    Route::get('/marketplace_management', function () {
-        return view('/marketplace_management.reports_management');
-    })->name('marketplace_management')->middleware('role:Admin Super,Admin Mercado');
+    Route::get('/marketplace_management', [UserReportController::class, 'index'])->name('marketplace_management')->middleware('role:Admin Super,Admin Mercado');
 
     // Route::get('/access_logs', function () {
     //     return view('access_logs');
@@ -127,10 +126,6 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
-
-    Route::get('/posts', function () {
-        return Post::with('user')->latest()->get();
-    });
 
     Route::get('/posts/{id}', [PostController::class, 'show'])->name('posts.show');
 
@@ -147,6 +142,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/reports', [UserReportController::class, 'index']);
     Route::post('/reports', [UserReportController::class, 'store']);
+    Route::get('/reports/data', [UserReportController::class, 'getReports']);
     Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
     Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
 

@@ -155,28 +155,28 @@
                     <tbody>
                     @forelse ($reports as $report)
                         <tr
-                            data-report-id="{{ $report['report_id'] }}"
-                            data-post-id="{{ $report['post_id'] }}"
-                            data-seller-id="{{ $report['seller_id'] }}"
+                            data-report-id="{{ $report->id }}"
+                            data-post-id="{{ $report->post_id }}"
+                            data-seller-id="{{ $report->seller_id }}"
                         >
-                            <td>{{ $report['reported_by'] }}</td>
-                            <td>{{ $report['seller'] }}</td>
-                            <td>{{ $report['reason'] }}</td>
-                            <td>{{ $report['reported_date'] }}</td>
+                            <td>{{ $report->reporter->name }}</td>
+                            <td>{{ $report->reportedUser->name }}</td>
+                            <td>{{ $report->report_reason }}</td>
+                            <td>{{ $report->created_at->format('m/d/Y') }}</td>
                             <td class="report-description-cell">
-                                {{ $report['description'] }}
+                                {{ $report->description }}
                             </td>
                             <td class="text-center action-col">
-                                <input class="form-check-input action-radio action-view" type="radio" name="action_{{$report['report_id']}}">
+                                <input class="form-check-input action-radio action-view" type="radio" name="action_{{$report->id}}">
                             </td>
                             <td class="text-center action-col">
-                                <input class="form-check-input action-radio action-resolve" type="radio" name="action_{{$report['report_id']}}">
+                                <input class="form-check-input action-radio action-resolve" type="radio" name="action_{{$report->id}}">
                             </td>
                             <td class="text-center action-col">
-                                <input class="form-check-input action-radio action-delete-post" type="radio" name="action_{{$report['report_id']}}">
+                                <input class="form-check-input action-radio action-delete-post" type="radio" name="action_{{$report->id}}">
                             </td>
                             <td class="text-center action-col">
-                                <input class="form-check-input action-radio action-block-user" type="radio" name="action_{{$report['report_id']}}">
+                                <input class="form-check-input action-radio action-block-user" type="radio" name="action_{{$report->id}}">
                             </td>
                         </tr>
                     @empty

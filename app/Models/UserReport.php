@@ -15,6 +15,7 @@ class UserReport extends Model
         'description',
         'status',
         'resolved_at',
+        'post_id',
     ];
 
     protected $casts = [
@@ -29,5 +30,9 @@ class UserReport extends Model
     public function reportedUser()
     {
         return $this->belongsTo(User::class, 'reported_user_id');
+    }
+    public function post()
+    {
+        return $this->belongsTo(Post::class, 'post_id');
     }
 }
