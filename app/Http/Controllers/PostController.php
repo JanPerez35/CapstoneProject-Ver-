@@ -48,7 +48,7 @@ class PostController extends Controller
     }
     public function destroy(Post $post)
     {
-        if ($post->user_id !== auth()->id() && !in_array(auth()->user()->role, ['market_admin', 'super_admin'])) {
+        if ($post->user_id !== auth()->id() && !in_array(auth()->user()->role, ['Admin Super', 'Admin Mercado'])) {
             abort(403);
         }
         $images = [
