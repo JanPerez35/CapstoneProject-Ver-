@@ -90,13 +90,14 @@
                 <a href="{{ route('my_messages', ['return_to' => url()->full()]) }}"
                    class="btn position-relative {{ request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success' }}">
                     <i class="bi bi-chat-left-text"></i> Mis Chats
-
-                    <span
-                        id="miChatsUnreadBadge"
-                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
-                    >
-                        0
-                    </span>
+                    @if($totalUnread > 0)
+                        <span 
+                            id="miChatsUnreadBadge"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            >
+                            {{ $totalUnread }}
+                        </span>
+                    @endif
                 </a>
 
                 {{-- Opens the borrowing cart modal: badge shows total selected quantity dynamically --}}

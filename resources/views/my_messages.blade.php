@@ -275,6 +275,11 @@
                                             <h5 class="mb-1 fw-bold">
                                                 {{ $chat->otherUser()->name ?? 'Usuario' }}
                                             </h5>
+                                            @if($chat->unread_count > 0)
+                                                <span class="badge bg-danger rounded-pill">
+                                                    {{ $chat->unread_count }}
+                                                </span>
+                                            @endif
                                         </div>
 
                                         <div class="text-muted mb-2">

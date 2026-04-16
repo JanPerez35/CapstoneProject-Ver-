@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\View;
 use Illuminate\Pagination\Paginator;
 use App\Models\User;
+use App\Models\Message;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,10 +28,24 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('*', function ($view) {
 
+            $userId = auth()->id();
+
+            $totalUnread = 0;
+
+            if ($userId) {
+                $totalUnread = Message::whereHas('chat', function ($q) use ($userId) {
+                    $q->where('buyer_user_id', $userId)
+                    ->orWhere('seller_user_id', $userId);
+                })
+                ->where('user_id', '!=', $userId)
+                ->whereNull('read_at')
+                ->count();
+            }
             $superAdminuser = User::where('role', 'Admin Super')->get();
             $marketAdminuser = User::where('role', 'Admin Mercado')->get();
             $inventoryAdminuser = User::where('role', 'Admin Inventario')->get();
 
+            $view->with('totalUnread', $totalUnread);
             $view->with('cart', session('cart', []));
             $view->with('superAdmin', $superAdminuser);
             $view->with('marketAdmin', $marketAdminuser);
