@@ -1275,7 +1275,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         });
 
         const totalAmount = filteredRows.reduce((sum, row) => {
-            const amountCell = row.querySelector('td:nth-child(8)');
+            const amountCell = row.querySelector('td:nth-child(10)');
             return sum + parseMoney(amountCell.textContent || '0');
         }, 0);
 
@@ -1568,20 +1568,20 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
         let value = rentalDescripcion.value;
 
-        const exceeded = value.length > 500;
+        const exceeded = value.length > 250;
 
         if (exceeded) {
-            rentalDescripcion.value = value.slice(0, 500);
+            rentalDescripcion.value = value.slice(0, 250);
             setFieldError(
                 rentalDescripcion,
                 rentalDescripcionError,
                 'Has alcanzado el máximo de 500 caracteres. No puedes escribir más.'
             );
-        } else if (value.length === 500) {
+        } else if (value.length === 250) {
             setFieldError(
                 rentalDescripcion,
                 rentalDescripcionError,
-                'Has alcanzado el máximo de 500 caracteres, puedes aún someter esa cantidad.'
+                'Has alcanzado el máximo de 250 caracteres, puedes aún someter esa cantidad.'
             );
         } else {
             validateDescripcion(true);
@@ -1738,15 +1738,46 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     buildTimeOptions(rentalEndTime, 7, 45, 21, 45);
 
 
+    function buildExportUrl(baseUrl) {
+    const params = new URLSearchParams();
+
+    const searchValue = facilitySearch?.value?.trim() || '';
+    const reportTypeValue = reportType?.value || '';
+    const reportMonthValue = reportMonth?.value || '';
+    const reportYearValue = reportYear?.value || '';
+    const classroomValue = filterClassroom?.value || '';
+
+    if (searchValue) params.set('search', searchValue);
+    if (reportTypeValue) params.set('report_type', reportTypeValue);
+    if (reportMonthValue) params.set('report_month', reportMonthValue);
+    if (reportYearValue) params.set('report_year', reportYearValue);
+    if (classroomValue) params.set('filter_classroom', classroomValue);
+
+    const query = params.toString();
+    return query ? `${baseUrl}?${query}` : baseUrl;
+    }
+
     if (downloadCsvBtn) {
-        downloadCsvBtn.addEventListener('click', () => {
-            triggerFacilityDownload('csv');
+        downloadCsvBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            if (toasts.download) {
+                toasts.download.show();
+            }
+
+            window.location.href = buildExportUrl(downloadCsvBtn.getAttribute('href'));
         });
     }
 
     if (downloadPdfBtn) {
-        downloadPdfBtn.addEventListener('click', () => {
-            triggerFacilityDownload('pdf');
+        downloadPdfBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            if (toasts.download) {
+                toasts.download.show();
+            }
+
+            window.location.href = buildExportUrl(downloadPdfBtn.getAttribute('href'));
         });
     }
 
