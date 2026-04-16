@@ -1,14 +1,17 @@
 <x-layout title="Buscar Usuarios">
     <x-navbar></x-navbar>
 
+    {{-- Loads the JS responsible for filtering users, pagination, role changes, and ban/unban actions --}}
     @vite('resources/js/search_user_validation.js')
 
     <style>
+        /* Custom badge color for active users */
         .status-active-badge {
             background-color: #7FC61B !important;
             color: white !important;
         }
 
+        /* Pagination styling consistent with system theme, success green */
         .users-pagination .page-link {
             color: #198754;
             border-color: #198754;
@@ -36,6 +39,8 @@
     </style>
 
     <div class="container py-4">
+
+        {{-- Page Header for Search Users tab --}}
         <div class="mb-4">
             <h1 class="fw-bold rounded-2">Buscar Usuarios</h1>
             <p class="text mb-0">
@@ -45,6 +50,8 @@
 
         {{-- Filters --}}
         <div class="mb-4">
+
+            {{-- Search input for search bar --}}
             <div class="row g-3 align-items-stretch mb-3">
                 <div class="col-lg-10">
                     <div class="input-group search-group h-100">
@@ -60,6 +67,7 @@
                     </div>
                 </div>
 
+                {{-- Search button (enabled via JS only when input is valid) standard across site --}}
                 <div class="col-lg-2 d-grid">
                     <button type="button" class="btn btn-success h-100 fw-semibold" id="searchUsersBtn" disabled>
                         Buscar
@@ -67,8 +75,11 @@
                 </div>
             </div>
 
+            {{-- Role filter and clear filter button --}}
             <div class="row g-3 align-items-center">
                 <div class="col-md-6 col-lg-4">
+
+                    {{-- Role filter selector utilized by JS --}}
                     <select id="roleFilterSelect" class="form-select border-2 border-dark">
                         <option value="all" selected>Todos los Roles</option>
                         <option value="Usuario">Usuario</option>
@@ -79,6 +90,7 @@
                     </select>
                 </div>
 
+                {{-- Clear Filters button --}}
                 <div class="col-auto">
                     <button type="button" class="btn btn-outline-secondary" id="clearUserFilters">
                         Limpiar Filtros
@@ -87,7 +99,7 @@
             </div>
         </div>
 
-        {{-- Empty state --}}
+        {{-- Empty state  when there are no users matching filters --}}
         <div id="usersEmptyState" class="card border-0 shadow-sm rounded-0 d-none">
             <div class="card-body py-5 text-center">
                 <i class="bi bi-people fs-1 text-muted"></i>
@@ -99,13 +111,18 @@
         {{-- Users list --}}
         <div id="usersList" class="d-grid gap-3">
             @foreach ($users as $user)
+
+                {{-- Backend preprocessing for status of each user. Basically verifies in the tables the state of a user --}}
                 @php
                     $isBlocked = in_array($user->status, ['Bloqueado', 'Blocked']);
                     $isActive = in_array($user->status, ['Activo', 'Active']) || !$isBlocked;
                     $statusLabel = $isBlocked ? 'Bloqueado' : 'Activo';
                 @endphp
 
+                {{-- Individual user card --}}
                 <div class="card border-0 shadow-sm rounded-4 user-card"
+
+                     {{-- Data attributes used by JS for filtering and actions --}}
                      data-user-id="{{ $user->id }}"
                      data-name="{{ $user->name }}"
                      data-email="{{ $user->email }}"
@@ -115,14 +132,17 @@
                     <div class="card-body p-3">
                         <div class="row g-2 align-items-center">
 
-                            <!-- USER INFO -->
+                            {{-- User info --}}
                             <div class="col-lg-7">
                                 <div class="d-flex align-items-start gap-2">
+
+                                    {{-- User avatar placeholder --}}
                                     <div class="bg-light rounded-4 d-flex align-items-center justify-content-center"
                                          style="width: 40px; height: 40px;">
                                         <i class="bi bi-person-fill"></i>
                                     </div>
 
+                                    {{-- Name and role display for user --}}
                                     <div>
                                         <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
                                             <span class="fw-semibold fs-5 user-name-link">
@@ -134,6 +154,7 @@
                                             </span>
                                         </div>
 
+                                        {{-- Email display --}}
                                         <div class="text-muted small">
                                             {{ $user->email }}
                                         </div>
@@ -141,9 +162,11 @@
                                 </div>
                             </div>
 
-                            <!-- ROLE -->
+                            {{-- Role management --}}
                             <div class="col-lg-3">
                                 <label class="form-label fw-semibold small mb-1">Cambiar Rol</label>
+
+                                {{-- Role selector handled via JS and confirmation modal --}}
                                 <select class="form-select rounded-0 role-select">
                                     <option {{ ($user->role_label ?? '') == 'Usuario' ? 'selected' : '' }}>Usuario</option>
                                     <option {{ ($user->role_label ?? '') == 'Admin Super' ? 'selected' : '' }}>Admin Super</option>
@@ -153,18 +176,20 @@
                                 </select>
                             </div>
 
-                            <!-- STATUS -->
+                            {{-- Ban status and action buttons --}}
                             <div class="col-lg-2">
                                 <label class="form-label fw-semibold small d-block mb-1">Estado</label>
                                 <div class="d-flex flex-column gap-2">
 
+                                    {{-- Status badge --}}
                                     <span class="label-badge {{ $isBlocked ? 'badge-blocked' : 'badge-active' }} align-self-start">
                                         {{ $statusLabel }}
                                     </span>
 
+                                    {{-- Toggle ban/unban button (handled by the JS) --}}
                                     <button
                                         type="button"
-                                        class="{{ $isBlocked ? 'btn btn-outline-success rounded-3 ban-toggle-btn btn-sm' : 'btn btn-danger rounded-3 ban-toggle-btn btn-sm' }}">
+                                        class="{{ $isBlocked ? 'btn btn-success rounded-3 ban-toggle-btn btn-sm' : 'btn btn-danger rounded-3 ban-toggle-btn btn-sm' }}">
                                         @if ($isBlocked)
                                             <i class="bi bi-arrow-counterclockwise me-1"></i>
                                             Desbloquear
@@ -189,7 +214,7 @@
         </div>
     </div>
 
-    {{-- Empty state --}}
+    {{-- Empty state when there are no available users --}}
     <div id="usersEmptyState" class="card border-0 shadow-sm rounded-0 d-none container mb-4">
         <div class="card-body py-5 text-center">
             <i class="bi bi-people fs-1 text-muted"></i>
@@ -254,7 +279,7 @@
         </div>
     </div>
 
-    {{-- Toasts --}}
+    {{-- Role updated toast --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
         <div id="roleToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
@@ -262,6 +287,7 @@
              aria-live="assertive"
              aria-atomic="true"
              style="width: auto; max-width: fit-content;">
+            {{--Message--}}
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Rol actualizado correctamente.
@@ -275,12 +301,15 @@
             </div>
         </div>
 
+        {{-- User banned toast --}}
         <div id="banToast"
              class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
              style="width: auto; max-width: fit-content;">
+
+            {{-- Message --}}
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     La cuenta ha sido bloqueada.
@@ -295,12 +324,15 @@
             </div>
         </div>
 
+        {{-- User unbanned toast --}}
         <div id="unbanToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
              style="width: auto; max-width: fit-content;">
+
+            {{-- Message --}}
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     La cuenta ha sido desbloqueada.
@@ -316,3 +348,4 @@
     </div>
 
 </x-layout>
+

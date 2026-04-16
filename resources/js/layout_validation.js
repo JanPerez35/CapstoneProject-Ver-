@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    /*
+    /**
      * Form field references
      *
      * Main borrowing form fields and related UI elements used throughout
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const submitBtn = document.getElementById('submitLoanRequest');
     const cartCount = document.getElementById('cartCount');
 
-    /*
+    /**
     * Validation message containers/variables
     *
     * These elements receive inline error messages during client-side validation.
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const specialReasonError = document.getElementById('special_reason_error');
     const acceptTermsError = document.getElementById('accept_terms_error');
 
-    /*
+    /**
     * Cart item removal modal references
     *
     * Used to confirm before deleting an item from the cart.
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const removeCartConfirmText = document.getElementById('removeCartConfirmText');
     const confirmRemoveCartItem = document.getElementById('confirmRemoveCartItem');
 
-    /*
+    /**
      * Terms PDF upload references
      *
      * Used in the terms modal for validating and submitting a replacement PDF.
@@ -676,7 +676,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    /*
+    /**
     * Live field validation listeners
     *
     * These listeners validate fields as the user interacts with them
@@ -773,7 +773,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    /*
+    /**
      * Terms PDF upload flow
      *
      * Lets the user open the hidden file picker, validates the selected PDF,
@@ -837,7 +837,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    /*
+    /**
     * Initial page setup
     *
     * Applies default form state, binds cart interactions, restores modal state,
