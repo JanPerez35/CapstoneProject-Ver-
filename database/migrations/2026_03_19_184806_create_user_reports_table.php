@@ -13,7 +13,7 @@ return new class extends Migration
 
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('reported_user_id')->constrained('users')->cascadeOnDelete();
-
+            $table->foreignId('post_id')->constrained()->cascadeOnDelete();
             $table->string('report_reason');
             $table->text('description');
 

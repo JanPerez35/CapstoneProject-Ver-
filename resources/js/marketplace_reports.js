@@ -14,7 +14,47 @@
     .join('');
 }
 
+    async function fetchReports() {
+    const res = await fetch('/reports/data');
+    const data = await res.json();
 
+    renderReportsFromBackend(data);
+}
+
+    function renderReportsFromBackend(reports) {
+    const tbody = document.querySelector('#reportsTable tbody');
+    tbody.innerHTML = '';
+
+    reports.forEach(report => {
+
+        console.log('REPORT COMPLETO:', report);
+        console.log('POST ID:', report.post_id);
+
+        const row = `
+            <tr data-report-id="${report.id}"
+                data-post-id="${report.post_id}"
+                data-seller-id="${report.reported_user_id}"
+                >
+                <td>${report.reporter?.name || ''}</td>
+                <td>${report.reported_user?.name || ''}</td>
+                <td>${report.report_reason}</td>
+                <td>${new Date(report.created_at).toLocaleDateString()}</td>
+                <td>${report.description}</td>
+
+                <td class="text-center"><input class="form-check-input action-radio action-view" type="radio" name="action_${report.id}"></td>
+                <td class="text-center"><input class="form-check-input action-radio action-resolve" type="radio" name="action_${report.id}"></td>
+                <td class="text-center"><input class="form-check-input action-radio action-delete-post" type="radio" name="action_${report.id}"></td>
+                <td class="text-center"><input class="form-check-input action-radio action-block-user" type="radio" name="action_${report.id}"></td>
+            </tr>
+        `;
+
+        tbody.insertAdjacentHTML('beforeend', row);
+    });
+
+    bindAction('.action-resolve', els.resolveModal, 'resolve');
+    bindAction('.action-delete-post', els.deleteModal, 'delete');
+    bindAction('.action-block-user', els.banModal, 'ban');
+}
 
     function formatDateForDisplay(dateValue) {
     if (!dateValue) return '';
@@ -289,15 +329,61 @@
 });
 }
 
-    function bindConfirm(button, key, modalEl, toastKey) {
-    button?.addEventListener('click', () => {
-    if (selected[key]) {
-    markResolved(selected[key].closest('tr'));
-    selected[key] = null;
-    toasts[toastKey]?.show();
-}
-    bootstrap.Modal.getOrCreateInstance(modalEl).hide();
-});
+function bindConfirm(button, key, modalEl, toastKey) {
+    button?.addEventListener('click', async () => {
+        if (!selected[key]) return;
+
+        const row = selected[key].closest('tr');
+        const reportId = row.dataset.reportId;
+        const postId = row.dataset.postId;
+        const userId = row.dataset.sellerId;
+
+        const csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+        try {
+            if (key === 'resolve') {
+                await fetch(`/reports/${reportId}/resolve`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrf }
+                });
+            }
+
+            if (key === 'delete') {
+                await fetch(`/posts/${postId}`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': csrf }
+                });
+
+                // también marcar reporte como resuelto
+                await fetch(`/reports/${reportId}/resolve`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrf }
+                });
+            }
+
+            if (key === 'ban') {
+                await fetch(`/reports/${reportId}/ban`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrf }
+                });
+
+                await fetch(`/reports/${reportId}/resolve`, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrf }
+                });
+            }
+
+            // UI
+            row.remove();
+            selected[key] = null;
+            toasts[toastKey]?.show();
+
+        } catch (error) {
+            console.error('Error:', error);
+        }
+
+        bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+    });
 }
 
     bindNameInput(els.filterSearchBy);
@@ -333,9 +419,28 @@
 });
 });
 
-    bindAction('.action-resolve', els.resolveModal, 'resolve');
-    bindAction('.action-delete-post', els.deleteModal, 'delete');
-    bindAction('.action-block-user', els.banModal, 'ban');
+document.addEventListener('change', (e) => {
+    const target = e.target;
+
+    if (target.matches('.action-resolve')) {
+        selected.resolve = target;
+        bootstrap.Modal.getOrCreateInstance(els.resolveModal).show();
+    }
+
+    if (target.matches('.action-delete-post')) {
+        selected.delete = target;
+        bootstrap.Modal.getOrCreateInstance(els.deleteModal).show();
+    }
+
+    if (target.matches('.action-block-user')) {
+        selected.ban = target;
+        bootstrap.Modal.getOrCreateInstance(els.banModal).show();
+    }
+
+    if (target.matches('.action-view')) {
+        toasts.view?.show();
+    }
+});
 
     bindConfirm(els.confirmResolve, 'resolve', els.resolveModal, 'resolve');
     bindConfirm(els.confirmDelete, 'delete', els.deleteModal, 'delete');
@@ -375,6 +480,7 @@
 
     updateReportsSearchButtonState();
     renderReports();
+    fetchReports();
 
 });
 
