@@ -1,6 +1,7 @@
 <x-layout title="Gestión de Mercado">
     <x-navbar></x-navbar>
     @vite('resources/js/marketplace_reports.js')
+    @vite('resources/js/marketplace_validation.js')
     <div class="container pt-2 pb-4">
 
         <!--This is the header-->
@@ -101,28 +102,7 @@
 
        <!--Potential Backend Connection-->
         @php
-            $reports = $reports ?? [
-                [
-                    'report_id' => 'report-001',
-                    'post_id' => 'post-101',
-                    'seller_id' => 'user-301',
-                    'reported_by' => 'María González',
-                    'seller' => 'Natalia Ruth',
-                    'reason' => 'Fraude o estafa',
-                    'reported_date' => '03/16/2026',
-                    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur vel urna at elit varius tristique. Integer luctus, nisi at fermentum feugiat, sapien justo tincidunt erat, sed facilisis libero nulla non augue. Suspendisse potenti. Phasellus non mi vel augue bibendum tincidunt. Vivamus eget lorem nec nulla facilisis malesuada. Duis nec velit sed sapien tempor fringilla. Proin id arcu vitae purus ullamcorper varius eget sed justo.',
-                ],
-                [
-                    'report_id' => 'report-002',
-                    'post_id' => 'post-102',
-                    'seller_id' => 'user-302',
-                    'reported_by' => 'Carlos Rodríguez',
-                    'seller' => 'Maria Ruth',
-                    'reason' => 'Información falsa',
-                    'reported_date' => '03/17/2026',
-                    'description' => 'Publicación sospechosa con precio irrazonable. El vendedor no tiene historial y las fotos parecen ser de internet.',
-                ],
-            ];
+            $reports = $reports 
         @endphp
 
         <!--Reports table-->
@@ -153,34 +133,7 @@
                     </thead>
 
                     <tbody>
-                    @forelse ($reports as $report)
-                        <tr
-                            data-report-id="{{ $report->id }}"
-                            data-post-id="{{ $report->post_id }}"
-                            data-seller-id="{{ $report->seller_id }}"
-                        >
-                            <td>{{ $report->reporter->name }}</td>
-                            <td>{{ $report->reportedUser->name }}</td>
-                            <td>{{ $report->report_reason }}</td>
-                            <td>{{ $report->created_at->format('m/d/Y') }}</td>
-                            <td class="report-description-cell">
-                                {{ $report->description }}
-                            </td>
-                            <td class="text-center action-col">
-                                <input class="form-check-input action-radio action-view" type="radio" name="action_{{$report->id}}">
-                            </td>
-                            <td class="text-center action-col">
-                                <input class="form-check-input action-radio action-resolve" type="radio" name="action_{{$report->id}}">
-                            </td>
-                            <td class="text-center action-col">
-                                <input class="form-check-input action-radio action-delete-post" type="radio" name="action_{{$report->id}}">
-                            </td>
-                            <td class="text-center action-col">
-                                <input class="form-check-input action-radio action-block-user" type="radio" name="action_{{$report->id}}">
-                            </td>
-                        </tr>
-                    @empty
-                    @endforelse
+                  
                     </tbody>
                 </table>
 
@@ -291,6 +244,84 @@
         </div>
 
     </div>
+    <div class="modal fade" id="postDetailsModal" tabindex="-1" aria-labelledby="postDetailsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow overflow-hidden">
+                    <div class="modal-header border-0 pt-4 px-4 pb-2 align-items-start position-relative">
+                        <div class="pe-5">
+                            <h4 class="modal-title fw-bold mb-1" id="postDetailsModalLabel">Detalle de la publicación</h4>
+                            <p class="text-muted mb-0">Detalles de la Publicación</p>
+                        </div>
+                        <button type="button" class="btn-close position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+
+
+                    <div class="modal-body px-4 pt-2 pb-4 post-details-body">
+                        <div id="postImagesCarousel" class="carousel slide mb-4">
+                            <div class="carousel-indicators" id="postImagesCarouselIndicators"></div>
+
+
+                            <div class="carousel-inner rounded-4 overflow-hidden post-carousel-inner" id="postImagesCarouselInner"></div>
+
+
+                            <button class="carousel-control-prev" type="button" data-bs-target="#postImagesCarousel" data-bs-slide="prev" id="postImagesCarouselPrev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Anterior</span>
+                            </button>
+
+
+                            <button class="carousel-control-next" type="button" data-bs-target="#postImagesCarousel" data-bs-slide="next" id="postImagesCarouselNext">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Siguiente</span>
+                            </button>
+                        </div>
+                        <p class="mb-3 text-muted d-none" id="postDetailsDescription"></p>
+                        <hr>
+
+
+                        <div class="row gy-3 pb-2">
+                            <div class="col-6 text-muted">Precio:</div>
+                            <div class="col-6 text-end fw-bold text-success" id="postDetailsPrice">$0.00</div>
+
+
+                            <div class="col-6 text-muted">Estado:</div>
+                            <div class="col-6 text-end">
+                               <span class="label-badge badge-available" id="postDetailsStatus">
+    Disponible
+</span>
+                            </div>
+
+
+                            <div class="col-6 text-muted">Condición:</div>
+                            <div class="col-6 text-end">
+                               <span class="label-badge badge-available" id="postDetailsCondition">
+    Sin especificar
+</span>
+                            </div>
+
+
+                            <div class="col-6 text-muted">Vendedor:</div>
+                            <div class="col-6 text-end fw-bold" id="postDetailsSeller">Usuario</div>
+
+
+                            <div class="col-6 text-muted">Calificación del Vendedor:</div>
+                            <div class="col-6 text-end" id="postDetailsSellerRating">
+                                <i class="bi bi-star-fill text-warning me-1"></i>
+                                0.0 <span class="text-muted">(0 reseñas)</span>
+                            </div>
+
+
+                            <div class="col-6 text-muted">Categoría:</div>
+                            <div class="col-6 text-end">
+                              <span class="label-badge badge-available" id="postDetailsCategory">
+    Sin categoría
+</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <style>
         .table-fit-wrapper { padding: 0; }

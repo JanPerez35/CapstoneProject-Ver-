@@ -356,7 +356,7 @@ function renderPostDetailsCarousel(images = []) {
     }
 }
 
-function populatePostDetailsModal(post) {
+window.populatePostDetailsModal = function (post) {
     if (post.user?.id) {
         reportedUserId = post.user.id;
     }
