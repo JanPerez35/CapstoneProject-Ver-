@@ -1,13 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
     const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
     const MAX_TEXT_LENGTH = 100;
-    const MIN_TEXT_LENGTH = 5;
+    const MIN_TEXT_LENGTH = 3;
     const SCROLL_KEY = 'inventoryScrollY';
 
     const TEXT_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
     const CATEGORY_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
-    //Here
-    const LOCATION_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-\-\/]+$/;
+    const LOCATION_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-\/]+$/;
 
     const searchInput = document.getElementById('inventorySearchInput');
     const searchBtn = document.getElementById('inventorySearchBtn');
@@ -19,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmDeleteModalElement = document.getElementById('confirmDeleteModal');
     const confirmDeleteText = document.getElementById('confirmDeleteText');
     const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-
     const confirmDeleteWarningText = document.getElementById('confirmDeleteWarningText');
 
     const confirmEditModalElement = document.getElementById('confirmEditModal');
@@ -70,9 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateSearchButtonState() {
         if (!searchInput || !searchBtn) return;
-
-        const hasText = searchInput.value.trim().length > 0;
-        searchBtn.disabled = !hasText;
+        searchBtn.disabled = searchInput.value.trim().length === 0;
     }
 
     document.querySelectorAll('form').forEach(form => {
@@ -85,7 +81,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 clearScroll();
                 return;
             }
-
             saveScroll();
         });
     });
@@ -110,23 +105,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showToast(element) {
         const toast = getToastInstance(element);
-        if (toast) {
-            toast.show();
-        }
+        if (toast) toast.show();
     }
 
     function showModal(element) {
         const modal = getModalInstance(element);
-        if (modal) {
-            modal.show();
-        }
+        if (modal) modal.show();
     }
 
     function hideModal(element) {
         const modal = getModalInstance(element);
-        if (modal) {
-            modal.hide();
-        }
+        if (modal) modal.hide();
     }
 
     function setError(input, errorElement, message) {
@@ -225,6 +214,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (!['image/jpeg', 'image/jpg'].includes(file.type)) {
+            input.value = '';
+
             if (showError) {
                 setError(input, errorElement, 'Solo se permiten archivos JPG o JPEG.');
             }
@@ -232,6 +223,8 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (file.size > MAX_IMAGE_SIZE) {
+            input.value = '';
+
             if (showError) {
                 setError(input, errorElement, 'La imagen no puede exceder 2 MB.');
             }
@@ -306,12 +299,24 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
-    function validateTextLengthLive(input, errorElement) {
+    function validateTextLengthLive(input, errorElement, event = null) {
         if (!input) return true;
 
-        if (input.value.length > MAX_TEXT_LENGTH) {
+        const triedToInsert =
+            event &&
+            (
+                event.inputType === 'insertText' ||
+                event.inputType === 'insertFromPaste' ||
+                event.inputType === 'insertCompositionText'
+            );
+
+        if (input.value.length >= MAX_TEXT_LENGTH && triedToInsert) {
             setError(input, errorElement, 'Solo puedes escribir hasta 100 caracteres.');
             return false;
+        }
+
+        if (input.value.length < MAX_TEXT_LENGTH) {
+            clearError(input, errorElement);
         }
 
         return true;
@@ -348,7 +353,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     confirmDeleteText.textContent = `¿Seguro que quieres borrar "${itemName}"?`;
                 }
 
-                //This is where backend adds their stuff- Kevin
                 const hasActiveOrders = form.dataset.hasActiveOrders === '1';
 
                 if (confirmDeleteWarningText) {
@@ -417,49 +421,49 @@ document.addEventListener('DOMContentLoaded', function () {
     const addItemForm = document.getElementById('addItemForm');
 
     if (addItemForm) {
-        const nombreInput = document.getElementById('nombre_item');
+        const nameInput = document.getElementById('nombre_item');
 
-        const categoriaExistente = document.getElementById('categoria_existente');
-        const categoriaNueva = document.getElementById('categoria_nueva');
-        const categoriaFinal = document.getElementById('categoria');
+        const categoryExisting = document.getElementById('categoria_existente');
+        const categoryNew = document.getElementById('categoria_nueva');
+        const categoryFinal = document.getElementById('categoria');
 
-        const cantidadTotalInput = document.getElementById('cantidad_total');
-        const cantidadDisponibleInput = document.getElementById('cantidad_disponible');
+        const totalQuantityInput = document.getElementById('cantidad_total');
+        const availableQuantityInput = document.getElementById('cantidad_disponible');
 
-        const ubicacionExistente = document.getElementById('ubicacion_existente');
-        const ubicacionNueva = document.getElementById('ubicacion_nueva');
-        const ubicacionFinal = document.getElementById('ubicacion');
+        const locationExisting = document.getElementById('ubicacion_existente');
+        const locationNew = document.getElementById('ubicacion_nueva');
+        const locationFinal = document.getElementById('ubicacion');
 
         const imageInput = document.getElementById('imagen');
 
-        const nombreItemError = document.getElementById('nombreItemError');
-        const categoriaError = document.getElementById('categoriaError');
-        const cantidadTotalError = document.getElementById('cantidadTotalError');
-        const cantidadDisponibleError = document.getElementById('cantidadDisponibleError');
-        const ubicacionError = document.getElementById('ubicacionError');
+        const nameError = document.getElementById('nombreItemError');
+        const categoryError = document.getElementById('categoriaError');
+        const totalQuantityError = document.getElementById('cantidadTotalError');
+        const availableQuantityError = document.getElementById('cantidadDisponibleError');
+        const locationError = document.getElementById('ubicacionError');
         const imageError = document.getElementById('imageError');
 
         const previewWrapper = document.getElementById('previewWrapper');
         const imagePreview = document.getElementById('imagePreview');
         const submitAddItemBtn = document.getElementById('submitAddItemBtn');
 
-        function validateNombre(showError = true) {
-            const value = nombreInput.value.trim();
+        function validateName(showError = true) {
+            const value = nameInput.value.trim();
 
-            if (nombreInput.value.length > MAX_TEXT_LENGTH) {
+            if (nameInput.value.length > MAX_TEXT_LENGTH) {
                 if (showError) {
-                    setError(nombreInput, nombreItemError, 'Solo puedes escribir hasta 100 caracteres.');
+                    setError(nameInput, nameError, 'Solo puedes escribir hasta 100 caracteres.');
                 }
                 return false;
             }
 
             return validateResolvedTextValue({
                 value,
-                visibleInput: nombreInput,
-                errorElement: nombreItemError,
+                visibleInput: nameInput,
+                errorElement: nameError,
                 emptyMessage: 'El nombre del item es obligatorio.',
                 invalidMessage: 'El nombre del item contiene caracteres no permitidos.',
-                minMessage: 'El nombre del item debe tener al menos 5 caracteres.',
+                minMessage: 'El nombre del item debe tener al menos 3 caracteres.',
                 maxMessage: 'El nombre del item no puede exceder 100 caracteres.',
                 min: MIN_TEXT_LENGTH,
                 max: MAX_TEXT_LENGTH,
@@ -468,21 +472,25 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        function validateCategoria(showError = true) {
-            const value = getResolvedValue(categoriaExistente, categoriaNueva, categoriaFinal);
-            const visibleInput = categoriaNueva.value.trim() ? categoriaNueva : categoriaExistente;
+        function validateCategory(showError = true) {
+            const value = getResolvedValue(categoryExisting, categoryNew, categoryFinal);
+            const isUsingNew = categoryNew.value.trim() !== '';
+            const activeInput = isUsingNew ? categoryNew : categoryExisting;
 
-            if (categoriaNueva.value.length > MAX_TEXT_LENGTH) {
+            clearError(categoryExisting, categoryError);
+            clearError(categoryNew, categoryError);
+
+            if (categoryNew.value.length > MAX_TEXT_LENGTH) {
                 if (showError) {
-                    setError(categoriaNueva, categoriaError, 'Solo puedes escribir hasta 100 caracteres.');
+                    setError(categoryNew, categoryError, 'Solo puedes escribir hasta 100 caracteres.');
                 }
                 return false;
             }
 
             return validateResolvedTextValue({
                 value,
-                visibleInput,
-                errorElement: categoriaError,
+                visibleInput: activeInput,
+                errorElement: categoryError,
                 emptyMessage: 'La categoría es obligatoria.',
                 invalidMessage: 'La categoría contiene caracteres no permitidos.',
                 minMessage: 'La categoría debe tener al menos 3 caracteres.',
@@ -494,21 +502,25 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        function validateUbicacion(showError = true) {
-            const value = getResolvedValue(ubicacionExistente, ubicacionNueva, ubicacionFinal);
-            const visibleInput = ubicacionNueva.value.trim() ? ubicacionNueva : ubicacionExistente;
+        function validateLocation(showError = true) {
+            const value = getResolvedValue(locationExisting, locationNew, locationFinal);
+            const isUsingNew = locationNew.value.trim() !== '';
+            const activeInput = isUsingNew ? locationNew : locationExisting;
 
-            if (ubicacionNueva.value.length > MAX_TEXT_LENGTH) {
+            clearError(locationExisting, locationError);
+            clearError(locationNew, locationError);
+
+            if (locationNew.value.length > MAX_TEXT_LENGTH) {
                 if (showError) {
-                    setError(ubicacionNueva, ubicacionError, 'Solo puedes escribir hasta 100 caracteres.');
+                    setError(locationNew, locationError, 'Solo puedes escribir hasta 100 caracteres.');
                 }
                 return false;
             }
 
             return validateResolvedTextValue({
                 value,
-                visibleInput,
-                errorElement: ubicacionError,
+                visibleInput: activeInput,
+                errorElement: locationError,
                 emptyMessage: 'La ubicación es obligatoria.',
                 invalidMessage: 'La ubicación contiene caracteres no permitidos.',
                 minMessage: 'La ubicación debe tener al menos 3 caracteres.',
@@ -520,12 +532,12 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        function validateCantidadTotal(showError = true) {
-            return validateQuantityField(cantidadTotalInput, cantidadTotalError, showError);
+        function validateTotalQuantity(showError = true) {
+            return validateQuantityField(totalQuantityInput, totalQuantityError, showError);
         }
 
-        function validateCantidadDisponible(showError = true) {
-            return validateAvailableField(cantidadDisponibleInput, cantidadTotalInput, cantidadDisponibleError, showError);
+        function validateAvailableQuantity(showError = true) {
+            return validateAvailableField(availableQuantityInput, totalQuantityInput, availableQuantityError, showError);
         }
 
         function validateImage(showError = true) {
@@ -541,6 +553,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+            if (file.size > MAX_IMAGE_SIZE || !['image/jpeg', 'image/jpg'].includes(file.type)) {
+                previewWrapper.classList.add('d-none');
+                imagePreview.src = '';
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = function (e) {
                 imagePreview.src = e.target.result;
@@ -551,78 +569,97 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function updateAddButtonState() {
             const valid =
-                validateNombre(false) &&
-                validateCategoria(false) &&
-                validateCantidadTotal(false) &&
-                validateCantidadDisponible(false) &&
-                validateUbicacion(false) &&
+                validateName(false) &&
+                validateCategory(false) &&
+                validateTotalQuantity(false) &&
+                validateAvailableQuantity(false) &&
+                validateLocation(false) &&
                 validateImage(false);
 
             submitAddItemBtn.disabled = !valid;
         }
 
-        nombreInput.addEventListener('input', function () {
-            if (!validateTextLengthLive(nombreInput, nombreItemError)) {
+        nameInput.addEventListener('input', function (e) {
+            const triedToInsert =
+                e.inputType === 'insertText' ||
+                e.inputType === 'insertFromPaste' ||
+                e.inputType === 'insertCompositionText';
+
+            if (nameInput.value.length >= MAX_TEXT_LENGTH && triedToInsert) {
+                setError(nameInput, nameError, 'Solo puedes escribir hasta 100 caracteres.');
                 updateAddButtonState();
                 return;
             }
 
-            validateNombre(true);
+            if (nameInput.value.length < MAX_TEXT_LENGTH) {
+                clearError(nameInput, nameError);
+            }
+
+            validateName(true);
             updateAddButtonState();
         });
 
-        categoriaExistente.addEventListener('change', function () {
-            if (categoriaExistente.value) {
-                categoriaNueva.value = '';
+        nameInput.addEventListener('paste', function (e) {
+            const pasted = (e.clipboardData || window.clipboardData).getData('text');
+
+            if ((nameInput.value.length + pasted.length) > MAX_TEXT_LENGTH) {
+                e.preventDefault();
+                setError(nameInput, nameError, 'Solo puedes escribir hasta 100 caracteres.');
             }
-            validateCategoria(true);
+        });
+
+        categoryExisting.addEventListener('change', function () {
+            if (categoryExisting.value) {
+                categoryNew.value = '';
+            }
+            validateCategory(true);
             updateAddButtonState();
         });
 
-        categoriaNueva.addEventListener('input', function () {
-            if (categoriaNueva.value.trim()) {
-                categoriaExistente.value = '';
-            }
+        categoryNew.addEventListener('input', function (e) {
+            categoryExisting.value = '';
+            categoryExisting.classList.remove('is-invalid');
 
-            if (!validateTextLengthLive(categoriaNueva, categoriaError)) {
+            if (!validateTextLengthLive(categoryNew, categoryError, e)) {
                 updateAddButtonState();
                 return;
             }
 
-            validateCategoria(true);
+            validateCategory(true);
             updateAddButtonState();
         });
 
-        ubicacionExistente.addEventListener('change', function () {
-            if (ubicacionExistente.value) {
-                ubicacionNueva.value = '';
+        locationExisting.addEventListener('change', function () {
+            if (locationExisting.value) {
+                locationNew.value = '';
             }
-            validateUbicacion(true);
+            validateLocation(true);
             updateAddButtonState();
         });
 
-        ubicacionNueva.addEventListener('input', function () {
-            if (ubicacionNueva.value.trim()) {
-                ubicacionExistente.value = '';
+        locationNew.addEventListener('input', function (e) {
+            if (locationNew.value.trim()) {
+                locationExisting.value = '';
+                locationExisting.classList.remove('is-invalid');
             }
 
-            if (!validateTextLengthLive(ubicacionNueva, ubicacionError)) {
+            if (!validateTextLengthLive(locationNew, locationError, e)) {
                 updateAddButtonState();
                 return;
             }
 
-            validateUbicacion(true);
+            validateLocation(true);
             updateAddButtonState();
         });
 
-        cantidadTotalInput.addEventListener('input', function () {
-            validateCantidadTotal(true);
-            validateCantidadDisponible(true);
+        totalQuantityInput.addEventListener('input', function () {
+            validateTotalQuantity(true);
+            validateAvailableQuantity(true);
             updateAddButtonState();
         });
 
-        cantidadDisponibleInput.addEventListener('input', function () {
-            validateCantidadDisponible(true);
+        availableQuantityInput.addEventListener('input', function () {
+            validateAvailableQuantity(true);
             updateAddButtonState();
         });
 
@@ -634,11 +671,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
         addItemForm.addEventListener('submit', function (e) {
             const valid =
-                validateNombre(true) &&
-                validateCategoria(true) &&
-                validateCantidadTotal(true) &&
-                validateCantidadDisponible(true) &&
-                validateUbicacion(true) &&
+                validateName(true) &&
+                validateCategory(true) &&
+                validateTotalQuantity(true) &&
+                validateAvailableQuantity(true) &&
+                validateLocation(true) &&
                 validateImage(true);
 
             if (!valid) {
@@ -657,7 +694,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     document.querySelectorAll('.editItemForm').forEach(function (form) {
-        const description = form.querySelector('input[name="description"]');
+        const descriptionInput = form.querySelector('input[name="description"]');
 
         const categoryExisting = form.querySelector('.edit-category-existing');
         const categoryNew = form.querySelector('.edit-category-new');
@@ -667,34 +704,34 @@ document.addEventListener('DOMContentLoaded', function () {
         const locationNew = form.querySelector('.edit-location-new');
         const locationFinal = form.querySelector('.edit-location-final');
 
-        const quantity = form.querySelector('input[name="quantity"]');
-        const available = form.querySelector('input[name="available_quantity"]');
-        const image = form.querySelector('input[name="image"]');
+        const quantityInput = form.querySelector('input[name="quantity"]');
+        const availableInput = form.querySelector('input[name="available_quantity"]');
+        const imageInput = form.querySelector('input[name="image"]');
 
-        const errorDescription = form.querySelector('.error-description');
-        const errorCategory = form.querySelector('.error-category');
-        const errorLocation = form.querySelector('.error-location');
-        const errorQuantity = form.querySelector('.error-quantity');
-        const errorAvailable = form.querySelector('.error-available');
-        const errorImage = form.querySelector('.error-image');
+        const descriptionError = form.querySelector('.error-description');
+        const categoryError = form.querySelector('.error-category');
+        const locationError = form.querySelector('.error-location');
+        const quantityError = form.querySelector('.error-quantity');
+        const availableError = form.querySelector('.error-available');
+        const imageError = form.querySelector('.error-image');
 
         function validateDescription(showError = true) {
-            const value = description.value.trim();
+            const value = descriptionInput.value.trim();
 
-            if (description.value.length > MAX_TEXT_LENGTH) {
+            if (descriptionInput.value.length > MAX_TEXT_LENGTH) {
                 if (showError) {
-                    setError(description, errorDescription, 'Solo puedes escribir hasta 100 caracteres.');
+                    setError(descriptionInput, descriptionError, 'Solo puedes escribir hasta 100 caracteres.');
                 }
                 return false;
             }
 
             return validateResolvedTextValue({
                 value,
-                visibleInput: description,
-                errorElement: errorDescription,
+                visibleInput: descriptionInput,
+                errorElement: descriptionError,
                 emptyMessage: 'La descripción es obligatoria.',
                 invalidMessage: 'La descripción contiene caracteres no permitidos.',
-                minMessage: 'La descripción debe tener al menos 5 caracteres.',
+                minMessage: 'La descripción debe tener al menos 3 caracteres.',
                 maxMessage: 'La descripción no puede exceder 100 caracteres.',
                 min: MIN_TEXT_LENGTH,
                 max: MAX_TEXT_LENGTH,
@@ -704,20 +741,44 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         function validateCategory(showError = true) {
-            const value = getResolvedValue(categoryExisting, categoryNew, categoryFinal);
-            const visibleInput = categoryNew.value.trim() ? categoryNew : categoryExisting;
+            const newValue = categoryNew.value.trim();
+            const existingValue = categoryExisting.value.trim();
+            const isUsingNew = categoryNew.value !== '';
 
-            if (categoryNew.value.length > MAX_TEXT_LENGTH) {
-                if (showError) {
-                    setError(categoryNew, errorCategory, 'Solo puedes escribir hasta 100 caracteres.');
+            clearError(categoryExisting, categoryError);
+            clearError(categoryNew, categoryError);
+
+            if (isUsingNew) {
+                categoryFinal.value = newValue;
+
+                if (categoryNew.value.length > MAX_TEXT_LENGTH) {
+                    if (showError) {
+                        setError(categoryNew, categoryError, 'Solo puedes escribir hasta 100 caracteres.');
+                    }
+                    return false;
                 }
-                return false;
+
+                return validateResolvedTextValue({
+                    value: newValue,
+                    visibleInput: categoryNew,
+                    errorElement: categoryError,
+                    emptyMessage: 'La categoría es obligatoria.',
+                    invalidMessage: 'La categoría contiene caracteres no permitidos.',
+                    minMessage: 'La categoría debe tener al menos 3 caracteres.',
+                    maxMessage: 'La categoría no puede exceder 100 caracteres.',
+                    min: 3,
+                    max: MAX_TEXT_LENGTH,
+                    regex: CATEGORY_REGEX,
+                    showError
+                });
             }
 
+            categoryFinal.value = existingValue;
+
             return validateResolvedTextValue({
-                value,
-                visibleInput,
-                errorElement: errorCategory,
+                value: existingValue,
+                visibleInput: categoryExisting,
+                errorElement: categoryError,
                 emptyMessage: 'La categoría es obligatoria.',
                 invalidMessage: 'La categoría contiene caracteres no permitidos.',
                 minMessage: 'La categoría debe tener al menos 3 caracteres.',
@@ -731,19 +792,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function validateLocation(showError = true) {
             const value = getResolvedValue(locationExisting, locationNew, locationFinal);
-            const visibleInput = locationNew.value.trim() ? locationNew : locationExisting;
+            const isUsingNew = locationNew.value.trim() !== '';
+            const activeInput = isUsingNew ? locationNew : locationExisting;
+
+            clearError(locationExisting, locationError);
+            clearError(locationNew, locationError);
 
             if (locationNew.value.length > MAX_TEXT_LENGTH) {
                 if (showError) {
-                    setError(locationNew, errorLocation, 'Solo puedes escribir hasta 100 caracteres.');
+                    setError(locationNew, locationError, 'Solo puedes escribir hasta 100 caracteres.');
                 }
                 return false;
             }
 
             return validateResolvedTextValue({
                 value,
-                visibleInput,
-                errorElement: errorLocation,
+                visibleInput: activeInput,
+                errorElement: locationError,
                 emptyMessage: 'La ubicación es obligatoria.',
                 invalidMessage: 'La ubicación contiene caracteres no permitidos.',
                 minMessage: 'La ubicación debe tener al menos 3 caracteres.',
@@ -756,21 +821,30 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         function validateQuantity(showError = true) {
-            return validateQuantityField(quantity, errorQuantity, showError);
+            return validateQuantityField(quantityInput, quantityError, showError);
         }
 
         function validateAvailable(showError = true) {
-            return validateAvailableField(available, quantity, errorAvailable, showError);
+            return validateAvailableField(availableInput, quantityInput, availableError, showError);
         }
 
         function validateEditImage(showError = true) {
-            return validateImageField(image, errorImage, false, showError);
+            return validateImageField(imageInput, imageError, false, showError);
         }
 
-        description.addEventListener('input', function () {
-            if (description.value.length > MAX_TEXT_LENGTH) {
-                setError(description, errorDescription, 'Solo puedes escribir hasta 100 caracteres.');
+        descriptionInput.addEventListener('input', function (e) {
+            const triedToInsert =
+                e.inputType === 'insertText' ||
+                e.inputType === 'insertFromPaste' ||
+                e.inputType === 'insertCompositionText';
+
+            if (descriptionInput.value.length >= MAX_TEXT_LENGTH && triedToInsert) {
+                setError(descriptionInput, descriptionError, 'Solo puedes escribir hasta 100 caracteres.');
                 return;
+            }
+
+            if (descriptionInput.value.length < MAX_TEXT_LENGTH) {
+                clearError(descriptionInput, descriptionError);
             }
 
             validateDescription(true);
@@ -783,13 +857,11 @@ document.addEventListener('DOMContentLoaded', function () {
             validateCategory(true);
         });
 
-        categoryNew.addEventListener('input', function () {
-            if (categoryNew.value.trim()) {
-                categoryExisting.value = '';
-            }
+        categoryNew.addEventListener('input', function (e) {
+            categoryExisting.value = '';
+            categoryExisting.classList.remove('is-invalid');
 
-            if (categoryNew.value.length > MAX_TEXT_LENGTH) {
-                setError(categoryNew, errorCategory, 'Solo puedes escribir hasta 100 caracteres.');
+            if (!validateTextLengthLive(categoryNew, categoryError, e)) {
                 return;
             }
 
@@ -803,29 +875,29 @@ document.addEventListener('DOMContentLoaded', function () {
             validateLocation(true);
         });
 
-        locationNew.addEventListener('input', function () {
+        locationNew.addEventListener('input', function (e) {
             if (locationNew.value.trim()) {
                 locationExisting.value = '';
+                locationExisting.classList.remove('is-invalid');
             }
 
-            if (locationNew.value.length > MAX_TEXT_LENGTH) {
-                setError(locationNew, errorLocation, 'Solo puedes escribir hasta 100 caracteres.');
+            if (!validateTextLengthLive(locationNew, locationError, e)) {
                 return;
             }
 
             validateLocation(true);
         });
 
-        quantity.addEventListener('input', function () {
+        quantityInput.addEventListener('input', function () {
             validateQuantity(true);
             validateAvailable(true);
         });
 
-        available.addEventListener('input', function () {
+        availableInput.addEventListener('input', function () {
             validateAvailable(true);
         });
 
-        image.addEventListener('change', function () {
+        imageInput.addEventListener('change', function () {
             validateEditImage(true);
         });
 
