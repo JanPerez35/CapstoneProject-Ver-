@@ -1,32 +1,91 @@
+/**
+ * Initializes the Search Users page once the DOM is fully loaded.
+ *
+ * Responsibilities:
+ * - filters users by name/email and role
+ * - paginates the visible user cards
+ * - handles role change confirmation flow
+ * - handles ban/unban confirmation flow
+ * - updates UI badges and buttons after successful changes
+ * - shows feedback toasts for completed actions
+ */
 document.addEventListener('DOMContentLoaded', function () {
+
+    /**
+     * Maximum number of user cards shown per page.
+     */
     const USERS_PER_PAGE = 18;
 
+    /**
+    * Filter controls
+    *
+    * Elements used for searching and filtering the user list.
+    */
     const userSearchInput = document.getElementById('userSearchInput');
     const roleFilterSelect = document.getElementById('roleFilterSelect');
     const searchUsersBtn = document.getElementById('searchUsersBtn');
     const clearUserFiltersBtn = document.getElementById('clearUserFilters');
 
+    /**
+    * Users list and pagination references
+    *
+    * Elements used to render, hide, and paginate user cards.
+    */
     const usersList = document.getElementById('usersList');
     const userCards = Array.from(document.querySelectorAll('.user-card'));
     const usersEmptyState = document.getElementById('usersEmptyState');
     const usersPagination = document.getElementById('usersPagination');
 
+    /**
+     * Role change confirmation modal references
+     *
+     * Used to confirm before changing a user's role.
+     */
     const confirmRoleModal = document.getElementById('confirmRoleModal');
     const confirmRoleText = document.getElementById('confirmRoleText');
     const confirmRoleBtn = document.getElementById('confirmRoleBtn');
 
+    /**
+     * Ban/unban confirmation modal references
+     *
+     * Used to confirm before banning or unbanning a user
+     * */
     const confirmBanModal = document.getElementById('confirmBanModal');
     const confirmBanText = document.getElementById('confirmBanText');
     const confirmBanBtn = document.getElementById('confirmBanBtn');
 
+    /**
+     * References for the toast
+     *
+     * Feedback messages shown after successful role/status updates.
+     * */
     const roleToastEl = document.getElementById('roleToast');
     const banToastEl = document.getElementById('banToast');
     const unbanToastEl = document.getElementById('unbanToast');
 
+    /**
+     * Stores the pending role change selected by the user
+     * until they confirm it in the modal.
+     */
     let pendingRoleChange = null;
+
+    /**
+     * Stores the pending ban/unban action selected by the user
+     * until they confirm it in the modal.
+     */
     let pendingBanAction = null;
+
+    /**
+     * Tracks the current page of the paginated user list.
+     */
     let currentPage = 1;
 
+    /**
+     * Returns from app.css the CSS class string for a role badge based on role name.
+     *
+     * @param {string} role - User role label.
+     * @returns {string} CSS classes used to style the role badge.
+     */
     function getRoleBadgeClass(role) {
         if (role === 'Usuario') return 'label-badge badge-user';
         if (role === 'Admin Super') return 'label-badge badge-super-admin';
@@ -36,6 +95,12 @@ document.addEventListener('DOMContentLoaded', function () {
         return 'label-badge badge-user';
     }
 
+    /**
+     * Finds the role badge element inside a user card.
+     *
+     * @param {HTMLElement} card - User card element.
+     * @returns {HTMLElement|null} Role badge element if found.
+     */
     function getRoleBadgeElement(card) {
         const nameLink = card.querySelector('.user-name-link');
         if (!nameLink) return null;
@@ -46,6 +111,16 @@ document.addEventListener('DOMContentLoaded', function () {
         return headerRow.querySelector('.label-badge');
     }
 
+
+    /**
+     * Finds the status badge element inside a user card.
+     * Status badges are identified by their text content.
+     * With Activo meaning the user is free to browse and Bloqueado
+     * meaning the user should not be allowed in the site.
+     *
+     * @param {HTMLElement} card - User card element.
+     * @returns {HTMLElement|null} Status badge element if found.
+     */
     function getStatusBadgeElement(card) {
         return Array.from(card.querySelectorAll('.label-badge')).find(badge => {
             const text = badge.textContent.trim();
@@ -53,6 +128,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }) || null;
     }
 
+    /**
+     * Returns all user cards that match the current search text and role filter.
+     *
+     * Search matches:
+     * - user name
+     * - user email
+     *
+     * Role filter matches:
+     * - selected role
+     * - or all roles when "all" is selected
+     *
+     * @returns {HTMLElement[]} Filtered user cards.
+     */
     function getFilteredUsers() {
         const searchValue = userSearchInput.value.trim().toLowerCase();
         const roleValue = roleFilterSelect.value;
@@ -75,6 +163,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    /**
+     * Renders pagination buttons based on the number of filtered users.
+     *
+     * Includes:
+     * - previous section button
+     * - numbered page buttons
+     * - next section button
+     *
+     * @param {number} totalItems - Total number of filtered users.
+     */
     function renderPagination(totalItems) {
         if (!usersPagination) return;
 
@@ -107,6 +205,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         usersPagination.innerHTML = paginationHTML;
 
+        /**
+         * Attach click handlers to every pagination button after rendering.
+         * Updates current page and refreshes the filtered list.
+         */
         usersPagination.querySelectorAll('.page-link').forEach(button => {
             button.addEventListener('click', function () {
                 const action = this.dataset.page;
@@ -129,6 +231,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    /**
+     * Enables the search button only when the search input contains some text.
+     */
     function updateSearchUsersButtonState() {
         if (!userSearchInput || !searchUsersBtn) return;
 
@@ -136,6 +241,15 @@ document.addEventListener('DOMContentLoaded', function () {
         searchUsersBtn.disabled = !hasText;
     }
 
+    /**
+     * Applies current filters and current pagination state to the user list.
+     *
+     * Handles:
+     * - showing/hiding user cards
+     * - showing empty state when no users match
+     * - hiding the list when no results exist
+     * - rendering pagination
+     */
     function filterUsers() {
         const filteredUsers = getFilteredUsers();
         const totalPages = Math.max(1, Math.ceil(filteredUsers.length / USERS_PER_PAGE));
@@ -167,15 +281,27 @@ document.addEventListener('DOMContentLoaded', function () {
         renderPagination(filteredUsers.length);
     }
 
+    /**
+     * Resets the list to page 1 before applying filters again.
+     * Used when search/filter criteria change.
+     */
     function resetToFirstPageAndFilter() {
         currentPage = 1;
         filterUsers();
     }
 
+    /**
+     * Search button manually applies filters starting from page 1.
+     */
     if (searchUsersBtn) {
         searchUsersBtn.addEventListener('click', resetToFirstPageAndFilter);
     }
 
+    /**
+     * Search input behavior:
+     * - pressing Enter triggers filtering
+     * - typing updates whether the search button should stay enabled
+     */
     if (userSearchInput) {
         userSearchInput.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
@@ -187,10 +313,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     }
 
+    /**
+     * Role filter dropdown reapplies filters whenever the selected role changes.
+     */
     if (roleFilterSelect) {
         roleFilterSelect.addEventListener('change', resetToFirstPageAndFilter);
     }
 
+    /**
+     * Clear filters button resets:
+     * - search text
+     * - role filter
+     * - pagination back to page 1
+     */
     if (clearUserFiltersBtn) {
         clearUserFiltersBtn.addEventListener('click', function () {
             if (userSearchInput) userSearchInput.value = '';
@@ -199,6 +334,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    /**
+     * Attaches change handlers to all role selectors.
+     * Instead of updating immediately, each change is stored
+     * and confirmed through the role confirmation modal.
+     */
     document.querySelectorAll('.role-select').forEach(select => {
         select.dataset.previousValue = select.value;
 
@@ -229,6 +369,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    /**
+     * Confirms the pending role change.
+     *
+     * Behavior:
+     * - updates the UI immediately
+     * - sends the new role to the backend using fetch
+     * - shows success toast if completed
+     * - refreshes filtering in case the new role affects current results
+     */
     if (confirmRoleBtn) {
         confirmRoleBtn.addEventListener('click', async function () {
             if (!pendingRoleChange) return;
@@ -283,6 +432,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    /**
+     * If the role confirmation modal closes without confirmation,
+     * restore the previous role value in the select element.
+     */
     if (confirmRoleModal) {
         confirmRoleModal.addEventListener('hidden.bs.modal', function () {
             if (pendingRoleChange) {
@@ -291,7 +444,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-
+    /**
+     * Attaches click handlers to all ban/unban buttons.
+     * Stores the intended action and opens a confirmation modal.
+     */
     document.querySelectorAll('.ban-toggle-btn').forEach(button => {
         button.addEventListener('click', function () {
             const card = button.closest('.user-card');
@@ -321,6 +477,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    /**
+     * Confirms the pending ban/unban action.
+     *
+     * Behavior:
+     * - sends status update to backend
+     * - updates the status badge and action button
+     * - shows the corresponding success toast
+     * - closes modal and refreshes filtered results
+     */
     if (confirmBanBtn) {
         confirmBanBtn.addEventListener('click', async function () {
             if (!pendingBanAction) return;
@@ -390,12 +555,21 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    /**
+     * Clears any pending ban/unban action when the confirmation modal closes.
+     */
     if (confirmBanModal) {
         confirmBanModal.addEventListener('hidden.bs.modal', function () {
             pendingBanAction = null;
         });
     }
 
+    /**
+     *
+     * Initial page setup
+     *
+     *  Applies initial filters and syncs the search button state.
+     * */
     filterUsers();
     filterUsers();
     updateSearchUsersButtonState();
