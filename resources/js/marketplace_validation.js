@@ -109,7 +109,7 @@ const clearSellerRating = document.getElementById('clearSellerRating');
 // Constants and states
 const POSTS_PER_PAGE = 18;
 const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
-const priceRegex = /^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/;
+const priceRegex = /^(?:\d+)(?:\.\d{1,2})?$/;
 const MAX_PRICE = 10000;
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 const MAX_IMAGES = 3;
@@ -834,24 +834,12 @@ function validatePrice(showError = true) {
         return false;
     }
 
-    if (/[eE+\-]/.test(value)) {
-        if (showError) {
-            setFieldError(
-                postPrice,
-                postPriceError,
-                'No se permite usar e, E, + ni - en el precio.'
-            );
-            postPriceGroup?.classList.add('is-invalid');
-        }
-        return false;
-    }
-
     if (!priceRegex.test(value)) {
         if (showError) {
             setFieldError(
                 postPrice,
                 postPriceError,
-                'Ingresa un precio válido usando solo números y hasta 2 decimales.'
+                'Ingresa un precio válido usando solo números y hasta 2 dígitos después del punto decimal.'
             );
             postPriceGroup?.classList.add('is-invalid');
         }
@@ -865,14 +853,6 @@ function validatePrice(showError = true) {
                 postPriceError,
                 'El precio no puede exceder $10,000.00.'
             );
-            postPriceGroup?.classList.add('is-invalid');
-        }
-        return false;
-    }
-
-    if (Number(value) < 0) {
-        if (showError) {
-            setFieldError(postPrice, postPriceError, 'El precio no puede ser negativo.');
             postPriceGroup?.classList.add('is-invalid');
         }
         return false;
@@ -1029,10 +1009,6 @@ function resetCreatePostForm() {
         postImage.value = '';
     }
 
-    if (postPrice) {
-        postPrice.dataset.previousValidValue = '';
-    }
-
     resetCreatePostValidation();
     updatePublishButtonState();
 }
@@ -1054,9 +1030,6 @@ function resetCreatePostLocalState() {
         postImage.value = '';
     }
 
-    if (postPrice) {
-        postPrice.dataset.previousValidValue = '';
-    }
 
     resetCreatePostValidation();
     updatePublishButtonState();
@@ -1439,7 +1412,7 @@ if (postDescription) {
             setFieldError(
                 postDescription,
                 postDescriptionError,
-                'Has alcanzado el máximo de 500 caracteres, puedes aún someter esa cantidad..'
+                'Has alcanzado el máximo de 500 caracteres, puedes aún someter esa cantidad.'
             );
         } else {
             validateDescription(true);
@@ -1475,63 +1448,13 @@ if (reportDescription) {
 
 if (postPrice) {
     postPrice.addEventListener('input', () => {
-        let value = postPrice.value.replace(/[^0-9.]/g, '');
-
-        if (value.startsWith('.')) {
-            value = '0' + value;
-        }
-
-        const parts = value.split('.');
-        if (parts.length > 2) {
-            value = parts[0] + '.' + parts.slice(1).join('');
-        }
-
-        const firstDotIndex = value.indexOf('.');
-        if (firstDotIndex !== -1) {
-            const integerPart = value.slice(0, firstDotIndex);
-            const decimalPart = value.slice(firstDotIndex + 1).slice(0, 2);
-            value = integerPart + '.' + decimalPart;
-        }
-
-        const numericValue = Number(value);
-
-        if (value && !Number.isNaN(numericValue) && numericValue > MAX_PRICE) {
-            setFieldError(
-                postPrice,
-                postPriceError,
-                'El precio no puede exceder $10,000.00.'
-            );
-            document.getElementById('postPriceGroup')?.classList.add('is-invalid');
-
-            const previousValidValue = postPrice.dataset.previousValidValue || '';
-
-            postPrice.value = previousValidValue;
-        } else {
-            postPrice.value = value;
-            postPrice.dataset.previousValidValue = value;
-            validatePrice(true);
-        }
-
+        validatePrice(true);
         updatePublishButtonState();
         updateCreatePostDirtyState();
     });
 
     postPrice.addEventListener('blur', () => {
-        const rawValue = postPrice.value.trim();
 
-        if (!rawValue) return;
-
-        const numericValue = Number(rawValue);
-
-        if (Number.isNaN(numericValue)) {
-            postPrice.value = '';
-            validatePrice(true);
-            updatePublishButtonState();
-            updateCreatePostDirtyState();
-            return;
-        }
-
-        postPrice.value = numericValue.toFixed(2);
         validatePrice(true);
         updatePublishButtonState();
         updateCreatePostDirtyState();
@@ -1589,7 +1512,7 @@ if (postImage) {
             }
 
             if (!(await isRealJpeg(file))) {
-                showImageError(`"${file.name}" no es un JPEG válido.`);
+                showImageError(`"${file.name}" no es un JPEG/JPG válido.`);
                 postImage.value = '';
                 updatePublishButtonState();
                 return;
