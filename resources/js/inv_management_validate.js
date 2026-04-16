@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /*
      * Validates total quantity fields to ensure they contain a valid
-     * positive integer.
+     * positive integers.
      */
     function validateQuantityField(input, errorElement, showError = true) {
         if (showError) {
