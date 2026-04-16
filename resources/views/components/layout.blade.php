@@ -584,9 +584,13 @@
 
                 <p class="mb-1">
                     <i class="bi bi-envelope text-muted"></i>
-                    <a href="mailto:{{ $superAdminEmail }}" class="text-success text-decoration-none">
-                        {{ $superAdminEmail }}
-                    </a>
+                    @foreach($superAdmin as $admin)
+                    <div>
+                         <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none">
+                            {{ $admin->email }}
+                        </a>
+                    </div>
+                    @endforeach
                 </p>
 
                 <p>
@@ -612,16 +616,24 @@
 
                 <p class="mb-1">
                     <b>Kinventario</b><br>
-                    <a href="mailto:{{ $inventoryAdminEmail }}" class="text-success text-decoration-none">
-                        {{ $inventoryAdminEmail }}
-                    </a>
+                    @foreach($inventoryAdmin as $admin)
+                    <div>
+                         <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none">
+                            {{ $admin->email }}
+                        </a>
+                    </div>
+                    @endforeach
                 </p>
 
                 <p>
                     <b>Kinemercado</b><br>
-                    <a href="mailto:{{ $marketAdminEmail }}" class="text-success text-decoration-none">
-                        {{ $marketAdminEmail }}
-                    </a>
+                    @foreach($marketAdmin as $admin)
+                    <div>
+                         <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none">
+                            {{ $admin->email }}
+                        </a>
+                    </div>
+                    @endforeach
                 </p>
             </div>
         </div>

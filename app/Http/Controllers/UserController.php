@@ -10,13 +10,21 @@ use App\Services\EmailService;
 
 class UserController extends Controller
 {
-    // Mostrar todos los usuarios (solo admin)
+    // Mostrar todos los usuarios 
     public function index()
     {
         $users = User::all();
         return view('search_user', compact('users'));
     }
 
+    public function show()
+    {
+        $user = User::all()
+            ->where('role', 'Admin Inventario, Admin Mercado, Admin Super')
+            ->where('status', 'Activo')
+            ->get();
+        return view('layout', compact('user'));
+    }
     // Actualizar el rol de un usuario
     public function updateRole(Request $request, User $user)
     {
