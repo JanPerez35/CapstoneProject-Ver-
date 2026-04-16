@@ -1,11 +1,12 @@
 <x-layout title="Gestión de Inventario">
     <x-navbar></x-navbar>
 
+    {{-- Loads the client-side validation and UI behavior for the administrative inventory section --}}
     @vite('resources/js/inv_management_validate.js')
 
     <div class="container py-4">
 
-        {{-- Header --}}
+        {{-- Page header introducing the inventory administration section --}}
         <div class="mb-4">
             <h1 class="fw-bold">Gestión de Inventario</h1>
             <p>
@@ -13,26 +14,30 @@
             </p>
         </div>
 
-        {{-- Internal nav --}}
+        {{-- Internal navigation for switching between inventory administration, borrow management, and statistics --}}
         <div class="d-flex flex-wrap gap-2 mb-4">
+            
+            {{-- Inventory administration --}}
             <a href="{{ route('inventory_management') }}"
                class="btn btn-success px-4 fw-semibold">
                 <i class="bi bi-box"></i>
                 Inventario Administrativo
             </a>
 
+            {{-- Borrows --}}
             <a href="{{ route('inventory_management.borrows') }}"
                class="btn btn-outline-success px-4 fw-semibold">
                 <i class="bi bi-card-checklist"></i> Préstamos
             </a>
 
+            {{-- Statistics --}}
             <a href="{{ route('inventory_management.inventory_statistics') }}"
                class="btn btn-outline-success px-4 fw-semibold">
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
         </div>
 
-        {{-- Section heading + button --}}
+        {{-- Section heading and + button --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
             <div>
                 <h2 class="fw-bold mb-1">Inventario Administrativo</h2>
@@ -41,6 +46,7 @@
                 </p>
             </div>
 
+            {{-- Add item button --}}
             <button
                 type="button"
                 class="btn btn-success d-flex align-items-center gap-2"
@@ -52,7 +58,7 @@
             </button>
         </div>
 
-        {{-- Buscar + filtrar --}}
+        {{-- Search and category filter form --}}
         <form method="GET" action="{{ route('inventory_management') }}" class="mb-4">
             <div class="row g-3 align-items-stretch mb-3">
                 <div class="col-lg-10">
@@ -61,6 +67,7 @@
                             <i class="bi bi-search"></i>
                         </span>
 
+                        {{-- Search bar --}}
                         <input
                             type="text"
                             name="search"
@@ -72,6 +79,7 @@
                     </div>
                 </div>
 
+                {{-- Search bar button --}}
                 <div class="col-lg-2 d-grid">
                     <button type="submit" id="inventorySearchBtn" class="btn btn-success h-100 fw-semibold" disabled>
                         Buscar
@@ -79,6 +87,7 @@
                 </div>
             </div>
 
+            {{-- Category filter form --}}
             <div class="row g-3">
                 <div class="col-md-6 col-lg-4">
                     <select
@@ -88,6 +97,7 @@
                     >
                         <option value="">Todas las Categorías</option>
 
+                        {{-- Category filter with current categories on the database --}}
                         @foreach($categories as $cat)
                             <option value="{{ $cat }}" {{ request('category') == $cat ? 'selected' : '' }}>
                                 {{ $cat }}
@@ -96,6 +106,7 @@
                     </select>
                 </div>
 
+                {{-- Clean categories filter --}}
                 <div class="col-auto">
                     <a href="{{ route('inventory_management') }}" class="btn btn-outline-secondary">
                         Limpiar Filtros
@@ -104,11 +115,15 @@
             </div>
         </form>
 
-        {{-- Cards --}}
+        {{-- Inventory cards displaying the current equipment records and available actions --}}
         <div class="row g-4" id="inventoryCards">
             @forelse($items as $item)
+
+                {{-- Single inventory card with item summary, availability state, and action buttons --}}
                 <div class="col-md-6 col-lg-4 inventory-card-wrapper">
                     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
+                        
+                        {{-- Load image using the stored URL of the image on the database --}}
                         <img
                             src="{{ $item->equipment_photo_url ? asset('storage/' . $item->equipment_photo_url) : asset('images/kinventory_images/default.jpg') }}"
                             class="card-img-top"
@@ -116,36 +131,43 @@
                             style="height: 220px; object-fit: contain; object-position: center;"
                         >
 
+                        {{-- Item descripiton display on the card --}}
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <h5 class="card-title mb-0 fw-bold inventory-item-name">
                                     {{ $item->description }}
                                 </h5>
 
+                                {{-- Item Availability display on the card --}}
                                 <span class="label-badge inventory-status-badge {{ $item->available_quantity > 0 ? 'badge-available' : 'badge-unavailable' }}">
                                     {{ $item->available_quantity > 0 ? 'Disponible' : 'No disponible' }}
                                 </span>
                             </div>
 
                             <div class="small mb-3">
+                                {{-- Item Total Quantity display on the card --}}
                                 <div class="d-flex justify-content-between">
                                     <span class="text-muted">Cantidad Total:</span>
                                     <strong class="inventory-total">{{ $item->quantity }}</strong>
                                 </div>
+                                {{-- Item Available Quantity descripiton display on the card --}}
                                 <div class="d-flex justify-content-between">
                                     <span class="text-muted">Cantidad Disponible:</span>
                                     <strong class="text-success inventory-available">{{ $item->available_quantity }}</strong>
                                 </div>
+                                {{-- Item location display on the card --}}
                                 <div class="d-flex justify-content-between">
                                     <span class="text-muted">Ubicación:</span>
                                     <strong class="inventory-location">{{ $item->location }}</strong>
                                 </div>
+                                {{-- Item category display on the card --}}
                                 <div class="d-flex justify-content-between">
                                     <span class="text-muted">Categoría:</span>
                                     <strong class="inventory-category">{{ $item->category }}</strong>
                                 </div>
                             </div>
 
+                            {{-- Edit button on the card --}}
                             <div class="mt-auto d-grid gap-3">
                                 <button
                                     type="button"
@@ -156,6 +178,7 @@
                                     Editar
                                 </button>
 
+                                {{-- Item delete display on the card and delete form --}}
                                 <form
                                     action="{{ route('equipment.destroy', $item->id) }}"
                                     method="POST"
@@ -190,6 +213,7 @@
                                     @csrf
                                     @method('PUT')
 
+                                    {{-- Original item descripiton display on the card and the from to edit it --}}
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">
                                             Nombre del Item <span class="text-danger">*</span>
@@ -203,12 +227,14 @@
                                             maxlength="100"
                                             required
                                         >
+                                        {{-- Validation restrictions for description --}}
                                         <div class="form-text">
                                             Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
                                         </div>
                                         <div class="invalid-feedback d-block error-description"></div>
                                     </div>
 
+                                    {{-- Original item category and dropdown from the current category list --}}
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">
                                             Categoría<span class="text-danger">*</span>
@@ -223,6 +249,7 @@
                                             @endforeach
                                         </select>
 
+                                        {{-- Form to enter a new category --}}
                                         <input
                                             type="text"
                                             class="form-control form-control-lg edit-category-new"
@@ -237,12 +264,14 @@
                                             value="{{ $item->category }}"
                                         >
 
+                                        {{-- Validation restrictions for category --}}
                                         <div class="form-text">
                                             Entre 3 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
                                         </div>
                                         <div class="invalid-feedback d-block error-category"></div>
                                     </div>
 
+                                    {{-- Original item location display on the card and the from to edit it --}}
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">
                                             Ubicación<span class="text-danger">*</span>
@@ -257,6 +286,7 @@
                                             @endforeach
                                         </select>
 
+                                        {{-- Form to add a new location --}}
                                         <input
                                             type="text"
                                             class="form-control form-control-lg edit-location-new"
@@ -271,16 +301,20 @@
                                             value="{{ $item->location }}"
                                         >
 
+                                        {{-- Validation restrictions for location --}}
                                         <div class="form-text">
                                             Entre 3 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
                                         </div>
                                         <div class="invalid-feedback d-block error-location"></div>
                                     </div>
 
+                                    {{-- Original item quantity and Up and Down arrows --}}
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">
                                             Cantidad Total<span class="text-danger">*</span>
                                         </label>
+
+                                        {{-- Choose Total Quanity --}}
                                         <input
                                             type="number"
                                             name="quantity"
@@ -290,16 +324,21 @@
                                             placeholder="Ej. 10"
                                             required
                                         >
+
+                                        {{-- Validation restrictions for Total Quantity --}}
                                         <div class="form-text">
                                             Debe ser un número entero mayor o igual a 1.
                                         </div>
                                         <div class="invalid-feedback d-block error-quantity"></div>
                                     </div>
 
+                                    {{-- Original item available quantity and Up and Down arrows --}}
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">
                                             Cantidad Disponible<span class="text-danger">*</span>
                                         </label>
+
+                                        {{-- Choose Available Quanity --}}
                                         <input
                                             type="number"
                                             name="available_quantity"
@@ -309,16 +348,19 @@
                                             placeholder="Ej. 8"
                                             required
                                         >
+                                        {{-- Validation restrictions for Available Quantity --}}
                                         <div class="form-text">
                                             Debe ser un número entero igual o mayor a 0 y no puede exceder la cantidad total.
                                         </div>
                                         <div class="invalid-feedback d-block error-available"></div>
                                     </div>
 
+                                    {{-- Item button to upload a new image (optional) --}}
                                     <div class="mb-2">
                                         <label for="edit_image_{{ $item->id }}" class="form-label fw-semibold">
                                             Nueva Imagen (opcional)
                                         </label>
+                                        {{-- Form type with maximum 2MB and JPG type --}}
                                         <input
                                             type="file"
                                             class="d-none"
@@ -328,11 +370,13 @@
                                         >
                                     </div>
 
+                                    {{-- Upload new image button --}}
                                     <label for="edit_image_{{ $item->id }}" class="form-control form-control-lg text-center py-3" style="cursor:pointer;">
                                         <i class="bi bi-upload me-2"></i>
                                         Subir nueva imagen
                                     </label>
 
+                                    {{-- 1 Photo maximum per item --}}
                                     <small class="text-muted d-block fst-italic mt-2">
                                         Solo 1 imagen permitida. Formato JPEG/JPG. Máximo 2MB.
                                     </small>
@@ -342,6 +386,8 @@
                                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                                             Cancelar
                                         </button>
+
+                                        {{-- Make the PUT method to the database --}}
                                         <button type="submit" class="btn btn-warning">
                                             Guardar Cambios
                                         </button>
@@ -353,6 +399,7 @@
                 </div>
 
             @empty
+            {{-- Return (no items found if there is no item for the filter selected or at all) --}}
                 <div class="col-12">
                     <div id="itemsEmptyState" class="card border-0 shadow-sm rounded-4">
                         <div class="card-body py-5 text-center">
@@ -376,11 +423,12 @@
         </div>
     </div>
 
-    {{-- Modal Agregar Item --}}
+    {{-- Add Item Modal --}}
     <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
 
+                {{-- Add Item button --}}
                 <div class="modal-header border-0 pb-0 align-items-start">
                     <div class="w-100">
                         <div class="d-flex justify-content-between align-items-center">
@@ -409,6 +457,7 @@
                           novalidate>
                         @csrf
 
+                        {{-- New item description --}}
                         <div class="mb-3">
                             <label for="nombre_item" class="form-label fw-semibold">
                                 Nombre del Item<span class="text-danger">*</span>
@@ -422,17 +471,20 @@
                                 maxlength="100"
                                 required
                             >
+                            {{-- Maximum restrictions for new item description --}}
                             <div class="form-text">
                                 Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
                             </div>
                             <div class="invalid-feedback d-block" id="nombreItemError"></div>
                         </div>
 
+                        {{-- Add new Item category --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">
                                 Categoría<span class="text-danger">*</span>
                             </label>
 
+                            {{-- Select new item from existing category dropdown --}}
                             <select id="categoria_existente" class="form-select form-select-lg mb-2">
                                 <option value="">Selecciona una categoría existente</option>
                                 @foreach($categories as $category)
@@ -440,6 +492,7 @@
                                 @endforeach
                             </select>
 
+                            {{-- Add new category --}}
                             <input
                                 type="text"
                                 id="categoria_nueva"
@@ -450,17 +503,20 @@
 
                             <input type="hidden" id="categoria" name="category">
 
+                            {{-- New item maximum restrictions for category --}}
                             <div class="form-text">
                                 Entre 3 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
                             </div>
                             <div class="invalid-feedback d-block" id="categoriaError"></div>
                         </div>
 
+                        {{-- Add new Item location --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">
                                 Ubicación<span class="text-danger">*</span>
                             </label>
 
+                            {{-- Choose new item location from existing locations --}}
                             <select id="ubicacion_existente" class="form-select form-select-lg mb-2">
                                 <option value="">Selecciona una ubicación existente</option>
                                 @foreach($locations as $location)
@@ -468,6 +524,7 @@
                                 @endforeach
                             </select>
 
+                            {{-- Add new location --}}
                             <input
                                 type="text"
                                 id="ubicacion_nueva"
@@ -478,12 +535,14 @@
 
                             <input type="hidden" id="ubicacion" name="location">
 
+                            {{-- New item maximum restrictions for location --}}
                             <div class="form-text">
                                 Entre 3 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
                             </div>
                             <div class="invalid-feedback d-block" id="ubicacionError"></div>
                         </div>
 
+                        {{-- Add new item Total quantity --}}
                         <div class="mb-3">
                             <label for="cantidad_total" class="form-label fw-semibold">
                                 Cantidad Total<span class="text-danger">*</span>
@@ -497,12 +556,14 @@
                                 placeholder="Ej. 10"
                                 required
                             >
+                            {{-- New item maximum restrictions for Total Quantity --}}
                             <div class="form-text">
                                 Debe ser un número entero mayor o igual a 1.
                             </div>
                             <div class="invalid-feedback d-block" id="cantidadTotalError"></div>
                         </div>
 
+                        {{-- Add new item available quantity --}}
                         <div class="mb-3">
                             <label for="cantidad_disponible" class="form-label fw-semibold">
                                 Cantidad Disponible<span class="text-danger">*</span>
@@ -516,12 +577,14 @@
                                 placeholder="Ej. 8"
                                 required
                             >
+                            {{-- New item maximum restrictions for available quantity --}}
                             <div class="form-text">
                                 Debe ser un número entero igual o mayor a 0 y no puede exceder la cantidad total.
                             </div>
                             <div class="invalid-feedback d-block" id="cantidadDisponibleError"></div>
                         </div>
 
+                        {{-- Add new item image --}}
                         <div class="mb-2">
                             <label for="imagen" class="form-label fw-semibold">
                                 Imagen del Item<span class="text-danger">*</span>
@@ -536,6 +599,7 @@
                             >
                         </div>
 
+                        {{-- Add new item button upload --}}
                         <label for="imagen" class="form-control form-control-lg text-center py-3" style="cursor:pointer;">
                             <i class="bi bi-upload me-2"></i>
                             Subir imagen
@@ -558,10 +622,12 @@
                             >
                         </div>
 
+                        {{-- Cancel the new item addition button --}}
                         <div class="modal-footer border-0 px-0 pb-0">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                                 Cancelar
                             </button>
+                            {{-- Add new item with completed fields to the database --}}
                             <button type="submit" class="btn btn-success" id="submitAddItemBtn" disabled>
                                 <i class="bi bi-plus-lg me-1"></i> Agregar Item
                             </button>
@@ -572,17 +638,19 @@
         </div>
     </div>
 
-    {{-- Modal confirmar borrar --}}
+    {{-- Modal Delete confirmation --}}
     <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0">
                     <div>
                         <h4 class="modal-title fw-bold" id="confirmDeleteModalLabel">Eliminar Item</h4>
+                        {{-- Warning the inventory or super admin of what there are about to do  --}}
                         <p class="text-muted mb-0" id="confirmDeleteText">
                             ¿Seguro que quieres borrar este item?
                         </p>
 
+                        {{-- Warning that the item to be deleted have an active lending pending or active --}}
                         <p class="text-danger fw-semibold mb-0 d-none" id="confirmDeleteWarningText">
                             *Este item tiene un pedido atado.
                         </p>
@@ -592,9 +660,11 @@
                 </div>
 
                 <div class="modal-footer border-0 pt-2">
+                    {{-- Cancel item deletion --}}
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                         Cancelar
                     </button>
+                    {{-- Confirm item deletion --}}
                     <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
                         Sí, Borrar
                     </button>
@@ -603,13 +673,14 @@
         </div>
     </div>
 
-    {{-- Modal confirmar editar --}}
+    {{-- Edit confirmation modal --}}
     <div class="modal fade" id="confirmEditModal" tabindex="-1" aria-labelledby="confirmEditModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0">
                     <div>
                         <h4 class="modal-title fw-bold" id="confirmEditModalLabel">Confirmar edición</h4>
+                        {{-- Edit item confirmation warning --}}
                         <p class="text-muted mb-0" id="confirmEditText">
                             ¿Seguro que quieres editar este item?
                         </p>
@@ -617,10 +688,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                 </div>
 
+                {{-- Cancel edition of item button --}}
                 <div class="modal-footer border-0 pt-2">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                         Cancelar
                     </button>
+                    {{-- Edit item button --}}
                     <button type="button" class="btn btn-warning" id="confirmEditBtn">
                         Sí, Guardar Cambios
                     </button>
@@ -638,6 +711,7 @@
              aria-atomic="true"
              style="width: auto; max-width: fit-content;">
             <div class="d-flex align-items-center">
+                {{-- New Item Toast --}}
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Item añadido correctamente
                 </div>
@@ -658,6 +732,7 @@
              aria-atomic="true"
              style="width: auto; max-width: fit-content;">
             <div class="d-flex align-items-center">
+                {{-- Delete item succesfull Toast --}}
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Item borrado correctamente
                 </div>
@@ -678,6 +753,7 @@
              aria-atomic="true"
              style="width: auto; max-width: fit-content;">
             <div class="d-flex align-items-center">
+                {{-- Edited Item Toast --}}
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                     Item editado correctamente
                 </div>

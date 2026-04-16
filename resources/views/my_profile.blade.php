@@ -1,8 +1,10 @@
 <x-layout title="Mi Perfil">
     <x-navbar></x-navbar>
 
+    {{-- Loads the validation and UI behavior logic for the profile page --}}
     @vite('resources/js/my_profile_validation.js')
 
+    {{-- Custom pagination styling specific to the profile view --}}
     <style>
         .profile-pagination .page-item .page-link {
             border: none;
@@ -45,14 +47,17 @@
 
     <div class="container py-4">
 
-        {{-- Profile summary card --}}
+        {{-- Profile summary card displaying user information and rating --}}
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-body p-4">
                 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
+                    
+                    {{-- User identity and role --}}
                     <div>
                         <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
                             <h1 class="fw-bold mb-0">{{ $user->first_name }} {{ $user->last_name }}</h1>
 
+                            {{-- Role badge dynamically styled --}}
                             <span class="label-badge {{ $user->role_badge_class }}">
                                 {{ $user->role_label }}
                             </span>
@@ -60,6 +65,7 @@
 
                         <p class="text-muted fs-4 mb-0">Miembro de MAIKINE</p>
 
+                        {{-- Seller rating visualization --}}
                         <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
                             <span class="text-muted fw-medium">Calificación:</span>
 
@@ -89,7 +95,7 @@
             </div>
         </div>
 
-        {{-- Section tabs --}}
+        {{-- Navigation tabs for switching between posts and requests --}}
         <ul class="nav w-100 flex-wrap gap-2 mb-4" id="profileTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button
@@ -128,6 +134,7 @@
             {{-- Posts tab --}}
             <div class="tab-pane fade {{ request('tab') === 'requests' ? '' : 'show active' }}" id="posts-pane" role="tabpanel" aria-labelledby="posts-tab">
 
+                {{-- Filter and search controls for user posts --}}
                 <div class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-body p-4">
                         <h2 class="fw-bold mb-1">Mis Publicaciones</h2>
@@ -135,6 +142,7 @@
                             Busca y filtra tus publicaciones por deporte o rango de precio.
                         </p>
 
+                         {{-- Form used for client-side filtering of posts --}}
                         <form id="postsFilterForm" class="mb-0">
                             <div class="row g-3 align-items-stretch mb-3">
                                 <div class="col-lg-10">
@@ -193,7 +201,10 @@
                     </div>
                 </div>
 
+                {{-- Posts grid displaying all user publications --}}
                 <div class="row g-4" id="postsGrid">
+
+                    {{-- Single post card with metadata used for filtering --}}
                     @forelse($posts as $post)
                         <div
                             class="col-md-6 col-lg-4 post-card-wrapper"
@@ -223,8 +234,8 @@
                                                 {{ $post->title }}
                                             </h5>
                                             <span class="label-badge badge-available">
-            {{ $post->status ?? 'Disponible' }}
-        </span>
+                                                {{ $post->status ?? 'Disponible' }}
+                                            </span>
                                         </div>
 
                                         <p
@@ -301,6 +312,7 @@
                         </div>
                     @endforelse
 
+                    {{-- Empty state shown when no posts match filters --}}
                     <div id="postsEmptyState" class="col-12 d-none">
                         <div class="card border-0 shadow-sm rounded-4">
                             <div class="card-body py-5 text-center">
@@ -319,6 +331,8 @@
 
             {{-- Requests tab --}}
             <div class="tab-pane fade {{ request('tab') === 'requests' ? 'show active' : '' }}" id="requests-pane" role="tabpanel" aria-labelledby="requests-tab">
+            
+                {{-- Requests filtering and listing --}}
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-body p-4">
                         <h2 class="fw-bold mb-1">Solicitudes de Artículos</h2>
@@ -336,6 +350,7 @@
                                             <i class="bi bi-search"></i>
                                         </span>
 
+                                        {{-- Filter request by search bar --}}
                                         <input
                                             type="text"
                                             id="requestSearch"
@@ -347,6 +362,7 @@
                                     </div>
                                 </div>
 
+                                {{-- Search filter button --}}
                                 <div class="col-lg-2 d-grid">
                                     <button type="submit" id="requestsSearchBtn" class="btn btn-success h-100 fw-semibold" disabled>
                                         Buscar
@@ -354,6 +370,7 @@
                                 </div>
                             </div>
 
+                            {{-- Filter requests using the request status dropdown --}}
                             <div class="row g-3 align-items-end">
                                 <div class="col-md-6 col-lg-4">
                                     <select id="statusFilter" name="request_status" class="form-select border-2 border-dark">
@@ -366,6 +383,7 @@
                                 </div>
 
                                 <div class="col-auto">
+                                    {{-- Clean filters --}}
                                     <a href="{{ route('my_profile', ['tab' => 'requests']) }}" class="btn btn-outline-secondary">
                                         Limpiar filtros
                                     </a>
@@ -375,10 +393,18 @@
 
                         @forelse($requests as $request)
                             @php
+
+                                /*
+                                 * Prepares a readable string of items in the request.
+                                 * Used for filtering and display purposes.
+                                 */
                                 $itemsText = $request->items->count()
                                     ? $request->items->map(fn($item) => $item->equipment->description . ' x' . $item->quantity)->implode(' ')
                                     : 'sin articulos';
 
+                                /*
+                                 * Normalizes request status for consistent filtering.
+                                 */
                                 $normalizedStatus = in_array($request->status, ['returned', 'finished'])
                                     ? 'finished'
                                     : strtolower($request->status);
@@ -391,6 +417,7 @@
                             >
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                     <div>
+                                        {{-- Show requests quantity and display the current requests --}}
                                         <h5 class="fw-bold mb-1">
                                             @if($request->items->count())
                                                 @foreach($request->items as $item)
@@ -400,11 +427,13 @@
                                                 Sin artículos
                                             @endif
                                         </h5>
-
+                                        
+                                        {{-- Item requested date --}}
                                         <p class="text-muted mb-0">
                                             Solicitado: {{ \Carbon\Carbon::parse($request->created_at)->format('m/d/Y') }}
                                         </p>
 
+                                        {{-- Item returned or pending return date --}}
                                         @if($request->status === 'returned')
                                             <p class="text-muted mb-0">
                                                 Devuelto: {{ \Carbon\Carbon::parse($request->end_time)->format('m/d/Y') }}
@@ -413,6 +442,10 @@
                                     </div>
 
                                     @php
+                                        /*
+                                         * Maps request status to a visual badge class.
+                                         * Ensures consistent UI representation across states.
+                                         */
                                         $statusClass = match($request->status) {
                                             'pending' => 'badge-request-pending',
                                             'approved', 'active' => 'badge-request-approved',
@@ -428,6 +461,7 @@
                                 </div>
                             </div>
                         @empty
+                            {{-- No requests found --}}
                             <div class="alert alert-info rounded-4 mb-0">
                                 No tienes solicitudes registradas todavía.
                             </div>
@@ -443,6 +477,7 @@
                             </div>
                         </div>
 
+                        {{-- Connection for pagination --}}
                         @if($requests->hasPages())
                             <div class="mt-4 d-flex justify-content-center">
                                 {{ $requests->appends(request()->except('page'))->links() }}
@@ -454,7 +489,7 @@
         </div>
     </div>
 
-    {{-- Profile Post Details Modal --}}
+     {{-- Modal used to display detailed information of a selected post --}}
     <div class="modal fade" id="profilePostDetailsModal" tabindex="-1" aria-labelledby="profilePostDetailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow overflow-hidden">
@@ -473,6 +508,7 @@
                 </div>
 
                 <div class="modal-body px-4 pt-2 pb-4 post-details-body">
+                    {{-- Image carousel of the selected post --}}
                     <div id="profilePostImagesCarousel" class="carousel slide mb-4">
                         <div class="carousel-indicators" id="profilePostImagesCarouselIndicators"></div>
 
@@ -486,6 +522,7 @@
                             id="profilePostImagesCarouselPrev"
                         >
                             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            {{-- Previous photo on the carousel --}}
                             <span class="visually-hidden">Anterior</span>
                         </button>
 
@@ -497,6 +534,7 @@
                             id="profilePostImagesCarouselNext"
                         >
                             <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            {{-- Next photo on the carousel --}}
                             <span class="visually-hidden">Siguiente</span>
                         </button>
                     </div>
@@ -505,28 +543,34 @@
                     <hr>
 
                     <div class="row gy-3 pb-2">
+                        {{-- Post price --}}
                         <div class="col-6 text-muted">Precio:</div>
                         <div class="col-6 text-end fw-bold text-success" id="profilePostDetailsPrice">$0.00</div>
 
+                        {{-- Post current status --}}
                         <div class="col-6 text-muted">Estado:</div>
                         <div class="col-6 text-end">
                             <span class="label-badge badge-available" id="profilePostDetailsStatus">Disponible</span>
                         </div>
 
+                        {{-- Post condition --}}
                         <div class="col-6 text-muted">Condición:</div>
                         <div class="col-6 text-end">
                             <span class="label-badge badge-available" id="profilePostDetailsCondition">Sin especificar</span>
                         </div>
 
+                        {{-- Post owner name --}}
                         <div class="col-6 text-muted">Vendedor:</div>
                         <div class="col-6 text-end fw-bold" id="profilePostDetailsSeller">Usuario</div>
 
+                        {{-- Post owner rating --}}
                         <div class="col-6 text-muted">Calificación del Vendedor:</div>
                         <div class="col-6 text-end" id="profilePostDetailsSellerRating">
                             <i class="bi bi-star-fill text-warning me-1"></i>
                             0.0 <span class="text-muted">(0 reseñas)</span>
                         </div>
 
+                        {{-- Post item category --}}
                         <div class="col-6 text-muted">Categoría:</div>
                         <div class="col-6 text-end">
                             <span class="label-badge badge-available" id="profilePostDetailsCategory">Sin categoría</span>
@@ -537,7 +581,7 @@
         </div>
     </div>
 
-    {{-- Delete confirmation modal --}}
+    {{-- Confirmation modal before removing a post from the view --}}
     <div class="modal fade" id="deletePostModal" tabindex="-1" aria-labelledby="deletePostModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -557,10 +601,12 @@
                     </div>
                 </div>
 
+                {{-- Cancel post deletion --}}
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
                         Cancelar
                     </button>
+                    {{-- Confirm post deletion --}}
                     <button type="button" class="btn btn-danger px-4" id="confirmDeletePost">
                         Continuar
                     </button>
@@ -571,6 +617,11 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            
+            /*
+             * Synchronizes tab state with URL parameters.
+             * Ensures the correct tab is active after reload.
+             */
             const postsTab = document.getElementById('posts-tab');
             const requestsTab = document.getElementById('requests-tab');
             const profileTabButtons = document.querySelectorAll('#profileTabs button');
@@ -597,17 +648,19 @@
                 activateTab(postsTab);
             }
 
+            /* User Profile current posts of the user */
             postsTab.addEventListener('click', function () {
                 syncTabButtonStyles(postsTab);
             });
 
+            /* User profile active or finalized requests */
             requestsTab.addEventListener('click', function () {
                 syncTabButtonStyles(requestsTab);
             });
         });
     </script>
 
-    {{-- Toasts --}}
+     {{-- Toast notification displayed after a post is removed --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
         <div
             id="deletePostToast"
@@ -618,6 +671,7 @@
             style="width: auto; max-width: fit-content;"
         >
             <div class="d-flex align-items-center">
+                {{-- Item deleted succesfully toast --}}
                 <div class="toast-body fw-semibold rounded-0 pe-1">
                     Item borrado correctamente.
                 </div>
