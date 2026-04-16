@@ -90,7 +90,7 @@
 
                             <div class="mb-3">
                                 <label for="postDescription" class="form-label fw-semibold">
-                                    Description (Opcional)
+                                    Descripción (Opcional)
                                 </label>
                                 <textarea
                                     class="form-control form-control-lg"
@@ -128,7 +128,7 @@
 
 
                                     <small class="text-muted d-block fst-italic">
-                                        Escribe solo números y hasta 2 decimales.
+                                        Escribe solo números y hasta 2 dígitos después del punto decimal.
                                         El máximo valor permitido es $10,000.00.
                                     </small>
                                     <div class="invalid-feedback d-block" id="postPriceError"></div>
@@ -145,7 +145,7 @@
                                         <option value="Tenis">Tenis</option>
                                         <option value="Fútbol">Fútbol</option>
                                         <option value="Deporte Recreativo">Deporte Recreativo</option>
-                                        <option value="Volibol">Volibol</option>
+                                        <option value="Voleibol">Voleibol</option>
                                         <option value="Levantamiento de Pesas">Levantamiento de Pesas</option>
                                         <option  value="Otros">Otros</option>
                                     </select>
@@ -276,7 +276,7 @@
                     <option value="Tenis">Tenis</option>
                     <option value="Fútbol">Fútbol</option>
                     <option value="Deporte Recreativo">Deporte Recreativo</option>
-                    <option value="Volibol">Volibol</option>
+                    <option value="Voleibol">Voleibol</option>
                     <option value="Levantamiento de Pesas">Levantamiento de Pesas</option>
                     <option value="Otros">Otros</option>
                 </select>
@@ -461,7 +461,7 @@
                             <div class="col-6">
                                 <button
                                     type="button"
-                                    class="btn btn-outline-secondary w-100 rounded-3 report-btn"
+                                    class="btn btn-danger w-100 rounded-3"
                                     data-bs-dismiss="modal"
                                     data-bs-toggle="modal"
                                     data-bs-target="#reportUserModal"
@@ -472,7 +472,7 @@
 
 
                             <div class="col-6">
-                                <a href="{{ url('/my_messages') }}" id="postDetailsChatLink" class="btn btn-outline-success w-100 rounded-3">
+                                <a href="{{ url('/my_messages') }}" id="postDetailsChatLink" class="btn btn-success w-100 rounded-3">
                                     <i class="bi bi-chat me-2"></i> Enviar Mensaje
                                 </a>
                             </div>
