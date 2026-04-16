@@ -175,7 +175,7 @@
 
                                 <div class="col-md-6 col-lg-4">
                                     <select id="priceFilter" class="form-select border-2 border-dark">
-                                        <option value="">Todos los precios</option>
+                                        <option value="">Todos los Precios</option>
                                         <option value="0-25">$0 - $25</option>
                                         <option value="26-50">$26 - $50</option>
                                         <option value="51-100">$51 - $100</option>
@@ -185,7 +185,7 @@
 
                                 <div class="col-auto">
                                     <button type="button" id="clearPostsFilters" class="btn btn-outline-secondary">
-                                        Limpiar filtros
+                                        Limpiar Filtros
                                     </button>
                                 </div>
                             </div>

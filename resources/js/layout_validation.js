@@ -1,11 +1,36 @@
+/**
+ * Initializes layout-level interactive behavior once the DOM is ready.
+ *
+ * Responsibilities:
+ * - validates the loan request form inside the cart modal
+ * - controls special-case fields visibility
+ * - manages cart quantity buttons and cart badge updates
+ * - handles cart item removal confirmation
+ * - validates uploaded PDF files for terms and conditions
+ * - reopens the cart modal when requested by backend session state
+ * - shows global success toasts after page reloads
+ */
+
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('#cartModal form');
     const body = document.body;
+
+    /**
+     * If the cart form is not present on the current page,
+     * the script still shows any pending toast notifications
+     * and exits early to avoid null-reference errors.
+     */
     if (!form) {
         showGlobalToasts(body);
         return;
     }
 
+    /**
+     * Form field references
+     *
+     * Main borrowing form fields and related UI elements used throughout
+     * the validation and modal behavior logic.
+     */
     const pickupDate = document.getElementById('pickup_date');
     const pickupTime = document.getElementById('pickup_time');
     const specialCase = document.getElementById('special_case');
@@ -16,16 +41,31 @@ document.addEventListener('DOMContentLoaded', function () {
     const submitBtn = document.getElementById('submitLoanRequest');
     const cartCount = document.getElementById('cartCount');
 
+    /**
+    * Validation message containers/variables
+    *
+    * These elements receive inline error messages during client-side validation.
+    * */
     const pickupDateError = document.getElementById('pickup_date_error');
     const pickupTimeError = document.getElementById('pickup_time_error');
     const returnDateError = document.getElementById('return_date_error');
     const specialReasonError = document.getElementById('special_reason_error');
     const acceptTermsError = document.getElementById('accept_terms_error');
 
+    /**
+    * Cart item removal modal references
+    *
+    * Used to confirm before deleting an item from the cart.
+    * */
     const removeCartConfirmModal = document.getElementById('removeCartConfirmModal');
     const removeCartConfirmText = document.getElementById('removeCartConfirmText');
     const confirmRemoveCartItem = document.getElementById('confirmRemoveCartItem');
 
+    /**
+     * Terms PDF upload references
+     *
+     * Used in the terms modal for validating and submitting a replacement PDF.
+     */
     const openTermsPdfPicker = document.getElementById('openTermsPdfPicker');
     const termsPdfInput = document.getElementById('termsPdfInput');
     const termsPdfError = document.getElementById('termsPdfError');
@@ -34,21 +74,49 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmTermsUpdateModal = document.getElementById('confirmTermsUpdateModal');
     const confirmTermsUpdateBtn = document.getElementById('confirmTermsUpdateBtn');
 
-
+    /**
+     * Allowed characters for the special-case reason field.
+     * Restricts input to letters, accented characters, numbers,
+     * spaces, periods, commas, and hyphens.
+     */
     const allowedReasonRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
 
+    /**
+     * Stores the ID of the hidden delete form corresponding
+     * to the cart item selected for removal.
+     */
     let removeCartFormId = null;
 
+    /**
+     * Displays a validation error by marking the field invalid
+     * and writing a message into its paired error element.
+     *
+     * @param {HTMLElement|null} field - Input field to mark invalid.
+     * @param {HTMLElement|null} errorEl - Element where error text is displayed.
+     * @param {string} message - Validation message to show.
+     */
     function setError(field, errorEl, message) {
         if (field) field.classList.add('is-invalid');
         if (errorEl) errorEl.textContent = message;
     }
 
+    /**
+     * Clears the invalid state and removes any visible error message
+     * for a given input field.
+     *
+     * @param {HTMLElement|null} field - Input field to clear.
+     * @param {HTMLElement|null} errorEl - Associated error message container.
+     */
     function clearError(field, errorEl) {
         if (field) field.classList.remove('is-invalid');
         if (errorEl) errorEl.textContent = '';
     }
 
+
+    /**
+     * Hides and clears the PDF upload validation message
+     * for the terms and conditions file picker.
+     */
     function clearTermsPdfError() {
         if (termsPdfError) {
             termsPdfError.textContent = '';
@@ -56,6 +124,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    /**
+     * Shows a validation message related to the selected terms PDF file.
+     *
+     * @param {string} message - Error text to display.
+     */
     function setTermsPdfError(message) {
         if (termsPdfError) {
             termsPdfError.textContent = message;
@@ -63,6 +136,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    /**
+     * Validates the uploaded terms file by checking that:
+     * - a file was selected
+     * - the file is a PDF by MIME type or extension
+     *
+     * @param {File|undefined} file - Uploaded file object.
+     * @returns {boolean} True when the file is valid.
+     */
     function validateTermsPdfFile(file) {
         if (!file) {
             setTermsPdfError('Debes seleccionar un archivo PDF.');
@@ -81,33 +162,54 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
+    /**
+     * Checks whether a given date falls on a blocked pickup/return day.
+     * Blocked days are Friday, Saturday, and Sunday.
+     *
+     * @param {string} dateString - Date in YYYY-MM-DD format.
+     * @returns {boolean} True if the date is not allowed.
+     */
     function isBlockedPickupDay(dateString) {
         const date = new Date(`${dateString}T00:00:00`);
         const day = date.getDay();
+        //To add context here, the week starts at Sunday which here is represented by a 0.
         return day === 5 || day === 6 || day === 0;
     }
 
+    /**
+     * Returns today's date as a YYYY-MM-DD string with time removed.
+     *
+     * @returns {string} Today's date formatted for date inputs.
+     */
     function todayString() {
         const d = new Date();
         d.setHours(0, 0, 0, 0);
         return d.toISOString().split('T')[0];
     }
 
+    /**
+     * Calculates the earliest allowed pickup date based on business rules:
+     * - pickup starts from tomorrow
+     * - if it is already 1:00 PM or later, tomorrow is skipped
+     * - Friday, Saturday, and Sunday are not allowed
+     *
+     * @returns {Date} Next valid pickup date.
+     */
     function getNextAllowedPickupDate() {
         const now = new Date();
         const minDate = new Date();
         minDate.setHours(0, 0, 0, 0);
 
-        // Base: mañana
+        // Base: tomorrow
         minDate.setDate(minDate.getDate() + 1);
 
-        // Si ya pasó la 1:00 PM, entonces no puede pedir para mañana
-        // y se mueve al próximo día adicional
+        // If its past 1:00 PM, then the user can't asl for tomorrow
+        // and is moved for the next available day.
         if (now.getHours() >= 13) {
             minDate.setDate(minDate.getDate() + 1);
         }
 
-        // Saltar viernes, sábado y domingo
+        // Skips fridays, saturdays, and sundays
         while ([5, 6, 0].includes(minDate.getDay())) {
             minDate.setDate(minDate.getDate() + 1);
         }
@@ -115,6 +217,13 @@ document.addEventListener('DOMContentLoaded', function () {
         return minDate;
     }
 
+    /**
+     * Formats a Date object into the YYYY-MM-DD format
+     * expected by HTML date inputs.
+     *
+     * @param {Date} date - JavaScript Date object.
+     * @returns {string} Formatted date string.
+     */
     function formatDateToInputValue(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -122,10 +231,19 @@ document.addEventListener('DOMContentLoaded', function () {
         return `${year}-${month}-${day}`;
     }
 
+    /**
+     * Returns the earliest allowed pickup date as an input-ready string.
+     *
+     * @returns {string} Minimum pickup date in YYYY-MM-DD format.
+     */
     function minPickupDateString() {
         return formatDateToInputValue(getNextAllowedPickupDate());
     }
 
+    /**
+     * Applies minimum allowed dates to pickup and return date inputs
+     * so users cannot select dates earlier than the allowed threshold.
+     */
     function setMinDates() {
         const minPickup = minPickupDateString();
 
@@ -138,6 +256,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    /**
+     * Shows or hides the special-case fields depending on whether
+     * the special-case checkbox is selected.
+     *
+     * When hidden, it also resets those fields and clears errors.
+     */
     function toggleSpecialCaseFields() {
         if (!specialCase || !specialCaseFields) return;
 
@@ -162,6 +286,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    /**
+     * Validates the written reason for a special-case request.
+     * Rules:
+     * - required only when special case is enabled
+     * - must contain only allowed characters
+     * - must be between 10 and 500 characters
+     *
+     * @param {boolean} showErrors - Whether to display inline messages.
+     * @returns {boolean} True when valid.
+     */
     function validateSpecialReason(showErrors = true) {
         if (!specialCase?.checked) {
             clearError(specialReason, specialReasonError);
@@ -209,6 +343,15 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
+    /**
+     * Validates the pickup date according to system rules:
+     * - required
+     * - cannot be earlier than the next allowed business day
+     * - cannot be Friday, Saturday, or Sunday
+     *
+     * @param {boolean} showErrors - Whether to display inline messages.
+     * @returns {boolean} True when valid.
+     */
     function validatePickupDate(showErrors = true) {
         const minAllowed = minPickupDateString();
 
@@ -242,6 +385,17 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
+    /**
+     * Validates the proposed return date for special-case requests.
+     * Rules:
+     * - required only for special cases
+     * - must be in the future
+     * - cannot be Friday, Saturday, or Sunday
+     * - cannot be earlier than the pickup date
+     *
+     * @param {boolean} showErrors - Whether to display inline messages.
+     * @returns {boolean} True when valid.
+     */
     function validateReturnDate(showErrors = true) {
         if (!specialCase?.checked) {
             clearError(returnDate, returnDateError);
@@ -277,6 +431,12 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
+    /**
+     * Validates that the pickup time field has a selected value.
+     *
+     * @param {boolean} showErrors - Whether to display inline messages.
+     * @returns {boolean} True when valid.
+     */
     function validatePickupTime(showErrors = true) {
         if (showErrors) clearError(pickupTime, pickupTimeError);
 
@@ -288,6 +448,12 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
+    /**
+     * Validates that the user accepted the loan terms and conditions.
+     *
+     * @param {boolean} showErrors - Whether to display inline messages.
+     * @returns {boolean} True when checked.
+     */
     function validateTerms(showErrors = true) {
         if (showErrors) clearError(acceptTerms, acceptTermsError);
 
@@ -299,6 +465,13 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
+
+    /**
+     * Runs all form validations and updates the submit button state.
+     *
+     * @param {boolean} showErrors - Whether to show validation feedback.
+     * @returns {boolean} True only if all required fields are valid.
+     */
     function validateForm(showErrors = true) {
         let valid = true;
 
@@ -313,11 +486,19 @@ document.addEventListener('DOMContentLoaded', function () {
         return valid;
     }
 
+    /**
+     * Re-checks form validity without aggressively showing error messages.
+     * Used for live UI updates while the user is still filling the form.
+     */
     function updateSubmitButtonStateQuietly() {
         const valid = validateForm(false);
         if (submitBtn) submitBtn.disabled = !valid;
     }
 
+    /**
+     * Recalculates the cart badge using all hidden cart quantity inputs,
+     * then shows or hides the badge depending on whether the total is zero.
+     */
     function updateCartBadgeFromRows() {
         if (!cartCount) return;
 
@@ -337,6 +518,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    /**
+     * Attaches increment/decrement controls for each cart item row.
+     * Keeps quantities between 1 and the maximum available stock,
+     * and updates the visible badge count in real time.
+     */
     function attachCartQuantityControls() {
         document.querySelectorAll('.cart-item-row').forEach(row => {
             const decreaseBtn = row.querySelector('.decrease-cart-item');
@@ -348,14 +534,28 @@ document.addEventListener('DOMContentLoaded', function () {
             const min = 1;
             const max = Number(row.dataset.maxQuantity || 1);
 
+            /**
+             * Clears the validation message for a single cart row.
+             */
             function clearItemError() {
                 if (errorEl) errorEl.textContent = '';
             }
 
+            /**
+             * Shows a validation message for a single cart row.
+             *
+             * @param {string} message - Error shown under the row controls.
+             */
             function setItemError(message) {
                 if (errorEl) errorEl.textContent = message;
             }
 
+            /**
+             * Synchronizes the cart quantity display and hidden input value
+             * for one row, then refreshes the cart badge total.
+             *
+             * @param {number} newQty - New quantity to apply.
+             */
             function syncQuantity(newQty) {
                 if (qtyDisplay) qtyDisplay.textContent = String(newQty);
                 if (qtyInput) qtyInput.value = String(newQty);
@@ -381,6 +581,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    /**
+     * Reopens the cart modal after page load when the backend indicates
+     * that the previous request should return the user to that modal state.
+     * The condition is that if the user deletes an item from the cart but there
+     * are still items inside the cart modal reopens unless the user leaves.
+     *
+     * @param {HTMLElement} bodyEl - Document body carrying dataset flags.
+     */
     function reopenCartModalIfNeeded(bodyEl) {
         const shouldReopen = bodyEl?.dataset?.reopenCartModal === '1';
         const cartModalEl = document.getElementById('cartModal');
@@ -391,6 +599,11 @@ document.addEventListener('DOMContentLoaded', function () {
         cartModalInstance.show();
     }
 
+    /**
+     * Attaches behavior for the remove-from-cart confirmation flow.
+     * The user first opens a confirmation modal, then the matching hidden
+     * delete form is submitted only if removal is confirmed.
+     */
     function attachRemoveCartConfirmEvents() {
         if (!removeCartConfirmModal || !confirmRemoveCartItem) return;
 
@@ -418,6 +631,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    /**
+     * Displays any success toasts requested through backend session data.
+     * Supports cart add, request submit, cart removal, and terms update toasts.
+     *
+     * @param {HTMLElement} bodyEl - Document body containing session flags in data attributes.
+     */
     function showGlobalToasts(bodyEl) {
         const cartSuccess = bodyEl?.dataset?.cartSuccess || '';
         const requestSuccess = bodyEl?.dataset?.requestSuccess || '';
@@ -457,6 +676,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    /**
+    * Live field validation listeners
+    *
+    * These listeners validate fields as the user interacts with them
+    * and quietly update whether the submit button should stay enabled.
+    * They serve as live/real-time  validation.
+    */
     if (pickupDate) {
         pickupDate.addEventListener('input', () => {
             validatePickupDate(true);
@@ -508,6 +734,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    /**
+     * Prevents the user from exceeding the 500-character limit
+     * before the input is actually inserted into the textarea.
+     */
     if (specialReason) {
         specialReason.addEventListener('beforeinput', (e) => {
             if (!specialCase?.checked) return;
@@ -543,6 +773,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    /**
+     * Terms PDF upload flow
+     *
+     * Lets the user open the hidden file picker, validates the selected PDF,
+     * shows the filename, and asks for confirmation before upload.
+     */
     if (openTermsPdfPicker && termsPdfInput) {
         openTermsPdfPicker.addEventListener('click', () => {
             clearTermsPdfError();
@@ -589,6 +825,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    /**
+     * Validation checkpoint before the cart loan form submits.
+     * Prevents submission if any required client-side rule fails.
+     */
     form.addEventListener('submit', function (e) {
         toggleSpecialCaseFields();
 
@@ -597,6 +837,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    /**
+    * Initial page setup
+    *
+    * Applies default form state, binds cart interactions, restores modal state,
+    * updates counters, and shows any toast messages waiting from the backend.
+    */
     setMinDates();
     toggleSpecialCaseFields();
     attachCartQuantityControls();

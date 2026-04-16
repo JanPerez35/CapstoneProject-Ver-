@@ -1,4 +1,19 @@
+
+/**
+ * Initializes Kinventory/Kinventario page behavior after the DOM is fully loaded.
+ * Handles:
+ * - search button enable/disable behavior
+ * - scroll position persistence across reloads
+ * - borrow modal population
+ * - quantity validation before adding items to the cart
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
+
+    /**
+     * Storage key used to persist the user's vertical scroll position
+     * between page navigations and form submissions.
+     */
     const SCROLL_KEY = 'kinventoryScrollY';
 
     const borrowButtons = document.querySelectorAll('.open-borrow-modal');
@@ -15,14 +30,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('kinventorySearchInput');
     const searchBtn = document.getElementById('kinventorySearchBtn');
 
+    /**
+     * Stores the current window scroll position in sessionStorage.
+     * This helps restore the user's location after page reloads.
+     */
     function saveScrollPosition() {
         sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
     }
 
+    /**
+     * Removes any previously saved scroll position from sessionStorage.
+     */
     function clearScrollPosition() {
         sessionStorage.removeItem(SCROLL_KEY);
     }
 
+    /**
+     * Enables the search button only when the search input contains
+     * non-whitespace text. Prevents empty searches from being submitted.
+     */
     function updateSearchButtonState() {
         if (!searchInput || !searchBtn) return;
 
@@ -31,10 +57,21 @@ document.addEventListener('DOMContentLoaded', () => {
         searchBtn.disabled = !hasText;
     }
 
+    /**
+     * Determines whether a clicked link belongs to the pagination controls.
+     *
+     * @param {HTMLElement} link - The anchor element being checked.
+     * @returns {boolean} True if the link is inside a pagination component.
+     */
     function isPaginationLink(link) {
         return !!link.closest('.pagination');
     }
 
+    /**
+     * Restores the user's previous scroll position after the page reloads.
+     * Retries multiple times because content may finish rendering slightly
+     * after the initial page load. Returns to said position for consistency.
+     */
     function restoreScrollPosition() {
         const savedScrollY = sessionStorage.getItem(SCROLL_KEY);
         if (savedScrollY === null) return;
@@ -94,7 +131,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateSearchButtonState();
 
-
+    /**
+     * Verifies that all required borrow modal elements exist before
+     * attaching modal-specific behavior and validation logic.
+     */
     const hasBorrowModal =
         borrowModal &&
         borrowEquipmentId &&
@@ -108,6 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!hasBorrowModal) return;
 
+    /**
+     * Tracks the item currently selected in the borrow modal.
+     * This data is populated from the clicked "Pedir Prestado" button.
+     */
     let currentItem = {
         id: null,
         name: '',
@@ -116,22 +160,49 @@ document.addEventListener('DOMContentLoaded', () => {
         location: ''
     };
 
+    /**
+     * Displays a validation error for the borrow quantity input.
+     *
+     * @param {string} message - Error message shown below the input.
+     */
     function setBorrowQuantityError(message) {
         borrowQuantity.classList.add('is-invalid');
         borrowQuantityError.textContent = message;
         borrowQuantityError.style.display = 'block';
     }
 
+    /**
+     * Clears any active validation error from the borrow quantity input.
+     */
     function clearBorrowQuantityError() {
         borrowQuantity.classList.remove('is-invalid');
         borrowQuantityError.textContent = '';
         borrowQuantityError.style.display = 'none';
     }
 
+    /**
+     * Parses the current quantity input value as an integer.
+     *
+     * @returns {number|null} Parsed integer value, or null if invalid.
+     */
+
     function normalizeQuantityValue() {
         const value = parseInt(borrowQuantity.value, 10);
         return Number.isNaN(value) ? null : value;
     }
+
+    /**
+     * Validates the borrow quantity against required rules:
+     * - must not be empty
+     * - must be a valid number
+     * - must be at least 1
+     * - must not exceed available stock
+     *
+     * It provides safety against code injection.
+     *
+     * @param {boolean} showError - Whether to display validation feedback.
+     * @returns {boolean} True when the quantity is valid.
+     */
 
     function validateBorrowQuantity(showError = true) {
         const value = normalizeQuantityValue();
@@ -168,6 +239,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
+    /**
+     * Populates the borrow modal with item-specific data when a borrow
+     * button is clicked, then resets the quantity input to a safe default.
+     */
     borrowButtons.forEach((button) => {
         button.addEventListener('click', () => {
             currentItem.id = button.dataset.itemId || '';
@@ -193,6 +268,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    /**
+     * Performs live validation while the user types in the quantity field.
+     * Automatically corrects values that fall outside the valid range.
+     */
     borrowQuantity.addEventListener('input', () => {
         if (borrowQuantity.value === '') {
             setBorrowQuantityError('Debes pedir al menos 1 unidad.');
@@ -221,6 +300,9 @@ document.addEventListener('DOMContentLoaded', () => {
         clearBorrowQuantityError();
     });
 
+    /**
+     * Prevents keyboard-based incrementing beyond the available stock.
+     */
     borrowQuantity.addEventListener('keydown', (event) => {
         const value = normalizeQuantityValue();
 
@@ -234,6 +316,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    /**
+     * Prevents mouse-wheel incrementing beyond the available stock
+     * when the quantity input is focused. The team mainly used laptops but this was
+     * necessary for computers that use a mouse when deployed.
+     */
     borrowQuantity.addEventListener('wheel', (event) => {
         if (document.activeElement !== borrowQuantity) return;
 
@@ -245,6 +332,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, { passive: false });
 
+    /**
+     * Restores a default value if the input is left empty and re-validates
+     * the field when the user leaves the quantity input.
+     */
     borrowQuantity.addEventListener('blur', () => {
         if (borrowQuantity.value === '') {
             borrowQuantity.value = '1';
@@ -253,6 +344,10 @@ document.addEventListener('DOMContentLoaded', () => {
         validateBorrowQuantity(true);
     });
 
+    /**
+     * Validates pasted input before it is applied to the quantity field.
+     * Rejects non-numeric, too-small, and too-large values.
+     */
     borrowQuantity.addEventListener('paste', (event) => {
         const pastedText = (event.clipboardData || window.clipboardData).getData('text').trim();
         const pastedValue = parseInt(pastedText, 10);
@@ -280,6 +375,11 @@ document.addEventListener('DOMContentLoaded', () => {
         clearBorrowQuantityError();
     });
 
+    /**
+     * Validates the quantity before submitting the borrow form.
+     * Saves scroll position so the user can return to the same location
+     * after the request completes.
+     */
     confirmAddToCart.addEventListener('click', () => {
         if (!validateBorrowQuantity(true)) {
             return;

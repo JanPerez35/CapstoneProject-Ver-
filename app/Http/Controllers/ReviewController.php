@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use App\Models\Review;
 use App\Models\User;
+use App\Models\UserReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -25,7 +26,7 @@ class ReviewController extends Controller
         //     ], 422);
         // }
 
-        $status = $request->rating < 3 ? 'negative' : 'confident';
+        $status = $request->rating < 2 ? 'negative' : 'confident';
 
         $comment = null;
 
@@ -54,6 +55,23 @@ class ReviewController extends Controller
 
         $average = Review::where('seller_id', $seller->id)->avg('rating');
         $count = Review::where('seller_id', $seller->id)->count();
+
+        // Auto-report when seller average is 2.0 or lower
+        if ($average !== null && $average <= 2) {
+            UserReport::updateOrCreate(
+                [
+                    'reported_user_id' => $seller->id,
+                    'report_reason' => 'Calificación baja',
+                    'status' => 'pending',
+                ],
+                [
+                    'user_id' => $reviewer->id,
+                    'post_id' => $post->id,
+                    'description' => 'El usuario tiene 2 estrellas o menos en promedio, lo que puede indicar una posible estafa o comportamiento indebido.',
+                    'resolved_at' => null,
+                ]
+            );
+        }
 
         return response()->json([
             'message' => 'Calificación guardada correctamente.',

@@ -207,20 +207,22 @@ Route::middleware('auth')->group(function () {
         return 'IPv6 test';
     });
 
-    // Temporary routes until user tables are connected
-    Route::get('/test-email/request-approved', [EmailController::class, 'requestApproved']);
-    Route::get('/test-email/request-denied', [EmailController::class, 'requestDenied']);
-    Route::get('/test-email/user-banned', [EmailController::class, 'userBanned']);
-    Route::get('/test-email/user-unbanned', [EmailController::class, 'userUnbanned']);
 
-    //This is to test emails with Mailpit
-    Route::get('/test-email', function () {
-        Mail::raw('Esto es un test desde MAIKINE', function ($message) {
-            $message->to('test@test.com')
-                ->subject('TEST MAIKINE');
-        });
 
-        return 'Email enviado';
+});
+
+// Temporary routes until user tables are connected
+Route::get('/test-email/request-approved', [EmailController::class, 'requestApproved']);
+Route::get('/test-email/request-denied', [EmailController::class, 'requestDenied']);
+Route::get('/test-email/user-banned', [EmailController::class, 'userBanned']);
+Route::get('/test-email/user-unbanned', [EmailController::class, 'userUnbanned']);
+
+//This is to test emails with Mailpit
+Route::get('/test-email', function () {
+    Mail::raw('Esto es un test desde MAIKINE', function ($message) {
+        $message->to('test@test.com')
+            ->subject('TEST MAIKINE');
     });
 
+    return 'Email enviado';
 });
