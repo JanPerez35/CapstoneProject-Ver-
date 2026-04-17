@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const reportType = $('reportType');
     const monthFilterWrapper = $('monthFilterWrapper');
+    const yearFilterWrapper = $('yearFilterWrapper');
     const reportMonth = $('reportMonth');
     const reportYear = $('reportYear');
     const filterClassroom = $('filterClassroom');
@@ -47,29 +48,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteClassroomNameText = $('deleteClassroomNameText');
     const confirmDeleteClassroomBtn = $('confirmDeleteClassroomBtn');
 
-    const configAreaSalon = $('configAreaSalon');
-    const configUtilidades = $('configUtilidades');
-    const configElectricidad = $('configElectricidad');
-    const configAgua = $('configAgua');
-    const configDiaria1 = $('configDiaria1');
-    const configSemanal1 = $('configSemanal1');
-    const configMensual1 = $('configMensual1');
-    const configDiaria2 = $('configDiaria2');
-    const configSemanal2 = $('configSemanal2');
-    const configMensual2 = $('configMensual2');
-    const configDiaria3 = $('configDiaria3');
-    const configSemanal3 = $('configSemanal3');
-    const configMensual3 = $('configMensual3');
+    const configClassroomArea = $('configClassroomArea');
+    const configUtilities = $('configUtilities');
+    const configElectricity = $('configElectricity');
+    const configWater = $('configWater');
+    const configDaily1 = $('configDaily1');
+    const configWeekly1 = $('configWeekly1');
+    const configMonthly1 = $('configMonthly1');
+    const configDaily2 = $('configDaily2');
+    const configWeekly2 = $('configWeekly2');
+    const configMonthly2 = $('configMonthly2');
+    const configDaily3 = $('configDaily3');
+    const configWeekly3 = $('configWeekly3');
+    const configMonthly3 = $('configMonthly3');
 
-    const configPreviewLaborable = $('configPreviewLaborable');
-    const configPreviewSabado = $('configPreviewSabado');
-    const configPreviewDomingo = $('configPreviewDomingo');
+    const configWorkdayPreview = $('configWorkdayPreview');
+    const configSaturdayPreview = $('configSaturdayPreview');
+    const configSundayHolidayPreview = $('configSundayHolidayPreview');
 
     const rentalClassroom = $('rentalClassroom');
-    const rentalResponsable = $('rentalResponsable');
+    const rentalResponsible = $('rentalResponsible');
     const rentalStartTime = $('rentalStartTime');
     const rentalEndTime = $('rentalEndTime');
-    const rentalDescripcion = $('rentalDescripcion');
+    const rentalDescription = $('rentalDescription');
     const rentalPeriodType = $('rentalPeriodType');
 
     const rentalRangeType = $('rentalRangeType');
@@ -95,8 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const detectedPeriodLabel = $('detectedPeriodLabel');
     const detectedHoursLabel = $('detectedHoursLabel');
     const servicesRequiredMessage = $('servicesRequiredMessage');
-    const rentalResponsableError = $('rentalResponsableError');
-    const rentalDescripcionError = $('rentalDescripcionError');
+    const rentalResponsibleError = $('rentalResponsibleError');
+    const rentalDescriptionError = $('rentalDescriptionError');
 
     const confirmDeleteCostEntryBtn = $('confirmDeleteCostEntryBtn');
     const deleteButtons = () => [...document.querySelectorAll('.delete-cost-row-btn')];
@@ -129,15 +130,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let servicesTouched = false;
 
     const facilityConfig = window.facilityManagementConfig || {};
-    const tarifasPorSalon = facilityConfig.tarifasPorSalon || {};
+    const ratesByClassroom = facilityConfig.ratesByClassroom || {};
 
 
     function clearRatesForm() {
         [
-            configAreaSalon, configUtilidades, configElectricidad, configAgua,
-            configDiaria1, configSemanal1, configMensual1,
-            configDiaria2, configSemanal2, configMensual2,
-            configDiaria3, configSemanal3, configMensual3,
+            configClassroomArea, configUtilities, configElectricity, configWater,
+            configDaily1, configWeekly1, configMonthly1,
+            configDaily2, configWeekly2, configMonthly2,
+            configDaily3, configWeekly3, configMonthly3,
         ].forEach((input) => {
             input.value = '';
         });
@@ -407,149 +408,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const MAX_RATE_PRICE = 500;
     const MAX_AREA_SQFT = 25000000.00;
 
-    function sanitizeMoneyInput(input) {
-        let value = input.value.replace(/[^0-9.]/g, '');
-
-        if (value.startsWith('.')) {
-            value = '0' + value;
-        }
-
-        const parts = value.split('.');
-        if (parts.length > 2) {
-            value = parts[0] + '.' + parts.slice(1).join('');
-        }
-
-        const firstDotIndex = value.indexOf('.');
-        if (firstDotIndex !== -1) {
-            const integerPart = value.slice(0, firstDotIndex);
-            const decimalPart = value.slice(firstDotIndex + 1).slice(0, 2);
-            value = integerPart + '.' + decimalPart;
-        }
-
-        const numericValue = Number(value);
-
-        if (value && !Number.isNaN(numericValue) && numericValue > MAX_RATE_PRICE) {
-            const errorElement = document.getElementById(`${input.id}Error`);
-            const inputGroup = input.closest('.money-input-group');
-
-            setFieldError(
-                input,
-                errorElement,
-                'El valor no puede exceder $500.00.'
-            );
-            inputGroup?.classList.add('is-invalid');
-
-            const previousValidValue = input.dataset.previousValidValue || '';
-            input.value = previousValidValue || '';
-        } else {
-            input.value = value;
-            input.dataset.previousValidValue = value;
-            validateMoneyField(input, true);
-        }
-    }
-
-    function normalizeMoneyInput(input) {
-        const rawValue = input.value.trim();
-
-        if (!rawValue){
-            validateMoneyField(input, true);
-            return;
-        }
-
-        const numericValue = Number(rawValue);
-        const errorElement = document.getElementById(`${input.id}Error`);
-        const inputGroup = input.closest('.money-input-group');
-
-
-        if (Number.isNaN(numericValue)) {
-            input.value = '';
-            validateMoneyField(input, true);
-            return;
-        }
-
-        if (numericValue > MAX_RATE_PRICE) {
-            input.value = input.dataset.previousValidValue || '';
-            setFieldError(
-                input,
-                errorElement,
-                'El valor no puede exceder $500.00.'
-            );
-
-            inputGroup?.classList.add('is-invalid');
-            return;
-
-        }
-            input.value = numericValue.toFixed(2);
-            input.dataset.previousValidValue = input.value;
-            validateMoneyField(input, true);
-
-    }
-
-    function sanitizeAreaInput(input) {
-        let value = input.value.replace(/[^0-9.]/g, '');
-
-        if (value.startsWith('.')) {
-            value = '0' + value;
-        }
-
-        const parts = value.split('.');
-        if (parts.length > 2) {
-            value = parts[0] + '.' + parts.slice(1).join('');
-        }
-
-        const firstDotIndex = value.indexOf('.');
-        if (firstDotIndex !== -1) {
-            const integerPart = value.slice(0, firstDotIndex);
-            const decimalPart = value.slice(firstDotIndex + 1).slice(0, 2);
-            value = integerPart + '.' + decimalPart;
-        }
-
-        const numericValue = Number(value);
-        const errorElement = document.getElementById(`${input.id}Error`);
-        const inputGroup = input.closest('.money-input-group');
-
-        if (value && !Number.isNaN(numericValue) && numericValue > MAX_AREA_SQFT) {
-            setFieldError(input, errorElement, `El área no puede exceder ${MAX_AREA_SQFT.toFixed(2)} ft².`);
-            inputGroup?.classList.add('is-invalid');
-
-            const previousValidValue = input.dataset.previousValidValue || '';
-            input.value = previousValidValue || '';
-        } else {
-            input.value = value;
-            input.dataset.previousValidValue = value;
-            validateAreaField(input, true);
-        }
-    }
-
-    function normalizeAreaInput(input) {
-        const rawValue = input.value.trim();
-        const errorElement = document.getElementById(`${input.id}Error`);
-        const inputGroup = input.closest('.money-input-group');
-
-        if (!rawValue) {
-            validateAreaField(input, true);
-            return;
-        }
-
-        const numericValue = Number(rawValue);
-
-        if (Number.isNaN(numericValue)) {
-            input.value = '';
-            validateAreaField(input, true);
-            return;
-        }
-
-        if (numericValue > MAX_AREA_SQFT) {
-            input.value = input.dataset.previousValidValue || '';
-            setFieldError(input, errorElement, `El área no puede exceder ${MAX_AREA_SQFT.toFixed(2)} ft².`);
-            inputGroup?.classList.add('is-invalid');
-            return;
-        }
-
-        input.value = numericValue.toFixed(2);
-        input.dataset.previousValidValue = input.value;
-        validateAreaField(input, true);
-    }
 
     function timeToMinutes(timeValue) {
         if (!timeValue) return 0;
@@ -662,74 +520,53 @@ document.addEventListener('DOMContentLoaded', () => {
         updateConfigureSaveState();
     }
 
-    // function loadRatesIntoForm(classroomId) {
-    //     const data = tarifasPorSalon[classroomId];
-    //     if (!data) return;
-    //
-    //     configAreaSalon.value = Number(data.area).toFixed(2);
-    //     configUtilidades.value = Number(data.utilidades).toFixed(2);
-    //     configElectricidad.value = Number(data.electricidad).toFixed(2);
-    //     configAgua.value = Number(data.agua).toFixed(2);
-    //     configDiaria1.value = Number(data.diaria1).toFixed(2);
-    //     configSemanal1.value = Number(data.semanal1).toFixed(2);
-    //     configMensual1.value = Number(data.mensual1).toFixed(2);
-    //     configDiaria2.value = Number(data.diaria2).toFixed(2);
-    //     configSemanal2.value = Number(data.semanal2).toFixed(2);
-    //     configMensual2.value = Number(data.mensual2).toFixed(2);
-    //     configDiaria3.value = Number(data.diaria3).toFixed(2);
-    //     configSemanal3.value = Number(data.semanal3).toFixed(2);
-    //     configMensual3.value = Number(data.mensual3).toFixed(2);
-    //
-    //     updateConfigPreview();
-    // }
-
     function loadRatesIntoForm(classroomId) {
-        const data = tarifasPorSalon[classroomId];
+        const data = ratesByClassroom[classroomId];
 
         if (!data || !data.configured) {
             clearRatesForm();
             return;
         }
 
-        configAreaSalon.value = Number(data.area).toFixed(2);
-        configUtilidades.value = Number(data.utilidades).toFixed(2);
-        configElectricidad.value = Number(data.electricidad).toFixed(2);
-        configAgua.value = Number(data.agua).toFixed(2);
+        configClassroomArea.value = Number(data.area).toFixed(2);
+        configUtilities.value = Number(data.utilities).toFixed(2);
+        configElectricity.value = Number(data.electricity).toFixed(2);
+        configWater.value = Number(data.water).toFixed(2);
 
-        configDiaria1.value = Number(data.diaria1).toFixed(2);
-        configSemanal1.value = Number(data.semanal1).toFixed(2);
-        configMensual1.value = Number(data.mensual1).toFixed(2);
+        configDaily1.value = Number(data.daily1).toFixed(2);
+        configWeekly1.value = Number(data.weekly1).toFixed(2);
+        configMonthly1.value = Number(data.monthly1).toFixed(2);
 
-        configDiaria2.value = Number(data.diaria2).toFixed(2);
-        configSemanal2.value = Number(data.semanal2).toFixed(2);
-        configMensual2.value = Number(data.mensual2).toFixed(2);
+        configDaily2.value = Number(data.daily2).toFixed(2);
+        configWeekly2.value = Number(data.weekly2).toFixed(2);
+        configMonthly2.value = Number(data.monthly2).toFixed(2);
 
-        configDiaria3.value = Number(data.diaria3).toFixed(2);
-        configSemanal3.value = Number(data.semanal3).toFixed(2);
-        configMensual3.value = Number(data.mensual3).toFixed(2);
+        configDaily3.value = Number(data.daily3).toFixed(2);
+        configWeekly3.value = Number(data.weekly3).toFixed(2);
+        configMonthly3.value = Number(data.monthly3).toFixed(2);
 
         updateConfigPreview();
     }
 
     function updateConfigPreview() {
-        const area = toNumber(configAreaSalon.value);
-        configPreviewLaborable.textContent = formatMoney((area * toNumber(configDiaria1.value)).toFixed(2));
-        configPreviewSabado.textContent = formatMoney((area * toNumber(configDiaria2.value)).toFixed(2));
-        configPreviewDomingo.textContent = formatMoney((area * toNumber(configDiaria3.value)).toFixed(2));
+        const area = toNumber(configClassroomArea.value);
+        configWorkdayPreview.textContent = formatMoney((area * toNumber(configDaily1.value)).toFixed(2));
+        configSaturdayPreview.textContent = formatMoney((area * toNumber(configDaily2.value)).toFixed(2));
+        configSundayHolidayPreview.textContent = formatMoney((area * toNumber(configDaily3.value)).toFixed(2));
     }
 
     function isConfigureFormValid(showError = false) {
     if (!getSelectedClassrooms().length) return false;
 
     const moneyFields = [
-        configUtilidades, configElectricidad, configAgua,
-        configDiaria1, configSemanal1, configMensual1,
-        configDiaria2, configSemanal2, configMensual2,
-        configDiaria3, configSemanal3, configMensual3,
+        configUtilities, configElectricity, configWater,
+        configDaily1, configWeekly1, configMonthly1,
+        configDaily2, configWeekly2, configMonthly2,
+        configDaily3, configWeekly3, configMonthly3,
     ];
 
     return (
-        validateAreaField(configAreaSalon, showError) &&
+        validateAreaField(configClassroomArea, showError) &&
         moneyFields.every((input) => validateMoneyField(input, showError))
     );
     }
@@ -739,33 +576,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function periodLabelFromValue(value) {
-        if (value === 'laborable') return 'Laborable';
-        if (value === 'no_laborable_sabado') return 'No laborable sábado';
-        if (value === 'no_laborable_domingo_festivo') return 'No laborable domingo o festivo';
+        if (value === 'workday') return 'Laborable';
+        if (value === 'non_workday_saturday') return 'No laborable sábado';
+        if (value === 'non_workday_sunday_holiday') return 'No laborable domingo o festivo';
         return '—';
     }
 
     function getPeriodRateData(classroomId, periodType) {
-        const data = tarifasPorSalon[classroomId];
-        if (!data) return {diaria: 0, semanal: 0, mensual: 0};
+        const data = ratesByClassroom[classroomId];
+        if (!data) return {daily: 0, weekly: 0, monthly: 0};
 
-        if (periodType === 'laborable') return {
-            diaria: toNumber(data.diaria1),
-            semanal: toNumber(data.semanal1),
-            mensual: toNumber(data.mensual1)
+        if (periodType === 'workday') return {
+            daily: toNumber(data.daily1),
+            weekly: toNumber(data.weekly1),
+            monthly: toNumber(data.monthly1)
         };
-        if (periodType === 'no_laborable_sabado') return {
-            diaria: toNumber(data.diaria2),
-            semanal: toNumber(data.semanal2),
-            mensual: toNumber(data.mensual2)
+        if (periodType === 'non_workday_saturday') return {
+            daily: toNumber(data.daily2),
+            weekly: toNumber(data.weekly2),
+            monthly: toNumber(data.monthly2)
         };
-        if (periodType === 'no_laborable_domingo_festivo') return {
-            diaria: toNumber(data.diaria3),
-            semanal: toNumber(data.semanal3),
-            mensual: toNumber(data.mensual3)
+        if (periodType === 'non_workday_sunday_holiday') return {
+            daily: toNumber(data.daily3),
+            weekly: toNumber(data.weekly3),
+            monthly: toNumber(data.monthly3)
         };
 
-        return {diaria: 0, semanal: 0, mensual: 0};
+        return {daily: 0, weekly: 0, monthly: 0};
     }
 
     function hasSelectedServices() {
@@ -811,7 +648,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (/[eE+\-]/.test(value)) {
             if (showError) {
-                setFieldError(input, errorElement, 'No se permite usar e, E, + ni -.');
+                setFieldError(input, errorElement, 'Ingresa una cantidad válida usando solo números, sin ceros a la izquierda y hasta 2 dígitos después del punto decimal.');
                 inputGroup?.classList.add('is-invalid');
             }
             return false;
@@ -819,7 +656,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!/^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(value)) {
             if (showError) {
-                setFieldError(input, errorElement, 'Ingresa un valor válido usando solo números y hasta 2 decimales.');
+                setFieldError(input, errorElement, 'Ingresa una cantidad válida usando solo números, sin ceros a la izquierda y hasta 2 dígitos después del punto decimal.');
                 inputGroup?.classList.add('is-invalid');
             }
             return false;
@@ -866,7 +703,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (/[eE+\-]/.test(value)) {
         if (showError) {
-            setFieldError(input, errorElement, 'No se permite usar e, E, + ni -.');
+            setFieldError(input, errorElement, 'Ingresa una cantidad válida usando solo números, sin ceros a la izquierda y hasta 2 dígitos después del punto decimal.');
             inputGroup?.classList.add('is-invalid');
         }
         return false;
@@ -874,7 +711,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!/^(?:0|[1-9]\d*)(?:\.\d{1,2})?$/.test(value)) {
         if (showError) {
-            setFieldError(input, errorElement, 'Ingresa un valor válido usando solo números y hasta 2 decimales.');
+            setFieldError(input, errorElement, 'Ingresa una cantidad válida usando solo números, sin ceros a la izquierda y hasta 2 dígitos después del punto decimal.');
             inputGroup?.classList.add('is-invalid');
         }
         return false;
@@ -899,38 +736,38 @@ document.addEventListener('DOMContentLoaded', () => {
     return true;
     }
 
-    function validateResponsable(showError = true) {
-        const value = rentalResponsable.value.trim();
+    function validateResponsible(showError = true) {
+        const value = rentalResponsible.value.trim();
         const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
 
         if (showError){
-            clearFieldError(rentalResponsable, rentalResponsableError);
+            clearFieldError(rentalResponsible, rentalResponsibleError);
         }
 
         if (!value) {
             if (showError) {
-                setFieldError(rentalResponsable, rentalResponsableError, 'El responsable es requerido.');
+                setFieldError(rentalResponsible, rentalResponsibleError, 'El responsable es requerido.');
             }
             return false;
         }
 
         if (!regex.test(value)){
             if (showError){
-                setFieldError(rentalResponsable, rentalResponsableError, 'Solo se permiten letras y espacios.');
+                setFieldError(rentalResponsible, rentalResponsibleError, 'Solo se permiten letras y espacios.');
             }
             return false;
         }
 
         if (value.length < 10) {
             if (showError) {
-                setFieldError(rentalResponsable, rentalResponsableError, 'El responsable debe tener al menos 10 caracteres.');
+                setFieldError(rentalResponsible, rentalResponsibleError, 'El responsable debe tener al menos 10 caracteres.');
             }
             return false;
         }
 
         if (value.length > 40) {
             if (showError) {
-                setFieldError(rentalResponsable, rentalResponsableError, 'El responsable no puede exceder 40 caracteres.');
+                setFieldError(rentalResponsible, rentalResponsibleError, 'El responsable no puede exceder 40 caracteres.');
             }
             return false;
         }
@@ -938,35 +775,41 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
-    function validateDescripcion(showError = true) {
-        const value = rentalDescripcion.value.trim();
+    function validateDescription(showError = true) {
+        const value = rentalDescription.value.trim();
         const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
 
         if (showError) {
-            clearFieldError(rentalDescripcion, rentalDescripcionError);
+            clearFieldError(rentalDescription, rentalDescriptionError);
         }
 
         if (!value) {
             if (showError) {
-                setFieldError(rentalDescripcion, rentalDescripcionError, 'La descripción es requerida.');
+                setFieldError(rentalDescription, rentalDescriptionError, 'La descripción es requerida.');
             }
             return false;
         }
 
         if(!regex.test(value)) {
             if(showError) {
-                setFieldError(rentalDescripcion, rentalDescripcionError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+                setFieldError(rentalDescription, rentalDescriptionError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
             }
             return false;
         }
 
         if (value.length < 10) {
-            if (showError) setFieldError(rentalDescripcion, rentalDescripcionError, 'La descripción debe tener al menos 10 caracteres.');
+            if (showError) setFieldError(rentalDescription, rentalDescriptionError, 'La descripción debe tener al menos 10 caracteres.');
             return false;
         }
 
-        if (value.length > 500) {
-            if (showError) setFieldError(rentalDescripcion, rentalDescripcionError, 'La descripción no puede exceder 500 caracteres.');
+        if (value.length > 250) {
+            if (showError) {
+                setFieldError(
+                    rentalDescription,
+                    rentalDescriptionError,
+                    'Has alcanzado el máximo de 250 caracteres. No puedes escribir más.'
+                );
+            }
             return false;
         }
 
@@ -974,16 +817,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
-    if (configAreaSalon) {
-        configAreaSalon.addEventListener('input', () => {
-            sanitizeAreaInput(configAreaSalon);
+    if (configClassroomArea) {
+        configClassroomArea.addEventListener('input', () => {
+            validateAreaField(configClassroomArea, true);
             configureDirty = true;
             updateConfigPreview();
             updateConfigureSaveState();
         });
 
-        configAreaSalon.addEventListener('blur', () => {
-            normalizeAreaInput(configAreaSalon);
+        configClassroomArea.addEventListener('blur', () => {
+            validateAreaField(configClassroomArea, true);
             updateConfigPreview();
             updateConfigureSaveState();
         });
@@ -999,31 +842,31 @@ document.addEventListener('DOMContentLoaded', () => {
         detectedPeriodLabel.textContent = periodLabelFromValue(periodType);
         detectedHoursLabel.textContent = `${hours.toFixed(2)} horas`;
 
-        if (!classroomId || !hours || !periodType || !tarifasPorSalon[classroomId]) {
+        if (!classroomId || !hours || !periodType || !ratesByClassroom[classroomId]) {
             rentalEstimatedTotal.textContent = formatMoney(0);
             rentalEstimatedTotalInput.value = '0.00';
             return 0;
         }
 
-        const data = tarifasPorSalon[classroomId];
+        const data = ratesByClassroom[classroomId];
         const area = toNumber(data.area);
         const periodRates = getPeriodRateData(classroomId, periodType);
 
         let selectedRate = 0;
 
         if (rentalRangeType.value === 'daily') {
-            selectedRate = periodRates.diaria;
+            selectedRate = periodRates.daily;
         } else if (rentalRangeType.value === 'weekly') {
-            selectedRate = periodRates.semanal;
+            selectedRate = periodRates.weekly;
         } else if (rentalRangeType.value === 'monthly') {
-            selectedRate = periodRates.mensual;
+            selectedRate = periodRates.monthly;
         }
 
         let total = area * selectedRate;
 
-        if (rentalUtilities.checked) total += toNumber(data.utilidades) * hours;
-        if (rentalElectricity.checked) total += toNumber(data.electricidad) * hours;
-        if (rentalWater.checked) total += toNumber(data.agua) * hours;
+        if (rentalUtilities.checked) total += toNumber(data.utilities) * hours;
+        if (rentalElectricity.checked) total += toNumber(data.electricity) * hours;
+        if (rentalWater.checked) total += toNumber(data.water) * hours;
 
         rentalEstimatedTotal.textContent = formatMoney(total);
         rentalEstimatedTotalInput.value = total.toFixed(2);
@@ -1055,8 +898,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const validResponsable = validateResponsable(false);
-        const validDescription = validateDescripcion(false);
+        const validResponsible = validateResponsible(false);
+        const validDescription = validateDescription(false);
         const validServices = hasSelectedServices();
         const validDates = validateRentalDates(false);
 
@@ -1071,7 +914,7 @@ document.addEventListener('DOMContentLoaded', () => {
             validDates &&
             rentalPeriodType.value &&
             validTimes &&
-            validResponsable &&
+            validResponsible &&
             validDescription &&
             validServices
         );
@@ -1082,13 +925,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function toggleMonthFilter() {
-       const isMonthly = reportType.value === 'monthly';
+        const selectedType = reportType?.value || '';
+        const isMonthly = selectedType === 'monthly';
+        const hasTypeSelected = selectedType !== '';
 
-       monthFilterWrapper.classList.toggle('d-none', !isMonthly);
+        monthFilterWrapper?.classList.toggle('d-none', !isMonthly);
+        yearFilterWrapper?.classList.toggle('d-none', !hasTypeSelected);
 
-       if(!isMonthly && reportMonth) {
-           reportMonth.value = '';
-       }
+        if (!isMonthly && reportMonth) {
+            reportMonth.value = '';
+        }
+
+        if (!hasTypeSelected && reportYear) {
+            reportYear.value = '';
+        }
     }
 
     function renderLocalPagination(container, currentPage, totalItems, itemsPerPage, onPageChange) {
@@ -1163,31 +1013,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const headers = ['Fecha', 'Salón', 'Hora', 'Periodo', 'Servicios', 'Total'];
 
             const rows = visibleRows.map((row) => {
-                const fecha = row.cells[0]?.textContent.trim() || '';
-                const salon = row.cells[1]?.textContent.trim() || '';
-                const hora = row.cells[2]?.textContent.trim() || '';
-                const periodo = row.cells[3]?.textContent.trim() || '';
-                const servicios = [...row.cells[4].querySelectorAll('.service-badge-table')]
+                const date = row.cells[0]?.textContent.trim() || '';
+                const classroom = row.cells[1]?.textContent.trim() || '';
+                const time = row.cells[2]?.textContent.trim() || '';
+                const period = row.cells[3]?.textContent.trim() || '';
+                const services = [...row.cells[4].querySelectorAll('.service-badge-table')]
                     .map((badge) => badge.textContent.trim())
                     .join(' | ');
                 const total = row.cells[5]?.textContent.trim() || '';
 
-                return [fecha, salon, hora, periodo, servicios, total].join(',');
+                return [date, classroom, time, period, services, total].join(',');
             });
 
             content = [headers.join(','), ...rows].join('\n');
         } else {
             const rowsText = visibleRows.map((row, index) => {
-                const fecha = row.cells[0]?.textContent.trim() || '';
-                const salon = row.cells[1]?.textContent.trim() || '';
-                const hora = row.cells[2]?.textContent.trim() || '';
-                const periodo = row.cells[3]?.textContent.trim() || '';
-                const servicios = [...row.cells[4].querySelectorAll('.service-badge-table')]
+                const date = row.cells[0]?.textContent.trim() || '';
+                const classroom = row.cells[1]?.textContent.trim() || '';
+                const time = row.cells[2]?.textContent.trim() || '';
+                const period = row.cells[3]?.textContent.trim() || '';
+                const services = [...row.cells[4].querySelectorAll('.service-badge-table')]
                     .map((badge) => badge.textContent.trim())
                     .join(', ');
                 const total = row.cells[5]?.textContent.trim() || '';
 
-                return `${index + 1}. ${fecha} | ${salon} | ${hora} | ${periodo} | ${servicios} | ${total}`;
+                return `${index + 1}. ${date} | ${classroom} | ${time} | ${period} | ${services} | ${total}`;
             }).join('\n');
 
             content =
@@ -1326,58 +1176,6 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         return `${String(hour).padStart(2, '0')}:${minuteStr} ${suffix}`;
     }
 
-    // function appendRentalRow() {
-    //     const classroomId = rentalClassroom.value;
-    //     const eventDate = rentalDate.value;
-    //     const startTime = rentalStartTime.value;
-    //     const endTime = rentalEndTime.value;
-    //     const periodLabel = periodLabelFromValue(rentalPeriodType.value);
-
-    //     const services = [];
-    //     if (rentalUtilities.checked) services.push('Utilidades');
-    //     if (rentalElectricity.checked) services.push('Electricidad');
-    //     if (rentalWater.checked) services.push('Agua');
-
-    //     const total = calculateRentalEstimate();
-    //     // const rowId = `cost-row-${String(nextEntryId).padStart(3, '0')}`;
-    //     // nextEntryId += 1;
-
-    //     const row = document.createElement('tr');
-    //     row.dataset.entryId = rowId;
-    //     row.dataset.date = eventDate;
-    //     row.dataset.month = String(new Date(`${eventDate}T12:00:00`).getMonth() + 1);
-    //     row.dataset.year = String(new Date(`${eventDate}T12:00:00`).getFullYear());
-    //     row.dataset.classroom = classroomId;
-
-    //     row.innerHTML = `
-    //         <td>${formatDisplayDate(eventDate)}</td>
-    //         <td>${classroomId}</td>
-    //         <td>${formatDisplayTime24To12(startTime)} - ${formatDisplayTime24To12(endTime)}</td>
-    //         <td>${periodLabel}</td>
-    //         <td>${createServiceBadges(services)}</td>
-    //         <td class="text-end fw-semibold">${formatMoney(total)}</td>
-    //         <td class="text-center">
-    //             <button
-    //                 type="button"
-    //                 class="btn btn-sm btn-outline-danger delete-cost-row-btn"
-    //                 data-entry-id="${rowId}"
-    //                 data-bs-toggle="modal"
-    //                 data-bs-target="#deleteCostEntryModal"
-    //             >
-    //                 <i class="bi bi-trash"></i>
-    //             </button>
-    //         </td>
-    //     `;
-
-    //     facilityCostTableBody.appendChild(row);
-    //     bindDeleteButtons();
-    //     applyTableFilters();
-    // }
-    //     facilityCostTableBody.appendChild(row);
-    //     bindDeleteButtons();
-    //     currentFacilityCostsPage = 1;
-    //     applyTableFilters();
-    // }
 
     function bindDeleteButtons() {
         deleteButtons().forEach((btn) => {
@@ -1412,10 +1210,10 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         return (
             getSelectedClassrooms().length > 0 ||
             [
-                configAreaSalon, configUtilidades, configElectricidad, configAgua,
-                configDiaria1, configSemanal1, configMensual1,
-                configDiaria2, configSemanal2, configMensual2,
-                configDiaria3, configSemanal3, configMensual3,
+                configClassroomArea, configUtilities, configElectricity, configWater,
+                configDaily1, configWeekly1, configMonthly1,
+                configDaily2, configWeekly2, configMonthly2,
+                configDaily3, configWeekly3, configMonthly3,
             ].some((input) => input && input.value.trim() !== '')
         );
     }
@@ -1426,10 +1224,10 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             (rentalRangeType?.value || '') !== '' ||
             (rentalStartDate?.value || '') !== '' ||
             (rentalEndDate?.value || '') !== '' ||
-            (rentalResponsable?.value || '').trim() !== '' ||
+            (rentalResponsible?.value || '').trim() !== '' ||
             (rentalStartTime?.value || '') !== '' ||
             (rentalEndTime?.value || '') !== '' ||
-            (rentalDescripcion?.value || '').trim() !== '' ||
+            (rentalDescription?.value || '').trim() !== '' ||
             (rentalPeriodType?.value || '') !== '' ||
             rentalServiceChecks.some((input) => input?.checked)
         );
@@ -1442,10 +1240,10 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         configureDirty = false;
 
         [
-            configAreaSalon, configUtilidades, configElectricidad, configAgua,
-            configDiaria1, configSemanal1, configMensual1,
-            configDiaria2, configSemanal2, configMensual2,
-            configDiaria3, configSemanal3, configMensual3,
+            configClassroomArea, configUtilities, configElectricity, configWater,
+            configDaily1, configWeekly1, configMonthly1,
+            configDaily2, configWeekly2, configMonthly2,
+            configDaily3, configWeekly3, configMonthly3,
         ].forEach((input) => {
             if (!input) return;
 
@@ -1472,8 +1270,8 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         rentalDirty = false;
 
         toggleServicesError(false);
-        clearFieldError(rentalResponsable, rentalResponsableError);
-        clearFieldError(rentalDescripcion, rentalDescripcionError);
+        clearFieldError(rentalResponsible, rentalResponsibleError);
+        clearFieldError(rentalDescription, rentalDescriptionError);
         clearFieldError(rentalStartDate, $('rentalStartDateError'));
         clearFieldError(rentalEndDate, $('rentalEndDateError'));
         toggleRentalDateRangeUI();
@@ -1532,21 +1330,14 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     }
 
     moneyInputs.forEach((input) => {
-        input.addEventListener('keydown', (e) => {
-            if(['e', 'E', '+', '-'].includes(e.key)){
-                e.preventDefault();
-            }
-        });
-
-        input.addEventListener('input', () =>{
-            sanitizeMoneyInput(input);
+        input.addEventListener('input', () => {
+            validateMoneyField(input, true);
             configureDirty = true;
             updateConfigPreview();
             updateConfigureSaveState();
         });
 
         input.addEventListener('blur', () => {
-            normalizeMoneyInput(input);
             validateMoneyField(input, true);
             updateConfigPreview();
             updateConfigureSaveState();
@@ -1563,37 +1354,33 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     });
 
 
-    rentalDescripcion.addEventListener('input', () => {
+    rentalDescription.addEventListener('input', () => {
         rentalDirty = true;
 
-        let value = rentalDescripcion.value;
+        const value = rentalDescription.value;
 
-        const exceeded = value.length > 250;
-
-        if (exceeded) {
-            rentalDescripcion.value = value.slice(0, 250);
+        if (value.length > 250) {
+            rentalDescription.value = value.slice(0, 250);
             setFieldError(
-                rentalDescripcion,
-                rentalDescripcionError,
-                'Has alcanzado el máximo de 500 caracteres. No puedes escribir más.'
+                rentalDescription,
+                rentalDescriptionError,
+                'Has alcanzado el máximo de 250 caracteres. No puedes escribir más.'
             );
         } else if (value.length === 250) {
             setFieldError(
-                rentalDescripcion,
-                rentalDescripcionError,
+                rentalDescription,
+                rentalDescriptionError,
                 'Has alcanzado el máximo de 250 caracteres, puedes aún someter esa cantidad.'
             );
         } else {
-            validateDescripcion(true);
+            validateDescription(true);
         }
 
         updateRentalSaveState();
-
-
     });
 
-    rentalDescripcion.addEventListener('blur', () => {
-        validateDescripcion(true);
+    rentalDescription.addEventListener('blur', () => {
+        validateDescription(true);
         updateRentalSaveState();
     });
 
@@ -1606,31 +1393,44 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         });
     });
 
-    rentalResponsable.addEventListener('input', () => {
-        rentalDirty = true;
+    if (rentalResponsible) {
+        rentalResponsible.addEventListener('input', () => {
+            rentalDirty = true;
 
-        let value = rentalResponsable.value;
-        const exceeded = value.length > 40;
+            const value = rentalResponsible.value;
 
-        if (exceeded) {
-            rentalResponsable.value = value.slice(0, 40);
-            setFieldError(
-                rentalResponsable,
-                rentalResponsableError,
-                'Has alcanzado el máximo de 40 caracteres. No puedes escribir más.'
-            );
-        } else if (value.length === 40) {
-            setFieldError(
-                rentalResponsable,
-                rentalResponsableError,
-                'Has alcanzado el máximo de 40 caracteres, puedes aún someter esa cantidad.'
-            );
-        } else {
-            validateResponsable(true);
-        }
+            if (value.length > 40) {
+                rentalResponsible.value = value.slice(0, 40);
+                setFieldError(
+                    rentalResponsible,
+                    rentalResponsibleError,
+                    'Has alcanzado el máximo de 40 caracteres. No puedes escribir más.'
+                );
+            } else if (value.length === 40) {
+                setFieldError(
+                    rentalResponsible,
+                    rentalResponsibleError,
+                    'Has alcanzado el máximo de 40 caracteres, puedes aún someter esa cantidad.'
+                );
+            } else {
+                validateResponsible(true);
+            }
 
-        updateRentalSaveState();
-    });
+            updateRentalSaveState();
+        });
+
+        rentalResponsible.addEventListener('blur', () => {
+            const value = rentalResponsible.value.trim();
+
+            if (value.length === 40) {
+                clearFieldError(rentalResponsible, rentalResponsibleError);
+            } else {
+                validateResponsible(true);
+            }
+
+            updateRentalSaveState();
+        });
+    }
 
     [reportType, reportMonth, reportYear, filterClassroom].forEach((el) => {
         if (!el) return;
@@ -1656,12 +1456,12 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     addRentalForm.addEventListener('submit', (e) => {
     addRentalForm.classList.add('was-validated');
 
-    const responsableOk = validateResponsable(true);
-    const descripcionOk = validateDescripcion(true);
+    const responsibleOk = validateResponsible(true);
+    const descriptionOk = validateDescription(true);
     const servicesOk = hasSelectedServices();
     toggleServicesError(!servicesOk);
 
-    if (!(isRentalFormValid() && responsableOk && descripcionOk && servicesOk)) {
+    if (!(isRentalFormValid() && responsibleOk && descriptionOk && servicesOk)) {
         e.preventDefault();
         updateRentalSaveState();
     }

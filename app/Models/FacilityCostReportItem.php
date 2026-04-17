@@ -12,7 +12,7 @@ class FacilityCostReportItem extends Model
     protected $fillable = [
         'facility_cost_report_id',
         'facility_cost_id',
-        'responsable',
+        'responsible',
         'period_type',
         'services',
         'rate_mode',

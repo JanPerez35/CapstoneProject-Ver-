@@ -552,8 +552,8 @@
 /* Avoid overflow on description table */
 #facilityCostTable {
     width: 100%;
-    min-width: 1400px;
-    table-layout: fixed;
+    min-width: 1500px;
+    table-layout: auto;
 }
 
 #facilityCostTable th,
@@ -561,22 +561,13 @@
     vertical-align: middle;
 }
 
-#facilityCostTable td {
-    white-space: normal;
-}
-
 #facilityCostTable th {
-    white-space: nowrap;
-}
-
-#facilityCostTable th.wrap-header {
     white-space: normal;
     line-height: 1.2;
 }
 
-#facilityCostTable th:nth-child(5),
-#facilityCostTable td:nth-child(5) {
-    width: 300px;
+#facilityCostTable td {
+    white-space: normal;
     word-break: break-word;
     overflow-wrap: break-word;
 }
@@ -585,9 +576,44 @@
 #facilityCostTable td:nth-child(1),
 #facilityCostTable th:nth-child(2),
 #facilityCostTable td:nth-child(2),
+#facilityCostTable th:nth-child(6),
+#facilityCostTable td:nth-child(6),
+#facilityCostTable th:nth-child(10),
+#facilityCostTable td:nth-child(10),
+#facilityCostTable th:nth-child(11),
+#facilityCostTable td:nth-child(11) {
+    white-space: nowrap;
+}
+
+#facilityCostTable th:nth-child(5),
+#facilityCostTable td:nth-child(5) {
+    min-width: 280px;
+    width: 280px;
+}
+
+#facilityCostTable th:nth-child(7),
+#facilityCostTable td:nth-child(7) {
+    min-width: 150px;
+}
+
+#facilityCostTable th:nth-child(8),
+#facilityCostTable td:nth-child(8) {
+    min-width: 120px;
+}
+
+#facilityCostTable th:nth-child(9),
+#facilityCostTable td:nth-child(9) {
+    min-width: 170px;
+}
+
 #facilityCostTable th:nth-child(10),
 #facilityCostTable td:nth-child(10) {
-    white-space: nowrap;
+    min-width: 130px;
+}
+
+#facilityCostTable th:nth-child(11),
+#facilityCostTable td:nth-child(11) {
+    min-width: 110px;
 }
 
 /*  Checkbox styling (terms & special case)  */

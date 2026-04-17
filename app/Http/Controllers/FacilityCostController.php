@@ -195,7 +195,7 @@ class FacilityCostController extends Controller
         'start_time' => ['required'],
         'end_time' => ['required'],
         'description' => ['required', 'string', 'min:10', 'max:1000'],
-        'responsable' => ['required', 'string', 'min:5', 'max:60'],
+        'responsible' => ['required', 'string', 'min:5', 'max:60'],
         'period_type' => ['required', 'string'],
         'rate_mode' => ['required', 'in:daily,weekly,monthly'],
         'services' => ['required', 'array', 'min:1'],
@@ -208,7 +208,7 @@ class FacilityCostController extends Controller
         'start_time' => $validated['start_time'],
         'end_time' => $validated['end_time'],
         'description' => $validated['description'],
-        'responsable' => $validated['responsable'],
+        'responsible' => $validated['responsible'],
         'period_type' => $validated['period_type'],
         'rate_mode' => $validated['rate_mode'],
         'services' => $validated['services'],
@@ -270,15 +270,15 @@ private function createFacilityReportItemFromPayload(array $data)
     // Services by hour
     $servicesCost = 0;
 
-    if (in_array('utilidades', $data['services'])) {
+    if (in_array('utilities', $data['services'])) {
         $servicesCost += $facilityCost->supply_cost * $hoursUsed;
     }
 
-    if (in_array('electricidad', $data['services'])) {
+    if (in_array('electricity', $data['services'])) {
         $servicesCost += $facilityCost->electricity_cost * $hoursUsed;
     }
 
-    if (in_array('agua', $data['services'])) {
+    if (in_array('water', $data['services'])) {
         $servicesCost += $facilityCost->water_cost * $hoursUsed;
     }
 
@@ -291,7 +291,7 @@ private function createFacilityReportItemFromPayload(array $data)
     return FacilityCostReportItem::create([
         'facility_cost_report_id' => $report->id,
         'facility_cost_id' => $facilityCost->id,
-        'responsable' => $data['responsable'],
+        'responsible' => $data['responsible'],
         'period_type' => $data['period_type'],
         'services' => $data['services'],
         'rate_mode' => $data['rate_mode'],
@@ -328,19 +328,19 @@ private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
     private function getRateByPeriodAndMode($facilityCost, $periodType, $rateMode)
     {
         return match ($periodType) {
-            'laborable' => match ($rateMode) {
+            'workday' => match ($rateMode) {
                 'daily' => (float) $facilityCost->daily_cost_1,
                 'weekly' => (float) $facilityCost->weekly_cost_1,
                 'monthly' => (float) $facilityCost->monthly_cost_1,
                 default => 0,
             },
-            'no_laborable_sabado' => match ($rateMode) {
+            'non_workday_saturday' => match ($rateMode) {
                 'daily' => (float) $facilityCost->daily_cost_2,
                 'weekly' => (float) $facilityCost->weekly_cost_2,
                 'monthly' => (float) $facilityCost->monthly_cost_2,
                 default => 0,
             },
-            'no_laborable_domingo_festivo' => match ($rateMode) {
+            'non_workday_sunday_holiday' => match ($rateMode) {
                 'daily' => (float) $facilityCost->daily_cost_3,
                 'weekly' => (float) $facilityCost->weekly_cost_3,
                 'monthly' => (float) $facilityCost->monthly_cost_3,
@@ -462,7 +462,7 @@ private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
                     $item->hours_used,
                     $item->calculated_cost,
                     $item->event_description,
-                    $item->responsable,
+                    $item->responsible,
                 ]);
             }
 
