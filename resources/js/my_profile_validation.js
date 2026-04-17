@@ -1,33 +1,28 @@
 document.addEventListener('DOMContentLoaded', function () {
-    
+
     /*
-     * Defines the number of items displayed per page in the profile sections.
-     * This value is used by the pagination logic.
+     * Defines the number of post cards displayed per page
+     * in the client-side publications section.
      */
     const ITEMS_PER_PAGE = 18;
-    
 
     /*
-     * Handles tab button styling for the profile section.
-     * Ensures the active tab is visually highlighted.
+     * Storage keys used to persist UI state between reloads.
+     * - PROFILE_SCROLL_KEY stores the user's vertical scroll position
+     * - PROFILE_ACTIVE_TAB_KEY stores the active profile tab
      */
+    const PROFILE_SCROLL_KEY = 'myProfileScrollY';
+    const PROFILE_ACTIVE_TAB_KEY = 'myProfileActiveTab';
+
+    /*
+     * Profile tab buttons and shared tab UI references.
+     */
+    const postsTab = document.getElementById('posts-tab');
+    const requestsTab = document.getElementById('requests-tab');
     const profileTabButtons = document.querySelectorAll('#profileTabs button');
-
-    profileTabButtons.forEach((button) => {
-        button.addEventListener('shown.bs.tab', function (event) {
-            profileTabButtons.forEach((btn) => {
-                btn.classList.remove('btn-success');
-                btn.classList.add('btn-outline-success');
-            });
-
-            event.target.classList.remove('btn-outline-success');
-            event.target.classList.add('btn-success');
-        });
-    });
 
     /*
      * Modal and UI elements related to post deletion.
-     * Includes modal references, confirmation button, and toast feedback.
      */
     const deletePostModalEl = document.getElementById('deletePostModal');
     const deletePostModalText = document.getElementById('deletePostModalText');
@@ -37,7 +32,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /*
      * Modal and UI elements for viewing post details.
-     * Includes carousel components and text fields for dynamic data.
      */
     const profileDetailsModalEl = document.getElementById('profilePostDetailsModal');
     const profileDetailsModal = profileDetailsModalEl && window.bootstrap
@@ -59,13 +53,116 @@ document.addEventListener('DOMContentLoaded', function () {
     const detailsCategory = document.getElementById('profilePostDetailsCategory');
 
     /*
-     * Tracks the current post selected for deletion and pagination state.
+     * References the filter form and related controls used to search,
+     * filter, reset, and paginate the posts section.
+     */
+    const postsFilterForm = document.getElementById('postsFilterForm');
+    const postSearch = document.getElementById('postSearch');
+    const postsSearchBtn = document.getElementById('postsSearchBtn');
+    const sportFilter = document.getElementById('sportFilter');
+    const priceFilter = document.getElementById('priceFilter');
+    const clearPostsFilters = document.getElementById('clearPostsFilters');
+    const postsEmptyState = document.getElementById('postsEmptyState');
+    const postsPagination = document.getElementById('postsPagination');
+
+    /*
+     * References for the requests section.
+     * This section is server-rendered, so searches and filters use GET.
+     */
+    const requestsFilterForm = document.getElementById('requestsFilterForm');
+    const requestSearch = document.getElementById('requestSearch');
+    const requestsSearchBtn = document.getElementById('requestsSearchBtn');
+    const statusFilter = document.getElementById('statusFilter');
+    const clearRequestsFilters = document.getElementById('clearRequestsFilters');
+
+    /*
+     * Tracks the current post selected for deletion and
+     * the active page in the client-side posts pagination.
      */
     let postCardToDelete = null;
     let currentPostsPage = 1;
-    
-    /*
+
+    /**
+     * Stores the current vertical scroll position in sessionStorage.
+     * This allows the page to return the user to the same place
+     * after a reload caused by searches or filters.
+     */
+    function saveScrollPosition() {
+        sessionStorage.setItem(PROFILE_SCROLL_KEY, String(window.scrollY));
+    }
+
+    /**
+     * Removes any saved scroll position from sessionStorage.
+     */
+    function clearScrollPosition() {
+        sessionStorage.removeItem(PROFILE_SCROLL_KEY);
+    }
+
+    /**
+     * Restores the user's previous vertical scroll position.
+     * Retries multiple times because layout and Bootstrap content
+     * may finish rendering slightly after the initial page load.
+     */
+    function restoreScrollPosition() {
+        const savedScrollY = sessionStorage.getItem(PROFILE_SCROLL_KEY);
+        if (savedScrollY === null) return;
+
+        const targetY = parseInt(savedScrollY, 10);
+
+        if (Number.isNaN(targetY)) {
+            clearScrollPosition();
+            return;
+        }
+
+        let attempts = 0;
+        const maxAttempts = 20;
+
+        const tryRestore = () => {
+            window.scrollTo(0, targetY);
+            attempts++;
+
+            if (attempts < maxAttempts && Math.abs(window.scrollY - targetY) > 5) {
+                setTimeout(tryRestore, 100);
+            } else {
+                clearScrollPosition();
+            }
+        };
+
+        setTimeout(tryRestore, 100);
+    }
+
+    /**
+     * Determines whether a clicked link belongs to pagination.
+     *
+     * @param {HTMLElement} link - The clicked anchor element.
+     * @returns {boolean} True when the link is inside a pagination component.
+     */
+    function isPaginationLink(link) {
+        return !!link.closest('.pagination');
+    }
+
+    /**
+     * Saves the currently active tab so it can be restored after reload.
+     *
+     * @param {string} tabName - Either "posts" or "requests".
+     */
+    function saveActiveTab(tabName) {
+        sessionStorage.setItem(PROFILE_ACTIVE_TAB_KEY, tabName);
+    }
+
+    /**
+     * Returns the last saved active tab.
+     *
+     * @returns {string|null} The saved tab name, or null if none exists.
+     */
+    function getSavedActiveTab() {
+        return sessionStorage.getItem(PROFILE_ACTIVE_TAB_KEY);
+    }
+
+    /**
      * Displays a Bootstrap toast notification safely.
+     *
+     * @param {HTMLElement|null} toastElement - The toast element to display.
      */
     function showToast(toastElement) {
         if (!toastElement || !window.bootstrap) return;
@@ -73,7 +170,99 @@ document.addEventListener('DOMContentLoaded', function () {
         toast.show();
     }
 
-    /*
+    /**
+     * Escapes dynamic values before injecting them as HTML.
+     *
+     * @param {any} value - Dynamic value to be escaped.
+     * @returns {string} Escaped HTML-safe string.
+     */
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    /**
+     * Synchronizes the visual style of the tab buttons so that
+     * only the active tab appears filled.
+     *
+     * @param {HTMLElement} activeButton - The button that should appear active.
+     */
+    function syncTabButtonStyles(activeButton) {
+        profileTabButtons.forEach((btn) => {
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-success');
+        });
+
+        activeButton.classList.remove('btn-outline-success');
+        activeButton.classList.add('btn-success');
+    }
+
+    /**
+     * Updates the current URL so the active tab survives page reloads.
+     * Also removes the "page" parameter when switching tabs to prevent
+     * carrying an invalid pagination page into a different section.
+     *
+     * @param {string} tabName - Either "posts" or "requests".
+     */
+    function updateTabInUrl(tabName) {
+        const url = new URL(window.location.href);
+
+        if (tabName === 'requests') {
+            url.searchParams.set('tab', 'requests');
+        } else {
+            url.searchParams.delete('tab');
+        }
+
+        url.searchParams.delete('page');
+        window.history.replaceState({}, '', url.toString());
+    }
+
+    /**
+     * Activates a Bootstrap tab and updates its visual state.
+     *
+     * @param {HTMLElement|null} tabButton - The tab button to activate.
+     */
+    function activateTab(tabButton) {
+        if (!tabButton || !window.bootstrap) return;
+
+        const tabInstance = new bootstrap.Tab(tabButton);
+        tabInstance.show();
+        syncTabButtonStyles(tabButton);
+    }
+
+    /**
+     * Initializes the correct active tab.
+     * Priority:
+     * 1. URL query parameter
+     * 2. Saved sessionStorage tab
+     * 3. Posts tab by default
+     */
+    function initializeActiveTab() {
+        const url = new URL(window.location.href);
+        const tabFromUrl = url.searchParams.get('tab');
+        const savedTab = getSavedActiveTab();
+
+        if (tabFromUrl === 'requests') {
+            activateTab(requestsTab);
+            saveActiveTab('requests');
+            return;
+        }
+
+        if (savedTab === 'requests') {
+            activateTab(requestsTab);
+            updateTabInUrl('requests');
+            return;
+        }
+
+        activateTab(postsTab);
+        saveActiveTab('posts');
+    }
+
+    /**
      * Updates the total number of posts displayed in the tab header.
      */
     function updatePostsTabCount() {
@@ -81,8 +270,14 @@ document.addEventListener('DOMContentLoaded', function () {
         const totalPosts = document.querySelectorAll('.post-card-wrapper').length;
         postsTabCount.textContent = totalPosts;
     }
-    /*
-     * Builds pagination UI dynamically based on total pages.
+
+    /**
+     * Builds client-side pagination buttons for the posts section.
+     *
+     * @param {HTMLElement|null} container - Pagination container.
+     * @param {number} totalPages - Total number of pages.
+     * @param {number} currentPage - Current active page.
+     * @param {Function} onPageClick - Callback for page button clicks.
      */
     function buildPagination(container, totalPages, currentPage, onPageClick) {
         if (!container) return;
@@ -119,8 +314,14 @@ document.addEventListener('DOMContentLoaded', function () {
         createItem('»', currentPage + 1, currentPage === totalPages);
     }
 
-    /*
-     * Handles pagination logic by showing only the items for the current page.
+    /**
+     * Applies client-side pagination to the publications cards.
+     *
+     * @param {HTMLElement[]} items - Matching visible items.
+     * @param {number} currentPageValue - Desired current page.
+     * @param {HTMLElement|null} paginationContainer - Pagination wrapper.
+     * @param {Function} onPageChange - Callback executed when page changes.
+     * @returns {number} Safe current page after bounds validation.
      */
     function paginateItems(items, currentPageValue, paginationContainer, onPageChange) {
         const totalPages = Math.max(1, Math.ceil(items.length / ITEMS_PER_PAGE));
@@ -136,21 +337,196 @@ document.addEventListener('DOMContentLoaded', function () {
 
         return safePage;
     }
-    
-    /*
-     * Escapes HTML characters to prevent injection issues when rendering dynamic data.
+
+    /**
+     * Evaluates whether a post price belongs to the selected price range.
+     *
+     * @param {string|number} price - Post price.
+     * @param {string} selectedRange - Selected filter value.
+     * @returns {boolean} True when the price matches the selected range.
      */
-    function escapeHtml(value) {
-        return String(value ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+    function matchesPriceRange(price, selectedRange) {
+        if (!selectedRange) return true;
+
+        const numericPrice = Number(price);
+
+        if (selectedRange === '0-25') return numericPrice >= 0 && numericPrice <= 25;
+        if (selectedRange === '26-50') return numericPrice >= 26 && numericPrice <= 50;
+        if (selectedRange === '51-100') return numericPrice >= 51 && numericPrice <= 100;
+        if (selectedRange === '101+') return numericPrice >= 101;
+
+        return true;
     }
+
+    /**
+     * Enables or disables the publications search button depending on
+     * whether the user has entered non-whitespace text.
+     */
+    function updatePostsSearchButtonState() {
+        if (!postSearch || !postsSearchBtn) return;
+        const hasText = postSearch.value.trim().length > 0;
+        postsSearchBtn.disabled = !hasText;
+    }
+
+    /**
+     * Enables or disables the requests search button depending on
+     * whether the user has entered non-whitespace text.
+     */
+    function updateRequestsSearchButtonState() {
+        if (!requestSearch || !requestsSearchBtn) return;
+        const hasText = requestSearch.value.trim().length > 0;
+        requestsSearchBtn.disabled = !hasText;
+    }
+
+    /**
+     * Applies search and filter criteria to the client-side
+     * publications grid and rebuilds pagination.
+     *
+     * @param {boolean} resetPage - Whether to return to page 1 first.
+     */
+    function filterPosts(resetPage = false) {
+        const searchValue = postSearch ? postSearch.value.trim().toLowerCase() : '';
+        const sportValue = sportFilter ? sportFilter.value.toLowerCase() : '';
+        const priceValue = priceFilter ? priceFilter.value : '';
+
+        const allCards = Array.from(document.querySelectorAll('.post-card-wrapper'));
+        const matchingCards = [];
+
+        allCards.forEach((card) => {
+            const title = (card.dataset.title || '').toLowerCase();
+            const description = (card.dataset.description || '').toLowerCase();
+            const sport = (card.dataset.sport || '').toLowerCase();
+            const price = card.dataset.price || '0';
+
+            const matchesSearch =
+                !searchValue ||
+                title.includes(searchValue) ||
+                description.includes(searchValue);
+
+            const matchesSport = !sportValue || sport === sportValue;
+            const matchesPrice = matchesPriceRange(price, priceValue);
+
+            if (matchesSearch && matchesSport && matchesPrice) {
+                matchingCards.push(card);
+            } else {
+                card.classList.add('d-none');
+            }
+        });
+
+        if (resetPage) {
+            currentPostsPage = 1;
+        }
+
+        if (postsEmptyState) {
+            postsEmptyState.classList.toggle('d-none', matchingCards.length !== 0);
+        }
+
+        if (matchingCards.length === 0) {
+            if (postsPagination) postsPagination.innerHTML = '';
+            return;
+        }
+
+        currentPostsPage = paginateItems(
+            matchingCards,
+            currentPostsPage,
+            postsPagination,
+            function (page) {
+                currentPostsPage = page;
+                filterPosts(false);
+            }
+        );
+    }
+
+    /**
+     * Submits the requests GET form after saving the current tab
+     * and current scroll position.
+     */
+    function submitRequestsFilters() {
+        if (!requestsFilterForm) return;
+
+        saveActiveTab('requests');
+        saveScrollPosition();
+        requestsFilterForm.submit();
+    }
+
     /*
-     * Handles loading and displaying post details in the modal.
-     * Fetches post data dynamically and updates the UI.
+     * Restores scroll position after full reload.
+     */
+    window.addEventListener('load', restoreScrollPosition);
+
+    /*
+     * Saves scroll position on all form submissions.
+     * This mainly affects the requests section, which uses GET.
+     */
+    document.querySelectorAll('form').forEach((form) => {
+        form.addEventListener('submit', () => {
+            saveScrollPosition();
+
+            if (form === requestsFilterForm) {
+                saveActiveTab('requests');
+            }
+        });
+    });
+
+    /*
+     * Saves or clears scroll position depending on the clicked link.
+     * Pagination keeps default behavior and does not restore scroll.
+     */
+    document.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+            if (isPaginationLink(link)) {
+                clearScrollPosition();
+                return;
+            }
+
+            saveScrollPosition();
+        });
+    });
+
+    /*
+     * Initializes the active tab when the page first loads.
+     */
+    initializeActiveTab();
+
+    /*
+     * Keeps tab styles synced when Bootstrap finishes activating a tab.
+     */
+    profileTabButtons.forEach((button) => {
+        button.addEventListener('shown.bs.tab', function (event) {
+            profileTabButtons.forEach((btn) => {
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-success');
+            });
+
+            event.target.classList.remove('btn-outline-success');
+            event.target.classList.add('btn-success');
+        });
+    });
+
+    /*
+     * Updates URL and saved tab when the publications tab is clicked.
+     */
+    if (postsTab) {
+        postsTab.addEventListener('click', function () {
+            syncTabButtonStyles(postsTab);
+            saveActiveTab('posts');
+            updateTabInUrl('posts');
+        });
+    }
+
+    /*
+     * Updates URL and saved tab when the requests tab is clicked.
+     */
+    if (requestsTab) {
+        requestsTab.addEventListener('click', function () {
+            syncTabButtonStyles(requestsTab);
+            saveActiveTab('requests');
+            updateTabInUrl('requests');
+        });
+    }
+
+    /*
+     * Loads and displays publication details in the modal.
      */
     document.querySelectorAll('.open-profile-post-details').forEach((button) => {
         button.addEventListener('click', async function () {
@@ -170,11 +546,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 const post = await response.json();
-                
-                /*
-                 * Assigns fallback values to ensure UI consistency
-                 * even if some fields are missing.
-                 */
+
                 const title = post.title || 'Detalle de la publicación';
                 const description = post.description || 'Sin descripción.';
                 const price = Number(post.cost || 0).toFixed(2);
@@ -185,10 +557,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     ? `${post.user.first_name ?? ''} ${post.user.last_name ?? ''}`.trim()
                     : 'Usuario';
 
-                /*
-                 * Retrieves seller rating information and prepares the
-                 * available images for the carousel view.
-                 */
                 const rating = post.user?.average_rating ?? 0;
                 const reviews = post.user?.reviews_count ?? 0;
 
@@ -198,10 +566,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     post.photo_3_url ? `/storage/${post.photo_3_url}` : null
                 ].filter(Boolean);
 
-                /*
-                 * Updates the post details modal content with the data
-                 * returned by the backend.
-                 */
                 if (detailsModalLabel) detailsModalLabel.textContent = title;
                 if (detailsDescription) detailsDescription.textContent = description;
                 if (detailsPrice) detailsPrice.textContent = `$${price}`;
@@ -210,42 +574,30 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (detailsCategory) detailsCategory.textContent = category;
                 if (detailsSeller) detailsSeller.textContent = seller;
 
-                /*
-                 * Renders the seller rating safely to avoid injecting
-                 * unescaped dynamic values into the interface.
-                 */
                 if (detailsSellerRating) {
                     detailsSellerRating.innerHTML = `
-                    <i class="bi bi-star-fill text-warning me-1"></i>
-                    ${escapeHtml(rating)} <span class="text-muted">(${escapeHtml(reviews)} reseñas)</span>
-                `;
+                        <i class="bi bi-star-fill text-warning me-1"></i>
+                        ${escapeHtml(rating)} <span class="text-muted">(${escapeHtml(reviews)} reseñas)</span>
+                    `;
                 }
 
-                /*
-                 * Resets the carousel content before loading the new set
-                 * of images for the selected post.
-                 */
                 if (carouselInner) carouselInner.innerHTML = '';
                 if (carouselIndicators) carouselIndicators.innerHTML = '';
 
-                /*
-                 * Dynamically creates carousel indicators and image slides
-                 * based on the post images available.
-                 */
                 images.forEach((img, index) => {
                     if (carouselIndicators) {
                         carouselIndicators.insertAdjacentHTML(
                             'beforeend',
                             `
-                        <button
-                            type="button"
-                            data-bs-target="#profilePostImagesCarousel"
-                            data-bs-slide-to="${index}"
-                            class="${index === 0 ? 'active' : ''}"
-                            ${index === 0 ? 'aria-current="true"' : ''}
-                            aria-label="Slide ${index + 1}"
-                        ></button>
-                        `
+                            <button
+                                type="button"
+                                data-bs-target="#profilePostImagesCarousel"
+                                data-bs-slide-to="${index}"
+                                class="${index === 0 ? 'active' : ''}"
+                                ${index === 0 ? 'aria-current="true"' : ''}
+                                aria-label="Slide ${index + 1}"
+                            ></button>
+                            `
                         );
                     }
 
@@ -262,40 +614,28 @@ document.addEventListener('DOMContentLoaded', function () {
                                     >
                                 </div>
                             </div>
-        `
+                            `
                         );
                     }
                 });
 
-                /*
-                 * Shows or hides the carousel controls depending on whether
-                 * the post contains more than one image.
-                 */
                 const showControls = images.length > 1;
 
                 if (carouselPrev) carouselPrev.classList.toggle('d-none', !showControls);
                 if (carouselNext) carouselNext.classList.toggle('d-none', !showControls);
                 if (carouselIndicators) carouselIndicators.classList.toggle('d-none', !showControls);
 
-                /*
-                 * Opens the post details modal after all content has been loaded.
-                 */
                 if (profileDetailsModal) {
                     profileDetailsModal.show();
                 }
             } catch (error) {
-                /*
-                 * Logs the error in case the post details request fails.
-                 * This helps debugging without breaking the rest of the page.
-                 */
                 console.error(error);
             }
         });
     });
 
     /*
-     * Opens the delete confirmation modal for the selected post
-     * and stores a reference to the corresponding card.
+     * Opens the delete confirmation modal for the selected publication.
      */
     document.querySelectorAll('.open-delete-post-modal').forEach((button) => {
         button.addEventListener('click', function () {
@@ -314,8 +654,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     /*
-     * Confirms the visual deletion of a post card, closes the modal,
-     * shows feedback to the user, and refreshes the filtered results.
+     * Confirms the visual deletion of a publication card and
+     * refreshes the publications grid.
      */
     if (confirmDeletePostBtn) {
         confirmDeletePostBtn.addEventListener('click', function () {
@@ -338,134 +678,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /*
-     * References the filter form and related controls used to search,
-     * filter, reset, and paginate the posts section.
-     */
-    const postsFilterForm = document.getElementById('postsFilterForm');
-    const postSearch = document.getElementById('postSearch');
-    const postsSearchBtn = document.getElementById('postsSearchBtn');
-
-    const requestSearch = document.getElementById('requestSearch');
-    const requestsSearchBtn = document.getElementById('requestsSearchBtn');
-
-    const sportFilter = document.getElementById('sportFilter');
-    const priceFilter = document.getElementById('priceFilter');
-    const clearPostsFilters = document.getElementById('clearPostsFilters');
-    const postsEmptyState = document.getElementById('postsEmptyState');
-    const postsPagination = document.getElementById('postsPagination');
-
-    /*
-     * Evaluates whether a post price belongs to the selected
-     * price range filter.
-     */
-    function matchesPriceRange(price, selectedRange) {
-        if (!selectedRange) return true;
-
-        const numericPrice = Number(price);
-
-        if (selectedRange === '0-25') return numericPrice >= 0 && numericPrice <= 25;
-        if (selectedRange === '26-50') return numericPrice >= 26 && numericPrice <= 50;
-        if (selectedRange === '51-100') return numericPrice >= 51 && numericPrice <= 100;
-        if (selectedRange === '101+') return numericPrice >= 101;
-
-        return true;
-    }
-
-    /*
-     * Enables or disables the posts search button depending on whether
-     * the user has entered text in the search input.
-     */
-    function updatePostsSearchButtonState() {
-        if (!postSearch || !postsSearchBtn) return;
-        const hasText = postSearch.value.trim().length > 0;
-        postsSearchBtn.disabled = !hasText;
-    }
-
-    /*
-     * Enables or disables the requests search button depending on whether
-     * the user has entered text in the corresponding input.
-     */
-    function updateRequestsSearchButtonState() {
-        if (!requestSearch || !requestsSearchBtn) return;
-        const hasText = requestSearch.value.trim().length > 0;
-        requestsSearchBtn.disabled = !hasText;
-    }
-
-    /*
-     * Applies the active search and filter criteria to the post cards,
-     * updates the empty state, and rebuilds pagination when needed.
-     */
-    function filterPosts(resetPage = false) {
-        const searchValue = postSearch ? postSearch.value.trim().toLowerCase() : '';
-        const sportValue = sportFilter ? sportFilter.value.toLowerCase() : '';
-        const priceValue = priceFilter ? priceFilter.value : '';
-
-        const allCards = Array.from(document.querySelectorAll('.post-card-wrapper'));
-        const matchingCards = [];
-
-        allCards.forEach((card) => {
-            const title = (card.dataset.title || '').toLowerCase();
-            const description = (card.dataset.description || '').toLowerCase();
-            const sport = (card.dataset.sport || '').toLowerCase();
-            const price = card.dataset.price || '0';
-
-            /*
-             * Combines all filter conditions so only cards that match
-             * the active criteria remain visible.
-             */
-            const matchesSearch =
-                !searchValue ||
-                title.includes(searchValue) ||
-                description.includes(searchValue);
-
-            const matchesSport = !sportValue || sport === sportValue;
-            const matchesPrice = matchesPriceRange(price, priceValue);
-
-            if (matchesSearch && matchesSport && matchesPrice) {
-                matchingCards.push(card);
-            } else {
-                card.classList.add('d-none');
-            }
-        });
-
-        /*
-         * Resets the current page when a new filter action requires the
-         * results to start from the first page.
-         */
-        if (resetPage) {
-            currentPostsPage = 1;
-        }
-
-        /*
-         * Shows the empty state when there are no matching results.
-         */
-        if (postsEmptyState) {
-            postsEmptyState.classList.toggle('d-none', matchingCards.length !== 0);
-        }
-
-        if (matchingCards.length === 0) {
-            if (postsPagination) postsPagination.innerHTML = '';
-            return;
-        }
-
-        /*
-         * Reapplies pagination to the filtered results and updates
-         * the current page state.
-         */
-        currentPostsPage = paginateItems(
-            matchingCards,
-            currentPostsPage,
-            postsPagination,
-            function (page) {
-                currentPostsPage = page;
-                filterPosts(false);
-            }
-        );
-    }
-
-    /*
-     * Prevents the filter form from performing a full page reload
-     * and applies filtering directly on the client side.
+     * Prevents full reload in the publications filter form because
+     * that section is fully filtered on the client side.
      */
     if (postsFilterForm) {
         postsFilterForm.addEventListener('submit', function (e) {
@@ -476,7 +690,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /*
-     * Reapplies filters whenever the sport selection changes.
+     * Reapplies client-side publications filtering when the sport changes.
      */
     if (sportFilter) {
         sportFilter.addEventListener('change', function () {
@@ -486,7 +700,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /*
-     * Reapplies filters whenever the price range selection changes.
+     * Reapplies client-side publications filtering when the price changes.
      */
     if (priceFilter) {
         priceFilter.addEventListener('change', function () {
@@ -496,27 +710,40 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /*
-     * Filters posts dynamically while the user types in the search box
-     * and updates the button state accordingly.
-     */
+  * Updates the publications search button state while the user types.
+  * The actual filtering now happens only when the user presses
+  * the search button or submits the form with Enter.
+  */
     if (postSearch) {
         postSearch.addEventListener('input', function () {
-            currentPostsPage = 1;
-            filterPosts();
             updatePostsSearchButtonState();
         });
     }
 
     /*
-     * Updates the request search button state while the user types.
+     * Updates the requests search button state while the user types.
+     * This section uses GET and reloads from the backend.
      */
     if (requestSearch) {
         requestSearch.addEventListener('input', updateRequestsSearchButtonState);
     }
 
     /*
-     * Clears all post filters, resets the current page, and restores
-     * the full posts view.
+     * Automatically submits the requests form when the user changes
+     * the status filter dropdown.
+     *
+     * This is the missing behavior that makes the requests filters
+     * apply immediately through GET.
+     */
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function () {
+            submitRequestsFilters();
+        });
+    }
+
+    /*
+     * Clears all publications filters locally and restores
+     * the full client-side publications view.
      */
     if (clearPostsFilters) {
         clearPostsFilters.addEventListener('click', function () {
@@ -530,9 +757,18 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /*
-     * Initializes the posts section state when the page loads.
-     * Updates counters, applies the default filter state, and
-     * synchronizes the search buttons.
+     * Ensures the requests clear-filters action preserves the
+     * requests tab and stores the current scroll position first.
+     */
+    if (clearRequestsFilters) {
+        clearRequestsFilters.addEventListener('click', function () {
+            saveActiveTab('requests');
+            saveScrollPosition();
+        });
+    }
+
+    /*
+     * Initializes the publications section and search button states.
      */
     updatePostsTabCount();
     filterPosts(true);

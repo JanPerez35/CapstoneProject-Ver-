@@ -51,7 +51,7 @@
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-body p-4">
                 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
-                    
+
                     {{-- User identity and role --}}
                     <div>
                         <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
@@ -331,7 +331,7 @@
 
             {{-- Requests tab --}}
             <div class="tab-pane fade {{ request('tab') === 'requests' ? 'show active' : '' }}" id="requests-pane" role="tabpanel" aria-labelledby="requests-tab">
-            
+
                 {{-- Requests filtering and listing --}}
                 <div class="card border-0 shadow-sm rounded-4">
                     <div class="card-body p-4">
@@ -374,7 +374,7 @@
                             <div class="row g-3 align-items-end">
                                 <div class="col-md-6 col-lg-4">
                                     <select id="statusFilter" name="request_status" class="form-select border-2 border-dark">
-                                        <option value="">Todos los estados</option>
+                                        <option value="">Todos los Estados</option>
                                         <option value="pending" {{ request('request_status') == 'pending' ? 'selected' : '' }}>Pendiente</option>
                                         <option value="approved" {{ request('request_status') == 'approved' ? 'selected' : '' }}>Aprobada</option>
                                         <option value="rejected" {{ request('request_status') == 'rejected' ? 'selected' : '' }}>Rechazada</option>
@@ -384,8 +384,13 @@
 
                                 <div class="col-auto">
                                     {{-- Clean filters --}}
-                                    <a href="{{ route('my_profile', ['tab' => 'requests']) }}" class="btn btn-outline-secondary">
-                                        Limpiar filtros
+
+                                    <a
+                                        href="{{ route('my_profile', ['tab' => 'requests']) }}"
+                                        class="btn btn-outline-secondary"
+                                        id="clearRequestsFilters"
+                                    >
+                                        Limpiar Filtros
                                     </a>
                                 </div>
                             </div>
@@ -427,7 +432,7 @@
                                                 Sin artículos
                                             @endif
                                         </h5>
-                                        
+
                                         {{-- Item requested date --}}
                                         <p class="text-muted mb-0">
                                             Solicitado: {{ \Carbon\Carbon::parse($request->created_at)->format('m/d/Y') }}
@@ -455,32 +460,45 @@
                                         };
                                     @endphp
 
+
                                     <span class="label-badge {{ $statusClass }}">
-                                        {{ in_array($request->status, ['returned', 'finished']) ? 'Finalizado' : ucfirst($request->status) }}
-                                    </span>
+    {{
+        match(strtolower($request->status)) {
+            'pending' => 'Pendiente',
+            'approved' => 'Aprobada',
+            'active' => 'Aprobada',
+            'rejected' => 'Rechazada',
+            'returned' => 'Finalizado',
+            'finished' => 'Finalizado',
+            default => ucfirst($request->status),
+        }
+    }}
+</span>
+
                                 </div>
                             </div>
+
+                        {{-- Empty state for lack of requests--}}
                         @empty
-                            {{-- No requests found --}}
-                            <div class="alert alert-info rounded-4 mb-0">
-                                No tienes solicitudes registradas todavía.
+                            <div class="card border-0 shadow-sm rounded-4">
+                                <div class="card-body py-5 text-center">
+                                    <i class="bi bi-search fs-1 text-muted"></i>
+                                    <h4 class="fw-bold mt-3">No se encontraron solicitudes</h4>
+                                    <p class="text-muted mb-0">Intenta cambiar los filtros o buscar otro artículo.</p>
+                                </div>
                             </div>
                         @endforelse
 
-                        <div id="requestsEmptyState" class="d-none">
-                            <div class="card border-0 shadow-sm rounded-4">
-                                <div class="card-body py-5 text-center">
-                                    <i class="bi bi-clipboard-x fs-1 text-muted"></i>
-                                    <h4 class="fw-bold mt-3">No se encontraron solicitudes</h4>
-                                    <p class="text-muted mb-0">Intenta cambiar el filtro o buscar otro artículo.</p>
-                                </div>
-                            </div>
-                        </div>
 
                         {{-- Connection for pagination --}}
                         @if($requests->hasPages())
                             <div class="mt-4 d-flex justify-content-center">
-                                {{ $requests->appends(request()->except('page'))->links() }}
+
+                                {{ $requests->appends([
+     'tab' => 'requests',
+     'request_search' => request('request_search'),
+     'request_status' => request('request_status'),
+ ])->links() }}
                             </div>
                         @endif
                     </div>
@@ -614,51 +632,6 @@
             </div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            
-            /*
-             * Synchronizes tab state with URL parameters.
-             * Ensures the correct tab is active after reload.
-             */
-            const postsTab = document.getElementById('posts-tab');
-            const requestsTab = document.getElementById('requests-tab');
-            const profileTabButtons = document.querySelectorAll('#profileTabs button');
-
-            function syncTabButtonStyles(activeButton) {
-                profileTabButtons.forEach((btn) => {
-                    btn.classList.remove('btn-success');
-                    btn.classList.add('btn-outline-success');
-                });
-
-                activeButton.classList.remove('btn-outline-success');
-                activeButton.classList.add('btn-success');
-            }
-
-            function activateTab(tabButton) {
-                const tabInstance = new bootstrap.Tab(tabButton);
-                tabInstance.show();
-                syncTabButtonStyles(tabButton);
-            }
-
-            if (window.location.search.includes('tab=requests')) {
-                activateTab(requestsTab);
-            } else {
-                activateTab(postsTab);
-            }
-
-            /* User Profile current posts of the user */
-            postsTab.addEventListener('click', function () {
-                syncTabButtonStyles(postsTab);
-            });
-
-            /* User profile active or finalized requests */
-            requestsTab.addEventListener('click', function () {
-                syncTabButtonStyles(requestsTab);
-            });
-        });
-    </script>
 
      {{-- Toast notification displayed after a post is removed --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
