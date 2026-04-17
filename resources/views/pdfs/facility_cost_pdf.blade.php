@@ -97,9 +97,9 @@
 
     function translatePeriodType($value) {
         return match($value) {
-            'laborable' => 'Laborable',
-            'no_laborable_sabado' => 'No laborable sábado',
-            'no_laborable_domingo_festivo' => 'No laborable domingo o festivo',
+            'workday' => 'Laborable',
+            'non_workday_saturday' => 'No laborable sábado',
+            'non_workday_sunday_holiday' => 'No laborable domingo o festivo',
             default => $value,
         };
     }
@@ -113,9 +113,9 @@
 
         $translated = array_map(function ($service) {
             return match($service) {
-                'utilidades' => 'Utilidades',
-                'electricidad' => 'Electricidad',
-                'agua' => 'Agua',
+                'utilities' => 'Utilidades',
+                'electricity' => 'Electricidad',
+                'water' => 'Agua',
                 default => ucfirst($service),
             };
         }, $services);
@@ -174,7 +174,7 @@
         <tr>
             <td>{{ \Carbon\Carbon::parse($item->event_date)->format('m/d/Y') }}</td>
             <td>{{ \Carbon\Carbon::parse($item->end_date ?? $item->event_date)->format('m/d/Y') }}</td>
-            <td>{{ $item->responsable }}</td>
+            <td>{{ $item->responsible }}</td>
             <td>{{ $item->facilityCost->classroom_name ?? 'N/A' }}</td>
             <td class="text-left">{{ $item->event_description }}</td>
             <td>{{ \Carbon\Carbon::parse($item->start_time)->format('h:i A') }}</td>

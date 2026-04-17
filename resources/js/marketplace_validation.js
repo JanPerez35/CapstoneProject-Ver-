@@ -109,7 +109,7 @@ const clearSellerRating = document.getElementById('clearSellerRating');
 // Constants and states
 const POSTS_PER_PAGE = 18;
 const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
-const priceRegex = /^(?:\d+)(?:\.\d{1,2})?$/;
+const priceRegex = /^(0|[1-9]\d*)(\.\d{1,2})?$/
 const MAX_PRICE = 10000;
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 const MAX_IMAGES = 3;
@@ -842,7 +842,7 @@ function validatePrice(showError = true) {
             setFieldError(
                 postPrice,
                 postPriceError,
-                'Ingresa un precio válido usando solo números y hasta 2 dígitos después del punto decimal.'
+                'Ingresa un precio válida usando solo números, sin ceros a la izquierda y hasta 2 dígitos después del punto decimal.'
             );
             postPriceGroup?.classList.add('is-invalid');
         }
@@ -1388,9 +1388,30 @@ if (postTitle) {
 
         if (value.length > 100) {
             postTitle.value = value.slice(0, 100);
-            setFieldError(postTitle, postTitleError, 'Has alcanzado el máximo de 100 caracteres. No puedes escribir más.');
+            setFieldError(
+                postTitle,
+                postTitleError,
+                'Has alcanzado el máximo de 100 caracteres. No puedes escribir más.'
+            );
         } else if (value.length === 100) {
-            setFieldError(postTitle, postTitleError, 'Has alcanzado el máximo de 100 caracteres, puedes aún someter esa cantidad.');
+            setFieldError(
+                postTitle,
+                postTitleError,
+                'Has alcanzado el máximo de 100 caracteres, puedes aún someter esa cantidad.'
+            );
+        } else {
+            validateTitle(true);
+        }
+
+        updatePublishButtonState();
+        updateCreatePostDirtyState();
+    });
+
+    postTitle.addEventListener('blur', () => {
+        const value = postTitle.value.trim();
+
+        if (value.length === 100) {
+            clearFieldError(postTitle, postTitleError);
         } else {
             validateTitle(true);
         }
@@ -1424,6 +1445,19 @@ if (postDescription) {
         updatePublishButtonState();
         updateCreatePostDirtyState();
     });
+
+    postDescription.addEventListener('blur', () => {
+        const value = postDescription.value.trim();
+
+        if (value.length === 500) {
+            clearFieldError(postDescription, postDescriptionError);
+        } else {
+            validateDescription(true);
+        }
+
+        updatePublishButtonState();
+        updateCreatePostDirtyState();
+    });
 }
 
 if (reportDescription) {
@@ -1439,6 +1473,20 @@ if (reportDescription) {
             reportDescription.classList.add('is-invalid');
             reportDescriptionError.textContent =
                 'Has alcanzado el máximo de 500 caracteres, puedes aún someter esa cantidad.';
+        } else {
+            validateReportDescription(true);
+        }
+
+        updateReportButtonState();
+        updateReportDirtyState();
+    });
+
+    reportDescription.addEventListener('blur', () => {
+        const value = reportDescription.value.trim();
+
+        if (value.length === 500) {
+            reportDescription.classList.remove('is-invalid');
+            reportDescriptionError.textContent = '';
         } else {
             validateReportDescription(true);
         }
