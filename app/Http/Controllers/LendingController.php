@@ -14,8 +14,15 @@ class LendingController extends Controller
 {
     use LogsActivity;
 
+    /**
+     * Email service used to send lending-related notifications.
+     */
     protected $emailService;
 
+    /**
+     * Inject EmailService so all emails are handled
+     * through a centralized service layer.
+     */
     public function __construct(EmailService $emailService)
     {
         $this->emailService = $emailService;
@@ -288,6 +295,12 @@ public function cart()
 
         $lending->load('user');
 
+        /**
+         * Send approval email automatically when request is NOT a special case.
+         * Only sends if:
+         * - request is auto-approved
+         * - user has a valid email
+         */
         if (!$isSpecialCase && $lending->user && !empty($lending->user->email)) {
             $this->emailService->send(
                 $lending->user->email,
@@ -382,6 +395,9 @@ public function borrows(Request $request)
             $lending->save();
         });
 
+        /**
+         * Send email when admin manually approves a request.
+         */
         if ($lending->user && !empty($lending->user->email)) {
             $this->emailService->send(
                 $lending->user->email,
@@ -413,14 +429,30 @@ public function borrows(Request $request)
             $lending->save();
         });
 
+        /**
+         * Send email when request is rejected.
+         * Includes dynamic admin contact email.
+         * Email or phone extension.
+         */
         if ($lending->user && !empty($lending->user->email)) {
+            $inventoryAdmin = \App\Models\User::where('role', 'Admin Inventario')
+                ->where('status', 'Activo')
+                ->first();
+
+            $superAdmin = \App\Models\User::where('role', 'Admin Super')
+                ->where('status', 'Activo')
+                ->first();
+
+            $adminEmail = $inventoryAdmin?->email
+                ?? $superAdmin?->email
+                ?? '+1 (787)-832-4040 Ext. 3841, 2008';
+
             $this->emailService->send(
                 $lending->user->email,
                 'Solicitud de item denegada',
-                'Tu solicitud de equipo deportivo fue denegada. Por favor entra a tu perfil de MAIKINE para más detalles. De tener alguna duda comunícate con el administrador de inventario (inventario@upr.edu).'
+                'Tu solicitud de equipo deportivo fue denegada. Por favor entra a tu perfil de MAIKINE para más detalles. De tener alguna duda comunícate con el administrador de inventario (' . $adminEmail . ').'
             );
         }
-
         $this->logActivity(
             'Rechazó solicitud',
             'Solicitud ID ' . $lending->id . ' rechazada'
