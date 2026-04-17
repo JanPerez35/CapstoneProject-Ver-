@@ -748,32 +748,36 @@
 
                 </div>
 
-                <form id="updateTermsForm"
-                      method="POST"
-                      action="{{ route('terms.update') }}"
-                      enctype="multipart/form-data">
-                    @csrf
+                @auth
+                    @if(trim(auth()->user()->role) === 'Admin Super')
+                        <form id="updateTermsForm"
+                            method="POST"
+                            action="{{ route('terms.update') }}"
+                            enctype="multipart/form-data">
+                            @csrf
 
-                    <input
-                        type="file"
-                        id="termsPdfInput"
-                        name="terms_pdf"
-                        accept="application/pdf,.pdf"
-                        class="d-none"
-                    >
+                            <input
+                                type="file"
+                                id="termsPdfInput"
+                                name="terms_pdf"
+                                accept="application/pdf,.pdf"
+                                class="d-none"
+                            >
 
-                    <div class="d-flex flex-column gap-2">
-                        <button type="button"
-                                class="btn btn-outline-success align-self-start"
-                                id="openTermsPdfPicker">
-                            <i class="bi bi-upload me-1"></i>
-                            Actualizar términos y condiciones
-                        </button>
+                            <div class="d-flex flex-column gap-2">
+                                <button type="button"
+                                        class="btn btn-outline-success align-self-start"
+                                        id="openTermsPdfPicker">
+                                    <i class="bi bi-upload me-1"></i>
+                                    Actualizar términos y condiciones
+                                </button>
 
-                        <div id="termsPdfSelectedName" class="text-muted small d-none"></div>
-                        <div id="termsPdfError" class="text-danger small d-none"></div>
-                    </div>
-                </form>
+                                <div id="termsPdfSelectedName" class="text-muted small d-none"></div>
+                                <div id="termsPdfError" class="text-danger small d-none"></div>
+                            </div>
+                        </form>
+                    @endif
+                @endauth
             </div>
 
             <div class="modal-footer border-0 pt-0">

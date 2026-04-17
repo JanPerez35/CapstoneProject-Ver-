@@ -187,7 +187,7 @@ class FacilityCostController extends Controller
     // }
 
     public function storeEvent(Request $request)
-{
+    {
     $validated = $request->validate([
         'classroom' => ['required', 'string'],
         'event_date' => ['required', 'date'],

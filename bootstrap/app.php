@@ -13,7 +13,6 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
         $middleware->redirectGuestsTo(fn () => route('saml.login'));
 
         $middleware->validateCsrfTokens(except: [
@@ -22,6 +21,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'terms.accepted' => \App\Http\Middleware\EnsureTermsAccepted::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -62,14 +62,41 @@
                     </label>
                 </div>
 
-                <div class="d-flex justify-content-end">
-                    <a href="{{ route('kinventory') }}"
-                       id="confirmTermsBtn"
-                       class="btn btn-success px-4 py-2 fw-semibold confirm-disabled"
-                       aria-disabled="true">
-                        Confirmar
-                    </a>
+                <div class="d-flex justify-content-end mb-4">
+                    <form method="POST" action="{{ route('terms.accept') }}">
+                        @csrf
+                        <button
+                            type="submit"
+                            id="confirmTermsBtn"
+                            class="btn btn-success px-4 py-2 fw-semibold confirm-disabled"
+                            disabled
+                        >
+                            Confirmar
+                        </button>
+                    </form>
                 </div>
+
+                @if(auth()->check() && auth()->user()->role === 'Admin Super')
+                    <form method="POST" action="{{ route('terms.update') }}" enctype="multipart/form-data">
+                        @csrf
+
+                        <div class="mb-3">
+                            <label for="terms_pdf" class="form-label fw-semibold">Actualizar PDF</label>
+                            <input
+                                type="file"
+                                name="terms_pdf"
+                                id="terms_pdf"
+                                class="form-control"
+                                accept="application/pdf"
+                                required
+                            >
+                        </div>
+
+                        <button type="submit" class="btn btn-outline-success">
+                            Actualizar términos y condiciones
+                        </button>
+                    </form>
+                @endif
 
             </div>
         </div>
@@ -106,10 +133,10 @@
         acceptTermsCheck.addEventListener('change', function () {
             if (reachedBottom && acceptTermsCheck.checked) {
                 confirmTermsBtn.classList.remove('confirm-disabled');
-                confirmTermsBtn.removeAttribute('aria-disabled');
+                confirmTermsBtn.disabled = false;
             } else {
                 confirmTermsBtn.classList.add('confirm-disabled');
-                confirmTermsBtn.setAttribute('aria-disabled', 'true');
+                confirmTermsBtn.disabled = true;
             }
         });
 
