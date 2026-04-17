@@ -1,22 +1,23 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EquipmentController;
+use App\Http\Controllers\LendingController;
+use App\Http\Controllers\InventoryStatisticsController;
+use App\Http\Controllers\AccessLogController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FacilityCostController;
-use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\PostController;
-use App\Models\Post;
 use App\Http\Controllers\TermsController;
 use App\Http\Controllers\ChatController;
-use App\Models\Chat;
 use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReviewController;
-use App\Models\User;
-
-use Illuminate\Support\Facades\Auth;
 
 Route::post('/logout', function () {
     Auth::logout();
@@ -35,110 +36,101 @@ Route::get('/welcome', function () {
     return view('welcome');
 });
 
-// Route::get('/my_profile', function () {
-//     return view('my_profile');
-// })->name('my_profile');
-
-//Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
-
 Route::get('/terms_and_conditions', function () {
     return view('terms_and_conditions');
 })->name('terms_and_conditions');
 
-// Route::get('/kinventory', [EmailController::class, 'showForm'])->name('kinventory');
-
 require __DIR__ . '\saml2.php';
-
-/*
-|--------------------------------------------------------------------------
-| 🔐 AUTH PROTECTED ROUTES
-|--------------------------------------------------------------------------
-*/
 
 Route::middleware('auth')->group(function () {
 
     Route::get('/kinventory', [EquipmentController::class, 'kinventory'])
         ->name('kinventory');
 
-    Route::post('/kinventory/borrow', [EquipmentController::class, 'borrow'])
+    Route::post('/kinventory/borrow', [LendingController::class, 'borrow'])
         ->name('kinventory.borrow');
 
-    Route::post('/send-email', [EmailController::class, 'sendEmail']);
+    Route::post('/cart/add', [LendingController::class, 'addToCart'])
+        ->name('cart.add');
 
-    Route::post('/cart/add', [EquipmentController::class, 'addToCart'])->name('cart.add');
+    Route::get('/cart', [LendingController::class, 'cart'])
+        ->name('cart.index');
 
-    Route::get('/cart', [EquipmentController::class, 'cart'])->name('cart.index');
-    Route::delete('/cart/remove/{id}', [EquipmentController::class, 'removeFromCart'])->name('cart.remove');
-    Route::post('/cart/checkout', [EquipmentController::class, 'checkoutCart'])->name('cart.checkout');
+    Route::delete('/cart/remove/{id}', [LendingController::class, 'removeFromCart'])
+        ->name('cart.remove');
 
-    Route::get('/search_user', [UserController::class, 'index'])->name('search_user');
+    Route::post('/cart/checkout', [LendingController::class, 'checkoutCart'])
+        ->name('cart.checkout');
+
+    Route::get('/search_user', [UserController::class, 'index'])
+        ->name('search_user');
+
     Route::put('/users/{user}/role', [UserController::class, 'updateRole']);
-    Route::put('/users/{user}/status', [UserController::class, 'updateStatus'])->name('users.updateStatus');
 
-    // Route::get('/inventory_management', function () {
-    //     return view('inventory_management');
-    // })->name('inventory_management');//->middleware('role:super,inventory,user')
+    Route::put('/users/{user}/status', [UserController::class, 'updateStatus'])
+        ->name('users.updateStatus');
 
     Route::get('/inventory_management', [EquipmentController::class, 'index'])
-        ->name('inventory_management')->middleware('role:Admin Super,Admin Inventario');
+        ->name('inventory_management')
+        ->middleware('role:Admin Super,Admin Inventario');
 
     Route::post('/inventory_management', [EquipmentController::class, 'store'])
-        ->name('inventory.store');
-
-    Route::delete('/equipment/{id}', [EquipmentController::class, 'destroy'])
-        ->name('equipment.destroy');
+        ->name('inventory.store')
+        ->middleware('role:Admin Super,Admin Inventario');
 
     Route::put('/equipment/{id}', [EquipmentController::class, 'update'])
-        ->name('equipment.update');
+        ->name('equipment.update')
+        ->middleware('role:Admin Super,Admin Inventario');
 
-    Route::get('/inventory_management/borrows', [EquipmentController::class, 'borrows'])
-        ->name('inventory_management.borrows')->middleware('role:Admin Super,Admin Inventario');
+    Route::delete('/equipment/{id}', [EquipmentController::class, 'destroy'])
+        ->name('equipment.destroy')
+        ->middleware('role:Admin Super,Admin Inventario');
 
-    Route::post('/inventory_management/requests/{id}/approve', [EquipmentController::class, 'approveRequest'])
-        ->name('inventory_management.requests.approve');
+    Route::get('/inventory_management/borrows', [LendingController::class, 'borrows'])
+        ->name('inventory_management.borrows')
+        ->middleware('role:Admin Super,Admin Inventario');
 
-    Route::post('/inventory_management/requests/{id}/reject', [EquipmentController::class, 'rejectRequest'])
-        ->name('inventory_management.requests.reject');
+    Route::post('/inventory_management/requests/{id}/approve', [LendingController::class, 'approveRequest'])
+        ->name('inventory_management.requests.approve')
+        ->middleware('role:Admin Super,Admin Inventario');
 
-    Route::post('/inventory_management/requests/{id}/return', [EquipmentController::class, 'markReturned'])
-        ->name('inventory_management.requests.return');
+    Route::post('/inventory_management/requests/{id}/reject', [LendingController::class, 'rejectRequest'])
+        ->name('inventory_management.requests.reject')
+        ->middleware('role:Admin Super,Admin Inventario');
 
-    Route::get('/inventory_management/inventory_statistics', [EquipmentController::class, 'statistics'])
-        ->name('inventory_management.inventory_statistics')->middleware('role:Admin Super,Admin Inventario');
+    Route::post('/inventory_management/requests/{id}/return', [LendingController::class, 'markReturned'])
+        ->name('inventory_management.requests.return')
+        ->middleware('role:Admin Super,Admin Inventario');
 
-    Route::get('/inventory_management/inventory_statistics/export', [EquipmentController::class, 'exportStatistics'])
-        ->name('inventory_management.inventory_statistics.export')->middleware('role:Admin Super,Admin Inventario');
+    Route::get('/inventory_management/inventory_statistics', [InventoryStatisticsController::class, 'statistics'])
+        ->name('inventory_management.inventory_statistics')
+        ->middleware('role:Admin Super,Admin Inventario');
 
-    Route::get('/kinemarket', [PostController::class, 'index'])->name('kinemarket');
+    Route::get('/inventory_management/inventory_statistics/export', [InventoryStatisticsController::class, 'exportStatistics'])
+        ->name('inventory_management.inventory_statistics.export')
+        ->middleware('role:Admin Super,Admin Inventario');
 
-    Route::get('/marketplace_management', [UserReportController::class, 'index'])->name('marketplace_management')->middleware('role:Admin Super,Admin Mercado');
+    Route::get('/kinemarket', [PostController::class, 'index'])
+        ->name('kinemarket');
 
-    // Route::get('/access_logs', function () {
-    //     return view('access_logs');
-    // })->name('access_logs');
+    Route::post('/posts', [PostController::class, 'store'])
+        ->name('posts.store');
 
-    Route::get('/access_logs', [EquipmentController::class, 'accessLogs'])
-        ->name('access_logs')->middleware('role:Admin Super');
+    Route::delete('/posts/{post}', [PostController::class, 'destroy'])
+        ->name('posts.destroy');
 
-    // Route::get('/facility_management', function () {
-    //     return view('facility_management');
-    // })->name('facility_management');
+    Route::get('/posts/{id}', [PostController::class, 'show'])
+        ->name('posts.show');
 
-    Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
-    Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
+    Route::get('/posts', [PostController::class, 'getPosts'])
+        ->name('posts.list');
 
-    Route::get('/posts/{id}', [PostController::class, 'show'])->name('posts.show');
+    Route::post('/marketplace/{post}/review', [ReviewController::class, 'store'])
+        ->name('marketplace.review.store');
 
-    // Route::get('/posts', function () {
-    //     return Post::with('user')->latest()->get();
-    // });
-
-    Route::get('/posts', [PostController::class, 'getPosts'])->name('posts.list');
-
-    // Route::get('/reports', [UserReportController::class, 'index']);
-
-    // Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
-    // Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
+    Route::get('/marketplace_management', [UserReportController::class, 'index'])
+        ->name('marketplace_management')
+        ->middleware('role:Admin Super,Admin Mercado');
 
     Route::get('/reports', [UserReportController::class, 'index']);
     Route::post('/reports', [UserReportController::class, 'store']);
@@ -146,10 +138,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
     Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
 
-    Route::delete('/posts/{post}', [PostController::class, 'destroy']);
+    Route::get('/my_messages', [ChatController::class, 'index'])
+        ->name('my_messages');
 
-    Route::get('/my_messages', [ChatController::class, 'index'])->name('my_messages');
-    Route::get('/chat/{chatId}', [ChatController::class, 'show'])->name('chat.show');
+    Route::get('/chat/{chatId}', [ChatController::class, 'show'])
+        ->name('chat.show');
 
     Route::post('/chats/open', [ChatController::class, 'openOrCreate'])
         ->name('chat.open');
@@ -157,19 +150,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/messages', [MessageController::class, 'store']);
     Route::get('/messages/{chatId}', [MessageController::class, 'getMessages']);
 
-    /*Route::get('/kinemercado/reportar_usuario', function () {
-        return view('kinemercado');
-    })->name('kinemercado.reportar_usuario');*/
-
     Route::get('/kinemercado/mensaje', function () {
         return view('kinemercado_mensaje');
     })->name('kinemercado_mensaje');
 
-    Route::get('/facility_management', [FacilityCostController::class, 'index'])->name('facility_management')->middleware('role:Admin Super,Admin Facilidades');
+    Route::get('/facility_management', [FacilityCostController::class, 'index'])
+        ->name('facility_management')
+        ->middleware('role:Admin Super,Admin Facilidades');
 
-    Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])->name('facility.rates.save');
-    Route::post('/facility/events', [FacilityCostController::class, 'storeEvent'])->name('facility.events.store');
-    Route::delete('/facility/events/{item}', [FacilityCostController::class, 'destroy'])->name('facility.events.destroy');
+    Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])
+        ->name('facility.rates.save');
+
+    Route::post('/facility/events', [FacilityCostController::class, 'storeEvent'])
+        ->name('facility.events.store');
+
+    Route::delete('/facility/events/{item}', [FacilityCostController::class, 'destroy'])
+        ->name('facility.events.destroy');
 
     Route::post('/facility/classrooms', [FacilityCostController::class, 'storeClassroom'])
         ->name('facility.classrooms.store');
@@ -177,10 +173,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/facility/classrooms', [FacilityCostController::class, 'destroyClassrooms'])
         ->name('facility.classrooms.destroy');
 
-    Route::get('/facility_management/export/csv', [FacilityCostController::class, 'exportCsv'])->name('facility.export.csv');
-    Route::get('/facility_management/export/pdf', [FacilityCostController::class, 'exportPdf'])->name('facility.export.pdf');
+    Route::get('/facility_management/export/csv', [FacilityCostController::class, 'exportCsv'])
+        ->name('facility.export.csv');
 
-    Route::get('/my_profile', [EquipmentController::class, 'profile'])->name('my_profile');
+    Route::get('/facility_management/export/pdf', [FacilityCostController::class, 'exportPdf'])
+        ->name('facility.export.pdf');
 
     Route::get('/mock-eventflow/events', [FacilityCostController::class, 'mockExternalEvents'])
         ->name('facility.mock.events');
@@ -188,13 +185,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/facility/import-mock-events', [FacilityCostController::class, 'importMockEvents'])
         ->name('facility.import.mock');
 
-    Route::middleware('auth')->post('/marketplace/{post}/review', [ReviewController::class, 'store'])
-        ->name('marketplace.review.store');
+    Route::get('/my_profile', [ProfileController::class, 'profile'])
+        ->name('my_profile');
+
+    Route::get('/access_logs', [AccessLogController::class, 'index'])
+        ->name('access_logs')
+        ->middleware('role:Admin Super');
 
     Route::post('/terms-and-conditions/update', [TermsController::class, 'update'])
         ->name('terms.update');
 
-    //temporary route for test the IPv6
+    Route::post('/send-email', [EmailController::class, 'sendEmail']);
+
     Route::get('/test-log-ipv6', function () {
         \App\Models\ActivityLog::create([
             'user_id' => 3,
@@ -206,18 +208,17 @@ Route::middleware('auth')->group(function () {
 
         return 'IPv6 test';
     });
-
-
-
 });
 
-// Temporary routes until user tables are connected
+/*
+| Temporary test routes
+*/
+
 Route::get('/test-email/request-approved', [EmailController::class, 'requestApproved']);
 Route::get('/test-email/request-denied', [EmailController::class, 'requestDenied']);
 Route::get('/test-email/user-banned', [EmailController::class, 'userBanned']);
 Route::get('/test-email/user-unbanned', [EmailController::class, 'userUnbanned']);
 
-//This is to test emails with Mailpit
 Route::get('/test-email', function () {
     Mail::raw('Esto es un test desde MAIKINE', function ($message) {
         $message->to('test@test.com')

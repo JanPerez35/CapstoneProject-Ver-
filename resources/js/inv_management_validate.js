@@ -1,13 +1,26 @@
 document.addEventListener('DOMContentLoaded', function () {
+
+    /*
+     * Global validation limits and shared constants used across the
+     * inventory management forms.
+     */
     const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
     const MAX_TEXT_LENGTH = 100;
     const MIN_TEXT_LENGTH = 3;
     const SCROLL_KEY = 'inventoryScrollY';
 
+    /*
+     * Validation patterns for text-based fields.
+     * Category and description share the same allowed characters.
+     */
     const TEXT_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
     const CATEGORY_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
-    const LOCATION_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-\/]+$/;
+    const LOCATION_REGEX = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,-]+$/;
 
+    /*
+     * References to search controls, toast notifications, and
+     * confirmation modals used throughout the inventory page.
+     */
     const searchInput = document.getElementById('inventorySearchInput');
     const searchBtn = document.getElementById('inventorySearchBtn');
 
@@ -24,9 +37,17 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmEditText = document.getElementById('confirmEditText');
     const confirmEditBtn = document.getElementById('confirmEditBtn');
 
+    /*
+     * Stores the forms currently waiting for user confirmation
+     * before delete or edit actions are submitted.
+     */
     let pendingDeleteForm = null;
     let pendingEditForm = null;
 
+    /*
+     * Saves and restores scroll position so the user returns to the
+     * same section after submitting forms or navigating the page.
+     */
     function saveScroll() {
         sessionStorage.setItem(SCROLL_KEY, String(window.scrollY));
     }
@@ -66,11 +87,19 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(tryScroll, 100);
     }
 
+    /*
+     * Enables or disables the search button depending on whether
+     * the user has entered text in the search field.
+     */
     function updateSearchButtonState() {
         if (!searchInput || !searchBtn) return;
         searchBtn.disabled = searchInput.value.trim().length === 0;
     }
 
+    /*
+     * Preserves scroll position across most form submissions and links,
+     * except for pagination where the page should behave normally.
+     */
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', saveScroll);
     });
@@ -93,6 +122,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     updateSearchButtonState();
 
+    /*
+     * Helper functions to safely retrieve Bootstrap toast and modal
+     * instances before interacting with them.
+     */
     function getToastInstance(element) {
         if (!element || typeof bootstrap === 'undefined') return null;
         return bootstrap.Toast.getOrCreateInstance(element);
@@ -118,6 +151,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (modal) modal.hide();
     }
 
+    /*
+     * Standardized error handling utilities used by all validations.
+     * They keep the validation feedback visually consistent.
+     */
     function setError(input, errorElement, message) {
         if (input) {
             input.classList.add('is-invalid');
@@ -136,6 +173,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    /*
+     * Resolves the final value for fields that can come from either
+     * an existing option or a manually entered new value.
+     */
     function getResolvedValue(existingInput, newInput, hiddenInput) {
         const newValue = newInput ? newInput.value.trim() : '';
         const existingValue = existingInput ? existingInput.value.trim() : '';
@@ -148,19 +189,23 @@ document.addEventListener('DOMContentLoaded', function () {
         return finalValue;
     }
 
+    /*
+     * Generic text validation used by description, category, and location
+     * after resolving the final value that will be submitted.
+     */
     function validateResolvedTextValue({
-                                           value,
-                                           visibleInput,
-                                           errorElement,
-                                           emptyMessage,
-                                           invalidMessage,
-                                           minMessage,
-                                           maxMessage,
-                                           min,
-                                           max,
-                                           regex,
-                                           showError = true
-                                       }) {
+        value,
+        visibleInput,
+        errorElement,
+        emptyMessage,
+        invalidMessage,
+        minMessage,
+        maxMessage,
+        min,
+        max,
+        regex,
+        showError = true
+    }) {
         if (showError) {
             clearError(visibleInput, errorElement);
         }
@@ -196,6 +241,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
+    /*
+     * Validates uploaded images by checking presence when required,
+     * allowed format, and maximum file size.
+     */
     function validateImageField(input, errorElement, required = false, showError = true) {
         if (showError) {
             clearError(input, errorElement);
@@ -234,6 +283,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
+    /*
+     * Validates total quantity fields to ensure they contain a valid
+     * positive integers.
+     */
     function validateQuantityField(input, errorElement, showError = true) {
         if (showError) {
             clearError(input, errorElement);
@@ -260,6 +313,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
+    /*
+     * Validates available quantity fields and ensures they do not exceed
+     * the total quantity of the item.
+     */
     function validateAvailableField(availableInput, quantityInput, errorElement, showError = true) {
         if (showError) {
             clearError(availableInput, errorElement);
@@ -299,6 +356,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
+    /*
+     * Prevents text fields from exceeding the allowed length during
+     * live typing or paste actions.
+     */
     function validateTextLengthLive(input, errorElement, event = null) {
         if (!input) return true;
 
@@ -322,6 +383,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return true;
     }
 
+    /*
+     * Retrieves a readable item name for confirmation messages,
+     * using the form field first and the card title as fallback.
+     */
     function getItemNameFromForm(form) {
         const descriptionInput = form.querySelector('input[name="description"]');
         if (descriptionInput && descriptionInput.value.trim()) {
@@ -338,6 +403,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return 'este item';
     }
 
+    /*
+     * Configures delete confirmation behavior so item removals are
+     * explicitly confirmed before submitting the delete form.
+     */
     function setupDeleteConfirmation() {
         document.querySelectorAll('.deleteItemForm').forEach(function (form) {
             form.addEventListener('submit', function (e) {
@@ -355,6 +424,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const hasActiveOrders = form.dataset.hasActiveOrders === '1';
 
+                /*
+                 * Shows an additional warning when the selected item
+                 * is linked to active or pending borrow requests.
+                 */
                 if (confirmDeleteWarningText) {
                     confirmDeleteWarningText.classList.toggle('d-none', !hasActiveOrders);
                 }
@@ -380,6 +453,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    /*
+     * Configures edit confirmation behavior so validated updates are
+     * confirmed by the user before submission.
+     */
     function setupEditConfirmation() {
         if (confirmEditBtn) {
             confirmEditBtn.addEventListener('click', function () {
@@ -398,6 +475,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    /*
+     * Restores toast notifications after redirects by reading flags
+     * stored in sessionStorage or page dataset attributes.
+     */
     function handleStoredToasts() {
         const addSuccess = document.body.dataset.inventoryAddSuccess === '1';
         const deleteSuccess = sessionStorage.getItem('inventory_delete_toast') === '1';
@@ -418,6 +499,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    /*
+     * Add item form validation logic.
+     * This section validates all required fields, synchronizes the
+     * hidden resolved values, controls the preview, and enables the
+     * submit button only when the form is fully valid.
+     */
     const addItemForm = document.getElementById('addItemForm');
 
     if (addItemForm) {
@@ -447,6 +534,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const imagePreview = document.getElementById('imagePreview');
         const submitAddItemBtn = document.getElementById('submitAddItemBtn');
 
+        /*
+         * Field-specific validation helpers for the add item form.
+         */
         function validateName(showError = true) {
             const value = nameInput.value.trim();
 
@@ -544,6 +634,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return validateImageField(imageInput, imageError, true, showError);
         }
 
+        /*
+         * Updates the preview only when the selected image is valid.
+         */
         function updatePreview() {
             const file = imageInput.files[0];
 
@@ -567,6 +660,10 @@ document.addEventListener('DOMContentLoaded', function () {
             reader.readAsDataURL(file);
         }
 
+        /*
+         * Enables the add button only when every required field
+         * currently satisfies validation rules.
+         */
         function updateAddButtonState() {
             const valid =
                 validateName(false) &&
@@ -579,6 +676,9 @@ document.addEventListener('DOMContentLoaded', function () {
             submitAddItemBtn.disabled = !valid;
         }
 
+        /*
+         * Live validation listeners for add form inputs.
+         */
         nameInput.addEventListener('input', function (e) {
             const triedToInsert =
                 e.inputType === 'insertText' ||
@@ -669,6 +769,9 @@ document.addEventListener('DOMContentLoaded', function () {
             updateAddButtonState();
         });
 
+        /*
+         * Final validation before submitting a new inventory item.
+         */
         addItemForm.addEventListener('submit', function (e) {
             const valid =
                 validateName(true) &&
@@ -693,6 +796,11 @@ document.addEventListener('DOMContentLoaded', function () {
         updateAddButtonState();
     }
 
+    /*
+     * Edit item form validation logic.
+     * Each edit modal gets its own validation behavior so updates remain
+     * isolated to the selected inventory item.
+     */
     document.querySelectorAll('.editItemForm').forEach(function (form) {
         const descriptionInput = form.querySelector('input[name="description"]');
 
@@ -715,6 +823,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const availableError = form.querySelector('.error-available');
         const imageError = form.querySelector('.error-image');
 
+        /*
+         * Field-specific validation helpers for the edit item form.
+         */
         function validateDescription(showError = true) {
             const value = descriptionInput.value.trim();
 
@@ -832,6 +943,9 @@ document.addEventListener('DOMContentLoaded', function () {
             return validateImageField(imageInput, imageError, false, showError);
         }
 
+        /*
+         * Live validation listeners for edit form inputs.
+         */
         descriptionInput.addEventListener('input', function (e) {
             const triedToInsert =
                 e.inputType === 'insertText' ||
@@ -901,6 +1015,10 @@ document.addEventListener('DOMContentLoaded', function () {
             validateEditImage(true);
         });
 
+        /*
+         * Final validation for edit submissions.
+         * If valid, submission is paused until the user confirms the edit.
+         */
         form.addEventListener('submit', function (e) {
             const valid =
                 validateDescription(true) &&
@@ -928,6 +1046,10 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    /*
+     * Initializes delete/edit confirmations and restores any pending
+     * success toasts after page reload.
+     */
     setupDeleteConfirmation();
     setupEditConfirmation();
 

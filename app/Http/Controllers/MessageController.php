@@ -26,7 +26,15 @@ class MessageController extends Controller
             'read_at' => null,
         ]);
 
+        /**
+         * Dispatch job that will send an email reminder if the message
+         * remains unread after a delay.
+         *
+         * This prevents immediate emails or email spam and only notifies users
+         * when messages are ignored for some time.
+         */
         SendUnreadMessageReminder::dispatch($message->id)
+//            ->delay(now()->addMinutes(15));
             ->delay(now()->addSeconds(15));
 
         return response()->json($message);
@@ -44,6 +52,11 @@ class MessageController extends Controller
                 'status' => 'read',
             ]);
 
+        /**
+         * Reset unread reminder flag when messages are read.
+         * This allows future email reminders to be sent again
+         * if new unread messages appear later.
+         */
         Chat::where('id', $chatId)->update([
             'unread_reminder_sent_at' => null,
         ]);
