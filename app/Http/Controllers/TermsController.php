@@ -6,8 +6,28 @@ use Illuminate\Http\Request;
 
 class TermsController extends Controller
 {
+    public function show()
+    {
+        return view('terms_and_conditions');
+    }
+
+    public function accept(Request $request)
+    {
+        $user = auth()->user();
+
+        $user->terms_accepted = true;
+        $user->save();
+
+        return redirect()->route('kinventory')
+            ->with('success', 'Términos y condiciones aceptados correctamente.');
+    }
+
     public function update(Request $request)
     {
+        if (!auth()->check() || auth()->user()->role !== 'Admin Super') {
+            abort(403, 'No autorizado');
+        }
+
         $request->validate([
             'terms_pdf' => ['required', 'file', 'mimes:pdf', 'max:10240'],
         ], [
@@ -26,6 +46,7 @@ class TermsController extends Controller
 
         $file->move($destinationPath, 'terms_conditions.pdf');
 
-        return redirect()->back()->with('terms_updated_success', 'Términos y condiciones actualizados correctamente.');
+        return redirect()->back()
+            ->with('terms_updated_success', 'Términos y condiciones actualizados correctamente.');
     }
 }

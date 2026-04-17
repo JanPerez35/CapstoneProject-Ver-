@@ -19,13 +19,17 @@ Route::any('/auth/callback', function () {
         'first_name' => $saml->first_name,
         'last_name' => $saml->last_name,
         'auth_type' => 'saml2',
-        'password' => "thisisatest",
+        'password' => 'thisisatest',
     ]);
 
     Auth::login($user);
 
-    return redirect('terms_and_conditions');
-})->name("saml.callback");
+    if (!$user->terms_accepted) {
+        return redirect()->route('terms.show');
+    }
+
+    return redirect()->route('kinventory');
+})->name('saml.callback');
 
 Route::get('/auth/saml/metadata', function () {
     return Socialite::driver('saml2')->getServiceProviderMetadata();

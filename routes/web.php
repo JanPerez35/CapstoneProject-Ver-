@@ -36,10 +36,6 @@ Route::get('/welcome', function () {
     return view('welcome');
 });
 
-Route::get('/terms_and_conditions', function () {
-    return view('terms_and_conditions');
-})->name('terms_and_conditions');
-
 require __DIR__ . '\saml2.php';
 
 Route::middleware('auth')->group(function () {
@@ -192,8 +188,13 @@ Route::middleware('auth')->group(function () {
         ->name('access_logs')
         ->middleware('role:Admin Super');
 
-    Route::post('/terms-and-conditions/update', [TermsController::class, 'update'])
-        ->name('terms.update');
+    Route::middleware('auth')->group(function () {
+    Route::get('/terms-and-conditions', [TermsController::class, 'show'])->name('terms.show');
+    Route::post('/terms-and-conditions/accept', [TermsController::class, 'accept'])->name('terms.accept');
+    Route::post('/admin/terms-and-conditions/update', [TermsController::class, 'update'])
+    ->name('terms.update')
+    ->middleware('role:Admin Super');
+});
 
     Route::post('/send-email', [EmailController::class, 'sendEmail']);
 
