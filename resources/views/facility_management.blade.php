@@ -155,7 +155,7 @@
                     <div class="col-md-3">
                         <select id="filterClassroom" name="filter_classroom" class="form-select border-2 border-dark">
                             <option value="" {{ ($filterClassroom ?? '') === '' ? 'selected' : '' }}>Salón</option>
-                            @foreach ($facilityCosts as $cost)
+                            @foreach ($allFacilityCosts as $cost)
                                 <option
                                     value="{{ $cost->classroom_name }}" {{ $filterClassroom === $cost->classroom_name ? 'selected' : '' }}>
                                     {{ $cost->classroom_name }}

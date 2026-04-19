@@ -11,6 +11,7 @@ class FacilityCost extends Model
 
     protected $fillable = [
         'classroom_name',
+        'pending_deletion',
         'supply_cost',
         'electricity_cost',
         'water_cost',

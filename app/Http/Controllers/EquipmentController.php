@@ -5,22 +5,40 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Equipment;
 
+/**
+ * Class EquipmentController
+ *
+ * Handles all equipment-related actions within the application.
+ *
+ * Responsibilities:
+ * - displaying equipment inventory
+ * - filtering equipment by search and category
+ * - creating new equipment records
+ * - updating equipment information
+ * - deleting or marking equipment for deletion
+ * - displaying available equipment in Kinventory
+ */
 class EquipmentController extends Controller
 {
-
+    /**
+     * Displays the inventory management view.
+     *
+     * Retrieves equipment records, applies search and category filters,
+     * loads the number of active lendings for each item, and returns
+     * the inventory management view with pagination.
+     */
     public function index(Request $request)
     {
-
         $query = Equipment::where('pending_deletion', false)
-        ->withCount([
-            'lendingItems as open_lendings_count' => function ($q) {
-                $q->whereHas('lending', function ($lendingQuery) {
-                    $lendingQuery->whereIn('status', ['pending', 'approved', 'active']);
-                });
-            }
-        ]);
+            ->withCount([
+                'lendingItems as open_lendings_count' => function ($q) {
+                    $q->whereHas('lending', function ($lendingQuery) {
+                        $lendingQuery->whereIn('status', ['pending', 'approved', 'active']);
+                    });
+                }
+            ]);
 
-        // Search filter
+        // Filter equipment by search term
         if ($request->filled('search')) {
             $search = $request->search;
 
@@ -31,15 +49,15 @@ class EquipmentController extends Controller
             });
         }
 
-        // Category filter
+        // Filter equipment by category
         if ($request->filled('category')) {
             $query->where('category', $request->category);
         }
 
-        // NOW paginate (after filters)
+        // Paginate filtered equipment
         $items = $query->paginate(18)->withQueryString();
 
-        // Categories list
+        // Get all available categories
         $categories = Equipment::where('pending_deletion', false)
             ->whereNotNull('category')
             ->where('category', '!=', '')
@@ -47,7 +65,7 @@ class EquipmentController extends Controller
             ->orderBy('category')
             ->pluck('category');
 
-        // Locations list
+        // Get all available locations
         $locations = Equipment::where('pending_deletion', false)
             ->whereNotNull('location')
             ->where('location', '!=', '')
@@ -58,6 +76,12 @@ class EquipmentController extends Controller
         return view('inventory_management.admin_inventory', compact('items', 'categories', 'locations'));
     }
 
+    /**
+     * Updates an existing equipment record.
+     *
+     * Validates the submitted data, updates the equipment information,
+     * and replaces the image if a new one is uploaded.
+     */
     public function update(Request $request, $id)
     {
         $item = Equipment::findOrFail($id);
@@ -71,6 +95,7 @@ class EquipmentController extends Controller
             'image' => 'nullable|image|mimes:jpg,jpeg|max:2048',
         ]);
 
+        // Replace image if a new one is uploaded
         if ($request->hasFile('image')) {
             if ($item->equipment_photo_url) {
                 \Storage::disk('public')->delete($item->equipment_photo_url);
@@ -80,6 +105,7 @@ class EquipmentController extends Controller
             $item->equipment_photo_url = $imagePath;
         }
 
+        // Update equipment fields
         $item->update([
             'description' => $validated['description'],
             'category' => $validated['category'],
@@ -92,6 +118,12 @@ class EquipmentController extends Controller
             ->with('success', 'Item actualizado correctamente');
     }
 
+    /**
+     * Stores a new equipment record.
+     *
+     * Validates the submitted data, uploads the image,
+     * and creates a new equipment entry.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -121,8 +153,10 @@ class EquipmentController extends Controller
             'image' => 'required|image|mimes:jpg,jpeg|max:2048',
         ]);
 
+        // Store equipment image
         $imagePath = $request->file('image')->store('equipment_photos', 'public');
 
+        // Create equipment record
         Equipment::create([
             'description' => $validated['description'],
             'category' => $validated['category'],
@@ -136,6 +170,13 @@ class EquipmentController extends Controller
             ->with('success', 'Item agregado correctamente');
     }
 
+    /**
+     * Deletes an equipment record.
+     *
+     * If the equipment has active or pending lendings,
+     * it is marked as unavailable and pending deletion.
+     * Otherwise, it is removed completely.
+     */
     public function destroy($id)
     {
         $equipment = Equipment::findOrFail($id);
@@ -146,6 +187,7 @@ class EquipmentController extends Controller
             })
             ->exists();
 
+        // Mark equipment as pending deletion if it is linked to active lendings
         if ($hasOpenLendings) {
             $equipment->available_quantity = 0;
             $equipment->pending_deletion = true;
@@ -155,33 +197,42 @@ class EquipmentController extends Controller
                 ->with('warning', 'Este equipo está vinculado a préstamos pendientes o activos. Se marcó como no disponible y pendiente de eliminación.');
         }
 
+        // Delete equipment if no active lendings exist
         $equipment->delete();
 
         return redirect()->route('inventory_management')
             ->with('success', 'Equipo eliminado correctamente.');
     }
 
-public function kinventory(Request $request)
-{
-    $search = $request->input('search');
-    $category = $request->input('category');
+    /**
+     * Displays the Kinventory view.
+     *
+     * Retrieves available equipment, applies optional filters,
+     * and returns the Kinventory view with pagination.
+     */
+    public function kinventory(Request $request)
+    {
+        $search = $request->input('search');
+        $category = $request->input('category');
 
-    $items = Equipment::where('available_quantity', '>', 0)
-    ->where('pending_deletion', false)
-    ->when($search, function ($query) use ($search) {
-        $query->where('description', 'like', "%{$search}%");
-    })
-    ->when($category, function ($query) use ($category) {
-        $query->where('category', $category);
-    })
-    ->paginate(18);
+        // Get available equipment with optional filters
+        $items = Equipment::where('available_quantity', '>', 0)
+            ->where('pending_deletion', false)
+            ->when($search, function ($query) use ($search) {
+                $query->where('description', 'like', "%{$search}%");
+            })
+            ->when($category, function ($query) use ($category) {
+                $query->where('category', $category);
+            })
+            ->paginate(18);
 
-    $categories = Equipment::select('category')
-        ->whereNotNull('category')
-        ->distinct()
-        ->orderBy('category')
-        ->pluck('category');
+        // Get available categories
+        $categories = Equipment::select('category')
+            ->whereNotNull('category')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
 
-    return view('kinventory', compact('items', 'categories', 'search', 'category'));
-}
+        return view('kinventory', compact('items', 'categories', 'search', 'category'));
+    }
 }
