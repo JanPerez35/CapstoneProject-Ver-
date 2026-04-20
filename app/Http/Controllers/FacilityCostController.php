@@ -118,7 +118,7 @@ class FacilityCostController extends Controller
 
         FacilityCost::create([
             'classroom_name' => $validated['classroom_name'],
-            'classroom_space' => 0,
+            'classroom_space' => 1,
             'supply_cost' => 0,
             'electricity_cost' => 0,
             'water_cost' => 0,
@@ -400,7 +400,7 @@ private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
     {
         $item->delete();
 
-        return redirect()->route('facility_management')->with('success', 'Registro eliminado correctamente.');
+        return redirect()->route('facility_management')->with('entry_deleted', 'true');
     }
 
     public function exportCsv(Request $request)
