@@ -7,6 +7,10 @@
             <div id="ratesSavedAutoTrigger"></div>
         @endif
 
+        @if(session('entry_deleted'))
+            <div id="deleteEntryAutoTrigger"></div>
+            @endif
+
         @if(session('rental_saved'))
             <div id="rentalSavedAutoTrigger"></div>
         @endif
@@ -28,7 +32,7 @@
                 <div>
                     <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong> Los costos mostrados
                     en esta página son
-                    <strong>estimaciones</strong> calculadas según las tarifas configuradas, el salón,
+                    <strong>estimaciones</strong> calculadas según las tarifas configuradas, la área,
                     el horario y los servicios seleccionados. Todas las tarifas estan sujetas a cambios y deberan ser
                     ratificadas por el area
                     administrativa para ser consideradas como definitivas.
@@ -102,14 +106,14 @@
                                 id="facilitySearch"
                                 name="search"
                                 class="form-control border-0"
-                                placeholder="Buscar por fecha, salón, hora, periodo, servicios..."
+                                placeholder="Buscar por fecha, área, hora, periodo, servicios..."
                                 value="{{ request('search') }}"
                             >
                         </div>
                     </div>
 
                     <div class="col-md-2 d-grid">
-                        <button type="submit" id="searchFacilityBtn" class="btn btn-success">
+                        <button type="button" id="searchFacilityBtn" class="btn btn-success">
                             Buscar
                         </button>
                     </div>
@@ -154,13 +158,40 @@
 
                     <div class="col-md-3">
                         <select id="filterClassroom" name="filter_classroom" class="form-select border-2 border-dark">
-                            <option value="" {{ ($filterClassroom ?? '') === '' ? 'selected' : '' }}>Salón</option>
+                            <option value="" {{ ($filterClassroom ?? '') === '' ? 'selected' : '' }}>Área</option>
                             @foreach ($allFacilityCosts as $cost)
                                 <option
                                     value="{{ $cost->classroom_name }}" {{ $filterClassroom === $cost->classroom_name ? 'selected' : '' }}>
                                     {{ $cost->classroom_name }}
                                 </option>
                             @endforeach
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <select id="filterPeriodType" name="filter_period_type" class="form-select border-2 border-dark">
+                            <option value="">Tipo de Período</option>
+                            <option value="Laborable">Laborable</option>
+                            <option value="No laborable sábado">No laborable sábado</option>
+                            <option value="No laborable domingo o festivo">No laborable domingo o festivo</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <select id="filterRateMode" name="filter_rate_mode" class="form-select border-2 border-dark">
+                            <option value="">Modo de Tarifa</option>
+                            <option value="Diario">Diario</option>
+                            <option value="Semanal">Semanal</option>
+                            <option value="Mensual">Mensual</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <select id="filterServices" name="filter_services" class="form-select border-2 border-dark">
+                            <option value="">Servicios</option>
+                            <option value="Utilidades">Utilidades</option>
+                            <option value="Electricidad">Electricidad</option>
+                            <option value="Agua">Agua</option>
                         </select>
                     </div>
 
@@ -185,26 +216,26 @@
                     <thead class="table-light">
                     <tr>
                         <th class="fw-bold">
-                            Fecha Inicio <br>
+                            Fecha inicial del evento <br>
                             <small>(mm/dd/yyyy)</small>
                         </th>
 
                         <th class="fw-bold">
-                            Fecha Fin <br>
+                            Fecha final del evento <br>
                             <small>(mm/dd/yyyy)</small>
                         </th>
                         <th class="fw-bold">Responsable</th>
-                        <th class="fw-bold">Salón</th>
+                        <th class="fw-bold area-col">Área</th>
                         <th class="fw-bold">Descripción</th>
                         <th class="fw-bold">Hora</th>
                         <th class="fw-bold">Periodo</th>
                         <th class="fw-bold">
                             Modo <br>
-                            <small>de tarifa</small>
+                            <small>de Tarifa</small>
                         </th>
                         <th class="fw-bold">Servicios</th>
-                        <th class="fw-bold text-end">Total</th>
-                        <th class="fw-bold text-center">Acciones</th>
+                        <th class="fw-bold text-end">Costo Total</th>
+                        <th class="fw-bold text-center">Acción</th>
                     </tr>
                     </thead>
 
@@ -329,7 +360,7 @@
                     <div class="pe-4">
                         <h4 class="modal-title fw-bold mb-2" id="configureRatesModalLabel">Configurar Tarifas</h4>
                         <p class="text-muted mb-1">
-                            Puedes configurar un salón o varios salones con los mismos valores.
+                            Puedes configurar un área o varias áreas con los mismos valores.
                         </p>
                         <small class="text-muted">
                             <span class="text-danger">*</span> Campos requeridos
@@ -346,7 +377,7 @@
 
                             <div class="mb-4">
                                 <label class="form-label fw-semibold fs-5">
-                                    Salones a configurar <span class="text-danger">*</span>
+                                    Áreas a configurar <span class="text-danger">*</span>
                                 </label>
 
                                 <div class="d-flex flex-wrap gap-2 mb-3">
@@ -371,32 +402,16 @@
                                         <button type="button" class="btn btn-success btn-sm"
                                                 id="openAddClassroomModalBtn"
                                                 data-bs-toggle="modal" data-bs-target="#addClassroomModal">
-                                            <i class="bi bi-plus-lg me-1"></i>Agregar Salón
+                                            <i class="bi bi-plus-lg me-1"></i>Agregar Área
                                         </button>
                                         <button type="button" class="btn btn-danger btn-sm"
-                                                id="openDiscardSelectedClassroomsBtn">
-                                            <i class="bi bi-trash me-1"></i>Descartar Salones
+                                                id="openDiscardSelectedClassroomsBtn" disabled>
+                                            <i class="bi bi-trash me-1"></i>Descartar Área(s)
                                         </button>
                                     </div>
                                 </div>
 
                                 <div class="row g-2" id="configClassroomGroup">
-                                    {{--                                    @foreach ($facilityCosts as $cost)--}}
-                                    {{--                                        @php $salon = $cost->classroom_name; @endphp--}}
-                                    {{--                                        <div class="col-md-3">--}}
-                                    {{--                                            <label class="multi-classroom-card" for="cfg{{ str_replace(' ', '', $salon) }}">--}}
-                                    {{--                                                <input--}}
-                                    {{--                                                    class="form-check-input config-classroom-check"--}}
-                                    {{--                                                    type="checkbox"--}}
-                                    {{--                                                    id="cfg{{ str_replace(' ', '', $salon) }}"--}}
-                                    {{--                                                    name="classrooms[]"--}}
-                                    {{--                                                    value="{{ $salon }}"--}}
-                                    {{--                                                >--}}
-                                    {{--                                                <span>{{ $salon }}</span>--}}
-                                    {{--                                            </label>--}}
-                                    {{--                                        </div>--}}
-                                    {{--                                    @endforeach--}}
-
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
                                         <div class="col-md-4 classroom-card-col" data-classroom-name="{{ $salon }}">
@@ -429,20 +444,20 @@
                                         <div>
                                             <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso
                                                 importante:</strong>
-                                            Si el salón ya fue configurado anteriormente, se mostrarán sus tarifas
+                                            Si el área ya fue configurado anteriormente, se mostrarán sus tarifas
                                             guardadas para que puedas modificarlas.
-                                            Si el salón nunca ha sido configurado, los campos aparecerán vacíos con
+                                            Si el área nunca ha sido configurado, los campos aparecerán vacíos con
                                             ejemplos de como llenarlos como referencia.
                                         </div>
                                     </div>
                                 </div>
-                                <h5 class="mb-3 section-title-match">Información base del salón</h5>
+                                <h5 class="mb-3 section-title-match">Información base del área</h5>
 
                                 <div class="row g-3 mb-3 justify-content-center">
                                     <div class="col-md-12 mx-auto">
                                         <div class="service-option-card">
                                             <label for="configClassroomArea" class="form-label fw-semibold">
-                                                Área del salón <span class="text-danger">*</span>
+                                                Medida del área <span class="text-danger">*</span>
                                             </label>
                                             <div class="input-group input-group-lg money-input-group">
                                                 <span class="input-group-text">ft²</span>
@@ -457,7 +472,7 @@
                                             </div>
                                             <div class="invalid-feedback d-block" id="configClassroomAreaError"></div>
                                             <small class="text-muted d-block mt-2">
-                                                Ingresa el área en pies cuadrados (ft²). Solo números y hasta 2
+                                                Ingresa la medida en pies cuadrados (ft²). Solo números y hasta 2
                                                 decimales. El máximo permitido es 25,000,000.00 ft².
                                             </small>
                                         </div>
@@ -655,7 +670,7 @@
                     <div class="pe-4">
                         <h4 class="modal-title fw-bold mb-2" id="addRentalModalLabel">Agregar Evento</h4>
                         <p class="text-muted mb-1">
-                            Registra un evento y calcula su costo estimado.
+                            Registra un evento y calcula su costo estimado de uso.
                         </p>
                         <small class="text-muted">
                             <span class="text-danger">*</span> Campos requeridos
@@ -671,11 +686,10 @@
                         <div class="row g-3 mb-3 justify-content-center">
                             <div class="col-md-6 col-lg-6">
                                 <label for="rentalClassroom" class="form-label fw-semibold">
-                                    Salón <span class="text-danger">*</span>
+                                    Área <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalClassroom" name="classroom" class="form-select form-select-lg"
-                                        required>
-                                    <option value="" selected disabled>Seleccionar salón</option>
+                                <select id="rentalClassroom" name="classroom" class="form-select form-select-lg" required>
+                                    <option value="" selected disabled>Seleccionar área</option>
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
                                         <option value="{{ $salon }}">{{ $salon }}</option>
@@ -693,27 +707,36 @@
                                     name="responsible"
                                     class="form-control form-control-lg"
                                     placeholder="Nombre del responsable"
-                                    minlength="10"
+                                    minlength="8"
                                     required
                                 >
                                 <small class="text-muted d-block fst-italic">
-                                    Entre 10 y 40 caracteres. Solo letras y espacios.
+                                    Incluya nombre y apellido. Escriba entre 8 y 40 caracteres. Solo letras y espacios.
                                 </small>
-                                <div class="invalid-feedback" id="rentalResponsibleError">
-                                    El responsable debe tener entre 10 y 40 caracteres.
-                                </div>
+                                <div class="invalid-feedback" id="rentalResponsibleError"></div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="rentalPeriodType" class="form-label fw-semibold">
+                                    Tipo de período <span class="text-danger">*</span>
+                                </label>
+                                <select id="rentalPeriodType" name="period_type" class="form-select form-select-lg" required>
+                                    <option value="" selected disabled>Seleccionar tipo de período</option>
+                                    <option value="workday">Laborable LU-VI 7:30AM - 4:30PM</option>
+                                    <option value="non_workday_saturday">No laborable sábado, LU-VI 4:30PM - 9:30PM</option>
+                                    <option value="non_workday_sunday_holiday">No laborable domingo o festivo, LI-VI 4:30PM - 9:30PM</option>
+                                </select>
                             </div>
 
-                        </div>
-                        <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <label for="rentalRangeType" class="form-label fw-semibold">
                                     Duración del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalRangeType" name="rate_mode" class="form-select form-select-lg"
-                                        required>
+                                <select id="rentalRangeType" name="rate_mode" class="form-select form-select-lg" required>
                                     <option value="" selected disabled>Seleccionar duración</option>
-                                    <option value="daily">Dia</option>
+                                    <option value="daily">Día</option>
                                     <option value="weekly">Semana</option>
                                     <option value="monthly">Mes</option>
                                 </select>
@@ -721,61 +744,80 @@
 
                             <div class="col-md-6">
                                 <label for="rentalStartDate" class="form-label fw-semibold" id="rentalStartDateLabel">
-                                    Fecha <span class="text-danger">*</span>
+                                    Fecha del evento <span class="text-danger">*</span>
                                 </label>
-                                <input
-                                    type="date"
-                                    id="rentalStartDate"
-                                    name="event_date"
-                                    class="form-control form-control-lg"
-                                    min="{{ now()->toDateString() }}"
-                                    required
-                                >
+
+                                <div class="date-input-shell">
+                                    <input
+                                        type="date"
+                                        id="rentalStartDate"
+                                        name="event_date"
+                                        class="form-control form-control-lg date-picker-only"
+                                        min="{{ now()->toDateString() }}"
+                                        required
+                                        inputmode="none"
+                                        autocomplete="off"
+                                    >
+                                    <button
+                                        type="button"
+                                        class="date-picker-trigger"
+                                        id="rentalStartDateTrigger"
+                                        aria-label="Abrir calendario"
+                                        tabindex="-1"
+                                    >
+                                        <i class="bi bi-calendar3"></i>
+                                    </button>
+                                </div>
+
                                 <div class="invalid-feedback d-block" id="rentalStartDateError"></div>
                             </div>
 
+                            <div class="col-md-6 d-none" id="rentalEndDateRow">
+                                <label for="rentalEndDate" class="form-label fw-semibold">
+                                    Fecha final del evento <span class="text-danger">*</span>
+                                </label>
 
-                            <div class="col-12">
-                                <div class="row g-3 mb-3 d-none" id="rentalEndDateRow">
-                                    <div class="col-md-4">
-                                        <label for="rentalEndDate" class="form-label fw-semibold">
-                                            Fecha de fin <span class="text-danger">*</span>
-                                        </label>
-                                        <input
-                                            type="date"
-                                            id="rentalEndDate"
-                                            name="event_end_date"
-                                            class="form-control form-control-lg"
-                                            min="{{ now()->toDateString() }}"
-                                        >
-                                        <div class="invalid-feedback d-block" id="rentalEndDateError"></div>
-                                    </div>
+                                <div class="date-input-shell">
+                                    <input
+                                        type="date"
+                                        id="rentalEndDate"
+                                        name="event_end_date"
+                                        class="form-control form-control-lg date-picker-only"
+                                        min="{{ now()->toDateString() }}"
+                                        inputmode="none"
+                                        autocomplete="off"
+                                    >
+                                    <button
+                                        type="button"
+                                        class="date-picker-trigger"
+                                        id="rentalEndDateTrigger"
+                                        aria-label="Abrir calendario"
+                                        tabindex="-1"
+                                    >
+                                        <i class="bi bi-calendar3"></i>
+                                    </button>
+                                </div>
 
-                                    <div class="col-md-8">
-                                        <div
-                                            class="alert alert-warning rounded-4 border-0 shadow-sm mb-0 px-4 py-3 h-100 d-flex align-items-center">
-                                            <div>
-                                                <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso
-                                                    importante:</strong>
-                                                Si seleccionas semana o mes, debes indicar una fecha de inicio y una
-                                                fecha de fin válidas.
-                                                El horario seleccionado (hora de inicio y fin) se aplicará a cada día
-                                                dentro del rango de
-                                                fechas indicado, por lo que el evento representará la misma cantidad de
-                                                horas en cada uno
-                                                de esos días.
-                                            </div>
-                                        </div>
+                                <div class="invalid-feedback d-block" id="rentalEndDateError"></div>
+                            </div>
+
+                            <div class="col-12 d-none" id="rentalRangeWarningRow">
+                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-0 px-4 py-3">
+                                    <div>
+                                        <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
+                                        Si seleccionas semana o mes, debes indicar una fecha de inicio y una fecha de fin válidas.
+                                        El horario seleccionado (hora de inicio y fin) se aplicará a cada día dentro del rango de fechas indicado,
+                                        por lo que el evento representará la misma cantidad de horas en cada uno de esos días.
                                     </div>
                                 </div>
                             </div>
-
                         </div>
+
 
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label for="rentalStartTime" class="form-label fw-semibold">
-                                    Horario inicio <span class="text-danger">*</span>
+                                    Horario inicial del evento <span class="text-danger">*</span>
                                 </label>
                                 <select id="rentalStartTime" name="start_time" class="form-select form-select-lg"
                                         required></select>
@@ -783,7 +825,7 @@
 
                             <div class="col-md-6">
                                 <label for="rentalEndTime" class="form-label fw-semibold">
-                                    Horario fin <span class="text-danger">*</span>
+                                    Horario final del evento <span class="text-danger">*</span>
                                 </label>
                                 <select id="rentalEndTime" name="end_time" class="form-select form-select-lg"
                                         required></select>
@@ -810,19 +852,6 @@
                             <div class="invalid-feedback" id="rentalDescriptionError">
                                 La descripción debe tener entre 10 y 250 caracteres y solo usar caracteres permitidos.
                             </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="rentalPeriodType" class="form-label fw-semibold">
-                                Tipo de período <span class="text-danger">*</span>
-                            </label>
-                            <select id="rentalPeriodType" name="period_type" class="form-select form-select-lg"
-                                    required>
-                                <option value="" selected disabled>Seleccionar tipo de período</option>
-                                <option value="workday">Laborable</option>
-                                <option value="non_workday_saturday">No laborable sábado</option>
-                                <option value="non_workday_sunday_holiday">No laborable domingo o festivo</option>
-                            </select>
                         </div>
 
                         <div class="mb-3">
@@ -930,7 +959,7 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando
                     </button>
-                    <button type="button" class="btn btn-danger" id="confirmCancelConfigureBtn">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelConfigureBtn">Sí,Cancelar</button>
                 </div>
             </div>
         </div>
@@ -986,8 +1015,8 @@
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 align-items-start">
                     <div class="pe-3">
-                        <h5 class="modal-title fw-bold mb-2">Agregar salón</h5>
-                        <p class="text-muted mb-1">Escribe el nombre del nuevo salón.</p>
+                        <h5 class="modal-title fw-bold mb-2">Agregar área</h5>
+                        <p class="text-muted mb-1">Escribe el nombre del área nueva.</p>
                         <small class="text-muted">
                             <span class="text-danger">*</span> Campos requeridos
                         </small>
@@ -999,7 +1028,7 @@
 
                 <div class="modal-body pt-0">
                     <label for="newClassroomName" class="form-label fw-semibold">
-                        Nombre del salón <span class="text-danger">*</span>
+                        Nombre del área <span class="text-danger">*</span>
                     </label>
                     <input
                         type="text"
@@ -1008,7 +1037,7 @@
                         placeholder="Ej. CM 211"
                     >
                     <small class="text-muted d-block fst-italic">
-                        Entre 6 y 40 caracteres. Solo letras, espacios, coma, punto y guion.
+                        Entre 6 y 40 caracteres. Solo letras, números, espacios, coma, punto y guion.
                     </small>
                     <div class="invalid-feedback d-block" id="newClassroomNameError"></div>
                 </div>
@@ -1019,7 +1048,7 @@
                             data-bs-dismiss="modal">Cancelar
                     </button>
                     <button type="button" class="btn btn-success" id="confirmAddClassroomBtn" disabled>
-                        Agregar Salón
+                        Agregar Área
                     </button>
                     <form id="addClassroomForm" method="POST" action="{{ route('facility.classrooms.store') }}"
                           class="d-none">
@@ -1038,9 +1067,9 @@
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 align-items-start">
                     <div class="pe-3">
-                        <h5 class="modal-title fw-bold mb-1" id="deleteClassroomModalLabel">Descartar salón</h5>
+                        <h5 class="modal-title fw-bold mb-1" id="deleteClassroomModalLabel">Descartar área</h5>
                         <p class="text-muted mb-0">
-                            ¿Estás seguro de que deseas eliminar los salon/es selecionados? Esta acción es permanente.
+                            ¿Estás seguro de que deseas eliminar el/las área(s) selecionadas? Esta acción es permanente.
                         </p>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -1056,7 +1085,7 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteClassroomBtn">
-                        Eliminar Salón
+                        Eliminar Área(s)
                     </button>
                 </div>
             </div>
@@ -1067,10 +1096,10 @@
     <!--Notification Toasts-->
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
         <div id="deleteEntryToast"
-             class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert" aria-live="assertive" aria-atomic="true" style="width:auto; max-width:fit-content;">
             <div class="d-flex align-items-center">
-                <div class="toast-body fw-semibold pe-1">Registro eliminado correctamente.</div>
+                <div class="toast-body fw-semibold pe-1">Evento eliminado correctamente.</div>
                 <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar"
                         style="transform:scale(0.8);"></button>
             </div>
@@ -1091,27 +1120,26 @@
         <!-- Tarifa Toast -->
         <div id="ratesSavedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-             role="alert">
+             role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold pe-1">
                     Tarifas guardadas correctamente.
                 </div>
-                <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast"></button>
+                <button type="button" class="btn-close ms-auto me-3" data-bs-dismiss="toast"></button>
             </div>
         </div>
 
-        <!-- Evento Toast -->
+        <!-- Event Toast -->
         <div id="rentalSavedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-             role="alert">
-            <div class="d-flex align-items-center">
-                <div class="toast-body fw-semibold pe-1">
+             role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex align-items-center w-100">
+                <div class="toast-body fw-semibold">
                     Evento creado correctamente.
                 </div>
-                <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast"></button>
+                <button type="button" class="btn-close ms-auto me-3" data-bs-dismiss="Cerrar"></button>
             </div>
         </div>
-
 
         <!--Eventflow toast-->
 
@@ -1123,7 +1151,7 @@
                     <div class="toast-body fw-semibold pe-1">
                         {{ session('mock_imported') }}
                     </div>
-                    <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar"
+                    <button type="button" class="btn-close ms-auto me-3" data-bs-dismiss="toast" aria-label="Cerrar"
                             style="transform:scale(0.8);"></button>
                 </div>
             </div>
@@ -1315,6 +1343,63 @@
         .multi-classroom-card label {
             min-width: 0;
             flex: 1;
+        }
+
+        .date-picker-only {
+            cursor: pointer;
+        }
+
+        .date-picker-only::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+        }
+
+        .date-input-shell {
+            position: relative;
+        }
+
+        .date-picker-only {
+            padding-right: 4.25rem;
+        }
+
+        .date-picker-trigger {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 3.5rem;
+            height: 100%;
+            border: 0;
+            border-left: 1px solid #dee2e6;
+            background: #f8f9fa;
+            color: #212529;
+            border-top-right-radius: 0.75rem;
+            border-bottom-right-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .date-picker-trigger:hover {
+            background: #e9ecef;
+        }
+
+        .date-picker-only::-webkit-calendar-picker-indicator {
+            opacity: 0;
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .date-picker-only::-webkit-inner-spin-button,
+        .date-picker-only::-webkit-clear-button {
+            display: none;
+        }
+
+        .area-col {
+            min-width: 180px;
+            width: 220px;
         }
     </style>
 

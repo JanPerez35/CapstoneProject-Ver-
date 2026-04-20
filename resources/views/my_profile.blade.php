@@ -183,11 +183,12 @@
 
                                 <div class="col-md-6 col-lg-4">
                                     <select id="priceFilter" class="form-select border-2 border-dark">
-                                        <option value="">Todos los Precios</option>
-                                        <option value="0-25">$0 - $25</option>
-                                        <option value="26-50">$26 - $50</option>
-                                        <option value="51-100">$51 - $100</option>
-                                        <option value="101+">$101 o más</option>
+                                        <option value="all">Rango de Precios</option>
+                                        <option value="0">Gratis</option>
+                                        <option value="0.01-9.99">$0.01 - $9.99</option>
+                                        <option value="10-29.99">$10.00 - $29.99</option>
+                                        <option value="30-49.99">$30.00 - $49.99</option>
+                                        <option value="50+">$50.00 o más</option>
                                     </select>
                                 </div>
 

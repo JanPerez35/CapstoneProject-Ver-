@@ -339,21 +339,21 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
-     * Evaluates whether a post price belongs to the selected price range.
+     * Evaluates whether a post's price belongs to the selected price range.
      *
      * @param {string|number} price - Post price.
      * @param {string} selectedRange - Selected filter value.
-     * @returns {boolean} True when the price matches the selected range.
+     * @returns {boolean} True when the price matches the selected range, otherwise false.
      */
     function matchesPriceRange(price, selectedRange) {
-        if (!selectedRange) return true;
-
         const numericPrice = Number(price);
 
-        if (selectedRange === '0-25') return numericPrice >= 0 && numericPrice <= 25;
-        if (selectedRange === '26-50') return numericPrice >= 26 && numericPrice <= 50;
-        if (selectedRange === '51-100') return numericPrice >= 51 && numericPrice <= 100;
-        if (selectedRange === '101+') return numericPrice >= 101;
+        if (selectedRange === 'all') return true;
+        if (selectedRange === '0') return numericPrice === 0;
+        if (selectedRange === '0.01-9.99') return numericPrice >= 0.01 && numericPrice <= 9.99;
+        if (selectedRange === '10-29.99') return numericPrice >= 10 && numericPrice <= 29.99;
+        if (selectedRange === '30-49.99') return numericPrice >= 30 && numericPrice <= 49.99;
+        if (selectedRange === '50+') return numericPrice >= 50;
 
         return true;
     }
@@ -749,7 +749,7 @@ document.addEventListener('DOMContentLoaded', function () {
         clearPostsFilters.addEventListener('click', function () {
             if (postSearch) postSearch.value = '';
             if (sportFilter) sportFilter.value = '';
-            if (priceFilter) priceFilter.value = '';
+            if (priceFilter) priceFilter.value = 'all';
             currentPostsPage = 1;
             filterPosts();
             updatePostsSearchButtonState();

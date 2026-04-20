@@ -66,6 +66,17 @@
         .total-row td {
             font-weight: bold;
         }
+
+        .text-left {
+            text-align: left;
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: normal;
+        }
+
+        td.text-left {
+            max-width: 200px;
+        }
     </style>
 </head>
 <body>
@@ -92,7 +103,7 @@
         : (($months[$reportMonth] ?? 'Mes no definido') . ' ' . $reportYear);
 
 
-    $classroomLabel = $filterClassroom === 'all' ? 'Todos los salones' : $filterClassroom;
+    $classroomLabel = $filterClassroom === 'all' ? 'Todos las áreas' : $filterClassroom;
 
 
     function translatePeriodType($value) {
@@ -147,7 +158,7 @@
 <div class="report-meta">
     <p><strong>Tipo:</strong> {{ $reportType === 'annual' ? 'Anual' : 'Mensual' }}</p>
     <p><strong>Período:</strong> {{ $periodLabel }}</p>
-    <p><strong>Salón:</strong> {{ $classroomLabel }}</p>
+    <p><strong>Área:</strong> {{ $classroomLabel }}</p>
     <p><strong>Total estimado:</strong> ${{ number_format($grandTotal, 2) }}</p>
 </div>
 
@@ -158,7 +169,7 @@
         <th>Fecha Inicio</th>
         <th>Fecha Fin</th>
         <th>Responsable</th>
-        <th>Salón</th>
+        <th>Área</th>
         <th>Descripción</th>
         <th>Hora Inicio</th>
         <th>Hora Fin</th>
@@ -192,14 +203,11 @@
         </tr>
     @endforelse
     </tbody>
-    <tfoot class="table-light">
-        <tr>
-            <th colspan="9" class="fw-bold text-end pe-3">Total estimado del período</th>
-            <th class="text-end fw-bold" id="facilityCostGrandTotal">
-                ${{ number_format($grandTotal, 2) }}
-            </th>
-            <th></th>
-        </tr>
+    <tfoot>
+    <tr class="total-row">
+        <td colspan="11" class="text-right">Total estimado del período</td>
+        <td class="text-right">${{ number_format($grandTotal, 2) }}</td>
+    </tr>
     </tfoot>
 </table>
 </body>
