@@ -7,6 +7,7 @@ use App\Models\Review;
 use App\Models\UserReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Concerns\LogsActivity;
 
 /**
  * Class ReviewController
@@ -22,6 +23,8 @@ use Illuminate\Support\Facades\Auth;
  */
 class ReviewController extends Controller
 {
+    use LogsActivity;
+
     /**
      * Stores or updates a review for a seller.
      *
@@ -46,11 +49,11 @@ class ReviewController extends Controller
         $seller = $post->user;
 
         // Prevent users from rating themselves
-        if ($reviewer->id === $seller->id) {
-            return response()->json([
-                'message' => 'No puedes calificarte a ti mismo.'
-            ], 422);
-        }
+        // if ($reviewer->id === $seller->id) {
+        //     return response()->json([
+        //         'message' => 'No puedes calificarte a ti mismo.'
+        //     ], 422);
+        // }
 
         // Determine the review status based on the rating
         $status = $request->rating < 2 ? 'negative' : 'confident';
@@ -102,6 +105,16 @@ class ReviewController extends Controller
                 ]
             );
         }
+
+        $sellerName = trim(($seller->first_name ?? '') . ' ' . ($seller->last_name ?? ''));
+        if ($sellerName === '') {
+            $sellerName = $seller->name ?? 'Usuario';
+        }
+
+        $this->logActivity(
+            'Calificar usuario',
+            "Se otorgó una calificación de {$request->rating} estrella(s) al vendedor '{$sellerName}' (ID: {$seller->id}) en la publicación ID: {$post->id}"
+        );
 
         // Return the stored review data as JSON
         return response()->json([

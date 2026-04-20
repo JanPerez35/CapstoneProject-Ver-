@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Mail;
 
 use App\Http\Controllers\EmailController;
@@ -32,6 +33,19 @@ use App\Http\Controllers\ReviewController;
  * Logout route, redirects to the origin page.
  */
 Route::post('/logout', function () {
+    $user = Auth::user();
+
+    if ($user) {
+        ActivityLog::create([
+            'user_id'    => $user->id,
+            'role'       => $user->role_label,
+            'action'     => 'Cierre de sesión',
+            'ip_address' => request()->ip(),
+            'comment'    => "El usuario {$user->email} cerró sesión",
+            'created_at' => now(),
+        ]);
+    }
+
     Auth::logout();
 
     request()->session()->invalidate();

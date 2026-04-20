@@ -24,26 +24,26 @@
 
 
         <!-- Filters and searches -->
-        @csrf
-        <form id="accessLogsFilterForm" class="mb-5" onsubmit="return false;">
+        <form id="accessLogsFilterForm" method="GET" action="{{ route('access_logs') }}" class="mb-5">
             <div class="row g-3 mb-3 align-items-stretch">
                 <div class="col-lg-10">
                     <div class="input-group search-group h-100">
-                <span class="input-group-text bg-white border-0">
-                    <i class="bi bi-search"></i>
-                </span>
-
+                        <span class="input-group-text bg-white border-0">
+                            <i class="bi bi-search"></i>
+                        </span>
                         <input
                             type="text"
                             id="accessLogsSearch"
+                            name="search"
                             class="form-control border-0"
                             placeholder="Buscar por usuario, IP o detalles..."
+                            value="{{ request('search') }}"
                         >
                     </div>
                 </div>
 
                 <div class="col-lg-2 d-grid">
-                    <button type="button" id="searchAccessLogsBtn" class="btn btn-success h-100" disabled>
+                    <button type="submit" id="searchAccessLogsBtn" class="btn btn-success h-100" {{ request('search') ? '' : 'disabled' }}>
                         Buscar
                     </button>
                 </div>
@@ -51,34 +51,61 @@
 
             <div class="row g-3">
                 <div class="col-md-6 col-lg-4">
-                    <select id="accessLogsRoleFilter" class="form-select border-2 border-dark">
+                    <select id="accessLogsRoleFilter" name="role" class="form-select border-2 border-dark" onchange="this.form.submit()">
                         <option value="">Todos los Roles</option>
-                        <option value="usuario">Usuario</option>
-                        <option value="admin mercado">Administrador de Mercado</option>
-                        <option value="admin inventario">Administrador de Inventario</option>
-                        <option value="admin facilidades">Administrador de Facilidad</option>
-                        <option value="admin super">Super Administrador</option>
+                        <option value="Usuario" {{ request('role') == 'Usuario' ? 'selected' : '' }}>Usuario</option>
+                        <option value="Admin Mercado" {{ request('role') == 'Admin Mercado' ? 'selected' : '' }}>Administrador de Mercado</option>
+                        <option value="Admin Inventario" {{ request('role') == 'Admin Inventario' ? 'selected' : '' }}>Administrador de Inventario</option>
+                        <option value="Admin Facilidades" {{ request('role') == 'Admin Facilidades' ? 'selected' : '' }}>Administrador de Facilidad</option>
+                        <option value="Admin Super" {{ request('role') == 'Admin Super' ? 'selected' : '' }}>Super Administrador</option>
                     </select>
                 </div>
 
                 <div class="col-md-6 col-lg-4">
-                    <select id="accessLogsEventFilter" class="form-select border-2 border-dark">
+                    <select id="accessLogsEventFilter" name="event" class="form-select border-2 border-dark" onchange="this.form.submit()">
                         <option value="">Todos los Eventos</option>
-                        <option value="Inicio de Sesión">Inicio de Sesión</option>
-                        <option value="Cierre de Sesión">Cierre de Sesión</option>
-                        <option value="Error de Acceso">Error de Acceso</option>
-                        <option value="Acceso Admin">Acceso Admin</option>
-                        <option value="Ver Mercado">Ver Mercado</option>
-                        <option value="Ver Inventario">Ver Inventario</option>
-                        <option value="Solicitud de Préstamo">Solicitud de Préstamo</option>
-                        <option value="Publicación Creada">Publicación Creada</option>
+                        <optgroup label="Mercado">
+                            <option value="Crear publicación" {{ request('event') == 'Crear publicación' ? 'selected' : '' }}>Crear publicación</option>
+                            <option value="Eliminar publicación" {{ request('event') == 'Eliminar publicación' ? 'selected' : '' }}>Eliminar publicación</option>
+                            <option value="Calificar usuario" {{ request('event') == 'Calificar usuario' ? 'selected' : '' }}>Calificar usuario</option>
+                            <option value="Crear reporte de usuario" {{ request('event') == 'Crear reporte de usuario' ? 'selected' : '' }}>Crear reporte de usuario</option>
+                            <option value="Crear chat" {{ request('event') == 'Crear chat' ? 'selected' : '' }}>Crear chat</option>
+                            <option value="Enviar mensaje" {{ request('event') == 'Enviar mensaje' ? 'selected' : '' }}>Enviar mensaje</option>
+                        </optgroup>
+                        <optgroup label="Inventario">
+                            <option value="Agregar equipo" {{ request('event') == 'Agregar equipo' ? 'selected' : '' }}>Agregar equipo</option>
+                            <option value="Actualizar equipo" {{ request('event') == 'Actualizar equipo' ? 'selected' : '' }}>Actualizar equipo</option>
+                            <option value="Marcar equipo para eliminación" {{ request('event') == 'Marcar equipo para eliminación' ? 'selected' : '' }}>Marcar equipo para eliminación</option>
+                            <option value="Eliminar equipo" {{ request('event') == 'Eliminar equipo' ? 'selected' : '' }}>Eliminar equipo</option>
+                            <option value="Solicitud de Préstamo" {{ request('event') == 'Solicitud de Préstamo' ? 'selected' : '' }}>Solicitud de Préstamo</option>
+                            <option value="Creó solicitud" {{ request('event') == 'Creó solicitud' ? 'selected' : '' }}>Creó solicitud</option>
+                            <option value="Aprobó solicitud" {{ request('event') == 'Aprobó solicitud' ? 'selected' : '' }}>Aprobó solicitud</option>
+                            <option value="Rechazó solicitud" {{ request('event') == 'Rechazó solicitud' ? 'selected' : '' }}>Rechazó solicitud</option>
+                            <option value="Devolución de equipo" {{ request('event') == 'Devolución de equipo' ? 'selected' : '' }}>Devolución de equipo</option>
+                        </optgroup>
+                        <optgroup label="Facilidades">
+                            <option value="Agregar salón" {{ request('event') == 'Agregar salón' ? 'selected' : '' }}>Agregar salón</option>
+                            <option value="Eliminar/procesar salones" {{ request('event') == 'Eliminar/procesar salones' ? 'selected' : '' }}>Eliminar/procesar salones</option>
+                            <option value="Agregar evento de facilidad" {{ request('event') == 'Agregar evento de facilidad' ? 'selected' : '' }}>Agregar evento de facilidad</option>
+                            <option value="Eliminar evento de facilidad" {{ request('event') == 'Eliminar evento de facilidad' ? 'selected' : '' }}>Eliminar evento de facilidad</option>
+                            <option value="Guardar tarifas de facilidades" {{ request('event') == 'Guardar tarifas de facilidades' ? 'selected' : '' }}>Guardar tarifas de facilidades</option>
+                            <option value="Importar eventos simulados" {{ request('event') == 'Importar eventos simulados' ? 'selected' : '' }}>Importar eventos simulados</option>
+                        </optgroup>
+                        <optgroup label="Usuarios">
+                            <option value="Cambiar rol de usuario" {{ request('event') == 'Cambiar rol de usuario' ? 'selected' : '' }}>Cambiar rol de usuario</option>
+                            <option value="Cambiar estado de usuario" {{ request('event') == 'Cambiar estado de usuario' ? 'selected' : '' }}>Cambiar estado de usuario</option>
+                        </optgroup>
+                        <optgroup label="Sesión">
+                            <option value="Inicio de sesión" {{ request('event') == 'Inicio de sesión' ? 'selected' : '' }}>Inicio de sesión</option>
+                            <option value="Cierre de sesión" {{ request('event') == 'Cierre de sesión' ? 'selected' : '' }}>Cierre de sesión</option>
+                        </optgroup>
                     </select>
                 </div>
 
                 <div class="col-md-auto">
-                    <button type="button" id="clearAccessLogsFiltersBtn" class="btn btn-outline-secondary">
+                    <a href="{{ route('access_logs') }}" class="btn btn-outline-secondary">
                         Limpiar Filtros
-                    </button>
+                    </a>
                 </div>
             </div>
         </form>
