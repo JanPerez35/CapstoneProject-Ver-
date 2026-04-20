@@ -4,32 +4,60 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use App\Models\Review;
-use App\Models\User;
 use App\Models\UserReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Class ReviewController
+ *
+ * Handles all review-related actions within the application.
+ *
+ * Responsibilities:
+ * - storing seller reviews
+ * - validating review input
+ * - preventing users from rating themselves
+ * - calculating seller rating statistics
+ * - generating automatic reports for low-rated sellers
+ */
 class ReviewController extends Controller
 {
+    /**
+     * Stores or updates a review for a seller.
+     *
+     * Validates the rating value, verifies that the reviewer is not
+     * rating themselves, and stores the review for the selected post.
+     *
+     * If the rating is below 2, the review is marked as negative
+     * and a comment is generated automatically.
+     *
+     * If the seller average rating is 2.0 or lower, an automatic
+     * report is created for administrative review.
+     */
     public function store(Request $request, Post $post)
     {
+        // Validate the incoming rating
         $request->validate([
             'rating' => 'required|integer|min:1|max:5',
         ]);
 
+        // Get the authenticated user and the seller of the post
         $reviewer = Auth::user();
         $seller = $post->user;
 
-        // if ($reviewer->id === $seller->id) {
-        //     return response()->json([
-        //         'message' => 'No puedes calificarte a ti mismo.'
-        //     ], 422);
-        // }
+        // Prevent users from rating themselves
+        if ($reviewer->id === $seller->id) {
+            return response()->json([
+                'message' => 'No puedes calificarte a ti mismo.'
+            ], 422);
+        }
 
+        // Determine the review status based on the rating
         $status = $request->rating < 2 ? 'negative' : 'confident';
 
         $comment = null;
 
+        // Generate an automatic comment for negative reviews
         if ($status === 'negative') {
             $fullName = trim(($reviewer->first_name ?? '') . ' ' . ($reviewer->last_name ?? ''));
 
@@ -40,6 +68,7 @@ class ReviewController extends Controller
             $comment = "{$fullName} otorgó {$request->rating} estrella(s) a este vendedor.";
         }
 
+        // Store or update the review
         $review = Review::updateOrCreate(
             [
                 'user_id' => $reviewer->id,
@@ -53,10 +82,11 @@ class ReviewController extends Controller
             ]
         );
 
+        // Calculate the seller's average rating and total review count
         $average = Review::where('seller_id', $seller->id)->avg('rating');
         $count = Review::where('seller_id', $seller->id)->count();
 
-        // Auto-report when seller average is 2.0 or lower
+        // Create an automatic report when the seller average is 2.0 or lower
         if ($average !== null && $average <= 2) {
             UserReport::updateOrCreate(
                 [
@@ -73,6 +103,7 @@ class ReviewController extends Controller
             );
         }
 
+        // Return the stored review data as JSON
         return response()->json([
             'message' => 'Calificación guardada correctamente.',
             'review' => $review,

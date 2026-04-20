@@ -10,6 +10,19 @@ use App\Models\LendingItem;
 use App\Services\EmailService;
 use App\Http\Controllers\Concerns\LogsActivity;
 
+/**
+ * Class LendingController
+ *
+ * Handles all equipment lending actions within the application.
+ *
+ * Responsibilities:
+ * - processing direct borrow requests from the inventory view
+ * - managing the session-based shopping cart (add, remove, view)
+ * - checking out a cart as a lending request (standard or special case)
+ * - displaying pending and approved lending requests for admins
+ * - approving, rejecting, and marking lending requests as returned
+ * - sending email notifications for approval, rejection, and checkout events
+ */
 class LendingController extends Controller
 {
     use LogsActivity;
@@ -28,6 +41,13 @@ class LendingController extends Controller
         $this->emailService = $emailService;
     }
 
+    /**
+     * Processes a direct single-item borrow request.
+     *
+     * Validates the equipment ID and quantity, creates a Lending and
+     * LendingItem record inside a locked transaction to prevent overselling,
+     * decrements the available quantity, and logs the activity.
+     */
     public function borrow(Request $request)
 {
     $validated = $request->validate([
@@ -73,6 +93,13 @@ class LendingController extends Controller
 
 }
 
+    /**
+     * Adds an equipment item to the session cart.
+     *
+     * Validates availability, merges with any existing cart entry for the
+     * same equipment, and enforces that the total cart quantity does not
+     * exceed the available stock. Only allows redirects to internal URLs.
+     */
     public function addToCart(Request $request)
     {
         $validated = $request->validate([
@@ -125,7 +152,15 @@ class LendingController extends Controller
             ->with('cart_success', 'Item añadido al carrito.');
     }
 
-public function cart()
+    /**
+     * Displays the cart view with live availability checks.
+     *
+     * Re-validates every cart item against current stock, removes items
+     * that are no longer available or have fallen to zero quantity,
+     * adjusts quantities that exceed current availability, and returns
+     * the updated cart alongside a list of removed item names.
+     */
+    public function cart()
 {
     $cart = session()->get('cart', []);
     $updatedCart = [];
@@ -157,6 +192,12 @@ public function cart()
     return view('cart.index',['cart' => $updatedCart,'removedItems' => $removedItems,]);
 }
 
+    /**
+     * Removes a single item from the session cart.
+     *
+     * Deletes the cart entry for the given equipment ID and redirects back.
+     * Also signals the view to reopen the cart modal if items still remain.
+     */
     public function removeFromCart($id)
     {
         $cart = session()->get('cart', []);
@@ -173,6 +214,15 @@ public function cart()
             ->with('reopen_cart_modal', $shouldReopenCart);
     }
 
+    /**
+     * Checks out the cart and creates a lending request.
+     *
+     * Applies stricter validation for special-case requests (extended return date
+     * and reason required). Re-validates availability for all cart items, creates
+     * the Lending and LendingItem records in a locked transaction, decrements
+     * stock only for standard (auto-approved) requests, sends an approval email
+     * when applicable, and clears the session cart on success.
+     */
     public function checkoutCart(Request $request)
     {
         $isSpecialCase = $request->has('special_case');
@@ -319,7 +369,14 @@ public function cart()
         return redirect()->route('kinventory')
             ->with('request_success', 'Solicitud enviada correctamente. Pronto recibirás un email con el estado.');
     }
-public function borrows(Request $request)
+    /**
+     * Displays the admin borrows management view.
+     *
+     * Loads pending and approved/active lending requests with their related
+     * user and equipment data. Supports filtering by search term (name,
+     * equipment, reason, commentary, date) and by exact pickup date.
+     */
+    public function borrows(Request $request)
 {
     $pendingQuery = Lending::with(['user', 'items.equipment'])
         ->where('status', 'pending');
@@ -372,6 +429,13 @@ public function borrows(Request $request)
     return view('inventory_management.borrows', compact('pending', 'approved'));
     }
 
+    /**
+     * Approves a pending lending request.
+     *
+     * Validates available inventory for each item in a locked transaction,
+     * decrements stock, marks all items and the lending as approved,
+     * sends an approval email to the user, and logs the activity.
+     */
     public function approveRequest($id)
     {
         $lending = Lending::with(['items', 'user'])->findOrFail($id);
@@ -415,6 +479,13 @@ public function borrows(Request $request)
             ->with('success', 'Solicitud aprobada correctamente.');
     }
 
+    /**
+     * Rejects a pending lending request.
+     *
+     * Marks all items and the lending as rejected in a transaction, then sends
+     * a rejection email to the user. The email includes the best available admin
+     * contact (inventory admin → super admin → fallback phone extension).
+     */
     public function rejectRequest($id)
     {
         $lending = Lending::with(['items', 'user'])->findOrFail($id);
@@ -462,6 +533,13 @@ public function borrows(Request $request)
             ->with('success', 'Solicitud denegada correctamente.');
     }
 
+    /**
+     * Marks a lending request as returned.
+     *
+     * Restores the available quantity for each item in a locked transaction,
+     * sets all item statuses and the lending status to returned, and logs
+     * the activity.
+     */
     public function markReturned($id)
     {
         $lending = Lending::with('items')->findOrFail($id);

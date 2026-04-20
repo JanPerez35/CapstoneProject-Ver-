@@ -9,8 +9,28 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 
+/**
+ * Class FacilityCostController
+ *
+ * Handles all facility cost management actions within the application.
+ *
+ * Responsibilities:
+ * - displaying and filtering facility cost report items
+ * - saving and updating classroom rental rates
+ * - creating and removing classroom records
+ * - storing individual facility usage events and calculating their cost
+ * - importing mock external events for testing
+ * - exporting cost reports as CSV or PDF
+ */
 class FacilityCostController extends Controller
 {
+    /**
+     * Displays the facility management view.
+     *
+     * Retrieves all classrooms and applies optional filters (report type,
+     * month, year, classroom) to the cost report items query. Passes the
+     * filtered results, grand total, and year range to the view.
+     */
     public function index(Request $request)
     {
         $reportType = $request->input('report_type', '');
@@ -18,7 +38,13 @@ class FacilityCostController extends Controller
         $reportYear = $request->input('report_year', '');
         $filterClassroom = $request->input('filter_classroom', '');
 
-        $facilityCosts = FacilityCost::orderBy('classroom_name')->get();
+        // Only active classrooms for admin actions
+        $facilityCosts = FacilityCost::where('pending_deletion', false)
+            ->orderBy('classroom_name')
+            ->get();
+
+        // All classrooms for report filters/history
+        $allFacilityCosts = FacilityCost::orderBy('classroom_name')->get();
 
         $query = FacilityCostReportItem::with('facilityCost')
             ->orderBy('event_date', 'desc');
@@ -47,6 +73,7 @@ class FacilityCostController extends Controller
 
         return view('facility_management', compact(
             'facilityCosts',
+            'allFacilityCosts',
             'items',
             'grandTotal',
             'reportType',
@@ -58,6 +85,13 @@ class FacilityCostController extends Controller
         ));
     }
 
+    /**
+     * Saves rental rates for one or more classrooms.
+     *
+     * Validates the submitted rates and upserts a FacilityCost record
+     * for each selected classroom, covering all three period types
+     * (workday, Saturday, Sunday/holiday) across daily, weekly, and monthly modes.
+     */
     public function saveRates(Request $request)
     {
         $validated = $request->validate([
@@ -110,6 +144,12 @@ class FacilityCostController extends Controller
     ->with('rates_saved', 'Tarifas guardadas correctamente.');
     }
 
+    /**
+     * Creates a new classroom record.
+     *
+     * Validates that the classroom name is unique and between 6–40 characters,
+     * then creates a FacilityCost entry with all rates initialized to zero.
+     */
     public function storeClassroom(Request $request)
     {
         $validated = $request->validate([
@@ -138,6 +178,12 @@ class FacilityCostController extends Controller
             ->with('success', 'Salón agregado correctamente.');
     }
 
+    /**
+     * Deletes one or more classroom records.
+     *
+     * Accepts an array of classroom names and removes all matching
+     * FacilityCost entries from the database.
+     */
     public function destroyClassrooms(Request $request)
     {
         $validated = $request->validate([
@@ -145,47 +191,32 @@ class FacilityCostController extends Controller
             'classrooms.*' => ['string'],
         ]);
 
-        FacilityCost::whereIn('classroom_name', $validated['classrooms'])->delete();
+        $classrooms = FacilityCost::whereIn('classroom_name', $validated['classrooms'])->get();
+
+        foreach ($classrooms as $classroom) {
+            $hasEvents = FacilityCostReportItem::where('facility_cost_id', $classroom->id)->exists();
+
+            if ($hasEvents) {
+                $classroom->update([
+                    'pending_deletion' => true,
+                ]);
+            } else {
+                $classroom->delete();
+            }
+        }
 
         return redirect()
             ->route('facility_management')
-            ->with('success', 'Salón(es) eliminado(s) correctamente.');
+            ->with('success', 'Salón(es) procesado(s) correctamente.');
     }
 
-    // public function storeEvent(Request $request)
-    // {
-    //     $validated = $request->validate([
-    //     'classroom' => ['required', 'string'],
-    //     'event_date' => ['required', 'date'],
-    //     'event_end_date' => ['nullable', 'date', 'after_or_equal:event_date'],
-    //     'start_time' => ['required'],
-    //     'end_time' => ['required'],
-    //     'description' => ['required', 'string', 'min:10', 'max:1000'],
-    //     'responsable' => ['required', 'string', 'min:5', 'max:60'],
-    //     'period_type' => ['required', 'string'],
-    //     'rate_mode' => ['required', 'in:daily,weekly,monthly'],
-    //     'services' => ['required', 'array', 'min:1'],
-    // ]);
-
-    //     $payload = [
-    //     'classroom' => $validated['classroom'],
-    //     'event_date' => $validated['event_date'],
-    //     'event_end_date' => $validated['event_end_date'] ?? $validated['event_date'],
-    //     'start_time' => $validated['start_time'],
-    //     'end_time' => $validated['end_time'],
-    //     'description' => $validated['description'],
-    //     'responsable' => $validated['responsable'],
-    //     'period_type' => $validated['period_type'],
-    //     'rate_mode' => $validated['rate_mode'],
-    //     'services' => $validated['services'],
-    // ];
-
-    //     $this->createFacilityReportItemFromPayload($payload);
-
-    //     return redirect()->route('facility_management')
-    // ->with('rental_saved', 'Evento guardado correctamente.');
-    // }
-
+    /**
+     * Stores a new facility usage event.
+     *
+     * Validates the submitted event data, delegates cost calculation to
+     * createFacilityReportItemFromPayload, and returns a JSON response
+     * for API callers or a redirect for browser requests.
+     */
     public function storeEvent(Request $request)
     {
     $validated = $request->validate([
@@ -228,9 +259,19 @@ class FacilityCostController extends Controller
         ->with('rental_saved', 'Evento guardado correctamente.');
 }
 
-private function createFacilityReportItemFromPayload(array $data)
+    /**
+     * Creates a FacilityCostReportItem from a validated payload.
+     *
+     * Resolves the classroom's rates, calculates total hours used across
+     * the date range, computes the base rental cost and per-hour service costs
+     * (utilities, electricity, water), then persists the result under the
+     * authenticated user's cost report.
+     */
+    private function createFacilityReportItemFromPayload(array $data)
 {
-    $facilityCost = FacilityCost::where('classroom_name', $data['classroom'])->firstOrFail();
+    $facilityCost = FacilityCost::where('classroom_name', $data['classroom'])
+    ->where('pending_deletion', false)
+    ->firstOrFail();
 
     $startDate = Carbon::parse($data['event_date'])->startOfDay();
     $endDate = Carbon::parse($data['event_end_date'] ?? $data['event_date'])->startOfDay();
@@ -305,7 +346,13 @@ private function createFacilityReportItemFromPayload(array $data)
     ]);
 }
 
-private function getUnitsUsed(Carbon $startDate, Carbon $endDate, string $rateMode): int
+    /**
+     * Calculates the number of billing units between two dates for a given rate mode.
+     *
+     * Returns the count of days, weeks (rounded up), or calendar months crossed,
+     * depending on the rate mode (daily, weekly, monthly).
+     */
+    private function getUnitsUsed(Carbon $startDate, Carbon $endDate, string $rateMode): int
 {
     $daysUsed = $startDate->diffInDays($endDate) + 1;
 
@@ -317,7 +364,13 @@ private function getUnitsUsed(Carbon $startDate, Carbon $endDate, string $rateMo
     };
 }
 
-private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
+    /**
+     * Counts the number of distinct calendar months spanned by a date range.
+     *
+     * Both the start and end months are counted, so a range within
+     * the same month returns 1.
+     */
+    private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
 {
     $startMonth = $startDate->copy()->startOfMonth();
     $endMonth = $endDate->copy()->startOfMonth();
@@ -325,6 +378,13 @@ private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
     return $startMonth->diffInMonths($endMonth) + 1;
 }
 
+    /**
+     * Resolves the applicable rate for a classroom based on period type and rate mode.
+     *
+     * Maps the combination of period type (workday, Saturday, Sunday/holiday)
+     * and rate mode (daily, weekly, monthly) to the corresponding cost column
+     * on the FacilityCost model. Returns 0 for unknown combinations.
+     */
     private function getRateByPeriodAndMode($facilityCost, $periodType, $rateMode)
     {
         return match ($periodType) {
@@ -350,6 +410,12 @@ private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
         };
     }
 
+    /**
+     * Returns mock external events as a JSON response.
+     *
+     * Reads simulated EventFlow events from storage and exposes them
+     * as a JSON endpoint for preview or debugging purposes.
+     */
     public function mockExternalEvents()
     {
         $events = $this->getMockExternalEvents();
@@ -357,6 +423,12 @@ private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
         return response()->json($events);
     }
 
+    /**
+     * Reads and parses mock events from the local JSON file.
+     *
+     * Looks for storage/app/mock_eventflow_events.json and decodes it.
+     * Returns an empty array if the file is missing or contains invalid JSON.
+     */
     private function getMockExternalEvents(): array
     {
         $path = storage_path('app/mock_eventflow_events.json');
@@ -375,6 +447,13 @@ private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
         return is_array($events) ? $events : [];
     }
 
+    /**
+     * Imports mock external events into the facility cost report.
+     *
+     * Iterates over simulated EventFlow events, skips any whose classroom
+     * does not exist in the database, and creates a report item for each
+     * valid event. Redirects with a count of successfully imported events.
+     */
     public function importMockEvents()
     {
         $events = $this->getMockExternalEvents();
@@ -382,7 +461,9 @@ private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
         $imported = 0;
 
         foreach ($events as $event) {
-            $facilityExists = FacilityCost::where('classroom_name', $event['classroom'])->exists();
+            $facilityExists = FacilityCost::where('classroom_name', $event['classroom'])
+            ->where('pending_deletion', false)
+            ->exists();
 
             if (!$facilityExists) {
                 continue;
@@ -396,6 +477,12 @@ private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
     ->with('mock_imported', "{$imported} evento(s) simulados importados correctamente.");
     }
 
+    /**
+     * Deletes a facility cost report item.
+     *
+     * Removes the given report item from the database and redirects
+     * back to the facility management view with a success message.
+     */
     public function destroy(FacilityCostReportItem $item)
     {
         $item->delete();
@@ -403,6 +490,12 @@ private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
         return redirect()->route('facility_management')->with('entry_deleted', 'true');
     }
 
+    /**
+     * Exports filtered facility cost report items as a CSV file.
+     *
+     * Applies the same report type, month, year, and classroom filters as
+     * the index view, then streams a downloadable CSV with a timestamped filename.
+     */
     public function exportCsv(Request $request)
     {
         $reportType = $request->input('report_type', 'monthly');
@@ -472,6 +565,13 @@ private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
         return response()->stream($callback, 200, $headers);
     }
 
+    /**
+     * Exports filtered facility cost report items as a PDF file.
+     *
+     * Applies the same filters as the CSV export, renders the
+     * facility_cost_pdf view in landscape A4 format, and returns
+     * it as a downloadable PDF with a timestamped filename.
+     */
     public function exportPdf(Request $request)
     {
         $reportType = $request->input('report_type', 'monthly');
