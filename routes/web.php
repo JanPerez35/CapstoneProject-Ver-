@@ -203,7 +203,7 @@ Route::middleware('auth')->group(function () {
             'user_id' => 3,
             'role' => 'Admin Super',
             'action' => 'IPv4 test',
-            'ip_address' => '24.48.231.194',
+            'ip_address' => '2345:0425:2CA1:0000:0000:0567:5673:23b5',
             'comment' => 'IPv4 test My IPv4',
         ]);
 
