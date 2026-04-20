@@ -3,21 +3,32 @@ import * as bootstrap from 'bootstrap';
 import Chart from 'chart.js/auto';
 
 window.Chart = Chart;
-
 window.bootstrap = bootstrap;
 
-document.addEventListener('DOMContentLoaded', () => {
-    // const borrowButtons = document.querySelectorAll('.open-borrow-modal');
-    // const borrowModal = document.getElementById('borrowModal');
-    // const borrowEquipmentId = document.getElementById('borrowEquipmentId');
-    // const borrowModalText = document.getElementById('borrowModalText');
-    // const borrowModalImage = document.getElementById('borrowModalImage');
-    // const borrowModalStock = document.getElementById('borrowModalStock');
-    // const borrowQuantity = document.getElementById('borrowQuantity');
-    // const confirmAddToCart = document.getElementById('confirmAddToCart');
-    // const borrowQuantityError = document.getElementById('borrowQuantityError');
+/**
+ * Initializes shared frontend behavior after the DOM is loaded.
+ * This app.js is mainly used for reference. It was a building a block
+ * for the initial version of the website.
+ *
+ * Most js logic was migrated to its unique js related to it's blade view.
+ *
+ * This file only activates the legacy loan/cart validation logic when
+ * the page is not using the dedicated layout validation script.
+ */
 
+document.addEventListener('DOMContentLoaded', () => {
+
+    /**
+     * Skip this block when the page explicitly uses its own layout validation.
+     */
     if(!window.useDedicatedLayoutValidation) {
+
+        /**
+         * Loan form element references
+         *
+         * These elements belong to the cart/loan request workflow.
+         */
+
         const specialCaseCheck = document.getElementById('special_case');
         const specialCaseFields = document.getElementById('specialCaseFields');
         const loanFullName = document.getElementById('loanFullName');
@@ -35,6 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const specialReasonError = document.getElementById('specialReasonError');
 
         const cartModal = document.getElementById('cartModal');
+
+
         const checkoutCartForm = document.getElementById('checkoutCartForm');
         const submitLoanRequest = document.getElementById('submitLoanRequest');
 
@@ -48,16 +61,17 @@ document.addEventListener('DOMContentLoaded', () => {
             borrowQuantity &&
             confirmAddToCart;
 
-        // let currentItem = {
-        //     id: null,
-        //     name: '',
-        //     stock: 0,
-        //     image: '',
-        //     location: 'Sala de Equipo A'
-        // };
-
+        /**
+         * Allowed character pattern for free-text loan fields.
+         */
         const loanAllowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
 
+        /**
+         * Converts a Date object into YYYY-MM-DD format for HTML date inputs.
+         *
+         * @param {Date} date
+         * @returns {string}
+         */
         function toLocalDateString(date) {
             const year = date.getFullYear();
             const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -65,18 +79,34 @@ document.addEventListener('DOMContentLoaded', () => {
             return `${year}-${month}-${day}`;
         }
 
+        /**
+         * Returns today's date with the time reset to midnight.
+         *
+         * @returns {Date}
+         */
         function getTodayAtMidnight() {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             return today;
         }
 
+        /**
+         * Checks whether a selected pickup date falls on a blocked day.
+         * Blocked days are Sunday, Friday, and Saturday.
+         *
+         * @param {string} dateString - Date in YYYY-MM-DD format.
+         * @returns {boolean}
+         */
         function isBlockedPickupDay(dateString) {
             const date = new Date(`${dateString}T00:00:00`);
             const day = date.getDay();
             return day === 0 || day === 5 || day === 6;
         }
 
+        /**
+         * Sets the minimum selectable date for pickup and return fields
+         * to tomorrow.
+         */
         function setMinDates() {
             const tomorrow = new Date();
             tomorrow.setDate(tomorrow.getDate() + 1);
@@ -86,18 +116,35 @@ document.addEventListener('DOMContentLoaded', () => {
             if (returnDate) returnDate.min = minDate;
         }
 
+        /**
+         * Marks a loan field as invalid and displays its error message.
+         *
+         * @param {HTMLElement|null} field
+         * @param {HTMLElement|null} errorElement
+         * @param {string} message
+         */
         function setLoanFieldError(field, errorElement, message) {
             if (!field) return;
             field.classList.add('is-invalid');
             if (errorElement) errorElement.textContent = message;
         }
 
+
+        /**
+         * Clears the invalid state and error message for a loan field.
+         *
+         * @param {HTMLElement|null} field
+         * @param {HTMLElement|null} errorElement
+         */
         function clearLoanFieldError(field, errorElement) {
             if (!field) return;
             field.classList.remove('is-invalid');
             if (errorElement) errorElement.textContent = '';
         }
 
+        /**
+         * Clears all visible validation errors in the loan form.
+         */
         function clearLoanValidation() {
             clearLoanFieldError(loanFullName, loanFullNameError);
             clearLoanFieldError(loanTermsCheck, loanTermsError);
@@ -107,23 +154,19 @@ document.addEventListener('DOMContentLoaded', () => {
             clearLoanFieldError(specialReason, specialReasonError);
         }
 
-        // function setBorrowQuantityError(message) {
-        //     if (borrowQuantity) borrowQuantity.classList.add('is-invalid');
-        //
-        //     if (borrowQuantityError) {
-        //         borrowQuantityError.textContent = message;
-        //         borrowQuantityError.style.display = 'block';
-        //     }
-        // }
-
-        // function clearBorrowQuantityError() {
-        //     if (borrowQuantity) borrowQuantity.classList.remove('is-invalid');
-        //
-        //     if (borrowQuantityError) {
-        //         borrowQuantityError.textContent = '';
-        //         borrowQuantityError.style.display = 'none';
-        //     }
-        // }
+        /**
+         * Validates the full name field used in the loan form.
+         *
+         *
+         * Rules (these rules changed for the full version):
+         * - required
+         * - minimum 5 characters
+         * - maximum 80 characters
+         * - only allowed characters
+         *
+         * @param {boolean} showError
+         * @returns {boolean}
+         */
         function validateLoanFullNameField(showError = true) {
             if (!loanFullName) return true;
 
@@ -162,6 +205,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         }
 
+
+        /**
+         * Validates that the user accepted the loan terms.
+         *
+         * @param {boolean} showError
+         * @returns {boolean}
+         */
         function validateLoanTermsField(showError = true) {
             if (!loanTermsCheck) return true;
 
@@ -181,6 +231,18 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         }
 
+        /**
+         * Validates the special-case reason field.
+         *
+         * Rules only apply when special case is enabled:
+         * - required
+         * - minimum 10 characters
+         * - maximum 500 characters
+         * - only allowed characters
+         *
+         * @param {boolean} showError
+         * @returns {boolean}
+         */
         function validateSpecialReasonField(showError = true) {
             if (!specialCaseCheck?.checked) return true;
             if (!specialReason) return true;
@@ -226,6 +288,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         }
 
+
+        /**
+         * Validates the full loan form.
+         *
+         * Checks:
+         * - full name
+         * - terms acceptance
+         * - pickup date
+         * - pickup time
+         * - return date for special cases
+         * - special reason for special cases
+         *
+         * @param {boolean} showErrors
+         * @returns {boolean}
+         */
         function validateLoanForm(showErrors = true) {
             if (showErrors) {
                 clearLoanValidation();
@@ -301,12 +378,21 @@ document.addEventListener('DOMContentLoaded', () => {
             return !hasError;
         }
 
+        /**
+         * Enables or disables the submit button depending on whether
+         * the current loan form is valid.
+         */
         function updateLoanSubmitButtonState() {
             if (!submitLoanRequest) return;
             const formIsValid = validateLoanForm(false);
             submitLoanRequest.disabled = !formIsValid;
         }
 
+        /**
+         * Toggles extra fields required for special-case requests.
+         * Also clears those fields when special case is disabled.
+         * This is to make the website more dynamic.
+         */
         if (specialCaseCheck && specialCaseFields) {
             specialCaseCheck.addEventListener('change', () => {
                 if (specialCaseCheck.checked) {
@@ -331,6 +417,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        /**
+         * Live validation for full name field.
+         */
         if (loanFullName) {
             loanFullName.addEventListener('input', () => {
                 loanFullName.value = loanFullName.value.slice(0, 80);
@@ -339,6 +428,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        /**
+         * Live validation for terms checkbox.
+         */
         if (loanTermsCheck) {
             loanTermsCheck.addEventListener('change', () => {
                 clearLoanFieldError(loanTermsCheck, loanTermsError);
@@ -346,6 +438,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        /**
+         * Live validation for pickup date.
+         */
         if (loanPickupDate) {
             loanPickupDate.addEventListener('input', () => {
                 clearLoanFieldError(loanPickupDate, loanPickupDateError);
@@ -363,6 +458,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        /**
+         * Live validation for pickup time.
+         */
         if (pickupTimeBlock) {
             pickupTimeBlock.addEventListener('change', () => {
                 clearLoanFieldError(pickupTimeBlock, pickupTimeBlockError);
@@ -370,6 +468,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        /**
+         * Live validation for return date in special cases.
+         */
         if (returnDate) {
             returnDate.addEventListener('input', () => {
                 clearLoanFieldError(returnDate, returnDateError);
@@ -395,6 +496,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        /**
+         * Live validation for special-case reason.
+         */
         if (specialReason) {
             specialReason.addEventListener('input', () => {
                 specialReason.value = specialReason.value.slice(0, 500);
@@ -403,6 +507,9 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        /**
+         * Final validation gate before loan form submission.
+         */
         if (checkoutCartForm && submitLoanRequest) {
             checkoutCartForm.addEventListener('submit', (e) => {
                 const isValid = validateLoanForm(true);
@@ -416,87 +523,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
-
+        /**
+         * Initial setup for legacy loan validation flow.
+         */
         setMinDates();
         updateLoanSubmitButtonState();
     }
 
-
-    // if (hasBorrowModal) {
-    //     borrowButtons.forEach((button) => {
-    //         button.addEventListener('click', () => {
-    //             const itemId = button.dataset.itemId;
-    //             currentItem.id = itemId;
-    //             currentItem.name = button.dataset.itemName || '';
-    //             currentItem.stock = parseInt(button.dataset.itemStock || '1', 10);
-    //             currentItem.image = button.dataset.itemImage || '';
-    //             currentItem.location = button.dataset.itemLocation || 'Sala de Equipo A';
-    //
-    //             if (borrowEquipmentId) borrowEquipmentId.value = itemId;
-    //             borrowModalText.textContent = `Selecciona la cantidad de ${currentItem.name} que deseas`;
-    //             borrowModalImage.src = currentItem.image;
-    //             borrowModalImage.alt = currentItem.name;
-    //             borrowModalStock.textContent = currentItem.stock;
-    //
-    //             borrowQuantity.value = 1;
-    //             borrowQuantity.min = 1;
-    //             borrowQuantity.removeAttribute('max');
-    //
-    //             clearBorrowQuantityError();
-    //         });
-    //     });
-    //
-    //     borrowQuantity.addEventListener('input', () => {
-    //         clearBorrowQuantityError();
-    //
-    //         if (borrowQuantity.value === '') return;
-    //
-    //         let value = parseInt(borrowQuantity.value, 10);
-    //
-    //         if (isNaN(value) || value < 1) {
-    //             borrowQuantity.value = 1;
-    //             setBorrowQuantityError('Debes pedir al menos 1 unidad.');
-    //             return;
-    //         }
-    //
-    //         if (value > currentItem.stock) {
-    //             setBorrowQuantityError(`No puedes añadir más de ${currentItem.stock} unidades disponibles.`);
-    //             return;
-    //         }
-    //
-    //         borrowQuantity.value = value;
-    //     });
-    //
-    //     borrowQuantity.addEventListener('blur', () => {
-    //         const value = parseInt(borrowQuantity.value, 10);
-    //
-    //         if (value > currentItem.stock) {
-    //             setBorrowQuantityError(`No puedes añadir más de ${currentItem.stock} unidades disponibles.`);
-    //         }
-    //     });
-    //
-    //
-    //     confirmAddToCart.addEventListener('click', () => {
-    //         clearBorrowQuantityError();
-    //
-    //         const quantity = parseInt(borrowQuantity.value, 10);
-    //
-    //         if (isNaN(quantity) || quantity < 1) {
-    //             setBorrowQuantityError('Debes pedir al menos 1 unidad.');
-    //             return;
-    //         }
-    //
-    //         if (quantity > currentItem.stock) {
-    //             setBorrowQuantityError(`No puedes pedir más de la cantidad disponible (${currentItem.stock}).`);
-    //             return;
-    //         }
-    //
-    //         const borrowForm = document.getElementById('borrowForm');
-    //         if (borrowForm) {
-    //             borrowForm.submit();
-    //         }
-    //     });
-    // }
-
 });
-
