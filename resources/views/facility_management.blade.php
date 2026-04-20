@@ -158,7 +158,7 @@
 
                     <div class="col-md-3">
                         <select id="filterClassroom" name="filter_classroom" class="form-select border-2 border-dark">
-                            <option value="" {{ ($filterClassroom ?? '') === '' ? 'selected' : '' }}>Salón</option>
+                            <option value="" {{ ($filterClassroom ?? '') === '' ? 'selected' : '' }}>Área</option>
                             @foreach ($allFacilityCosts as $cost)
                                 <option
                                     value="{{ $cost->classroom_name }}" {{ $filterClassroom === $cost->classroom_name ? 'selected' : '' }}>
@@ -225,7 +225,7 @@
                             <small>(mm/dd/yyyy)</small>
                         </th>
                         <th class="fw-bold">Responsable</th>
-                        <th class="fw-bold">Área</th>
+                        <th class="fw-bold area-col">Área</th>
                         <th class="fw-bold">Descripción</th>
                         <th class="fw-bold">Hora</th>
                         <th class="fw-bold">Periodo</th>
@@ -1395,6 +1395,11 @@
         .date-picker-only::-webkit-inner-spin-button,
         .date-picker-only::-webkit-clear-button {
             display: none;
+        }
+
+        .area-col {
+            min-width: 180px;
+            width: 220px;
         }
     </style>
 
