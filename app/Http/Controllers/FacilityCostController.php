@@ -51,7 +51,8 @@ class FacilityCostController extends Controller
         $allFacilityCosts = FacilityCost::orderBy('classroom_name')->get();
 
         $query = FacilityCostReportItem::with('facilityCost')
-            ->orderBy('event_date', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('start_time', 'desc');
 
         if ($reportType === 'monthly' && !empty($reportYear) && !empty($reportMonth)) {
             $query->whereYear('event_date', (int) $reportYear)
@@ -564,7 +565,8 @@ class FacilityCostController extends Controller
         $filterClassroom = $request->input('filter_classroom', 'all');
 
         $query = FacilityCostReportItem::with('facilityCost')
-            ->orderBy('event_date', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('start_time', 'desc');
 
         if ($reportType === 'monthly') {
             $query->whereYear('event_date', $reportYear)
@@ -592,30 +594,34 @@ class FacilityCostController extends Controller
             $handle = fopen('php://output', 'w');
 
             fputcsv($handle, [
-                'Fecha',
-                'Salon',
+                'Fecha Inicio',
+                'Fecha Fin',
+                'Responsable',
+                'Área',
+                'Descripción',
                 'Hora Inicio',
                 'Hora Fin',
-                'Periodo',
-                'Servicios',
                 'Horas',
+                'Período',
+                'Modo de tarifa',
+                'Servicios',
                 'Costo',
-                'Descripcion',
-                'Responsable',
             ]);
 
             foreach ($items as $item) {
                 fputcsv($handle, [
                     $item->event_date,
+                    $item->end_date,
+                    $item->responsible,
                     $item->facilityCost->classroom_name ?? '',
+                    $item->event_description,
                     \Carbon\Carbon::parse($item->start_time)->format('H:i'),
                     \Carbon\Carbon::parse($item->end_time)->format('H:i'),
-                    $item->period_type,
-                    implode(', ', $item->services ?? []),
                     $item->hours_used,
+                    $item->period_type,
+                    $item->rate_mode,
+                    implode(', ', $item->services ?? []),
                     $item->calculated_cost,
-                    $item->event_description,
-                    $item->responsible,
                 ]);
             }
 
@@ -640,7 +646,8 @@ class FacilityCostController extends Controller
         $filterClassroom = $request->input('filter_classroom', 'all');
 
         $query = FacilityCostReportItem::with('facilityCost')
-            ->orderBy('event_date', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('start_time', 'desc');
 
         if ($reportType === 'monthly') {
             $query->whereYear('event_date', $reportYear)

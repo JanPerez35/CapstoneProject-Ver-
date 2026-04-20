@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\EmailService;
-
-
+use App\Http\Controllers\Concerns\LogsActivity;
 
 class UserController extends Controller
 {
+    use LogsActivity;
     // Mostrar todos los usuarios (solo admin)
     public function index()
     {
@@ -20,13 +20,22 @@ class UserController extends Controller
     // Actualizar el rol de un usuario
     public function updateRole(Request $request, User $user)
     {
-        $request->validate(['role' => 'required|string|in:Usuario,Admin Inventario,Admin Mercado,Admin Facilidades,Admin Super',]);
+        $request->validate([
+            'role' => 'required|string|in:Usuario,Admin Inventario,Admin Mercado,Admin Facilidades,Admin Super',
+        ]);
+
+        $previousRole = $user->role;
         $user->role = $request->role;
         $user->save();
 
+        $this->logActivity(
+            'Cambiar rol de usuario',
+            "Se cambió el rol del usuario {$user->email} (ID: {$user->id}) de '{$previousRole}' a '{$user->role}'"
+        );
+
         return response()->json([
-                'message' => 'Rol actualizado correctamente'
-            ]);
+            'message' => 'Rol actualizado correctamente'
+        ]);
     }
 
     /**
@@ -55,6 +64,11 @@ class UserController extends Controller
         $previousStatus = $user->status;
         $user->status = $request->status;
         $user->save();
+
+        $this->logActivity(
+            'Cambiar estado de usuario',
+            "Se cambió el estado del usuario {$user->email} (ID: {$user->id}) de '{$previousStatus}' a '{$user->status}'"
+        );
 
         $superAdmin = User::where('role', 'Admin Super')
             ->where('status', 'Activo')
