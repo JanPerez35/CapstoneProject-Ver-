@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Equipment;
+use App\Http\Controllers\Concerns\LogsActivity;
 
 /**
  * Class EquipmentController
@@ -27,6 +28,9 @@ class EquipmentController extends Controller
      * loads the number of active lendings for each item, and returns
      * the inventory management view with pagination.
      */
+
+    use LogsActivity;
+
     public function index(Request $request)
     {
         $query = Equipment::where('pending_deletion', false)
@@ -87,11 +91,11 @@ class EquipmentController extends Controller
         $item = Equipment::findOrFail($id);
 
         $validated = $request->validate([
-            'description' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/'],
+            'description' => ['required', 'string', 'min:3', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/'],
             'category' => ['required', 'string', 'min:3', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-]+$/'],
             'quantity' => 'required|integer|min:1',
             'available_quantity' => 'required|integer|min:0|lte:quantity',
-            'location' => ['required', 'string', 'min:5', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-\/]+$/'],
+            'location' => ['required', 'string', 'min:3', 'max:100', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s\.,\-\/]+$/'],
             'image' => 'nullable|image|mimes:jpg,jpeg|max:2048',
         ]);
 
@@ -114,6 +118,11 @@ class EquipmentController extends Controller
             'location' => $validated['location'],
         ]);
 
+        $this->logActivity(
+            'Actualizar equipo',
+            "Se actualizó el equipo: {$item->description} (ID: {$item->id})"
+        );
+
         return redirect()->back()
             ->with('success', 'Item actualizado correctamente');
     }
@@ -126,11 +135,14 @@ class EquipmentController extends Controller
      */
     public function store(Request $request)
     {
+
+        //dd($request->all());
+
         $validated = $request->validate([
             'description' => [
                 'required',
                 'string',
-                'min:5',
+                'min:3',
                 'max:100',
                 'regex:/^[A-Za-z0-9\s\.,\-]+$/'
             ],
@@ -144,7 +156,7 @@ class EquipmentController extends Controller
             'location' => [
                 'required',
                 'string',
-                'min:5',
+                'min:3',
                 'max:100',
                 'regex:/^[A-Za-z0-9\s\.,\-\/]+$/'
             ],
@@ -157,7 +169,7 @@ class EquipmentController extends Controller
         $imagePath = $request->file('image')->store('equipment_photos', 'public');
 
         // Create equipment record
-        Equipment::create([
+        $item = Equipment::create([
             'description' => $validated['description'],
             'category' => $validated['category'],
             'quantity' => $validated['quantity'],
@@ -165,6 +177,11 @@ class EquipmentController extends Controller
             'location' => $validated['location'],
             'equipment_photo_url' => $imagePath,
         ]);
+
+        $this->logActivity(
+            'Agregar equipo',
+            "Se agregó el equipo: {$item->description} (ID: {$item->id})"
+        );
 
         return redirect()->back()
             ->with('success', 'Item agregado correctamente');
@@ -193,12 +210,25 @@ class EquipmentController extends Controller
             $equipment->pending_deletion = true;
             $equipment->save();
 
-            return redirect()->route('inventory_management')
-                ->with('warning', 'Este equipo está vinculado a préstamos pendientes o activos. Se marcó como no disponible y pendiente de eliminación.');
+        $this->logActivity(
+            'Marcar equipo para eliminación',
+            "Se marcó como pendiente de eliminación el equipo: {$equipment->description} (ID: {$equipment->id})"
+        );
+
+        return redirect()->route('inventory_management')
+            ->with('warning', 'Este equipo está vinculado a préstamos pendientes o activos. Se marcó como no disponible y pendiente de eliminación.');
         }
 
         // Delete equipment if no active lendings exist
+        $equipmentDescription = $equipment->description;
+        $equipmentId = $equipment->id;
+
         $equipment->delete();
+
+        $this->logActivity(
+            'Eliminar equipo',
+            "Se eliminó el equipo: {$equipmentDescription} (ID: {$equipmentId})"
+        );
 
         return redirect()->route('inventory_management')
             ->with('success', 'Equipo eliminado correctamente.');

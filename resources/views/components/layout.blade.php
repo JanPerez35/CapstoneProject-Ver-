@@ -4,7 +4,7 @@
 
 @php
 
-/*
+/**
  * These variables prepare the user-facing header and footer data.
  *
  * If a specific admin user is not available, default contact emails are used as

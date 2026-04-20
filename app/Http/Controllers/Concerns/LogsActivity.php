@@ -48,6 +48,7 @@ trait LogsActivity
             'action' => $action,
             'ip_address' => request()->ip(),
             'comment' => $comment,
+            'created_at' => now(),
         ]);
     }
 }
