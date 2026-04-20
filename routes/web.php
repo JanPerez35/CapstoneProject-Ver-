@@ -19,6 +19,18 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReviewController;
 
+
+/**
+ *Authentication and main public routes
+ *
+ * Used for introducing the user to the website.
+ *
+ */
+
+
+/**
+ * Logout route, redirects to the origin page.
+ */
 Route::post('/logout', function () {
     Auth::logout();
 
@@ -28,18 +40,34 @@ Route::post('/logout', function () {
     return redirect('/');
 })->name('logout');
 
+/**
+ * Login Page
+ */
 Route::get('/', function () {
     return view('login');
 });
 
-Route::get('/welcome', function () {
-    return view('welcome');
-});
-
+/**
+ * SAML Authentication
+ *
+ * Loads external SAML authentication routes
+ * from saml2.php file.
+ */
 require __DIR__ . '\saml2.php';
 
+
+/**
+ * Authenticated Routes (IMPORTANT)
+ *
+ * All routes inside this group REQUIRE a logged-in user.
+ */
 Route::middleware('auth')->group(function () {
 
+    /**
+     * Kinventory (User Inventory)
+     *
+     * Equipment browsing, borrowing, and cart management.
+     */
     Route::get('/kinventory', [EquipmentController::class, 'kinventory'])
         ->name('kinventory');
 
@@ -58,6 +86,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/cart/checkout', [LendingController::class, 'checkoutCart'])
         ->name('cart.checkout');
 
+    /**
+     * User administration routes.
+     *
+     * Used for user search, role updates,
+     * and account status changes.
+     */
     Route::get('/search_user', [UserController::class, 'index'])
         ->name('search_user');
 
@@ -65,6 +99,15 @@ Route::middleware('auth')->group(function () {
 
     Route::put('/users/{user}/status', [UserController::class, 'updateStatus'])
         ->name('users.updateStatus');
+
+
+    /**
+     * Inventory administration routes.
+     *
+     * Restricted to Super Admin and Inventory Admin users.
+     * Includes inventory CRUD, borrow request review,
+     * and statistics export by csv and pdf.
+     */
 
     Route::get('/inventory_management', [EquipmentController::class, 'index'])
         ->name('inventory_management')
@@ -106,6 +149,14 @@ Route::middleware('auth')->group(function () {
         ->name('inventory_management.inventory_statistics.export')
         ->middleware('role:Admin Super,Admin Inventario');
 
+
+    /**
+     * Marketplace routes.
+     *
+     * Includes post listing, creation, deletion,
+     * detail view, reviews, and moderation reports.
+     */
+
     Route::get('/kinemarket', [PostController::class, 'index'])
         ->name('kinemarket');
 
@@ -134,6 +185,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
     Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
 
+
+    /**
+     * Messaging routes.
+     *
+     * Handles chats, chat creation,
+     * message sending, and message retrieval.
+     */
+
     Route::get('/my_messages', [ChatController::class, 'index'])
         ->name('my_messages');
 
@@ -149,6 +208,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/kinemercado/mensaje', function () {
         return view('kinemercado_mensaje');
     })->name('kinemercado_mensaje');
+
+    /**
+     * Facility management routes.
+     *
+     * Includes rates, events, classrooms,
+     * imports, and exports for facility administration.
+     */
 
     Route::get('/facility_management', [FacilityCostController::class, 'index'])
         ->name('facility_management')
@@ -181,13 +247,30 @@ Route::middleware('auth')->group(function () {
     Route::post('/facility/import-mock-events', [FacilityCostController::class, 'importMockEvents'])
         ->name('facility.import.mock');
 
+
+
+    /**
+     * Profile
+     *
+     * Showcases the individual user profile.
+     */
     Route::get('/my_profile', [ProfileController::class, 'profile'])
         ->name('my_profile');
 
+    /**
+     * Access Logs
+     *
+     * Keeps logs of what users do in the platform (ONLY for Super Admin)
+     */
     Route::get('/access_logs', [AccessLogController::class, 'index'])
         ->name('access_logs')
         ->middleware('role:Admin Super');
 
+    /**
+     * Terms and Conditions
+     *
+     * Terms and conditions view for updates (ONLY for Super Admin)
+     */
     Route::middleware('auth')->group(function () {
     Route::get('/terms-and-conditions', [TermsController::class, 'show'])->name('terms.show');
     Route::post('/terms-and-conditions/accept', [TermsController::class, 'accept'])->name('terms.accept');
@@ -196,6 +279,12 @@ Route::middleware('auth')->group(function () {
     ->middleware('role:Admin Super');
 });
 
+    /**
+     * Email and temporary testing routes.
+     *
+     * Includes generic email sending and
+     * a temporary activity log test route.
+     */
     Route::post('/send-email', [EmailController::class, 'sendEmail']);
 
     Route::get('/test-log-ipv6', function () {
@@ -211,15 +300,23 @@ Route::middleware('auth')->group(function () {
     });
 });
 
-/*
-| Temporary test routes
-*/
 
+/**
+ * Temporary email testing routes.
+ *
+ * Used to manually trigger email notifications during development and testing.
+ */
 Route::get('/test-email/request-approved', [EmailController::class, 'requestApproved']);
 Route::get('/test-email/request-denied', [EmailController::class, 'requestDenied']);
 Route::get('/test-email/user-banned', [EmailController::class, 'userBanned']);
 Route::get('/test-email/user-unbanned', [EmailController::class, 'userUnbanned']);
 
+
+/**
+ * Raw email testing route.
+ *
+ * Sends a simple test email using Laravel Mail.
+ */
 Route::get('/test-email', function () {
     Mail::raw('Esto es un test desde MAIKINE', function ($message) {
         $message->to('test@test.com')
