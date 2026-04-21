@@ -22,7 +22,14 @@ class ChatController extends Controller
         $chats = Chat::with(['buyer', 'seller', 'post'])
             ->where('buyer_user_id', $userId)
             ->orWhere('seller_user_id', $userId)
-            ->latest()
+            ->withMax('messages', 'created_at')
+            ->withcount([
+                'messages as unread_count' => function ($query) use ($userId) {
+                    $query->whereNull('read_at')
+                          ->where('user_id', '!=', $userId);
+                }
+            ])
+            ->orderByDesc('messages_max_created_at')
             ->get();
 
         $selectedChat = null;

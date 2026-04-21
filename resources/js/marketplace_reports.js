@@ -32,8 +32,9 @@
 
         const row = `
             <tr data-report-id="${report.id}"
-                data-post-id="${report.post_id}"
+                data-post='${JSON.stringify(report.post || {}).replace(/'/g, "&apos;")}'
                 data-seller-id="${report.reported_user_id}"
+                data-post-id="${report.post_id}"
                 >
                 <td>${report.reporter?.name || ''}</td>
                 <td>${report.reported_user?.name || ''}</td>
@@ -54,6 +55,8 @@
     bindAction('.action-resolve', els.resolveModal, 'resolve');
     bindAction('.action-delete-post', els.deleteModal, 'delete');
     bindAction('.action-block-user', els.banModal, 'ban');
+
+    renderReports();
 }
 
     function formatDateForDisplay(dateValue) {
@@ -103,8 +106,7 @@
     ban: null,
 };
 
-    const normalize = (text) => text.toLowerCase().trim();
-
+    const normalize = (text) => (text || '').toLowerCase().trim();
 
     function markResolved(row) {
     if (!row) return;
@@ -199,13 +201,14 @@
                 const date = row.cells[3].textContent.trim();
 
                 return (
-                    (!filters.reason || reason === filters.reason) &&
+                    (!filters.reason || filters.reason === '' || reason === filters.reason) &&
                     (
                         !filters.user ||
+                        filters.user === '' ||
                         reportedBy.includes(filters.user) ||
                         seller.includes(filters.user)
                     ) &&
-                    (!filters.date || date === filters.date)
+                    (!filters.date || filters.date === '' || date === filters.date)
                 );
             });
         }
@@ -410,16 +413,7 @@ function bindConfirm(button, key, modalEl, toastKey) {
     el.addEventListener('change', applyFilters);
 });
 
-
-    document.querySelectorAll('.action-view').forEach((checkbox) => {
-    checkbox.addEventListener('change', function () {
-    if (this.checked) {
-    toasts.view?.show();
-}
-});
-});
-
-document.addEventListener('change', (e) => {
+document.addEventListener('change', async (e) => {
     const target = e.target;
 
     if (target.matches('.action-resolve')) {
@@ -437,9 +431,32 @@ document.addEventListener('change', (e) => {
         bootstrap.Modal.getOrCreateInstance(els.banModal).show();
     }
 
-    if (target.matches('.action-view')) {
-        toasts.view?.show();
+    if (target.matches('.action-view') && target.checked) {
+        const row = target.closest('tr');
+        const postId = row.dataset.postId;
+        const res = await fetch(`/posts/${postId}`);
+        const post = await res.json();
+
+        populatePostDetailsModal(post);
+        console.log('POST:', post);
+        populatePostDetailsModal(post);
+
+        const modal = bootstrap.Modal.getOrCreateInstance(
+            document.getElementById('postDetailsModal')
+        );
+
+        modal.show();
     }
+});
+
+const modalEl = document.getElementById('postDetailsModal');
+
+modalEl.addEventListener('hidden.bs.modal', () => {
+    document.querySelectorAll('.action-view').forEach(radio => {
+        radio.checked = false;
+        radio.dataset.wasChecked = 'false';
+        radio.classList.remove('active-radio');
+    });
 });
 
     bindConfirm(els.confirmResolve, 'resolve', els.resolveModal, 'resolve');
@@ -479,8 +496,12 @@ document.addEventListener('change', (e) => {
         });
 
     updateReportsSearchButtonState();
+
+    els.filterSearchBy.value = '';
+    els.filterReason.value = '';
+    els.filterDate.value = '';
+
     renderReports();
     fetchReports();
-
 });
 

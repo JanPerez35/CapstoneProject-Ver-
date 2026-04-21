@@ -17,6 +17,14 @@ class UserController extends Controller
         return view('search_user', compact('users'));
     }
 
+    public function show()
+    {
+        $user = User::all()
+            ->where('role', 'Admin Inventario, Admin Mercado, Admin Super')
+            ->where('status', 'Activo')
+            ->get();
+        return view('layout', compact('user'));
+    }
     // Actualizar el rol de un usuario
     public function updateRole(Request $request, User $user)
     {

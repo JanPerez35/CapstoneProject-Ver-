@@ -90,13 +90,14 @@
                 <a href="{{ route('my_messages', ['return_to' => url()->full()]) }}"
                    class="btn position-relative {{ request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success' }}">
                     <i class="bi bi-chat-left-text"></i> Mis Chats
-
-                    <span
-                        id="miChatsUnreadBadge"
-                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
-                    >
-                        0
-                    </span>
+                    @if($totalUnread > 0)
+                        <span 
+                            id="miChatsUnreadBadge"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                            >
+                            {{ $totalUnread }}
+                        </span>
+                    @endif
                 </a>
 
                 {{-- Opens the borrowing cart modal: badge shows total selected quantity dynamically --}}
@@ -646,9 +647,13 @@
 
                 <p class="mb-1">
                     <i class="bi bi-envelope text-muted"></i>
-                    <a href="mailto:{{ $superAdminEmail }}" class="text-success text-decoration-none">
-                        {{ $superAdminEmail }}
-                    </a>
+                    @foreach($superAdmin as $admin)
+                    <div>
+                         <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none">
+                            {{ $admin->email }}
+                        </a>
+                    </div>
+                    @endforeach
                 </p>
 
                 <p>
@@ -676,16 +681,24 @@
 
                 <p class="mb-1">
                     <b>Kinventario</b><br>
-                    <a href="mailto:{{ $inventoryAdminEmail }}" class="text-success text-decoration-none">
-                        {{ $inventoryAdminEmail }}
-                    </a>
+                    @foreach($inventoryAdmin as $admin)
+                    <div>
+                         <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none">
+                            {{ $admin->email }}
+                        </a>
+                    </div>
+                    @endforeach
                 </p>
 
                 <p>
                     <b>Kinemercado</b><br>
-                    <a href="mailto:{{ $marketAdminEmail }}" class="text-success text-decoration-none">
-                        {{ $marketAdminEmail }}
-                    </a>
+                    @foreach($marketAdmin as $admin)
+                    <div>
+                         <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none">
+                            {{ $admin->email }}
+                        </a>
+                    </div>
+                    @endforeach
                 </p>
             </div>
         </div>
