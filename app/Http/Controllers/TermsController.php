@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\LogsActivity;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 /**
@@ -24,9 +26,37 @@ class TermsController extends Controller
      *
      * @return \Illuminate\View\View
      */
+
+    use LogsActivity;
+
+    /**
+     * Displays the Terms page used during the login / acceptance flow.
+     *
+     * This version does not allow updating the PDF.
+     *
+     * @return \Illuminate\View\View
+     */
     public function show()
     {
-        return view('terms_and_conditions');
+        return view('terms_and_conditions', [
+            'allowUpdate' => false,
+        ]);
+    }
+
+    /**
+     * Displays the Terms page from the footer.
+     *
+     * This version allows the Admin Super to update the PDF document.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function showFromFooter()
+    {
+        $allowUpdate = auth()->check() && auth()->user()->role === 'Admin Super';
+
+        return view('terms_and_conditions', [
+            'allowUpdate' => $allowUpdate,
+        ]);
     }
 
     /**
@@ -45,6 +75,11 @@ class TermsController extends Controller
 
         $user->terms_accepted = true;
         $user->save();
+
+        $this->logActivity(
+            'Aceptar términos y condiciones',
+            "El usuario {$user->email} aceptó los términos y condiciones."
+        );
 
         return redirect()->route('kinventory')
             ->with('success', 'Términos y condiciones aceptados correctamente.');
@@ -82,6 +117,16 @@ class TermsController extends Controller
         ]);
 
         $file = $request->file('terms_pdf');
+        $originalName = $file->getClientOriginalName();
+
+        $file->storeAs('public/documents', 'terms_conditions.pdf');
+
+        $this->logActivity(
+            'Actualizar términos y condiciones',
+            "Se actualizó el PDF de términos y condiciones con el archivo: {$originalName}"
+        );
+
+        User::query()->update(['terms_accepted' => false]);
 
         // Ensure the destination folder exists
         $destinationPath = public_path('documents');

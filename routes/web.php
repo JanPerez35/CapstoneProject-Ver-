@@ -287,6 +287,7 @@ Route::middleware('auth')->group(function () {
      */
     Route::middleware('auth')->group(function () {
     Route::get('/terms-and-conditions', [TermsController::class, 'show'])->name('terms.show');
+    Route::get('/terms-and-conditions/footer', [TermsController::class, 'showFromFooter'])->name('terms.footer');
     Route::post('/terms-and-conditions/accept', [TermsController::class, 'accept'])->name('terms.accept');
     Route::post('/admin/terms-and-conditions/update', [TermsController::class, 'update'])
     ->name('terms.update')
