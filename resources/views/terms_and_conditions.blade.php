@@ -56,7 +56,7 @@
 
 <div class="container py-4">
     <div class="terms-wrapper">
-        
+
         {{-- Page title and short instruction for the user --}}
         <div class="mb-4">
             <h1 class="fw-bold">Términos y Condiciones de MAIKINE</h1>
@@ -73,7 +73,7 @@
                 <div class="border rounded-4 overflow-hidden mb-4">
                     <iframe
                         id="termsPdfFrame"
-                        src="{{ asset('documents/terms_conditions.pdf') }}"
+                        src="{{ asset('documents/terms_conditions.pdf') }}?v={{ file_exists(public_path('documents/terms_conditions.pdf')) ? filemtime(public_path('documents/terms_conditions.pdf')) : time() }}"
                         class="pdf-frame"
                     ></iframe>
                 </div>
@@ -106,12 +106,12 @@
                     </form>
                 </div>
 
-                {{-- 
+                {{--
                     Admin-only section.
                     Allows the Super Admin to upload a new Terms and Conditions PDF.
                 --}}
 
-                // Only show the update button when the terms and conditions are accessed throw the footer link
+{{--                 Only show the update button when the terms and conditions are accessed throw the footer link--}}
                 @if($allowUpdate ?? false)
                     <form method="POST" action="{{ route('terms.update') }}" enctype="multipart/form-data">
                         @csrf
