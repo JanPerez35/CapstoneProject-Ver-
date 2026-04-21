@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\ActivityLog;
 
 
 /**
@@ -53,6 +54,15 @@ Route::any('/auth/callback', function () {
 
     // Log user into Laravel session
     Auth::login($user);
+
+    ActivityLog::create([
+        'user_id'    => $user->id,
+        'role'       => $user->role_label,
+        'action'     => 'Inicio de sesión',
+        'ip_address' => request()->ip(),
+        'comment'    => "El usuario {$user->email} inició sesión mediante SAML",
+        'created_at' => now(),
+    ]);
 
     /**
      * Enforce Terms & Conditions acceptance.

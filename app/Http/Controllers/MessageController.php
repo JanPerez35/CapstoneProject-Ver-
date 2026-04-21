@@ -7,9 +7,12 @@ use App\Models\Message;
 use App\Models\Chat;
 use App\Events\MessageSent;
 use App\Jobs\SendUnreadMessageReminder;
+use App\Http\Controllers\Concerns\LogsActivity;
 
 class MessageController extends Controller
 {
+    use LogsActivity;
+
     public function store(Request $request)
     {
         $request->validate([
@@ -25,6 +28,11 @@ class MessageController extends Controller
             'sent_at' => now(),
             'read_at' => null,
         ]);
+
+        $this->logActivity(
+            'Enviar mensaje',
+            "Se envió un mensaje en el chat ID: {$request->chat_id}"
+        );
 
         /**
          * Dispatch job that will send an email reminder if the message

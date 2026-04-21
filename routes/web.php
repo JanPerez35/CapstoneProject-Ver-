@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ActivityLog;
 use Illuminate\Support\Facades\Mail;
 
 use App\Http\Controllers\EmailController;
@@ -32,6 +33,19 @@ use App\Http\Controllers\ReviewController;
  * Logout route, redirects to the origin page.
  */
 Route::post('/logout', function () {
+    $user = Auth::user();
+
+    if ($user) {
+        ActivityLog::create([
+            'user_id'    => $user->id,
+            'role'       => $user->role_label,
+            'action'     => 'Cierre de sesión',
+            'ip_address' => request()->ip(),
+            'comment'    => "El usuario {$user->email} cerró sesión",
+            'created_at' => now(),
+        ]);
+    }
+
     Auth::logout();
 
     request()->session()->invalidate();
@@ -273,6 +287,7 @@ Route::middleware('auth')->group(function () {
      */
     Route::middleware('auth')->group(function () {
     Route::get('/terms-and-conditions', [TermsController::class, 'show'])->name('terms.show');
+    Route::get('/terms-and-conditions/footer', [TermsController::class, 'showFromFooter'])->name('terms.footer');
     Route::post('/terms-and-conditions/accept', [TermsController::class, 'accept'])->name('terms.accept');
     Route::post('/admin/terms-and-conditions/update', [TermsController::class, 'update'])
     ->name('terms.update')
@@ -292,7 +307,7 @@ Route::middleware('auth')->group(function () {
             'user_id' => 3,
             'role' => 'Admin Super',
             'action' => 'IPv4 test',
-            'ip_address' => '24.48.231.194',
+            'ip_address' => '2345:0425:2CA1:0000:0000:0567:5673:23b5',
             'comment' => 'IPv4 test My IPv4',
         ]);
 

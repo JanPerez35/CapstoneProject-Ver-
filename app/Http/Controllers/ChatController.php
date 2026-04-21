@@ -6,9 +6,12 @@ use Illuminate\Http\Request;
 use App\Models\Chat;
 use App\Models\Post;
 use App\Models\Message;
+use App\Http\Controllers\Concerns\LogsActivity;
 
 class ChatController extends Controller
 {
+    use LogsActivity;
+
     /**
      * Mostrar lista de chats + chat activo
      */
@@ -52,6 +55,13 @@ class ChatController extends Controller
                 'status' => 'active',
             ]
         );
+
+        if ($chat->wasRecentlyCreated) {
+            $this->logActivity(
+                'Crear chat',
+                "Se inició un chat (ID: {$chat->id}) con el vendedor ID: {$sellerId} sobre la publicación ID: {$postId}"
+            );
+        }
 
         return redirect()->route('my_messages', [
             'chat_id' => $chat->id,

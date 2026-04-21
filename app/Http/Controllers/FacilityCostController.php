@@ -8,6 +8,7 @@ use App\Models\FacilityCostReportItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\Concerns\LogsActivity;
 
 /**
  * Class FacilityCostController
@@ -31,6 +32,9 @@ class FacilityCostController extends Controller
      * month, year, classroom) to the cost report items query. Passes the
      * filtered results, grand total, and year range to the view.
      */
+
+    use LogsActivity;
+
     public function index(Request $request)
     {
         $reportType = $request->input('report_type', '');
@@ -47,7 +51,8 @@ class FacilityCostController extends Controller
         $allFacilityCosts = FacilityCost::orderBy('classroom_name')->get();
 
         $query = FacilityCostReportItem::with('facilityCost')
-            ->orderBy('event_date', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('start_time', 'desc');
 
         if ($reportType === 'monthly' && !empty($reportYear) && !empty($reportMonth)) {
             $query->whereYear('event_date', (int) $reportYear)
@@ -140,6 +145,11 @@ class FacilityCostController extends Controller
             );
         }
 
+        $this->logActivity(
+            'Guardar tarifas de facilidades',
+            'Se guardaron/actualizaron tarifas para los salones: ' . implode(', ', $validated['classrooms'])
+        );
+
         return redirect()->route('facility_management')
     ->with('rates_saved', 'Tarifas guardadas correctamente.');
     }
@@ -156,7 +166,7 @@ class FacilityCostController extends Controller
             'classroom_name' => ['required', 'string', 'min:6', 'max:40', 'unique:facility_costs,classroom_name'],
         ]);
 
-        FacilityCost::create([
+        $classroom = FacilityCost::create([
             'classroom_name' => $validated['classroom_name'],
             'classroom_space' => 1,
             'supply_cost' => 0,
@@ -172,6 +182,11 @@ class FacilityCostController extends Controller
             'weekly_cost_3' => 0,
             'monthly_cost_3' => 0,
         ]);
+
+        $this->logActivity(
+            'Agregar salón',
+            "Se agregó el salón: {$classroom->classroom_name} (ID: {$classroom->id})"
+        );
 
         return redirect()
             ->route('facility_management')
@@ -193,6 +208,9 @@ class FacilityCostController extends Controller
 
         $classrooms = FacilityCost::whereIn('classroom_name', $validated['classrooms'])->get();
 
+        $deletedClassrooms = [];
+        $pendingDeletionClassrooms = [];
+
         foreach ($classrooms as $classroom) {
             $hasEvents = FacilityCostReportItem::where('facility_cost_id', $classroom->id)->exists();
 
@@ -200,10 +218,28 @@ class FacilityCostController extends Controller
                 $classroom->update([
                     'pending_deletion' => true,
                 ]);
+
+                $pendingDeletionClassrooms[] = $classroom->classroom_name;
             } else {
+                $deletedClassrooms[] = $classroom->classroom_name;
                 $classroom->delete();
             }
         }
+
+        $comments = [];
+
+        if (!empty($deletedClassrooms)) {
+            $comments[] = 'Eliminados: ' . implode(', ', $deletedClassrooms);
+        }
+
+        if (!empty($pendingDeletionClassrooms)) {
+            $comments[] = 'Marcados como pendientes de eliminación: ' . implode(', ', $pendingDeletionClassrooms);
+        }
+
+        $this->logActivity(
+            'Eliminar/procesar salones',
+            !empty($comments) ? implode(' | ', $comments) : 'No se realizaron cambios'
+        );
 
         return redirect()
             ->route('facility_management')
@@ -219,6 +255,7 @@ class FacilityCostController extends Controller
      */
     public function storeEvent(Request $request)
     {
+
     $validated = $request->validate([
         'classroom' => ['required', 'string'],
         'event_date' => ['required', 'date'],
@@ -246,6 +283,11 @@ class FacilityCostController extends Controller
     ];
 
     $item = $this->createFacilityReportItemFromPayload($payload);
+
+    $this->logActivity(
+        'Agregar evento de facilidad',
+        "Se agregó un evento para el salón {$validated['classroom']} en fecha {$validated['event_date']} con costo calculado de {$item->calculated_cost}"
+    );
 
     if ($request->expectsJson() || $request->is('api/*')) {
         return response()->json([
@@ -473,9 +515,14 @@ class FacilityCostController extends Controller
             $imported++;
         }
 
+        $this->logActivity(
+            'Importar eventos simulados',
+            "Se importaron {$imported} evento(s) simulados."
+        );
+
         return redirect()->route('facility_management')
-    ->with('mock_imported', "{$imported} evento(s) simulados importados correctamente.");
-    }
+            ->with('mock_imported', "{$imported} evento(s) simulados importados correctamente.");
+        }
 
     /**
      * Deletes a facility cost report item.
@@ -485,7 +532,21 @@ class FacilityCostController extends Controller
      */
     public function destroy(FacilityCostReportItem $item)
     {
+        $classroomName = $item->facilityCost->classroom_name ?? 'Salón desconocido';
+        $eventDate = $item->event_date;
+        $endDate = $item->end_date;
+        $startTime = $item->start_time ? \Carbon\Carbon::parse($item->start_time)->format('H:i') : 'N/A';
+        $endTime = $item->end_time ? \Carbon\Carbon::parse($item->end_time)->format('H:i') : 'N/A';
+        $responsible = $item->responsible ?? 'N/A';
+        $cost = $item->calculated_cost ?? 0;
+        $itemId = $item->id;
+
         $item->delete();
+
+        $this->logActivity(
+            'Eliminar evento de facilidad',
+            "Evento eliminado | ID: {$itemId} | Salón: {$classroomName} | Fecha: {$eventDate} | Fecha fin: {$endDate} | Hora: {$startTime}-{$endTime} | Responsable: {$responsible} | Costo: {$cost}"
+        );
 
         return redirect()->route('facility_management')->with('entry_deleted', 'true');
     }
@@ -504,7 +565,8 @@ class FacilityCostController extends Controller
         $filterClassroom = $request->input('filter_classroom', 'all');
 
         $query = FacilityCostReportItem::with('facilityCost')
-            ->orderBy('event_date', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('start_time', 'desc');
 
         if ($reportType === 'monthly') {
             $query->whereYear('event_date', $reportYear)
@@ -532,30 +594,34 @@ class FacilityCostController extends Controller
             $handle = fopen('php://output', 'w');
 
             fputcsv($handle, [
-                'Fecha',
-                'Salon',
+                'Fecha Inicio',
+                'Fecha Fin',
+                'Responsable',
+                'Área',
+                'Descripción',
                 'Hora Inicio',
                 'Hora Fin',
-                'Periodo',
-                'Servicios',
                 'Horas',
+                'Período',
+                'Modo de tarifa',
+                'Servicios',
                 'Costo',
-                'Descripcion',
-                'Responsable',
             ]);
 
             foreach ($items as $item) {
                 fputcsv($handle, [
                     $item->event_date,
+                    $item->end_date,
+                    $item->responsible,
                     $item->facilityCost->classroom_name ?? '',
+                    $item->event_description,
                     \Carbon\Carbon::parse($item->start_time)->format('H:i'),
                     \Carbon\Carbon::parse($item->end_time)->format('H:i'),
-                    $item->period_type,
-                    implode(', ', $item->services ?? []),
                     $item->hours_used,
+                    $item->period_type,
+                    $item->rate_mode,
+                    implode(', ', $item->services ?? []),
                     $item->calculated_cost,
-                    $item->event_description,
-                    $item->responsible,
                 ]);
             }
 
@@ -580,7 +646,8 @@ class FacilityCostController extends Controller
         $filterClassroom = $request->input('filter_classroom', 'all');
 
         $query = FacilityCostReportItem::with('facilityCost')
-            ->orderBy('event_date', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('start_time', 'desc');
 
         if ($reportType === 'monthly') {
             $query->whereYear('event_date', $reportYear)

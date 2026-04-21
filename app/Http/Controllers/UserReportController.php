@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\UserReport;
+use App\Http\Controllers\Concerns\LogsActivity;
 
 class UserReportController extends Controller
 {
+    use LogsActivity;
+
     public function store(Request $request)
     {
         $request->validate([
@@ -16,7 +19,7 @@ class UserReportController extends Controller
             'description' => 'required|string|min:10|max:1000',
         ]);
 
-        UserReport::create([
+        $report = UserReport::create([
             'user_id' => auth()->id(),
             'reported_user_id' => $request->reported_user_id,
             'post_id' => $request->post_id,
@@ -24,6 +27,11 @@ class UserReportController extends Controller
             'description' => $request->description,
             'status' => 'pending',
         ]);
+
+        $this->logActivity(
+            'Crear reporte de usuario',
+            "Se creó un reporte (ID: {$report->id}) contra el usuario ID: {$request->reported_user_id} por razón: '{$request->report_reason}'"
+        );
 
         return response()->json([
             'success' => true
