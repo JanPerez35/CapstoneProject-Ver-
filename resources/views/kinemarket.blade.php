@@ -1,8 +1,11 @@
 <x-layout title="Kinemercado">
     <x-navbar></x-navbar>
 
+    {{--Loads JS responsible for the validation in kinemercado, includes modal bahavior, scrolling, and profanity filtering behavior--}}
     @vite('resources/js/pages/marketplace_profanity.js')
     @vite('resources/js/marketplace_validation.js')
+
+    {{--Container element that stores configuration values and routes used by the marketplace JS logic--}}
     <div
         id="marketplaceHome"
         class="container py-4"
@@ -12,6 +15,7 @@
         data-details-url-base="{{ url('/marketplace') }}"
         data-current-user-id="{{ auth()->id() ?? '' }}"
     >
+        {{--Page header introducing the Kinemarket/Kinemercado page--}}
         <div class="mb-4">
             <h1 class="fw-bold">Bienvenido al Kinemercado</h1>
             <p>
@@ -20,7 +24,7 @@
         </div>
 
 
-        <!-- Post creation button -->
+        {{--Button to open modal for creating a new post--}}
         <div class="mb-3">
             <button
                 type="button"
@@ -34,10 +38,11 @@
         </div>
 
 
-        <!-- Create Post Modal -->
+        {{--Modal used to create a new marketplace post--}}
         <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow overflow-hidden">
+                    {{--Create post modal header with subtext included--}}
                     <div class="modal-header border-0 pb-0 pt-4 px-4 pb-2 align-items-start">
                         <div class="pe-3">
                             <h4 class="modal-title fw-bold mb-2" id="createPostLabel">Crear Nueva Publicación</h4>
@@ -51,16 +56,16 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
                     </div>
 
-
+                    {{--Create post modal body--}}
                     <div class="modal-body px-4 pt-2 pb-4">
+                        {{--Form used for post creation with validation handled in the marketplace JS--}}
                         <form id="createPostForm" novalidate>
                             @csrf
-
-
                             <div class="mb-3">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mt-3 mb-3 px-4 py-3" id="postExpirationNotice">
                                     <div class="d-flex align-items-start gap-3">
                                         <div>
+                                            {{--Post lifecycle notification--}}
                                             <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
                                             Las publicaciones en Kinemercado solo permanecen activas por
                                             <strong>15 días</strong>. Luego de ese periodo, la publicación será
@@ -69,6 +74,7 @@
                                     </div>
                                 </div>
 
+                                {{--Post title input with validation and profanity filtering--}}
                                 <label for="postTitle" class="form-label fw-semibold">
                                     Título<span class="text-danger">*</span>
                                 </label>
@@ -83,11 +89,12 @@
                                 <small class="text-muted d-block fst-italic">
                                     Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
                                 </small>
+                                {{--Displays error if there is invalid inputs in title format or an inappropriate word was detected--}}
                                 <div class="invalid-feedback" id="postTitleError"></div>
                                 <div class="invalid-feedback d-block" id="postTitleProfanityError"></div>
                             </div>
 
-
+                            {{--Optional description with validation and profanity filtering--}}
                             <div class="mb-3">
                                 <label for="postDescription" class="form-label fw-semibold">
                                     Descripción (Opcional)
@@ -102,11 +109,13 @@
                                     Si escribes una descripción, debe tener como máximo 500 caracteres.
                                     Solo letras, números espacios, punto, coma y guion.
                                 </small>
+                                {{--Displays error if there is invalid inputs in description format or an inappropriate word was detected--}}
                                 <div class="invalid-feedback" id="postDescriptionError"></div>
                                 <div class="invalid-feedback d-block" id="postDescriptionProfanityError"></div>
                             </div>
 
 
+                            {{--Price input with numeric and decimal validation--}}
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="postPrice" class="form-label fw-semibold">
@@ -126,15 +135,17 @@
                                         >
                                     </div>
 
-
+                                    {{--Price helper text instructions for price input--}}
                                     <small class="text-muted d-block fst-italic">
                                         Escribe solo números y hasta 2 dígitos después del punto decimal.
                                         El máximo valor permitido es $10,000.00.
                                     </small>
+                                    {{--Displays error if there is invalid inputs in price format--}}
                                     <div class="invalid-feedback d-block" id="postPriceError"></div>
                                 </div>
 
 
+                                {{--Category selection dropdown filter connects with backend to create a post with selected sport category on the post table--}}
                                 <div class="col-md-6 mb-3">
                                     <label for="postCategory" class="form-label fw-semibold">
                                         Categoría<span class="text-danger">*</span>
@@ -149,11 +160,12 @@
                                         <option value="Levantamiento de Pesas">Levantamiento de Pesas</option>
                                         <option  value="Otros">Otros</option>
                                     </select>
+                                    {{--Category selection error, if not selection was made before posting a product--}}
                                     <div class="invalid-feedback">Selecciona una categoría.</div>
                                 </div>
                             </div>
 
-
+                            {{--Condition selection dropdown filter connects with backend to create a post with selected equipment conditon on the post table--}}
                             <div class="mb-3">
                                 <label for="postCondition" class="form-label fw-semibold">
                                     Condición<span class="text-danger">*</span>
@@ -165,14 +177,16 @@
                                     <option>Buen Estado</option>
                                     <option>Justo</option>
                                 </select>
+                                {{--Condition selection error, if not selection was made before posting a product--}}
                                 <div class="invalid-feedback">Seleciona una condición.</div>
                             </div>
 
-
+                            {{--Image upload input with restrictions (1–3 images, JPG/JPEG only)--}}
                             <div class="mb-2">
                                 <label for="postImage" class="form-label fw-semibold">
                                     Fotos<span class="text-danger">*</span>
                                 </label>
+                                {{--Hidden file input triggered by custom made upload button--}}
                                 <input
                                     type="file"
                                     class="d-none"
@@ -183,7 +197,7 @@
                                 >
                             </div>
 
-
+                            {{--Image upload button and helper text--}}
                             <label for="postImage" class="form-control form-control-lg text-center py-3" style="cursor:pointer;">
                                 <i class="bi bi-upload me-2"></i>
                                 Subir imágenes
@@ -195,12 +209,14 @@
                                 Solo JPEG/JPG.
                                 Máximo 2MB por imagen.
                             </small>
+                            {{--Displays error if there is invalid inputs on the picutre upload format, size, and quatntiy--}}
                             <div id="imageError" class="invalid-feedback d-block d-none"></div>
+                            {{--Image preview container for picture that are uploaded--}}
                             <div id="imagePreviewContainer" class="row g-3 mt-1"></div>
                         </form>
                     </div>
 
-
+                    {{--Cancellation and publication of post creation form buttons--}}
                     <div class="modal-footer border-0 px-4 pb-4 pt-2">
                         <button type="button" class="btn btn-outline-secondary px-4" id="cancelCreatePostBtn">
                             Cancelar
@@ -214,10 +230,12 @@
         </div>
 
 
-        <!-- Cancel Create Post Modal -->
+        {{--Modal to confirm cancellation of post creation--}}
         <div class="modal fade" id="cancelConfirmModal" tabindex="-1" aria-label="cancelConfirmLabel" aria-hidden="true">
+            {{--Prevents accidental loss of form data--}}
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
+                    {{--Cancel post creation confirmation modal header--}}
                     <div class="modal-header border-0 position-relative">
                         <h5 class="modal-title fw-bold" id="cancelConfirmLabel">
                             ¿Seguro que deseas cancelar?
@@ -232,6 +250,7 @@
                     </div>
 
 
+                    {{--Cancel post creation confirmation actions--}}
                     <div class="modal-footer border-0">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                             Seguir Editando
@@ -245,15 +264,16 @@
         </div>
 
 
-        <!-- Search and Filter -->
+        {{--Search bar and filters for marketplace posts--}}
         <div class="row mb-4 g-3">
             <div class="col-md-10">
+                {{--Search input for filtering posts by text--}}
                 <div class="input-group search-group">
                    <span class="input-group-text bg-white border-0">
                        <i class="bi bi-search"></i>
                    </span>
 
-
+                    {{--Search bar ID for backend connection and text placeholder--}}
                     <input
                         type="text"
                         class="form-control border-0"
@@ -262,13 +282,15 @@
                     >
                 </div>
             </div>
+
+            {{--Search button that appears disabled until the user inputs text--}}
             <div class="col-md-2 d-grid">
                 <button type="button" class="btn btn-success" id="searchMarketplaceBtn" disabled>
                     Buscar
                 </button>
             </div>
 
-
+            {{--Sport category filter connects with backend to request posts with matching sport categories--}}
             <div class="col-md-3">
                 <select class="form-select border-2 border-dark" id="marketplaceCategoryFilter">
                     <option value="all">Todos los Deportes</option>
@@ -282,7 +304,7 @@
                 </select>
             </div>
 
-
+            {{--Seller star rating filter connects with backend to request posts with matching seller ratings--}}
             <div class="col-md-3">
                 <select class="form-select border-2 border-dark" id="marketplaceRatingFilter">
                     <option value="all">Calificaciones</option>
@@ -294,6 +316,8 @@
                     <option value="5">Entre 4 a 5 estrellas</option>
                 </select>
             </div>
+
+            {{--Post price range filter connects with backend to request posts with matching price ranges--}}
             <div class="col-md-3">
                 <select class="form-select border-2 border-dark" id="marketplacePriceFilter">
                     <option value="all">Rango de Precios</option>
@@ -303,9 +327,9 @@
                     <option value="30-49.99">$30.00 - $49.99</option>
                     <option value="50+">$50.00 o más</option>
                 </select>
-
-
             </div>
+
+            {{--Post equipment condition filter connects with backend to request posts with matching equipment condition--}}
             <div class="col-md-3">
                 <select class="form-select border-2 border-dark" id="marketplaceConditionFilter">
                     <option value="all">Condición de Equipo</option>
@@ -315,15 +339,19 @@
                     <option value="Justo">Justo</option>
                 </select>
             </div>
-                <div class="col-12 d-flex gap-2">
-                    <button type="button" class="btn btn-outline-secondary" id="clearMarketplaceFilters">
-                        Limpiar Filtros
-                    </button>
-                </div>
+
+            {{--Reset for all searches and filters--}}
+            <div class="col-12 d-flex gap-2">
+                <button type="button" class="btn btn-outline-secondary" id="clearMarketplaceFilters">
+                    Limpiar Filtros
+                </button>
+            </div>
         </div>
 
-        <!-- Card Template for empty search and filter results -->
+
+        {{--Container where marketplace post cards are dynamically rendered--}}
         <div class="row g-4" id="marketplaceCardsContainer">
+            {{--Empty state shown when no posts match filters--}}
             <div class="col-12 d-none" id="marketplaceEmptyState">
                 <div class="card border-0 shadow-sm rounded-0">
                     <div class="card-body py-5 text-center">
@@ -335,17 +363,19 @@
         </div>
 
 
-        <!-- Pagination -->
+        {{--Pagination controls for navigating posts, controlled via the marketplace JS file--}}
         <nav aria-label="Paginación de publicaciones" class="mt-4">
+            {{--Pagination list dynamically filled by marketplace JS--}}
             <ul class="pagination justify-content-center mb-0" id="marketplacePagination"></ul>
         </nav>
 
 
 
-        <!-- Post Details Modal -->
+        {{--Modal showing full details of a selected post such as: title, description, cost, sport category, equipment condition, status, seller's name, and more...--}}
         <div class="modal fade" id="postDetailsModal" tabindex="-1" aria-labelledby="postDetailsModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow overflow-hidden">
+                    {{--Post details modal header--}}
                     <div class="modal-header border-0 pt-4 px-4 pb-2 align-items-start position-relative">
                         <div class="pe-5">
                             <h4 class="modal-title fw-bold mb-1" id="postDetailsModalLabel">Detalle de la publicación</h4>
@@ -355,6 +385,7 @@
                     </div>
 
 
+                    {{--Carousel structure that displays specific uploaded post images, it includes the controls for moving from one image to the next--}}
                     <div class="modal-body px-4 pt-2 pb-4 post-details-body">
                         <div id="postImagesCarousel" class="carousel slide mb-4">
                             <div class="carousel-indicators" id="postImagesCarouselIndicators"></div>
@@ -362,7 +393,7 @@
 
                             <div class="carousel-inner rounded-4 overflow-hidden post-carousel-inner" id="postImagesCarouselInner"></div>
 
-
+                           {{--Hidden carousel control buttons for moving through the different pictures. Dissapear if only one image was uploaded--}}
                             <button class="carousel-control-prev" type="button" data-bs-target="#postImagesCarousel" data-bs-slide="prev" id="postImagesCarouselPrev">
                                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                 <span class="visually-hidden">Anterior</span>
@@ -374,10 +405,12 @@
                                 <span class="visually-hidden">Siguiente</span>
                             </button>
                         </div>
+
+                        {{--Displays optional post description--}}
                         <p class="mb-3 text-muted d-none" id="postDetailsDescription"></p>
                         <hr>
 
-
+                        {{--Displays post info: price, item condition, item staus, item sport category, seller, and rating system--}}
                         <div class="row gy-3 pb-2">
                             <div class="col-6 text-muted">Precio:</div>
                             <div class="col-6 text-end fw-bold text-success" id="postDetailsPrice">$0.00</div>
@@ -386,16 +419,16 @@
                             <div class="col-6 text-muted">Estado:</div>
                             <div class="col-6 text-end">
                                <span class="label-badge badge-available" id="postDetailsStatus">
-    Disponible
-</span>
+                                     Disponible
+                               </span>
                             </div>
 
 
                             <div class="col-6 text-muted">Condición:</div>
                             <div class="col-6 text-end">
                                <span class="label-badge badge-available" id="postDetailsCondition">
-    Sin especificar
-</span>
+                                   Sin especificar
+                               </span>
                             </div>
 
 
@@ -413,21 +446,22 @@
                             <div class="col-6 text-muted">Categoría:</div>
                             <div class="col-6 text-end">
                               <span class="label-badge badge-available" id="postDetailsCategory">
-    Sin categoría
-</span>
+                                Sin categoría
+                              </span>
                             </div>
                         </div>
 
 
                         <hr>
 
-
+                        {{--Allows the user to rate the seller--}}
                         <div class="mt-4 pb-2">
                             <h5 class="fw-bold mb-3">Calificar Este Vendedor</h5>
 
 
                             <label class="form-label fw-semibold">Tu Calificación</label>
                             <div class="d-flex align-items-center gap-3 mb-2">
+                                {{--Star icons for the rating selection and animation fill--}}
                                 <div class="marketplace-rating-stars text-warning fs-3" id="sellerRatingStars">
                                     <i class="bi bi-star rating-star" data-value="1" role="button" tabindex="0" aria-label="1 estrella"></i>
                                     <i class="bi bi-star rating-star" data-value="2" role="button" tabindex="0" aria-label="2 estrellas"></i>
@@ -436,27 +470,26 @@
                                     <i class="bi bi-star rating-star" data-value="5" role="button" tabindex="0" aria-label="5 estrellas"></i>
                                 </div>
 
-
+                                {{--Button to erase star rating selection before submitting--}}
                                 <button type="button" class="btn btn-sm btn-outline-secondary" id="clearSellerRating">
                                     Quitar
                                 </button>
                             </div>
 
-
-
-
+                            {{--Hidden input used to store the selected seller rating--}}
                             <input type="hidden" id="sellerRatingValue" value="0" step="0.5">
                             <p class="text-muted small mb-3" id="sellerRatingText">Selecciona una calificación</p>
 
 
                             <div class="d-grid mt-3">
+                                {{--Button to send seller rating to the backend for calculations--}}
                                 <button type="button" class="btn btn-lg rounded-3 btn-outline-success" id="submitSellerRatingBtn">
                                     Enviar Calificación
                                 </button>
                             </div>
                         </div>
 
-
+                        {{--Button to report a specific post seller--}}
                         <div class="row g-2 mt-3">
                             <div class="col-6">
                                 <button
@@ -470,7 +503,7 @@
                                 </button>
                             </div>
 
-
+                            {{--Link/button to messaging system (Mis Chats) route from a specific post--}}
                             <div class="col-6">
                                 <a href="{{ url('/my_messages') }}" id="postDetailsChatLink" class="btn btn-success w-100 rounded-3">
                                     <i class="bi bi-chat me-2"></i> Enviar Mensaje
@@ -483,10 +516,11 @@
         </div>
 
 
-        <!-- Report User Modal -->
+        {{--Modal to report a seller for an inappropriate or misleading post--}}
         <div class="modal fade" id="reportUserModal" tabindex="-1" aria-labelledby="reportUserModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-scrollable modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow overflow-hidden">
+                    {{--Report modal header--}}
                     <div class="modal-header border-0 pb-0 position-relative">
                         <div class="w-100 pe-5">
                             <h4 class="modal-title fw-bold mb-2 d-flex align-items-center" id="reportUserModalLabel">
@@ -518,10 +552,11 @@
                         ></button>
                     </div>
 
-
+                    {{--Form to submit report/querella with the reason of the report/querella and description of the incident--}}
                     <div class="modal-body px-4 pt-2 pb-4">
                         @csrf
                         <form id="reportUserForm" novalidate>
+                            {{--Report reason dropdown selector--}}
                             <div class="mb-3">
                                 <label for="reportReason" class="form-label fw-semibold">
                                     Razón <span class="text-danger">*</span>
@@ -534,10 +569,12 @@
                                     <option value="Contenido inapropiado">Contenido inapropiado</option>
                                     <option value="Otros">Otros</option>
                                 </select>
+
+                                {{-- Displays error if the report/querella is attempted to be sent without selectiing a reason--}}
                                 <div class="invalid-feedback" id="reportReasonError">Seleciona una razón.</div>
                             </div>
 
-
+                            {{--Report/querella description input field with connection to marketplace JS validation--}}
                             <div class="mb-3">
                                 <label for="reportDescription" class="form-label fw-semibold">
                                     Descripción <span class="text-danger">*</span>
@@ -553,10 +590,12 @@
                                 <small class="text-muted d-block fst-italic">
                                     Entre 10 y 500 caracteres. Solo letras, números, espacios, punto, coma y guion.
                                 </small>
+                                {{--Displays error if the report/querella is attempted to be sent an incorrect description format--}}
                                 <div class="invalid-feedback d-block" id="reportDescriptionError"></div>
                             </div>
 
 
+                            {{--Notice message explaining report review process--}}
                             <div class="alert alert-warning rounded-4 mb-0">
                                 <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong> Los querellas son revisados por los administradores de mercado.
                                 Las querellas válidas pueden resultar en restricciones de cuenta.
@@ -564,7 +603,7 @@
                         </form>
                     </div>
 
-
+                    {{--Report modal action buttons--}}
                     <div class="modal-footer border-0 px-4 pb-4 pt-2">
                         <button type="button" class="btn btn-outline-secondary px-4" id="cancelReportBtn">
                             Cancelar
@@ -578,10 +617,11 @@
         </div>
 
 
-        <!-- Cancel Report Modal -->
+        {{--Modal confirming cancellation of report/querella send--}}
         <div class="modal fade" id="cancelReportConfirmModal" tabindex="-1" aria-labelledby="cancelReportConfirmLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
+                    {{--Cancel report confirmation modal header--}}
                     <div class="modal-header border-0">
                         <h5 class="modal-title fw-bold" id="cancelReportConfirmLabel">¿Seguro que deseas cancelar?</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -592,7 +632,7 @@
                         Se perderán los datos que hayas escrito en este formulario.
                     </div>
 
-
+                    {{--Cancel report confirmation action buttons--}}
                     <div class="modal-footer border-0">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                             Seguir Editando
@@ -606,12 +646,12 @@
         </div>
 
 
-        <!-- Delete post Modal -->
+        {{--Modal confirming deletion of a post--}}
         <div class="modal fade" id="deletePostModal" tabindex="-1" aria-labelledby="deletePostModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
 
-
+                    {{--Delete confirmation modal header--}}
                     <div class="modal-header border-0 position-relative">
                         <h5 class="modal-title fw-bold pe-5" id="deletePostModalLabel">
                             ¿Seguro que deseas eliminar esta publicación?
@@ -625,13 +665,14 @@
                             aria-label="Cerrar"
                         ></button>
                     </div>
+                    {{--Delete confirmation modal body--}}
                     <div class="modal-body">
                         <p class="mb-0" id="deletePostModalText">
                             Esta acción no se puede deshacer.
                         </p>
                     </div>
 
-
+                    {{--Delete confirmation action buttons--}}
                     <div class="modal-footer border-0">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                             Cancelar
@@ -644,7 +685,7 @@
             </div>
         </div>
 
-
+        {{--Toast notifications for user feedback (success)--}}
         <div class="toast-container position-fixed bottom-0 start-0 p-3">
             <div id="ratingSentToast"
                  class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
@@ -653,6 +694,7 @@
                  aria-atomic="true"
                  style="width: auto; max-width: fit-content;"
             >
+                {{--Toast notification shown only when the seller rating has been submitted successfully--}}
                 <div class="d-flex align-items-center">
                     <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
                         Calificación enviada correctamente.
@@ -661,7 +703,7 @@
                 </div>
             </div>
 
-
+            {{--Toast notification shown only when the report/querella has been submitted successfully--}}
             <div id="reportSentToast"
                  class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
                  role="alert"
@@ -677,6 +719,8 @@
                 </div>
             </div>
 
+
+            {{--Toast notification shown when inappropriate language is detected during post submission--}}
             <div
                 id="profanityDetectedToast"
                 class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
@@ -693,6 +737,8 @@
                 </div>
             </div>
         </div>
+
+        {{--Toast notification shown only when a post has been created successfully--}}
         <div class="toast-container position-fixed bottom-0 start-0 p-3">
             <div
                 id="postCreatedToast"
@@ -709,7 +755,8 @@
                     <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
                 </div>
             </div>
-            <!--Post Deletion Confirmation Toast-->
+
+            {{--Toast notification shown only when a post has been deleted/removed successfully--}}
             <div id="postDeletedToast"
                  class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
                  role="alert"
