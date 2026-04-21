@@ -111,7 +111,7 @@
                     Allows the Super Admin to upload a new Terms and Conditions PDF.
                 --}}
 
-{{--                 Only show the update button when the terms and conditions are accessed throw the footer link--}}
+                {{-- Only show the update button when the terms and conditions are accessed throw the footer link--}}
                 @if($allowUpdate ?? false)
                     <form method="POST" action="{{ route('terms.update') }}" enctype="multipart/form-data">
                         @csrf
