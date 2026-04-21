@@ -1,5 +1,24 @@
+/**
+ * List of prohibited words used for client-side profanity validation.
+ *
+ * Responsibilities:
+ * - defines restricted words in Spanish and English
+ * - used to detect inappropriate language in user input
+ * - supports validation for marketplace and messaging features
+ *
+ * @type {string[]}
+ *
+ * Note:
+ *  * - words are matched as lowercase values
+ *  * - input should be normalized before validation
+ *  * - list can be extended as needed
+ */
 export const PROFANITY_WORDS = [
-    //Subject to more words
+    /**
+     * Spanish profanity words
+     * Includes common offensive terms, slurs, variations, and plural forms.
+     */
+
     'puñeta',
     'carajo',
     'cabron',
@@ -43,14 +62,17 @@ export const PROFANITY_WORDS = [
 
 
 
-    // English
+    /**
+     * English profanity words
+     * Includes common offensive terms, slurs, variations, and plural forms.
+     */
+
     'fuck',
     'shit',
     'bitch',
     'bitches',
     'asshole',
     'assholes',
-    'dick',
     'bastard',
     'bastards',
     'damn',

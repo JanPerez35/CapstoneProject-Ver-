@@ -1,13 +1,57 @@
 import * as bootstrap from 'bootstrap';
 
-// DOM references
+/**
+ * Initializes kinemarketplace page behavior and all client-side kinemarketplace interactions.
+ *
+ * Responsibilities:
+ * - retrieves all marketplace posts from the backend
+ * - renders post cards into the marketplace grid
+ * - applies search, category, rating, price, and condition filters
+ * - paginates filtered post results
+ * - opens and populates the post details modal
+ * - opens chat for a selected post and preserves return context
+ * - manages delete-post confirmation flow
+ * - validates the create-post form
+ * - validates uploaded marketplace images
+ * - previews selected images before submission
+ * - submits new marketplace posts
+ * - validates and submits seller reports
+ * - manages the seller star-rating selection UI
+ * - submits seller ratings
+ * - controls create-post and report modal dirty-state confirmation behavior
+ * - displays success toasts for rating, reporting, post creation, and post deletion
+ *
+ * This file acts as the main front-end controls for the kinemarketplace page.
+ */
 
-// Delete post
+
+/**
+ * DOM References
+ * */
+
+/**
+ * Delete-post modal references.
+ *
+ * These elements are used to:
+ * - open the delete confirmation modal
+ * - inject/place the selected post title into the confirmation text
+ * - confirm deletion of the selected post
+ */
 const deletePostModal = document.getElementById('deletePostModal');
 const deletePostModalText = document.getElementById('deletePostModalText');
 const confirmDeletePost = document.getElementById('confirmDeletePost');
 
-// Marketplace filters + listing
+/**
+ * Marketplace filter and listing references.
+ *
+ * These elements are used to:
+ * - search marketplace posts by text
+ * - clear all active filters
+ * - filter by category, seller rating, price range, and condition
+ * - render marketplace post cards
+ * - show the empty state when no posts match
+ * - render pagination controls
+ */
 const clearMarketplaceFilters = document.getElementById('clearMarketplaceFilters');
 const marketplaceSearch = document.getElementById('marketplaceSearch');
 const searchMarketplaceBtn = document.getElementById('searchMarketplaceBtn');
@@ -19,16 +63,38 @@ const marketplaceCardsContainer = document.getElementById('marketplaceCardsConta
 const marketplaceEmptyState = document.getElementById('marketplaceEmptyState');
 const marketplacePagination = document.getElementById('marketplacePagination');
 
-// Post details modal
+/**
+ * Post details modal references.
+ * These elements are updated whenever the user opens
+ * the details modal for a marketplace post.
+ */
 const postDetailsModal = document.getElementById('postDetailsModal');
 const postDetailsModalLabel = document.getElementById('postDetailsModalLabel');
 const postDetailsDescription = document.getElementById('postDetailsDescription');
 
-// Star rating system
+/**
+ * Post details rating display references.
+ *
+ * These elements show:
+ * - graphical star icons
+ * - numeric rating value
+ * - number of reviews
+ */
 const postDetailsRatingStars = document.getElementById('postDetailsRatingStars');
 const postDetailsRatingValue = document.getElementById('postDetailsRatingValue');
 const postDetailsReviewCount = document.getElementById('postDetailsReviewCount');
 
+/**
+ * Additional post details fields displayed in the modal.
+ *
+ * These show:
+ * - post price
+ * - post availability/status
+ * - item condition
+ * - seller name
+ * - seller rating summary
+ * - post category
+ */
 const postDetailsPrice = document.getElementById('postDetailsPrice');
 const postDetailsStatus = document.getElementById('postDetailsStatus');
 const postDetailsCondition = document.getElementById('postDetailsCondition');
@@ -36,21 +102,44 @@ const postDetailsSeller = document.getElementById('postDetailsSeller');
 const postDetailsSellerRating = document.getElementById('postDetailsSellerRating');
 const postDetailsCategory = document.getElementById('postDetailsCategory');
 
+/**
+ * Carousel references used in the post details modal.
+ * These elements are used to render one or more images
+ * for the selected marketplace post.
+ */
 const postImagesCarouselIndicators = document.getElementById('postImagesCarouselIndicators');
 const postImagesCarouselInner = document.getElementById('postImagesCarouselInner');
 const postImagesCarouselPrev = document.getElementById('postImagesCarouselPrev');
 const postImagesCarouselNext = document.getElementById('postImagesCarouselNext');
 
+/**
+ * Report modal text reference.
+ * Used to dynamically show which seller the user is reporting.
+ */
 const reportUserText = document.getElementById('reportUserText');
 
-// Toasts
+/**
+ * Toast references.
+ *
+ * These toasts provide the user feedback for:
+ * - seller rating successfully sent
+ * - report successfully sent
+ * - post successfully created
+ * - post successfully deleted
+ */
 const submitSellerRatingBtn = document.getElementById('submitSellerRatingBtn');
 const ratingSentToastEl = document.getElementById('ratingSentToast');
 const reportSentToastEl = document.getElementById('reportSentToast');
 const postCreatedToastEl = document.getElementById('postCreatedToast');
 const postDeletedToastEl = document.getElementById('postDeletedToast');
 
-
+/**
+ * Bootstrap toast instances.
+ *
+ * Each toast is only created if its corresponding document object model element exists.
+ * If the element does not exist, the variable is set to null so that runtime errors
+ * can be avoided.
+ */
 const ratingSentToast = ratingSentToastEl
     ? bootstrap.Toast.getOrCreateInstance(ratingSentToastEl)
     : null;
@@ -67,7 +156,16 @@ const postDeletedToast = postDeletedToastEl
     ? bootstrap.Toast.getOrCreateInstance(postDeletedToastEl)
     : null;
 
-// Create post form
+/**
+ * Create-post form references.
+ *
+ * These elements are used to:
+ * - read user input values
+ * - validate required fields
+ * - show validation messages
+ * - preview uploaded images
+ * - control modal closing behavior
+ */
 const createPostForm = document.getElementById('createPostForm');
 const createPostModal = document.getElementById('createPostModal');
 const cancelCreatePostBtn = document.getElementById('cancelCreatePostBtn');
@@ -87,7 +185,15 @@ const postImage = document.getElementById('postImage');
 const imageError = document.getElementById('imageError');
 const imagePreviewContainer = document.getElementById('imagePreviewContainer');
 
-// Reporting
+/**
+ * Report form references.
+ *
+ * These elements are used to:
+ * - collect the reason for the report
+ * - collect the report description
+ * - validate report fields
+ * - control report modal closing behavior
+ */
 const submitReportBtn = document.getElementById('submitReportBtn');
 const reportUserForm = document.getElementById('reportUserForm');
 const reportReason = document.getElementById('reportReason');
@@ -100,21 +206,86 @@ const closeReportModalBtn = document.getElementById('closeReportModalBtn');
 const cancelReportConfirmModal = document.getElementById('cancelReportConfirmModal');
 const confirmCancelReport = document.getElementById('confirmCancelReport');
 
-// Rating
+/**
+ * Seller rating input references.
+ * These elements support the interactive star selection UI
+ * used when rating a seller from the post details modal.
+ */
 const ratingContainer = document.getElementById('sellerRatingStars');
 const ratingInput = document.getElementById('sellerRatingValue');
 const ratingText = document.getElementById('sellerRatingText');
 const clearSellerRating = document.getElementById('clearSellerRating');
 
-// Constants and states
+/**
+ * Constants and states
+ */
+
+/**
+ * Number of marketplace post cards shown per page.
+ */
 const POSTS_PER_PAGE = 18;
+
+/**
+ * Allowed characters for marketplace text fields and report description fields.
+ *
+ * Allows:
+ * - uppercase and lowercase English letters
+ * - accented vowels
+ * - ñ / Ñ
+ * - digits
+ * - spaces
+ * - periods
+ * - commas
+ * - hyphens
+ */
 const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
+
+/**
+ * Valid price format.
+ * - allows 0
+ * - allows positive integers without leading zeros
+ * - optionally allows 1 or 2 decimal places
+ *
+ * Examples tof accepted values:
+ * 0,5, 12, 12.5, 142.50
+ *
+ * Examples of rejected values:
+ * 01,001, 12.345, .99 ,1., 2.E4, +2.5, -5.78
+ */
 const priceRegex = /^(0|[1-9]\d*)(\.\d{1,2})?$/
+
+/**
+ * Maximum allowed post price.
+ */
 const MAX_PRICE = 10000;
+
+/**
+ * Maximum allowed image file size in bytes.
+ * Current limit: 2 MB.
+ */
 const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+
+/**
+ * Maximum and minimum number of post images allowed.
+ */
 const MAX_IMAGES = 3;
 const MIN_IMAGES = 1;
 
+/**
+ * Marketplace runtime state.
+ *
+ * These elements are used to:
+ * - track the currently visible page of marketplace cards
+ * - store the selected post ID pending deletion confirmation
+ * - store the image File objects chosen for post creation
+ * - indicates whether the create-post form has unsaved content
+ * - bypass flag that allows the create-post modal to close
+ *   without prompting the user again
+ * - indicates whether the report form has unsaved content
+ * - bypass flag that allows the report modal to close
+ *   without prompting the user again
+ * - stores the seller ID associated with the currently viewed post
+ */
 let currentMarketplacePage = 1;
 let postIdToDelete = null;
 let selectedPostImages = [];
@@ -124,11 +295,25 @@ let isReportDirty = false;
 let allowReportClose = false;
 let reportedUserId = null;
 
-// Storage
+/**
+ * Marketplace data state.
+ *
+ * These elements are used to:
+ *  store the full list of posts returned from the backend
+ *  and store the currently selected post ID used for seller
+ *  rating submission
+ */
 let allMarketplacePosts =[];
-
 let currentPostId = null;
 
+
+/**
+ * Fetches all marketplace posts from the backend and refreshes the UI.
+ *
+ * Sends a GET request to /posts, parsed the JSON response, stores the
+ * returned posts in allMarketplacePosts, re-renders the marketplace grid, and
+ * reopens a returned post modal if the user came back from chat.
+ */
 async function fetchPosts() {
     const res = await fetch('/posts');
     const data = await res.json();
@@ -138,8 +323,16 @@ async function fetchPosts() {
     openReturnedPostIfNeeded();
 }
 
-// Helpers
-
+/**
+ * Marks a form field as invalid and displays its error message.
+ *
+ *  It adds the Bootstrap is-invalid class to the field and
+ *  writes the provided message into the error element if it is present
+ *
+ * @param {HTMLElement|null} field - The input/select/textarea to mark invalid.
+ * @param {HTMLElement|null} errorElement - Element where the message should appear.
+ * @param {string} message - Validation message to display.
+ */
 function setFieldError(field, errorElement, message) {
     if (!field) return;
 
@@ -150,6 +343,16 @@ function setFieldError(field, errorElement, message) {
     }
 }
 
+
+/**
+ * Removes invalid styling and clears the related error message.
+ *
+ * Removes the Bootstrap is-invalid class from the field and
+ * clears the text content of the provided error element if it is present
+ *
+ * @param {HTMLElement|null} field - The input/select/textarea to clear.
+ * @param {HTMLElement|null} errorElement - Error element to clear.
+ */
 function clearFieldError(field, errorElement) {
     if (!field) return;
 
@@ -160,6 +363,15 @@ function clearFieldError(field, errorElement) {
     }
 }
 
+
+/**
+ * Displays an image validation error for the create-post form.
+ *
+ * It sets the image error text and
+ * makes the image error element visible
+ *
+ * @param {string} message - The error message shown to the user.
+ */
 function showImageError(message) {
     if (!imageError) return;
 
@@ -167,6 +379,11 @@ function showImageError(message) {
     imageError.classList.remove('d-none');
 }
 
+
+/**
+ * Clears the image upload validation error and hides
+ * the image error element.
+ */
 function clearImageError() {
     if (!imageError) return;
 
@@ -174,18 +391,21 @@ function clearImageError() {
     imageError.classList.add('d-none');
 }
 
-// Marketplace data and card rendering
-async function fileToDataURL(file) {
-    return await new Promise((resolve, reject) => {
-        const reader = new FileReader();
 
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(new Error(`No se pudo leer la imagen "${file.name}".`));
-
-        reader.readAsDataURL(file);
-    });
-}
-
+/**
+ * Builds the HTML string for a single marketplace card.
+ *
+ * Includes information such as:
+ * main image or fallback placeholder, title, status badge,
+ * description, price , condition badge, category badge, seller name,
+ * rating and review count, time-ago text, details button, and delete button.
+ *
+ * The card also stores several post attributes inside data-* attributes,
+ * which can later be used by event handlers.
+ *
+ * @param {Object} post - The marketplace post object returned by the backend.
+ * @returns {string} The HTML markup for one marketplace card.
+ */
 function createMarketplaceCardHTML(post) {
     return `
        <div
@@ -218,8 +438,8 @@ function createMarketplaceCardHTML(post) {
                                </h5>
 
                                <span class="label-badge badge-available marketplace-status-badge">
-    ${post.status}
-</span>
+                                     ${post.status}
+                                </span>
                            </div>
                        </div>
 
@@ -235,12 +455,12 @@ function createMarketplaceCardHTML(post) {
 
                        <div class="d-flex gap-2 mb-3 flex-wrap">
                           <span class="label-badge badge-available">
-    ${post.condition}
-</span>
+                             ${post.condition}
+                          </span>
 
                            <span class="label-badge badge-available">
-    ${post.category}
-</span>
+                               ${post.category}
+                           </span>
                        </div>
 
                        <div class="small text-muted mb-3">
@@ -282,6 +502,17 @@ function createMarketplaceCardHTML(post) {
        </div>
    `;
 }
+
+/**
+ * Builds the HTML for a five-star display from a numeric rating.
+ *
+ * It converts the incoming value to a number, calculates full stars,
+ * adds a half star when decimal part is 0.5 or greater, and
+ * fills remaining spaces with empty stars.
+ *
+ * @param {number|string} value - The numeric or string rating value.
+ * @returns {string} The HTML string containing Bootstrap icon markup for stars.
+ */
 function buildStarsHTML(value) {
     const rating = Number(value) || 0;
     const fullStars = Math.floor(rating);
@@ -305,7 +536,15 @@ function buildStarsHTML(value) {
     return starsHTML;
 }
 
-// Marketplace Modal Details
+/**
+ * Renders the image carousel for the currently selected post.
+ *
+ * It clears images from previous post, inserts one indicator dot per image,
+ * inserts one carousel item slide per image, marks the first image as active, and
+ * hides previous/next carousel controls when there is only one or zero images.
+ *
+ * @param {string[]} [images=[]] - Array of post image URLs.
+ */
 function renderPostDetailsCarousel(images = []) {
     if (!postImagesCarouselIndicators || !postImagesCarouselInner) return;
 
@@ -329,6 +568,11 @@ function renderPostDetailsCarousel(images = []) {
         `
         );
 
+        /**
+         * Populates the post details modal with the selected post data.
+         *
+         * @param {Object} post - The marketplace post to display.
+         */
         postImagesCarouselInner.insertAdjacentHTML(
             'beforeend',
             `
@@ -356,6 +600,24 @@ function renderPostDetailsCarousel(images = []) {
     }
 }
 
+
+/**
+ * Populates the post details modal with the selected post's data.
+ *
+ * For the marketplace it stores the seller ID for future report submission,
+ * stores the post ID on the modal dataset for future report submission,
+ * wires the chat button to open or create a chat for the specific post,
+ * updates modal title and description, rating stars and numeric rating summary,
+ * price, seller, status, condition; and category,updates report text so it mentions
+ *  the seller by name, and builds and renders the image carousel from available
+ *  stored image paths.
+ *
+ * For the chat it sends a POST request to /chats/open, passes post_id and seller_id,
+ * if backend redirects, appends: return_to=/kinemarket and post_id=<selected post id>, and
+ * then navigates to the generated chat URL.
+ *
+ * @param {Object} post - The marketplace post object to display.
+ */
 function populatePostDetailsModal(post) {
     if (post.user?.id) {
         reportedUserId = post.user.id;
@@ -471,6 +733,14 @@ function populatePostDetailsModal(post) {
     renderPostDetailsCarousel(images);
 }
 
+/**
+ * Reopens a post details modal after the user returns from the chat view.
+ *
+ * It reads the stored post ID from sessionStorage under marketplaceReturnPostId.
+ * Then it finds the matching post in allMarketplacePosts, removes the stored key so it only runs once,
+ * repopulates and reopens the modal, and scrolls the matching marketplace card into view.
+ *
+ */
 function openReturnedPostIfNeeded() {
     const storedPostId = Number(sessionStorage.getItem('marketplaceReturnPostId'));
     if (!storedPostId) return;
@@ -495,7 +765,13 @@ function openReturnedPostIfNeeded() {
 
 }
 
-
+/**
+ * Attaches click listeners to all "Ver Detalles" buttons currently rendered.
+ *
+ * It reads the clicked post ID from data-id, finds the matching post object in allMarketplacePosts,
+ * stores currentPostId for seller rating submission, populates the details modal and
+ * opens the details modal.
+ */
 function attachMarketplaceDetailsEvents() {
     if (!postDetailsModal) return;
 
@@ -519,6 +795,15 @@ function attachMarketplaceDetailsEvents() {
     });
 }
 
+/**
+ * Truncates text to a maximum length and appends an (...) if required for viewing.
+ * It is used when showing post titles inside the delete confirmation modal
+ * so excessively long titles do not break the modal layout.
+ *
+ * @param {string} [text=''] - The original text.
+ * @param {number} [maxLength=25] - The maximum length before truncation.
+ * @returns {string} The original or truncated text.
+ */
 function truncateText(text = '', maxLength = 25) {
     const normalized = String(text).trim();
 
@@ -529,7 +814,14 @@ function truncateText(text = '', maxLength = 25) {
     return normalized.slice(0, maxLength).trimEnd() + '...';
 }
 
-// Delete Post
+
+/**
+ * Attaches click listeners to all delete-post buttons currently rendered.
+ *
+ *  It stores the selected post ID in postIdToDelete.
+ * Then it reads the post title from the button dataset, truncates the title for display,
+ *  injects the formatted confirmation message into the modal, and opens the delete confirmation modal.
+ */
 function attachMarketplaceDeleteEvents() {
     if (!deletePostModal || !confirmDeletePost) return;
 
@@ -553,6 +845,13 @@ function attachMarketplaceDeleteEvents() {
     });
 }
 
+/**
+ * Confirms deletion listeners.
+ *
+ * It sends a DELETE request to /posts/{id}, refreshes all post
+ * from the backend, closes the delete modal and opens the post deleted toast.
+ * Clears the deletion ID. If there was not post selected then it does nothing.
+ * */
 if (deletePostModal && confirmDeletePost) {
     confirmDeletePost.addEventListener('click', async () => {
         if (postIdToDelete === null) return;
@@ -575,7 +874,26 @@ if (deletePostModal && confirmDeletePost) {
     });
 }
 
-// Filters and pagination
+/**
+ * Returns all posts that match the current marketplace filters.
+ *
+ * Search matching is case-insensitive and checks:
+ * - title
+ * - description
+ * - category
+ * - condition
+ * - seller name
+ *
+ * For the filters
+ *
+ * Category and Condition filters show an exact match unless the value is "all"
+ *
+ * In the rating filter 0 means only unrated / zero-rated posts. All other values
+ * are rated in buckets where : 1 = (0, 1] , 2 = (1,2], etc.
+ *
+ * Price filters through ranged buckets where: 0, 0.01-9.99, 10-29.99, etc.
+ * @returns {Object[]} Filtered array of marketplace post objects.
+ */
 function getFilteredMarketplacePosts() {
     const searchValue = (marketplaceSearch?.value || '').trim().toLowerCase();
     const selectedCategory = marketplaceCategoryFilter?.value || 'all';
@@ -631,13 +949,25 @@ function getFilteredMarketplacePosts() {
     });
 }
 
-function renderPagination({
-                              container,
-                              currentPage,
-                              totalItems,
-                              itemsPerPage,
-                              onPageChange,
-                          }) {
+
+/**
+ * Renders pagination controls inside a container.
+ *
+ * Calculates the total pages from item count and itemsPerPage.
+ * Renders the previous, next buttons, and the numbered page button.
+ * Attaches click handlers that compute the destination page.
+ *
+ * Hides the pagination when there are zero items/posts on screen and
+ * calls onPageChange(newPage) only when the page actually changes.
+ *
+ * @param {Object} config - Pagination configuration.
+ * @param {HTMLElement|null} config.container - Pagination container element.
+ * @param {number} config.currentPage - The current active page.
+ * @param {number} config.totalItems - Total number of filtered items.
+ * @param {number} config.itemsPerPage - The items to show per page.
+ * @param {Function} config.onPageChange - The callback function executed when a new page is selected.
+ */
+function renderPagination({container, currentPage, totalItems, itemsPerPage, onPageChange,}) {
     if (!container) return;
 
     const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
@@ -691,6 +1021,16 @@ function renderPagination({
     });
 }
 
+
+/**
+ * Renders the visible marketplace page.
+ *
+ *  Gets all filtered posts, calculates total page count,
+ *  removes previously rendered marketplace cards, shows or hides the empty state,
+ *  inserts the paginated cards into the grid, renders pagination controls
+ *  and rebinds delete and details button listeners for the newly inserted cards/posts.
+ *
+ */
 function renderMarketplace() {
     if (!marketplaceCardsContainer) return;
 
@@ -735,7 +1075,15 @@ function renderMarketplace() {
     attachMarketplaceDetailsEvents();
 }
 
-// Post Creation Validation
+/**
+ * Validates the create-post title field.
+ *
+ * The title is a required field, that only allows characters stated on
+ * allowedTextRegex, and has a minimum length of 5 characters and a maximum length of 100 characters.
+ *
+ * @param {boolean} [showError=true] - Tells whether a validation messages should be displayed.
+ * @returns {boolean} True if valid title, otherwise false.
+ */
 function validateTitle(showError = true) {
     if (!postTitle || !postTitleError) return true;
 
@@ -780,6 +1128,15 @@ function validateTitle(showError = true) {
     return true;
 }
 
+/**
+ * Validates the create-post description field.
+ *
+ * The description  is an optional field, that only allows characters stated on
+ * allowedTextRegex, and has a maximum length of 500 characters.
+ *
+ * @param {boolean} [showError=true] - Tells whether a validation messages should be displayed.
+ * @returns {boolean} True if valid description, otherwise false.
+ */
 function validateDescription(showError = true) {
     if (!postDescription || !postDescriptionError) return true;
 
@@ -818,6 +1175,17 @@ function validateDescription(showError = true) {
     return true;
 }
 
+/**
+ * Validates the create-post price field.
+ *
+ *
+ * The price is a required field, that only allows values stated on
+ * priceRegex, and has a maximum value that can not exceed MAX_Price ($10k).
+ * It additionally, it toggles the invalid styling of the price group.
+ *
+ * @param {boolean} [showError=true] - Tells whether validation messages should be displayed.
+ * @returns {boolean} True if valid price, otherwise false.
+ */
 function validatePrice(showError = true) {
     if (!postPrice || !postPriceError) return true;
 
@@ -864,6 +1232,16 @@ function validatePrice(showError = true) {
     return true;
 }
 
+/**
+ * Validates a select or dropdown field by checking whether it has a value.
+ *
+ * If an option is not selected it adds the in-valid variable.
+ * Removes said variable otherwise.
+ *
+ * @param {HTMLSelectElement|null} field - Select field to validate.
+ * @param {boolean} [showError=true] - Whether styling should be updated.
+ * @returns {boolean} True if the field has a value, otherwise false.
+ */
 function validateSelect(field, showError = true) {
     if (!field) return true;
 
@@ -880,6 +1258,15 @@ function validateSelect(field, showError = true) {
     return isValid;
 }
 
+/**
+ * Validates selected create-post images.
+ *
+ * The picture is a required field. Requires 1 image to be selected MIN_IMAGES.
+ * There can not be more than 3 images selected, MAX_IMAGES.
+ *
+ * @param {boolean} [showError=true] - Whether image validation messages should be shown.
+ * @returns {boolean} True if valid image/s, otherwise false.
+ */
 function validateImages(showError = true) {
     if (showError) {
         clearImageError();
@@ -898,6 +1285,18 @@ function validateImages(showError = true) {
     return true;
 }
 
+/**
+ * Enables or disables the publish button based on
+ * the overall create-post form state.
+ *
+ * The publish button is enabled only if all required validations pass:
+ * - title
+ * - price
+ * - category
+ * - condition
+ * - images
+ * - description (optional but if written then required)
+ */
 function updatePublishButtonState() {
     if (!publishBtn) return;
 
@@ -912,7 +1311,19 @@ function updatePublishButtonState() {
     publishBtn.disabled = !isReady;
 }
 
-// Post creation images
+/**
+ * Renders preview cards for all selected create-post images.
+ *
+ * It creates one preview card per file, displays the file name, adds a
+ * remove button for each image, and deletes any previous previews.
+ * The function uses URL.createObjectURL for temporary local preview.
+ *
+ * The remove button deletes selected files from selectedPostImages,
+ * updates the publish button state, clears image errors, re-renders the previews, and
+ * updates the dirty-state tracking.
+ *
+ * @param {File[]} files - Array of selected image files.
+ */
 function renderImagePreviews(files) {
     if (!imagePreviewContainer) return;
 
@@ -969,6 +1380,16 @@ function renderImagePreviews(files) {
     });
 }
 
+
+/**
+ * Verifies whether a file is a real JPEG by checking both MIME type and file signature.
+ *
+ * It requires files typing to include "jpeg", reads the first 3 bytes of the file, and
+ * checks for the JPEG byte number FF D8 FF
+ *
+ * @param {File} file - File to inspect.
+ * @returns {Promise<boolean>} True if the file appears to be a real JPEG, otherwise false.
+ */
 async function isRealJpeg(file) {
     if (!file || !file.type.includes('jpeg')) {
         return false;
@@ -980,7 +1401,15 @@ async function isRealJpeg(file) {
     return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
 }
 
-// Post creation modals and state
+
+/**
+ * Clears all validation UI from the create-post form.
+ *
+ * It clears the title, description, and price errors and error styling.
+ * It also removes invalid styling from category and condition selects.
+ * Clears image validation messages.
+ *
+ */
 function resetCreatePostValidation() {
     clearFieldError(postTitle, postTitleError);
     clearFieldError(postDescription, postDescriptionError);
@@ -995,6 +1424,14 @@ function resetCreatePostValidation() {
     clearImageError();
 }
 
+/**
+ * Fully resets the create-post form and related local UI state.
+ *
+ * Clears and resets native form values, selected image files,
+ * clears all validation UI, recalculates publish button state,
+ * clears all dirty state flags, and empties the preview container.
+ *
+ */
 function resetCreatePostForm() {
     if (createPostForm) {
         createPostForm.reset();
@@ -1016,6 +1453,10 @@ function resetCreatePostForm() {
     updatePublishButtonState();
 }
 
+/**
+ * Resets the local state for the create-post form after successful submission.
+ * It exists as a separate helper to make post-submission cleanup clearer.
+ */
 function resetCreatePostLocalState() {
     if (createPostForm) {
         createPostForm.reset();
@@ -1038,6 +1479,15 @@ function resetCreatePostLocalState() {
     updatePublishButtonState();
 }
 
+/**
+ * Recomputes whether the create-post modal contains unsaved data.
+ *
+ * The form is considered dirty when any of the following are present:
+ * - title, description, or price text
+ * - category or condition selection
+ * - one or more selected images
+ *
+ */
 function updateCreatePostDirtyState() {
     const hasText =
         (postTitle?.value.trim() || '') !== '' ||
@@ -1053,7 +1503,13 @@ function updateCreatePostDirtyState() {
     isCreatePostDirty = hasText || hasSelects || hasImages;
 }
 
-// Reporting
+/**
+ * Validates the report reason select field.
+ * The reason is a required field.
+ *
+ * @param {boolean} [showError=true] - Whether invalid styling should be applied.
+ * @returns {boolean} True if a reason is selected, otherwise false.
+ */
 function validateReportReason(showError = true) {
     if (!reportReason) return true;
 
@@ -1070,6 +1526,16 @@ function validateReportReason(showError = true) {
     return isValid;
 }
 
+/**
+ * Validates the report description field.
+ * The description is a required field.
+ *
+ * The title is a required field, that only allows characters stated on
+ * allowedTextRegex, and has a minimum length of 10 characters and a maximum length of 500 characters.
+ *
+ * @param {boolean} [showError=true] - Tells whether validation messages should be displayed.
+ * @returns {boolean} True if valid, otherwise false.
+ */
 function validateReportDescription(showError = true) {
     if (!reportDescription || !reportDescriptionError) return true;
 
@@ -1118,6 +1584,13 @@ function validateReportDescription(showError = true) {
     return true;
 }
 
+/**
+ * Enables or disables the report submit button based on report form validity.
+ *
+ * The report submit button is enabled only if:
+ * A report reason has been selected abd the description format and value is valid.
+ *
+ */
 function updateReportButtonState() {
     if (!submitReportBtn) return;
 
@@ -1128,6 +1601,10 @@ function updateReportButtonState() {
     submitReportBtn.disabled = !isReady;
 }
 
+/**
+ * Clears all report form validation styling and
+ * resets default error text state.
+ */
 function resetReportValidation() {
     if (reportReason) {
         reportReason.classList.remove('is-invalid');
@@ -1146,6 +1623,14 @@ function resetReportValidation() {
     }
 }
 
+
+/**
+ * Resets the report form and its related state.
+ *
+ * It clears the validation UI and resets the native form values.
+ * Additionally, it recalculates the report button enabled state and
+ * clears the dirty-state flags.
+ */
 function resetReportForm() {
     if (reportUserForm) {
         reportUserForm.reset();
@@ -1158,6 +1643,13 @@ function resetReportForm() {
     updateReportButtonState();
 }
 
+/**
+ * Recomputes whether the report modal contains unsaved data.
+ *
+ * The report form is considered dirty when:
+ * A reason has been selected, or the description contains non-whitespace text.
+ *
+ */
 function updateReportDirtyState() {
     const hasReason = !!(reportReason && reportReason.value);
     const hasDescription = !!(reportDescription && reportDescription.value.trim() !== '');
@@ -1165,6 +1657,19 @@ function updateReportDirtyState() {
     isReportDirty = hasReason || hasDescription;
 }
 
+/**
+ * Attempts to close the report modal safely.
+ *
+ * Updates report dirty-state first.
+ * If the report is not dirty:
+ *   - allows the report modal to close, hides it.
+ *   - reopens the post details modal shortly afterward
+ *
+ * If the report is dirty:
+ *   - prevents silent loss of data
+ *   - opens the cancel confirmation modal instead
+ *
+ */
 function tryCloseReportModal() {
     if (!reportUserModal) return;
 
@@ -1191,7 +1696,21 @@ function tryCloseReportModal() {
     }
 }
 
-// Rating
+/**
+ * Initializes the interactive seller star-rating widget.
+ *
+ * It reads all .rating-star elements inside ratingContainer,
+ * maps rating values to text labels, and supports the following:
+ *   - hover preview
+ *   - click to select rating
+ *   - keyboard selection with Enter or Space
+ *   - mouseleave restore to the currently selected rating
+ *   - clear or quitar button that resets the value to 0
+ *
+ * There is a helper called paintStars(value) that
+ * updates star fill states and label text.
+ *
+ */
 function initializeSellerRating() {
     if (!ratingContainer || !ratingInput || !ratingText) return;
 
@@ -1257,9 +1776,16 @@ function initializeSellerRating() {
     paintStars(Number(ratingInput.value) || 0);
 }
 
-// Event Listeners
 
-// Seller rating toast and submit
+/**
+ * Seller rating submission handler.
+ *
+ * It reads the selected rating from #sellerRatingValue, requires both a rating value and currentPostId,
+ * sends a POST /marketplace/{currentPostId}/review, refreshes marketplace posts after successful submission,
+ * updates seller rating summary in the modal using backend response values, shows success toast, and
+ *
+ * Backend response fields used: seller_rating_average and seller_rating_count.
+ */
 if (submitSellerRatingBtn) {
     submitSellerRatingBtn.addEventListener('click', async () => {
         const ratingValue = Number(document.getElementById('sellerRatingValue')?.value || 0);
@@ -1309,7 +1835,12 @@ if (submitSellerRatingBtn) {
     });
 }
 
-// Search and filters
+/**
+ * Search button handler.
+ *
+ * Resets marketplace pagination back to page 1
+ * and re-renders using the current filter/search state.
+ */
 if (searchMarketplaceBtn) {
     searchMarketplaceBtn.addEventListener('click', () => {
         currentMarketplacePage = 1;
@@ -1317,6 +1848,13 @@ if (searchMarketplaceBtn) {
     });
 }
 
+/**
+ * Clear-filters handler.
+ *
+ * Resets the search input, category filter,rating filter,
+ * price filter, condition filter, and current page.
+ * Then re-renders the marketplace.
+ */
 if (clearMarketplaceFilters) {
     clearMarketplaceFilters.addEventListener('click', () => {
         if (marketplaceSearch) marketplaceSearch.value = '';
@@ -1330,6 +1868,9 @@ if (clearMarketplaceFilters) {
     });
 }
 
+/**
+ * Enables the search button only when the search input contains non-whitespace text.
+ */
 function updateSearchButtonState() {
     if (!marketplaceSearch || !searchMarketplaceBtn) return;
 
@@ -1337,6 +1878,15 @@ function updateSearchButtonState() {
     searchMarketplaceBtn.disabled = value.trim() === '';
 }
 
+
+/**
+ * Search input handlers.
+ *
+ * Updates whether the search button should be enabled.
+ * When the Enter key is pressed and search button is enabled,
+ * prevents default form submission behavior, resets to page 1,
+ * and renders filtered results.
+ */
 if (marketplaceSearch) {
     marketplaceSearch.addEventListener('input', () => {
         updateSearchButtonState();
@@ -1351,8 +1901,18 @@ if (marketplaceSearch) {
     });
 }
 
+/**
+ * Initializes search button enabled state on first load.
+ */
 updateSearchButtonState();
 
+
+/**
+ * Filter change listeners.
+ *
+ * Any filter change:
+ * Resets pagination to page 1 and re-renders the marketplace.
+ */
 if (marketplaceCategoryFilter) {
     marketplaceCategoryFilter.addEventListener('change', () => {
         currentMarketplacePage = 1;
@@ -1381,7 +1941,19 @@ if (marketplaceConditionFilter) {
     });
 }
 
-// Create post inputs
+/**
+ * Title input handlers.
+ *
+ * Enforces the hard max length of 100 characters and shows "maximum reached" messages at
+ * 100 and when exceeding 100.
+ *
+ * Otherwise, it runs normal title validation where it: updates publish button state and
+ * dirty-state.
+ *
+ *  The blur clears the special max-length message when exactly 100 characters.
+ *  Otherwise, runs normal validation where it: updates publish button state and
+ *  dirty-state.
+ */
 if (postTitle) {
     postTitle.addEventListener('input', () => {
         const value = postTitle.value;
@@ -1421,6 +1993,18 @@ if (postTitle) {
     });
 }
 
+/**
+ * Description input handlers.
+ *
+ *  Enforces hard max length of 500 characters and shows "maximum reached" messaging.
+ *  Otherwise, runs normal description validation where it: updates publish button state and
+ *   dirty-state.
+ *
+ *
+ *  The blur clears the special max-length message when exactly 500 characters.
+ *  Otherwise, runs normal validation where it: updates publish button state
+ *  and updates dirty-state.
+ */
 if (postDescription) {
     postDescription.addEventListener('input', () => {
         const value = postDescription.value;
@@ -1460,6 +2044,17 @@ if (postDescription) {
     });
 }
 
+/**
+ * Report description input handlers.
+ *
+ * Enforces hard max length of 500 characters and shows invalid styling and maximum-reached messages.
+ * Otherwise, runs normal report description validation where it: updates report submit button state and
+ * updates report dirty-state.
+ *
+ * The blur clears the special max-length message when exactly 500 characters.
+ * Otherwise, runs normal validation where it: updates report submit button state and
+ * updates report dirty-state.
+ */
 if (reportDescription) {
     reportDescription.addEventListener('input', () => {
         const value = reportDescription.value;
@@ -1497,6 +2092,12 @@ if (reportDescription) {
 }
 
 
+/**
+ * Price input handlers.
+ *
+ * RUns the full price validation, updates the publish button state, and
+ * updates the dirty-state.
+ */
 if (postPrice) {
     postPrice.addEventListener('input', () => {
         validatePrice(true);
@@ -1512,6 +2113,12 @@ if (postPrice) {
     });
 }
 
+/**
+ * Category and condition select handlers.
+ *
+ * On a change they,validate their fields, update publish button state and
+ * update dirty-state.
+ */
 if (postCategory) {
     postCategory.addEventListener('change', () => {
         validateSelect(postCategory, true);
@@ -1528,6 +2135,17 @@ if (postCondition) {
     });
 }
 
+/**
+ * Post image input handler.
+ *
+ * Reads selected files from the file input, clears previous image error,
+ * verifies how many image slots remain, rejects selection if user exceeds max image count,
+ * validates every file size <= 2MB and if it's a real JPEG/JPG according to isRealJpeg.
+ *
+ *  Additionally, it appends valid files to selectedPostImages, re-renders previews,
+ *  clears the native file input value so user can reselect files later, updates
+ *  the pusbkish button state, and the dirty state.
+ */
 if (postImage) {
     postImage.addEventListener('change', async () => {
         const newFiles = Array.from(postImage.files || []);
@@ -1579,7 +2197,12 @@ if (postImage) {
     });
 }
 
-// Track dirty state
+/**
+ * Additional dirty-state tracking for create-post fields.
+ * Input and change listeners are attached to all create-post fields
+ * so unsaved changes can be detected even when validation is not triggered
+ * by a specific interaction path.
+ */
 [postTitle, postDescription, postPrice, postCategory, postCondition].forEach((field) => {
     if (!field) return;
 
@@ -1587,7 +2210,16 @@ if (postImage) {
     field.addEventListener('change', updateCreatePostDirtyState);
 });
 
-// Publish post
+/**
+ * Publish post handler.
+ *
+ * Validates all create-post fields, stops and keeps button state updated if any validation fails,
+ * appends title, description, cost, category, and condition,and appends all selected images under images[].
+ *
+ * Additionally, it sends POST /posts with CSRF token, resets current page to 1,
+ * refreshes posts from backend, allows modal to close without dirty warning, hides the create-post modal,
+ * resets local form state, and shows created toast after publication.
+ */
 if (publishBtn && createPostForm) {
     publishBtn.addEventListener('click', async () => {
         const isTitleValid = validateTitle(true);
@@ -1645,7 +2277,20 @@ if (publishBtn && createPostForm) {
     });
 }
 
-// Create post modal behavior
+/**
+ * Create-post modal lifecycle behavior.
+ *
+ * Clears prior validation messages and recalculates publish button state.
+ *
+ * Allows immediate close only when allowCreatePostClose is true.
+ * Otherwise, checks dirty-state:
+ *  if form is clean, resets it normally
+ *  if form is dirty, prevents close and opens cancel confirmation modal
+ *
+
+ *  After a permitted close, fully resets the form
+ *  Clears the allowCreatePostClose bypass flag
+ */
 if (createPostModal) {
     createPostModal.addEventListener('show.bs.modal', () => {
         resetCreatePostValidation();
@@ -1678,6 +2323,12 @@ if (createPostModal) {
     });
 }
 
+/**
+ * Cancel create-post button handler.
+ * Recomputes dirty-state:
+ *   If form is clean, allows modal close immediately
+ *   If form is dirty, opens the cancel confirmation modal
+ */
 if (cancelCreatePostBtn && createPostModal) {
     cancelCreatePostBtn.addEventListener('click', () => {
         updateCreatePostDirtyState();
@@ -1697,6 +2348,11 @@ if (cancelCreatePostBtn && createPostModal) {
     });
 }
 
+/**
+ * Confirm cancel create-post handler.
+ *
+ * Allows the create-post modal to close and closes the cancel confirmation modal.
+ */
 if (confirmCancelCreatePost && createPostModal && cancelConfirmModal) {
     confirmCancelCreatePost.addEventListener('click', () => {
         allowCreatePostClose = true;
@@ -1709,7 +2365,11 @@ if (confirmCancelCreatePost && createPostModal && cancelConfirmModal) {
     });
 }
 
-// Reporting inputs
+/**
+ * Report reason change handler.
+ *
+ * Validates the reason select and updates report button state.
+ */
 if (reportReason) {
     reportReason.addEventListener('change', () => {
         validateReportReason(true);
@@ -1717,6 +2377,10 @@ if (reportReason) {
     });
 }
 
+/**
+ * Dirty-state tracking for report form fields.
+ * Attached to both the reason and description fields.
+ */
 [reportReason, reportDescription].forEach((field) => {
     if (!field) return;
 
@@ -1724,7 +2388,22 @@ if (reportReason) {
     field.addEventListener('change', updateReportDirtyState);
 });
 
-// Submit report
+/**
+ * Report submission handler.
+ *
+ * Prevents the default form submission.
+ * Validates reason and description and exits and disables/enables button correctly if invalid.
+ * Reads post ID from postDetailsModal dataset, and sends POST /reports with: reported_user_id,
+ * report_reason, description, and post_id.
+ *
+ * Additionally,attempts to parse JSON response:
+ *  Logs non-JSON responses for debugging
+ *  Logs backend errors if response is not ok
+ *
+ * On a success it allows report modal to close without warning, hides report modal,
+ * shows report toast and reopens post details modal shortly afterward.
+ *
+ */
 if (submitReportBtn) {
     submitReportBtn.addEventListener('click', async (e) => {
         e.preventDefault();
@@ -1790,7 +2469,18 @@ if (submitReportBtn) {
         });
     }
 
-// Report modal behavior
+/**
+ * Report modal lifecycle behavior.
+ *
+ * It clears prior validation UI and recalculates report submit button state.
+ *
+ *  Allows close only when allowReportClose is true.
+ *  Otherwise, checks dirty-state:
+ *     If clean, resets normally
+ *      If dirty, prevents close and opens cancel confirmation modal
+ *
+ * After an allowed is close, resets report form and clears the allowReportClose bypass flag.
+ */
 if (reportUserModal) {
     reportUserModal.addEventListener('show.bs.modal', () => {
         resetReportValidation();
@@ -1825,10 +2515,22 @@ if (reportUserModal) {
     });
 }
 
+/**
+ * Report cancel button handler.
+ *
+ * Uses the shared safe-close helper that either closes immediately
+ * or shows a confirmation modal if there is unsaved data.
+ */
 if (cancelReportBtn) {
     cancelReportBtn.addEventListener('click', tryCloseReportModal);
 }
 
+/**
+ * Report modal close (X) button handler.
+ *
+ * Prevents the default close behavior so the custom safe-close logic
+ * can decide whether the modal should really close.
+ */
 if (closeReportModalBtn) {
     closeReportModalBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -1836,6 +2538,13 @@ if (closeReportModalBtn) {
     });
 }
 
+/**
+ * Confirm cancel report handler.
+ *
+ * Allows report modal to close.
+ * Hides the confirmation modal and the report modal.
+ * Reopens the post details modal afterwards.
+ */
 if (confirmCancelReport && reportUserModal && cancelReportConfirmModal) {
     confirmCancelReport.addEventListener('click', () => {
         allowReportClose = true;
@@ -1855,7 +2564,16 @@ if (confirmCancelReport && reportUserModal && cancelReportConfirmModal) {
     });
 }
 
-// Initialization
+/**
+ * Initial page setup.
+ *
+ * It initializes the seller rating UI, computes initial create-post button
+ * enabled state,computes initial report button enabled state, and
+ * fetches and renders marketplace posts from the backend.
+ *
+ * This ensures both forms and the marketplace list are ready
+ * as soon as the script loads.
+ */
 initializeSellerRating();
 updatePublishButtonState();
 updateReportButtonState();
