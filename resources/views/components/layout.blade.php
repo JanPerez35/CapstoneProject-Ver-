@@ -773,7 +773,13 @@
                                 </button>
 
                                 <div id="termsPdfSelectedName" class="text-muted small d-none"></div>
+
                                 <div id="termsPdfError" class="text-danger small d-none"></div>
+                                @error('terms_pdf')
+                                <div class="text-danger small mt-1">
+                                    {{ $message }}
+                                </div>
+                                @enderror
                             </div>
                         </form>
                     @endif
