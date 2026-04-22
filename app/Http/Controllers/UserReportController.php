@@ -63,10 +63,17 @@ class UserReportController extends Controller
 
     public function resolve(UserReport $report)
     {
+        $report->load('reportedUser');
+
         $report->update([
             'status' => 'resolved',
             'resolved_at' => now()
         ]);
+
+        $this->logActivity(
+            'Resolver reporte',
+            "Se resolvió el reporte (ID: {$report->id}) contra el usuario '{$report->reportedUser->email}' (ID: {$report->reported_user_id})"
+        );
 
         return response()->json([
             'success' => true
@@ -75,6 +82,8 @@ class UserReportController extends Controller
 
     public function ban(UserReport $report)
     {
+        $report->load('reportedUser');
+
         $report->reportedUser->update([
             'status' => 'Bloqueado'
         ]);
@@ -83,6 +92,11 @@ class UserReportController extends Controller
             'status' => 'resolved',
             'resolved_at' => now()
         ]);
+
+        $this->logActivity(
+            'Bloquear usuario',
+            "Se bloqueó al usuario '{$report->reportedUser->email}' (ID: {$report->reported_user_id}) mediante el reporte (ID: {$report->id})"
+        );
 
         return response()->json([
             'success' => true

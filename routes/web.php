@@ -107,7 +107,7 @@ Route::middleware('auth')->group(function () {
      * and account status changes.
      */
     Route::get('/search_user', [UserController::class, 'index'])
-        ->name('search_user');
+        ->name('search_user')->middleware('role:Admin Super');
 
     Route::put('/users/{user}/role', [UserController::class, 'updateRole']);
 

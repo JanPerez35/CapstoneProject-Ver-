@@ -610,9 +610,9 @@
                             </label>
                             <select class="form-select form-select-lg" id="reportReason" required>
                                 <option value="" selected disabled>Seleccionar una razón</option>
-                                <option value="Fraude">Fraude o estafa</option>
+                                <option value="Fraude o estafa">Fraude o estafa</option>
                                 <option value="Información falsa">Información falsa</option>
-                                <option value="Lengiaje ofensivo">Lenguaje ofensivo</option>
+                                <option value="Lenguaje ofensivo">Lenguaje ofensivo</option>
                                 <option value="Contenido inapropiado">Contenido inapropiado</option>
                                 <option value="Otros">Otros</option>
                             </select>

@@ -139,11 +139,6 @@ class PostController extends Controller
 
         $reviewsCount = Review::where('seller_id', $post->user->id)->count();
 
-        $sellerName = trim(($post->user->first_name ?? '') . ' ' . ($post->user->last_name ?? ''));
-        if ($sellerName === '') {
-            $sellerName = $post->user->name ?? 'Usuario';
-        }
-
         return response()->json([
             'id' => $post->id,
             'title' => $post->title,
@@ -155,12 +150,13 @@ class PostController extends Controller
             'photo_1_url' => $post->photo_1_url,
             'photo_2_url' => $post->photo_2_url,
             'photo_3_url' => $post->photo_3_url,
-            'rating' => $averageRating,
-            'reviews' => $reviewsCount,
             'user' => [
-                'id' => $post->user->id,
-                'name' => $sellerName,
-            ]
+                'id'             => $post->user->id,
+                'first_name'     => $post->user->first_name,
+                'last_name'      => $post->user->last_name,
+                'average_rating' => $averageRating,
+                'reviews_count'  => $reviewsCount,
+            ],
         ]);
     }
 

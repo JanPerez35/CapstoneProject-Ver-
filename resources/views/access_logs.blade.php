@@ -94,6 +94,8 @@
                         <optgroup label="Usuarios">
                             <option value="Cambiar rol de usuario" {{ request('event') == 'Cambiar rol de usuario' ? 'selected' : '' }}>Cambiar rol de usuario</option>
                             <option value="Cambiar estado de usuario" {{ request('event') == 'Cambiar estado de usuario' ? 'selected' : '' }}>Cambiar estado de usuario</option>
+                            <option value="Resolver reporte" {{ request('event') == 'Resolver reporte' ? 'selected' : '' }}>Resolver reporte</option>
+                            <option value="Bloquear usuario" {{ request('event') == 'Bloquear usuario' ? 'selected' : '' }}>Bloquear usuario</option>
                         </optgroup>
                         <optgroup label="Sesión">
                             <option value="Inicio de sesión" {{ request('event') == 'Inicio de sesión' ? 'selected' : '' }}>Inicio de sesión</option>
