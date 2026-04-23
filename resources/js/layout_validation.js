@@ -157,6 +157,12 @@ document.addEventListener('DOMContentLoaded', function () {
             setTermsPdfError('Solo se permiten archivos PDF.');
             return false;
         }
+        const maxSize = 2 * 1024 * 1024; // 2MB
+
+        if (file.size > maxSize) {
+            setTermsPdfError('El archivo no puede exceder los 2MB.');
+            return false;
+        }
 
         clearTermsPdfError();
         return true;
@@ -836,6 +842,15 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
         }
     });
+
+    const termsErrorEl = document.querySelector('#termsPdfError');
+
+    if (termsErrorEl && termsErrorEl.textContent.trim() !== '') {
+        const modal = document.getElementById('termsModal');
+        if (modal) {
+            bootstrap.Modal.getOrCreateInstance(modal).show();
+        }
+    }
 
     /**
     * Initial page setup
