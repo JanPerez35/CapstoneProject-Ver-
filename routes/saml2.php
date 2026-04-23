@@ -54,6 +54,7 @@ Route::any('/auth/callback', function () {
 
     // Log user into Laravel session
     Auth::login($user);
+    session(['authenticated_role' => $user->role]);
 
     ActivityLog::create([
         'user_id'    => $user->id,

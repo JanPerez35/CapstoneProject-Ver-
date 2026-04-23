@@ -75,8 +75,7 @@ require __DIR__ . '\saml2.php';
  *
  * All routes inside this group REQUIRE a logged-in user.
  */
-Route::middleware('auth')->group(function () {
-
+Route::middleware(['auth', 'user.active'])->group(function () {
     /**
      * Kinventory (User Inventory)
      *
