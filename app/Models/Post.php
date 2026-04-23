@@ -36,6 +36,10 @@ class Post extends Model
 
     public function getTimeAgoAttribute()
     {
+        if (!$this->created_at) {
+            return '';
+        }
+
         return $this->created_at->diffForHumans();
     }
 

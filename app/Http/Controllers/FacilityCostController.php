@@ -35,11 +35,92 @@ class FacilityCostController extends Controller
 
     use LogsActivity;
 
+    /**
+     * Builds a filtered FacilityCostReportItem query from the given request params.
+     * Used by index, exportCsv, and exportPdf so all three apply identical filters.
+     *
+     * Handles: report_type/month/year, filter_classroom, filter_period_type,
+     * filter_rate_mode, filter_services, and search.
+     *
+     * filter_period_type, filter_rate_mode, and filter_services accept the Spanish
+     * display labels sent by the JS (matching the select option values in the blade).
+     */
+    private function buildFilteredQuery(Request $request)
+    {
+        $reportType      = $request->input('report_type', '');
+        $reportMonth     = $request->input('report_month', '');
+        $reportYear      = $request->input('report_year', '');
+        $filterClassroom = $request->input('filter_classroom', '');
+        $filterPeriodType = $request->input('filter_period_type', '');
+        $filterRateMode  = $request->input('filter_rate_mode', '');
+        $filterServices  = $request->input('filter_services', '');
+        $search          = $request->input('search', '');
+
+        $periodTypeMap = [
+            'Laborable'                        => 'workday',
+            'No laborable sábado'              => 'non_workday_saturday',
+            'No laborable domingo o festivo'   => 'non_workday_sunday_holiday',
+        ];
+
+        $rateModeMap = [
+            'Diario'   => 'daily',
+            'Semanal'  => 'weekly',
+            'Mensual'  => 'monthly',
+        ];
+
+        $servicesMap = [
+            'Utilidades'   => 'utilities',
+            'Electricidad' => 'electricity',
+            'Agua'         => 'water',
+        ];
+
+        $query = FacilityCostReportItem::with('facilityCost')
+            ->orderBy('created_at', 'desc')
+            ->orderBy('start_time', 'desc');
+
+        if ($reportType === 'monthly' && !empty($reportYear) && !empty($reportMonth)) {
+            $query->whereYear('event_date', (int) $reportYear)
+                  ->whereMonth('event_date', (int) $reportMonth);
+        } elseif ($reportType === 'annual' && !empty($reportYear)) {
+            $query->whereYear('event_date', (int) $reportYear);
+        }
+
+        if (!empty($filterClassroom) && $filterClassroom !== 'all') {
+            $query->whereHas('facilityCost', function ($q) use ($filterClassroom) {
+                $q->where('classroom_name', $filterClassroom);
+            });
+        }
+
+        if (!empty($filterPeriodType) && isset($periodTypeMap[$filterPeriodType])) {
+            $query->where('period_type', $periodTypeMap[$filterPeriodType]);
+        }
+
+        if (!empty($filterRateMode) && isset($rateModeMap[$filterRateMode])) {
+            $query->where('rate_mode', $rateModeMap[$filterRateMode]);
+        }
+
+        if (!empty($filterServices) && isset($servicesMap[$filterServices])) {
+            $query->whereJsonContains('services', $servicesMap[$filterServices]);
+        }
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('responsible', 'like', "%{$search}%")
+                  ->orWhere('event_description', 'like', "%{$search}%")
+                  ->orWhereHas('facilityCost', function ($q2) use ($search) {
+                      $q2->where('classroom_name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        return $query;
+    }
+
     public function index(Request $request)
     {
-        $reportType = $request->input('report_type', '');
-        $reportMonth = $request->input('report_month', '');
-        $reportYear = $request->input('report_year', '');
+        $reportType      = $request->input('report_type', '');
+        $reportMonth     = $request->input('report_month', '');
+        $reportYear      = $request->input('report_year', '');
         $filterClassroom = $request->input('filter_classroom', '');
 
         // Only active classrooms for admin actions
@@ -50,24 +131,7 @@ class FacilityCostController extends Controller
         // All classrooms for report filters/history
         $allFacilityCosts = FacilityCost::orderBy('classroom_name')->get();
 
-        $query = FacilityCostReportItem::with('facilityCost')
-            ->orderBy('created_at', 'desc')
-            ->orderBy('start_time', 'desc');
-
-        if ($reportType === 'monthly' && !empty($reportYear) && !empty($reportMonth)) {
-            $query->whereYear('event_date', (int) $reportYear)
-                ->whereMonth('event_date', (int) $reportMonth);
-        } elseif ($reportType === 'annual' && !empty($reportYear)) {
-            $query->whereYear('event_date', (int) $reportYear);
-        }
-
-        if ($filterClassroom !== 'all' && !empty($filterClassroom)) {
-            $query->whereHas('facilityCost', function ($q) use ($filterClassroom) {
-                $q->where('classroom_name', $filterClassroom);
-            });
-        }
-
-        $items = $query->get();
+        $items = $this->buildFilteredQuery($request)->get();
         $grandTotal = $items->sum('calculated_cost');
 
         $minYear = FacilityCostReportItem::selectRaw('MIN(YEAR(event_date)) as min_year')->value('min_year');
@@ -559,29 +623,7 @@ class FacilityCostController extends Controller
      */
     public function exportCsv(Request $request)
     {
-        $reportType = $request->input('report_type', 'monthly');
-        $reportMonth = (int) $request->input('report_month', now()->month);
-        $reportYear = (int) $request->input('report_year', now()->year);
-        $filterClassroom = $request->input('filter_classroom', 'all');
-
-        $query = FacilityCostReportItem::with('facilityCost')
-            ->orderBy('created_at', 'desc')
-            ->orderBy('start_time', 'desc');
-
-        if ($reportType === 'monthly') {
-            $query->whereYear('event_date', $reportYear)
-                ->whereMonth('event_date', $reportMonth);
-        } else {
-            $query->whereYear('event_date', $reportYear);
-        }
-
-        if ($filterClassroom !== 'all') {
-            $query->whereHas('facilityCost', function ($q) use ($filterClassroom) {
-                $q->where('classroom_name', $filterClassroom);
-            });
-        }
-
-        $items = $query->get();
+        $items = $this->buildFilteredQuery($request)->get();
 
         $filename = 'facility_costs_' . now()->format('Ymd_His') . '.csv';
 
@@ -640,29 +682,12 @@ class FacilityCostController extends Controller
      */
     public function exportPdf(Request $request)
     {
-        $reportType = $request->input('report_type', 'monthly');
-        $reportMonth = (int) $request->input('report_month', now()->month);
-        $reportYear = (int) $request->input('report_year', now()->year);
-        $filterClassroom = $request->input('filter_classroom', 'all');
+        $reportType      = $request->input('report_type', '');
+        $reportMonth     = $request->input('report_month', '');
+        $reportYear      = $request->input('report_year', '');
+        $filterClassroom = $request->input('filter_classroom', '');
 
-        $query = FacilityCostReportItem::with('facilityCost')
-            ->orderBy('created_at', 'desc')
-            ->orderBy('start_time', 'desc');
-
-        if ($reportType === 'monthly') {
-            $query->whereYear('event_date', $reportYear)
-                ->whereMonth('event_date', $reportMonth);
-        } else {
-            $query->whereYear('event_date', $reportYear);
-        }
-
-        if ($filterClassroom !== 'all') {
-            $query->whereHas('facilityCost', function ($q) use ($filterClassroom) {
-                $q->where('classroom_name', $filterClassroom);
-            });
-        }
-
-        $items = $query->get();
+        $items = $this->buildFilteredQuery($request)->get();
         $grandTotal = $items->sum('calculated_cost');
 
         $pdf = Pdf::loadView('pdfs.facility_cost_pdf', compact(

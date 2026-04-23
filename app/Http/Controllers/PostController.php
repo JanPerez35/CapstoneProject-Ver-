@@ -151,11 +151,12 @@ class PostController extends Controller
             'photo_2_url' => $post->photo_2_url,
             'photo_3_url' => $post->photo_3_url,
             'user' => [
-                'first_name' => $post->user->first_name,
-                'last_name' => $post->user->last_name,
+                'id'             => $post->user->id,
+                'first_name'     => $post->user->first_name,
+                'last_name'      => $post->user->last_name,
                 'average_rating' => $averageRating,
-                'reviews_count' => $reviewsCount,
-            ]
+                'reviews_count'  => $reviewsCount,
+            ],
         ]);
     }
 

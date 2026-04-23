@@ -275,6 +275,11 @@
                                             <h5 class="mb-1 fw-bold">
                                                 {{ $chat->otherUser()->name ?? 'Usuario' }}
                                             </h5>
+                                            @if($chat->unread_count > 0)
+                                                <span class="badge bg-danger rounded-pill">
+                                                    {{ $chat->unread_count }}
+                                                </span>
+                                            @endif
                                         </div>
 
                                         <div class="text-muted mb-2">
@@ -605,9 +610,9 @@
                             </label>
                             <select class="form-select form-select-lg" id="reportReason" required>
                                 <option value="" selected disabled>Seleccionar una razón</option>
-                                <option value="Fraude">Fraude o estafa</option>
+                                <option value="Fraude o estafa">Fraude o estafa</option>
                                 <option value="Información falsa">Información falsa</option>
-                                <option value="Lengiaje ofensivo">Lenguaje ofensivo</option>
+                                <option value="Lenguaje ofensivo">Lenguaje ofensivo</option>
                                 <option value="Contenido inapropiado">Contenido inapropiado</option>
                                 <option value="Otros">Otros</option>
                             </select>

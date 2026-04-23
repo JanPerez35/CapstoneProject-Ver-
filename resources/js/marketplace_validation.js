@@ -618,7 +618,7 @@ function renderPostDetailsCarousel(images = []) {
  *
  * @param {Object} post - The marketplace post object to display.
  */
-function populatePostDetailsModal(post) {
+window.populatePostDetailsModal = function (post) {
     if (post.user?.id) {
         reportedUserId = post.user.id;
     }
