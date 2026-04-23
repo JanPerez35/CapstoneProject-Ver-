@@ -1,6 +1,21 @@
 <x-layout title="Kinventario">
     <x-navbar></x-navbar>
 
+    {{-- Error toast if a the request limit is achieved and a new request arrives --}}
+    @if(session('error'))
+        <div class="toast-container position-fixed top-0 end-0 p-3">
+            <div id="inventoryRequestErrorToast" class="toast text-bg-danger border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        {{ session('error') }}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                            data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{--Load JS responsible for the validation in kinventory, includes modal behaviour and scroll persistence--}}
     @vite('resources/js/kinventory_validation.js')
 
