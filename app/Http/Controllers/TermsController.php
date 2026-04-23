@@ -113,7 +113,7 @@ class TermsController extends Controller
             'terms_pdf.required' => 'Debes seleccionar un archivo PDF.',
             'terms_pdf.file' => 'El archivo seleccionado no es válido.',
             'terms_pdf.mimes' => 'Solo se permiten archivos PDF.',
-            'terms_pdf.max' => 'El PDF no puede exceder 10 MB.',
+            'terms_pdf.max' => 'El PDF no puede exceder 2 MB.',
         ]);
 
         $file = $request->file('terms_pdf');

@@ -105,7 +105,7 @@ class UserController extends Controller
             $this->emailService->send(
                 $user->email,
                 'Cuenta desbloqueada',
-                'Tu cuenta ha sido reactivada en la plataforma MAIKINE. Ya puedes acceder nuevamente y continuar utilizando los servicios con normalidad.'
+                'Tu cuenta ha sido desbloqueada en la plataforma MAIKINE. Ya puedes acceder nuevamente y continuar utilizando los servicios con normalidad.'
             );
         }
 
