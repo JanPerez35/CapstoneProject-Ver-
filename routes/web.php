@@ -85,10 +85,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/kinventory', [EquipmentController::class, 'kinventory'])
         ->name('kinventory');
 
-    Route::post('/kinventory/borrow', [LendingController::class, 'borrow'])
-        ->name('kinventory.borrow');
-
-    Route::post('/cart/add', [LendingController::class, 'addToCart'])
+Route::post('/cart/add', [LendingController::class, 'addToCart'])
         ->name('cart.add');
 
     Route::get('/cart', [LendingController::class, 'cart'])

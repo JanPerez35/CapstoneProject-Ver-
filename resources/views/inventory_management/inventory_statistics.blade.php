@@ -236,11 +236,10 @@
 
     {{-- Pass chart data from Blade to JavaScript only when data exists --}}
     @if($items->isNotEmpty())
-        <script>
-            window.inventoryStatsChartData = {
-                labels: @json($items->take(5)->pluck('description')),
-                values: @json($items->take(5)->pluck('total'))
-            };
-        </script>
+        <div 
+            id="inventoryChartData"
+            data-labels='@json($items->take(5)->pluck("description"))'
+            data-values='@json($items->take(5)->pluck("total"))'>
+        </div>
     @endif
 </x-layout>
