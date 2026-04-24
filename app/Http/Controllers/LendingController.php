@@ -216,8 +216,8 @@ class LendingController extends Controller
         $todayRequests = Lending::whereDate('created_at', today())->count();
 
         if ($todayRequests >= $dailyRequestLimit) {
-            return redirect()->route('kinventory')
-                ->with('error', 'Tu pedido ha sido rechazado debido a que se alcanzó el máximo de peticiones de hoy.');
+            return redirect()->back()
+                ->with('error', 'Tu pedido ha sido rechazado debido a que se alcanzó el máximo del día de hoy.');
         }
 
         foreach ($cart as $equipmentId => &$cartItem) {

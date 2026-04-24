@@ -656,6 +656,16 @@ document.addEventListener('DOMContentLoaded', function () {
             bootstrap.Toast.getOrCreateInstance(cartToastEl, { delay: 3000 }).show();
         }
 
+        const errorMessage = bodyEl?.dataset?.errorMessage || '';
+
+        const errorToastEl = document.getElementById('errorToast');
+        const errorToastMessage = document.getElementById('errorToastMessage');
+
+        if (errorMessage && errorToastEl && errorToastMessage) {
+            errorToastMessage.textContent = errorMessage;
+            bootstrap.Toast.getOrCreateInstance(errorToastEl, { delay: 5000 }).show();
+        }
+
         const submitToastEl = document.getElementById('submitToast');
         const submitToastMessage = document.getElementById('submitToastMessage');
 
