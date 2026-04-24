@@ -8,12 +8,9 @@ use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Models\Review;
 use App\Models\User;
-use App\Http\Controllers\Concerns\LogsActivity;
 
 class PostController extends Controller
-{
-    use LogsActivity;
-
+{  
     public function store(Request $request)
     {
         $request->validate([
@@ -34,7 +31,7 @@ class PostController extends Controller
             }
         }
 
-        $post = Post::create([
+        Post::create([
             'user_id' => auth()->id(),
             'title' => $request->title,
             'description' => $request->description,
@@ -46,11 +43,6 @@ class PostController extends Controller
             'photo_2_url' => $paths[1] ?? null,
             'photo_3_url' => $paths[2] ?? null,
         ]);
-
-        $this->logActivity(
-            'Crear publicación',
-            "Se creó la publicación '{$post->title}' (ID: {$post->id}) en la categoría '{$post->category}'"
-        );
 
         return response()->json(['success' => true]);
     }
@@ -70,11 +62,6 @@ class PostController extends Controller
                 Storage::disk('public')->delete($image);
             }
         }
-
-        $this->logActivity(
-            'Eliminar publicación',
-            "Se eliminó la publicación '{$post->title}' (ID: {$post->id}) del usuario ID: {$post->user_id}"
-        );
 
         $post->delete();
 
@@ -139,6 +126,11 @@ class PostController extends Controller
 
         $reviewsCount = Review::where('seller_id', $post->user->id)->count();
 
+        $sellerName = trim(($post->user->first_name ?? '') . ' ' . ($post->user->last_name ?? ''));
+        if ($sellerName === '') {
+            $sellerName = $post->user->name ?? 'Usuario';
+        }
+
         return response()->json([
             'id' => $post->id,
             'title' => $post->title,
@@ -150,13 +142,12 @@ class PostController extends Controller
             'photo_1_url' => $post->photo_1_url,
             'photo_2_url' => $post->photo_2_url,
             'photo_3_url' => $post->photo_3_url,
+            'rating' => $averageRating,
+            'reviews' => $reviewsCount,
             'user' => [
-                'id'             => $post->user->id,
-                'first_name'     => $post->user->first_name,
-                'last_name'      => $post->user->last_name,
-                'average_rating' => $averageRating,
-                'reviews_count'  => $reviewsCount,
-            ],
+                'id' => $post->user->id,
+                'name' => $sellerName,
+            ]
         ]);
     }
 

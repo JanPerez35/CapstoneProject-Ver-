@@ -1,7 +1,7 @@
 <x-layout title="Mensajes - MAIKINE">
     <x-navbar></x-navbar>
 
-    @vite(['resources/js/pages/messages_profanity.js', 'resources/js/messages_validation.js', 'resources/js/echo.js'])
+    @vite(['resources/js/pages/messages_profanity.js', 'resources/js/messages_validation.js'])
 
     @php
         $chatPostId = request('post_id');

@@ -210,6 +210,16 @@ class LendingController extends Controller
             return redirect()->back()->with('error', 'El carrito está vacío.');
         }
 
+        // Lendings daily limit
+        $dailyRequestLimit = 50;
+
+        $todayRequests = Lending::whereDate('created_at', today())->count();
+
+        if ($todayRequests >= $dailyRequestLimit) {
+            return redirect()->route('kinventory')
+                ->with('error', 'Tu pedido ha sido rechazado debido a que se alcanzó el máximo de peticiones de hoy.');
+        }
+
         foreach ($cart as $equipmentId => &$cartItem) {
             if (isset($validated['cart_quantities'][$equipmentId])) {
                 $cartItem['quantity'] = (int) $validated['cart_quantities'][$equipmentId];

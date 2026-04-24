@@ -61,6 +61,19 @@ Route::get('/', function () {
     return view('login');
 });
 
+Route::get('/debug-user', function () {
+    return [
+        'auth_user' => auth()->user(),
+        'session_id' => session()->getId(),
+    ];
+});
+
+Route::post('/test-auth', function () {
+    return [
+        'user' => auth()->user(),
+    ];
+})->middleware('web');
+
 /**
  * SAML Authentication
  *

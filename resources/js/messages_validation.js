@@ -1,5 +1,51 @@
 import * as bootstrap from 'bootstrap';
 
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+
+export function renderMessage(messageObj) {
+        const messagesContainer = document.getElementById('chatMessagesContainer');
+        const emptyState = document.getElementById('chatEmptyState');
+
+        if (!messagesContainer) {
+            console.error('No se encontró el contenedor de mensajes');
+            return;
+        }
+        if (emptyState) {
+            emptyState.classList.add('d-none');
+        }
+
+        const isMine = messageObj.isMine === true;
+
+        const alignment = isMine ? 'justify-content-end' : 'justify-content-start';
+        const bubbleClass = isMine ? 'bg-success-subtle text-dark border border-success-subtle' : 'bg-success-subtle text-dark border border-success-subtle';
+        const timeClass = 'small mt-1 text-end text-muted';
+
+        messagesContainer.insertAdjacentHTML('beforeend', `
+            <div class="d-flex ${alignment} mb-3">
+                <div
+                    class="${bubbleClass} px-3 py-2 rounded-4 shadow-sm"
+                    style="max-width: 75%; word-break: break-word;"
+                    data-message-id="${messageObj.id ?? ''}"
+                    data-conversation-id="${messageObj.conversationId ?? ''}"
+                    data-sender-id="${messageObj.senderId ?? ''}"
+                >
+                    <div>${escapeHtml(messageObj.message)}</div>
+                    <div class=" ${timeClass}">${messageObj.time}</div>
+                </div>
+            </div>
+        `);
+
+        messagesContainer.scrollTo({
+            top: messagesContainer.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('chatMessageInput');
     const errorEl = document.getElementById('chatMessageError');
@@ -232,37 +278,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-   function renderMessage(messageObj) {
-        if (emptyState) {
-            emptyState.classList.add('d-none');
-        }
-
-        const isMine = messageObj.isMine === true;
-
-        const alignment = isMine ? 'justify-content-end' : 'justify-content-start';
-        const bubbleClass = isMine ? 'bg-success-subtle text-dark border border-success-subtle' : 'bg-success-subtle text-dark border border-success-subtle';
-        const timeClass = 'small mt-1 text-end text-muted';
-
-        messagesContainer.insertAdjacentHTML('beforeend', `
-            <div class="d-flex ${alignment} mb-3">
-                <div
-                    class="${bubbleClass} px-3 py-2 rounded-4 shadow-sm"
-                    style="max-width: 75%; word-break: break-word;"
-                    data-message-id="${messageObj.id ?? ''}"
-                    data-conversation-id="${messageObj.conversationId ?? ''}"
-                    data-sender-id="${messageObj.senderId ?? ''}"
-                >
-                    <div>${escapeHtml(messageObj.message)}</div>
-                    <div class=" ${timeClass}">${messageObj.time}</div>
-                </div>
-            </div>
-        `);
-
-        messagesContainer.scrollTo({
-            top: messagesContainer.scrollHeight,
-            behavior: 'smooth'
-        });
-    }
 
     function buildFrontendMessage(messageText) {
         return {
@@ -745,11 +760,14 @@ async function loadMessages(chatId) {
 
         messages.forEach(msg => {
             renderMessage({
+                 id: msg.id,
                 message: msg.content,
                 time: new Date(msg.created_at).toLocaleTimeString([], {
                     hour: '2-digit',
                     minute: '2-digit'
                 }),
+                senderId: msg.sender_id,
+                conversationId: chatId,
                 isMine: msg.isMine
             });
         });
@@ -813,7 +831,11 @@ async function loadMessages(chatId) {
        let currentChannel = null;
 
         document.querySelectorAll('.chat-list-item').forEach(item => {
-            item.addEventListener('click', (e) => {
+
+            if (item.dataset.bound) return;
+            item.dataset.bound = true;
+
+            item.addEventListener('click', async (e) => {
                 e.preventDefault();
 
                 document.querySelectorAll('.chat-list-item').forEach(chat => {
@@ -873,17 +895,14 @@ async function loadMessages(chatId) {
                     openChatPostDetailsBtn.dataset.postId = postId || '';
                 }
 
-                loadMessages(chatId);
+                messagesView.dataset.chatId = chatId;
 
+                await loadMessages(chatId); 
+
+                if (window.subscribeToChat) {
+                    window.subscribeToChat(chatId);
+                }
                 currentChannel = `chat.${chatId}`;
-
-                window.Echo.private(currentChannel)
-                    .listen('MessageSent', (e) => {
-                        renderMessage({
-                            message: e.content,
-                            time: new Date().toLocaleTimeString()
-                        });
-                    });
 
                 console.log('Chat seleccionado:', chatId);
                 console.log('Post relacionado:', postId);
@@ -926,32 +945,28 @@ async function loadMessages(chatId) {
         updateCounter();
     });
 
-    input.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            sendBtn.click();
-        }
-    });
+    if (!input.dataset.bound) {
+        input.dataset.bound = 'true';
 
-    sendBtn.addEventListener('click', async (event) => {
-        event.preventDefault();
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                event.stopPropagation();
+                handleSendMessage();
+            }
+        });
+    }
+    let isSending = false;
 
-        const isRequiredValid = validateRequired();
-        const isLengthValid = validateMaxLength(true);
-        const isCharactersValid = validateAllowedCharacters(true);
-
-
-        if (!isRequiredValid || !isLengthValid || !isCharactersValid) {
-            updateSendButtonState();
-            updateCounter();
-            return;
-        }
+    async function handleSendMessage() {
+        if (isSending) return;
+        isSending = true;
 
         const message = input.value.trim();
         const chatId = messagesView.dataset.chatId;
 
-        if (!chatId) {
-            console.error('No hay chat seleccionado');
+        if (!message || !chatId) {
+            isSending = false;
             return;
         }
 
@@ -968,12 +983,29 @@ async function loadMessages(chatId) {
                 })
             });
 
-            sendFrontendMessage();
+            // sendFrontendMessage();
+
+            input.value = '';
+            clearAllValidationErrors();
+            updateSendButtonState();
+            updateCounter();
+            input.focus();
 
         } catch (error) {
-            console.error('Error enviando mensaje:', error);
+            console.error(error);
+        } finally {
+            isSending = false;
         }
-    });
+    }
+    
+    if (!sendBtn.dataset.bound) {
+        sendBtn.dataset.bound = 'true';
+
+        sendBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleSendMessage();
+        });
+    }
 
     initializeSellerRating();
 
