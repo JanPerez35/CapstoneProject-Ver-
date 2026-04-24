@@ -42,58 +42,6 @@ class LendingController extends Controller
     }
 
     /**
-     * Processes a direct single-item borrow request.
-     *
-     * Validates the equipment ID and quantity, creates a Lending and
-     * LendingItem record inside a locked transaction to prevent overselling,
-     * decrements the available quantity, and logs the activity.
-     */
-    public function borrow(Request $request)
-{
-    $validated = $request->validate([
-        'equipment_id' => 'required|integer|exists:equipment,id',
-        'quantity' => 'required|integer|min:1',
-    ]);
-
-    DB::transaction(function () use ($validated) {
-        $equipment = Equipment::lockForUpdate()->findOrFail($validated['equipment_id']);
-
-        if ($validated['quantity'] > $equipment->available_quantity) {
-            abort(422, 'La cantidad solicitada excede la cantidad disponible.');
-        }
-
-        $lending = Lending::create([
-            'user_id' => auth()->id(),
-            'commentary' => 'Solicitud realizada desde Kinventory',
-            'start_time' => now(),
-            'end_time' => now()->addDays(7), // temporary
-            'flag' => false,
-            'status' => 'active',
-            'created_at' => now(),
-        ]);
-
-        LendingItem::create([
-            'lending_id' => $lending->id,
-            'equipment_id' => $equipment->id,
-            'quantity' => $validated['quantity'],
-            'item_status' => 'borrowed',
-        ]);
-
-        $equipment->available_quantity -= $validated['quantity'];
-        $equipment->save();
-    });
-
-    $this->logActivity(
-        'Solicitud de Préstamo',
-        'Solicitud creada para equipo ID ' . $validated['equipment_id']
-
-    );
-
-    return redirect()->route('kinventory')->with('success', 'Equipo solicitado correctamente.');
-
-}
-
-    /**
      * Adds an equipment item to the session cart.
      *
      * Validates availability, merges with any existing cart entry for the
@@ -262,6 +210,16 @@ class LendingController extends Controller
             return redirect()->back()->with('error', 'El carrito está vacío.');
         }
 
+        // Lendings daily limit
+        $dailyRequestLimit = 50;
+
+        $todayRequests = Lending::whereDate('created_at', today())->count();
+
+        if ($todayRequests >= $dailyRequestLimit) {
+            return redirect()->route('kinventory')
+                ->with('error', 'Tu pedido ha sido rechazado debido a que se alcanzó el máximo de peticiones de hoy.');
+        }
+
         foreach ($cart as $equipmentId => &$cartItem) {
             if (isset($validated['cart_quantities'][$equipmentId])) {
                 $cartItem['quantity'] = (int) $validated['cart_quantities'][$equipmentId];
@@ -359,10 +317,17 @@ class LendingController extends Controller
             );
         }
 
-        $this->logActivity(
-            'Creó solicitud',
-            'Solicitud de préstamo creada desde carrito'
-        );
+        if ($isSpecialCase) {
+            $this->logActivity(
+                'Solicitud pendiente de revisión',
+                "Solicitud ID: {$lending->id} creada en estado pendiente (caso especial)"
+            );
+        } else {
+            $this->logActivity(
+                'Creó solicitud',
+                "Solicitud ID: {$lending->id} creada y aprobada automáticamente desde carrito"
+            );
+        }
 
         session()->forget('cart');
 

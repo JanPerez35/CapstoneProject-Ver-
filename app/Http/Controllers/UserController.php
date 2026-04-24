@@ -28,6 +28,12 @@ class UserController extends Controller
     // Actualizar el rol de un usuario
     public function updateRole(Request $request, User $user)
     {
+        if ((int) auth()->id() === (int) $user->id) {
+            return response()->json([
+                'message' => 'No puedes cambiar tu propio rol.'
+            ], 403);
+        }
+
         $request->validate([
             'role' => 'required|string|in:Usuario,Admin Inventario,Admin Mercado,Admin Facilidades,Admin Super',
         ]);
@@ -65,6 +71,12 @@ class UserController extends Controller
 
     public function updateStatus(Request $request, User $user)
     {
+        if ((int) auth()->id() === (int) $user->id) {
+            return response()->json([
+                'message' => 'No puedes cambiar tu propio estado.'
+            ], 403);
+        }
+
         $request->validate([
             'status' => 'required|string|in:Activo,Bloqueado'
         ]);
@@ -105,7 +117,7 @@ class UserController extends Controller
             $this->emailService->send(
                 $user->email,
                 'Cuenta desbloqueada',
-                'Tu cuenta ha sido reactivada en la plataforma MAIKINE. Ya puedes acceder nuevamente y continuar utilizando los servicios con normalidad.'
+                'Tu cuenta ha sido desbloqueada en la plataforma MAIKINE. Ya puedes acceder nuevamente y continuar utilizando los servicios con normalidad.'
             );
         }
 
