@@ -112,6 +112,9 @@
         <div id="usersList" class="d-grid gap-3">
             @foreach ($users as $user)
 
+                @php
+                    $isSelf = auth()->id() === $user->id;
+                @endphp
                 {{-- Backend preprocessing for status of each user. Basically verifies in the tables the state of a user --}}
                 @php
                     $isBlocked = in_array($user->status, ['Bloqueado', 'Blocked']);
@@ -158,50 +161,52 @@
                                         <div class="text-muted small">
                                             {{ $user->email }}
                                         </div>
+                                        @if($isSelf)
+                                            <small class="text-large-muted ">(Tu cuenta)</small>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
 
                             {{-- Role management --}}
-                            <div class="col-lg-3">
-                                <label class="form-label fw-semibold small mb-1">Cambiar Rol</label>
+                            @if(!$isSelf)
+                                <div class="col-lg-3">
+                                    <label class="form-label fw-semibold small mb-1">Cambiar Rol</label>
 
-                                {{-- Role selector handled via JS and confirmation modal --}}
-                                <select class="form-select rounded-0 role-select">
-                                    <option {{ ($user->role_label ?? '') == 'Usuario' ? 'selected' : '' }}>Usuario</option>
-                                    <option {{ ($user->role_label ?? '') == 'Admin Super' ? 'selected' : '' }}>Admin Super</option>
-                                    <option {{ ($user->role_label ?? '') == 'Admin Inventario' ? 'selected' : '' }}>Admin Inventario</option>
-                                    <option {{ ($user->role_label ?? '') == 'Admin Facilidades' ? 'selected' : '' }}>Admin Facilidades</option>
-                                    <option {{ ($user->role_label ?? '') == 'Admin Mercado' ? 'selected' : '' }}>Admin Mercado</option>
-                                </select>
-                            </div>
+                                    <select class="form-select rounded-0 role-select">
+                                        <option {{ ($user->role_label ?? '') == 'Usuario' ? 'selected' : '' }}>Usuario</option>
+                                        <option {{ ($user->role_label ?? '') == 'Admin Super' ? 'selected' : '' }}>Admin Super</option>
+                                        <option {{ ($user->role_label ?? '') == 'Admin Inventario' ? 'selected' : '' }}>Admin Inventario</option>
+                                        <option {{ ($user->role_label ?? '') == 'Admin Facilidades' ? 'selected' : '' }}>Admin Facilidades</option>
+                                        <option {{ ($user->role_label ?? '') == 'Admin Mercado' ? 'selected' : '' }}>Admin Mercado</option>
+                                    </select>
+                                </div>
+                            @endif
+
 
                             {{-- Ban status and action buttons --}}
-                            <div class="col-lg-2">
-                                <label class="form-label fw-semibold small d-block mb-1">Estado</label>
-                                <div class="d-flex flex-column gap-2">
+                            @if(!$isSelf)
+                                <div class="col-lg-2">
+                                    <label class="form-label fw-semibold small d-block mb-1">Estado</label>
+                                    <div class="d-flex flex-column gap-2">
+            <span class="label-badge {{ $isBlocked ? 'badge-blocked' : 'badge-active' }} align-self-start">
+                {{ $statusLabel }}
+            </span>
 
-                                    {{-- Status badge --}}
-                                    <span class="label-badge {{ $isBlocked ? 'badge-blocked' : 'badge-active' }} align-self-start">
-                                        {{ $statusLabel }}
-                                    </span>
-
-                                    {{-- Toggle ban/unban button (handled by the JS) --}}
-                                    <button
-                                        type="button"
-                                        class="{{ $isBlocked ? 'btn btn-success rounded-3 ban-toggle-btn btn-sm' : 'btn btn-danger rounded-3 ban-toggle-btn btn-sm' }}">
-                                        @if ($isBlocked)
-                                            <i class="bi bi-arrow-counterclockwise me-1"></i>
-                                            Desbloquear
-                                        @else
-                                            <i class="bi bi-ban me-1"></i>
-                                            Bloquear
-                                        @endif
-                                    </button>
-
+                                        <button
+                                            type="button"
+                                            class="{{ $isBlocked ? 'btn btn-success rounded-3 ban-toggle-btn btn-sm' : 'btn btn-danger rounded-3 ban-toggle-btn btn-sm' }}">
+                                            @if ($isBlocked)
+                                                <i class="bi bi-arrow-counterclockwise me-1"></i>
+                                                Desbloquear
+                                            @else
+                                                <i class="bi bi-ban me-1"></i>
+                                                Bloquear
+                                            @endif
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-
+                            @endif
                         </div>
                     </div>
                 </div>

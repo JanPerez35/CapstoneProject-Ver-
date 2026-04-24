@@ -13,16 +13,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+
+        $middleware->alias([
+            'user.active' => \App\Http\Middleware\EnsureUserIsStillActive::class,
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'terms.accepted' => \App\Http\Middleware\EnsureTermsAccepted::class,
+        ]);
+
         $middleware->redirectGuestsTo(fn () => route('saml.login'));
 
         $middleware->validateCsrfTokens(except: [
             '/auth/callback',
         ]);
 
-        $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
-            'terms.accepted' => \App\Http\Middleware\EnsureTermsAccepted::class,
-        ]);
+
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

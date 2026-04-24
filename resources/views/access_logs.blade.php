@@ -109,8 +109,8 @@
                             <option value="Actualizar equipo" {{ request('event') == 'Actualizar equipo' ? 'selected' : '' }}>Actualizar equipo</option>
                             <option value="Marcar equipo para eliminación" {{ request('event') == 'Marcar equipo para eliminación' ? 'selected' : '' }}>Marcar equipo para eliminación</option>
                             <option value="Eliminar equipo" {{ request('event') == 'Eliminar equipo' ? 'selected' : '' }}>Eliminar equipo</option>
-                            <option value="Solicitud de Préstamo" {{ request('event') == 'Solicitud de Préstamo' ? 'selected' : '' }}>Solicitud de Préstamo</option>
                             <option value="Creó solicitud" {{ request('event') == 'Creó solicitud' ? 'selected' : '' }}>Creó solicitud</option>
+                            <option value="Solicitud pendiente de revisión" {{ request('event') == 'Solicitud pendiente de revisión' ? 'selected' : '' }}>Solicitud pendiente de revisión</option>
                             <option value="Aprobó solicitud" {{ request('event') == 'Aprobó solicitud' ? 'selected' : '' }}>Aprobó solicitud</option>
                             <option value="Rechazó solicitud" {{ request('event') == 'Rechazó solicitud' ? 'selected' : '' }}>Rechazó solicitud</option>
                             <option value="Devolución de equipo" {{ request('event') == 'Devolución de equipo' ? 'selected' : '' }}>Devolución de equipo</option>

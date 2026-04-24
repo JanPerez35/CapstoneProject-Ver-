@@ -159,17 +159,21 @@ document.addEventListener('DOMContentLoaded', function () {
      * }
      */
     function setupChart() {
-        if (!chartCanvas || typeof Chart === 'undefined' || !window.inventoryStatsChartData) return;
+        const dataElement = document.getElementById('inventoryChartData');
+
+        if (!chartCanvas || typeof Chart === 'undefined' || !dataElement) return;
+
+        const labels = JSON.parse(dataElement.dataset.labels);
+        const values = JSON.parse(dataElement.dataset.values);
 
         const ctx = chartCanvas.getContext('2d');
-        const chartData = window.inventoryStatsChartData;
 
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: chartData.labels,
+                labels: labels,
                 datasets: [{
-                    data: chartData.values,
+                    data: values,
                     backgroundColor: '#198754',
                     borderColor: '#146c43',
                     borderWidth: 1,
