@@ -1,35 +1,43 @@
 <?php
 namespace App\Events;
 
+
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use App\Models\Message;
 
-class MessageSent implements ShouldBroadcast
+
+class MessageSent implements ShouldBroadcastNow
 {
-    public string $user;
-    public string $content;
-    public int $chatId;
+    public Message $message;
 
-    public function __construct($user, $content, $chatId)
+
+
+
+    public function __construct(Message $message)
     {
-        $this->user = $user;
-        $this->content = $content;
-        $this->chatId = $chatId;
+        $this->message = $message;
     }
 
-    public function broadcastOn(): array
+
+    public function broadcastOn(): PrivateChannel
     {
-        return [
-            new PrivateChannel('chat.' . $this->chatId)
-        ];
+            return new PrivateChannel('chat.' . $this->message->chat_id);
     }
+
 
     public function broadcastWith()
     {
         return [
-            'user' => $this->user,
-            'content' => $this->content,
-            'chat_id' => $this->chatId,
+        'id' => $this->message->id,
+        'content' => $this->message->content,
+        'sender_id' => $this->message->user_id,
+        'chat_id' => $this->message->chat_id,
+        'created_at' => $this->message->created_at->toDateTimeString(),
         ];
+    }
+    public function broadcastAs()
+    {
+        return 'MessageSent';
     }
 }

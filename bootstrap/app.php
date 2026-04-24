@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->validateCsrfTokens(except: [
             '/auth/callback',
+            '/broadcasting/auth',
         ]);
 
         $middleware->alias([
