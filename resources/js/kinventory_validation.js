@@ -388,4 +388,15 @@ document.addEventListener('DOMContentLoaded', () => {
         saveScrollPosition();
         borrowForm.submit();
     });
+
+    /** 
+     * Show error toast if exists 
+     */
+    const requestErrorToastElement = document.getElementById('inventoryRequestErrorToast');
+
+    if (requestErrorToastElement && typeof bootstrap !== 'undefined') {
+        const toast = bootstrap.Toast.getOrCreateInstance(requestErrorToastElement);
+        toast.show();
+    }
+
 });
