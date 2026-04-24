@@ -55,7 +55,7 @@
 
 
     data-unread-count="{{ $totalUnreadMessages ?? 0 }}"
-
+    data-error-message="{{ session('error') }}"
 >
 {{-- Top navigation bar with branding, user info, quick actions, and logout --}}
 <div class="container-fluid px-0">
@@ -91,7 +91,7 @@
                    class="btn position-relative {{ request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success' }}">
                     <i class="bi bi-chat-left-text"></i> Mis Chats
                     @if($totalUnread > 0)
-                        <span 
+                        <span
                             id="miChatsUnreadBadge"
                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                             >
@@ -560,6 +560,26 @@
                     data-bs-dismiss="toast"
                     aria-label="Cerrar"
                     style="background-color: transparent; border: none; transform: scale(0.8);">
+            </button>
+        </div>
+    </div>
+
+    <div id="errorToast"
+         class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true">
+
+        <div class="d-flex align-items-center">
+            <div class="toast-body fw-semibold rounded-0" id="errorToastMessage">
+                Error.
+            </div>
+
+            <button type="button"
+                    class="btn-close me-2"
+                    data-bs-dismiss="toast"
+                    aria-label="Cerrar"
+                    style="background-color: transparent; border: none;">
             </button>
         </div>
     </div>
