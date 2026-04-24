@@ -1,6 +1,7 @@
 import './bootstrap';
 import * as bootstrap from 'bootstrap';
 import Chart from 'chart.js/auto';
+import './echo';
 
 window.Chart = Chart;
 window.bootstrap = bootstrap;

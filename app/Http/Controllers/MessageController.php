@@ -29,6 +29,8 @@ class MessageController extends Controller
             'read_at' => null,
         ]);
 
+        broadcast(new MessageSent($message))->toOthers();
+
         $this->logActivity(
             'Enviar mensaje',
             "Se envió un mensaje en el chat ID: {$request->chat_id}"
