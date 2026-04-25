@@ -16,18 +16,34 @@
 
         {{-- Internal navigation between inventory sections --}}
         <div class="d-flex flex-wrap gap-2 mb-4">
+            {{-- Inventory administration --}}
             <a href="{{ route('inventory_management') }}"
-               class="btn btn-outline-success px-4 fw-semibold">
+               class="btn btn-outline-success px-4 fw-semibold"
+               data-bs-toggle="tooltip"
+               data-bs-placement="top"
+               data-bs-custom-class="custom-tooltip"
+               data-bs-title="Gestiona el equipo disponible (crear, editar, eliminar)">
                 <i class="bi bi-box"></i>
                 Inventario Administrativo
             </a>
+
+            {{-- Borrows --}}
             <a href="{{ route('inventory_management.borrows') }}"
-               class="btn btn-outline-success px-4 fw-semibold">
-                <i class="bi bi-card-checklist"></i>
-                Préstamos
+               class="btn btn-outline-success px-4 fw-semibold"
+               data-bs-toggle="tooltip"
+               data-bs-placement="bottom"
+               data-bs-custom-class="custom-tooltip"
+               data-bs-title="Aprueba solicitudes y maneja préstamos activos">
+                <i class="bi bi-card-checklist"></i> Préstamos
             </a>
+
+            {{-- Statistics --}}
             <a href="{{ route('inventory_management.inventory_statistics') }}"
-               class="btn btn-success px-4 fw-semibold">
+               class="btn btn-success px-4 fw-semibold"
+               data-bs-toggle="tooltip"
+               data-bs-placement="bottom"
+               data-bs-custom-class="custom-tooltip"
+               data-bs-title="Visualiza reportes y descarga estadísticas del inventario">
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
         </div>
@@ -236,7 +252,7 @@
 
     {{-- Pass chart data from Blade to JavaScript only when data exists --}}
     @if($items->isNotEmpty())
-        <div 
+        <div
             id="inventoryChartData"
             data-labels='@json($items->take(5)->pluck("description"))'
             data-values='@json($items->take(5)->pluck("total"))'>

@@ -82,7 +82,11 @@
             {{-- Navigation/action buttons  for profile chats and cart--}}
             <div class="d-flex flex-wrap gap-2 justify-content-start justify-content-lg-end">
                 <a href="{{ route('my_profile') }}"
-                   class="btn {{ request()->routeIs('my_profile') ? 'btn-success' : 'btn-outline-success' }}">
+                   class="btn {{ request()->routeIs('my_profile') ? 'btn-success' : 'btn-outline-success' }}"
+                   data-bs-toggle="tooltip"
+                   data-bs-placement="bottom"
+                   data-bs-custom-class="custom-tooltip"
+                   data-bs-title="Ve tus publicaciones y estado de préstamos!">
                     <i class="bi bi-person-fill"></i> Mi Perfil
                 </a>
 
@@ -106,6 +110,10 @@
                     class="btn btn-outline-success position-relative"
                     data-bs-toggle="modal"
                     data-bs-target="#cartModal"
+
+                    data-bs-placement="top"
+                    data-bs-custom-class="custom-tooltip"
+                    data-bs-title="Verifica equipo deportivo en tu orden"
                 >
                     <i class="bi bi-cart3 me-1"></i>
                     Carrito
@@ -185,7 +193,7 @@
                             <div class="row g-0 px-3 py-3 fw-semibold border-bottom bg-light">
                                 <div class="col-6">Equipo</div>
                                 <div class="col-3 text-center">Cantidad</div>
-                                <div class="col-3 text-center">Acciones</div>
+                                <div class="col-3 text-center">Eliminar</div>
                             </div>
 
                             <div id="cartItemsContainer">
@@ -420,7 +428,7 @@
                                 </h5>
 
                                 <p class="text-muted mb-3">
-                                    Antes de enviar la solicitud, debes aceptar las condiciones del préstamo.
+                                    Antes de enviar la solicitud, debes aceptar las siguientes condiciones del préstamo:
                                 </p>
 
 
@@ -432,7 +440,15 @@
                                     No puedes cancelar una solicitud en ningún momento.
                                 </p>
 
-                                <p class="text-muted mb-2">
+                                <p class="text-muted mb-2 mt-3">
+                                    En el caso de una solicitud normal recibiras un email de confirmación automaticamente si no se alcanzo el limite de pedidos por dia.
+                                </p>
+
+                                <p class="text-muted mb-2 mt-3">
+                                    En el caso de una solicitud especial recibiras un email de confirmación o negación una vez el administrador de inventario maneje la solicitud.
+                                </p>
+
+                                <p class="text-muted mb-2 mt-3">
                                     De tener algún inconveniente, contacta al administrador del inventario
                                     <a href="mailto:orlando.cruz@upr.edu"
                                        class="text-success text-decoration-none fw-semibold">
@@ -440,10 +456,9 @@
                                     </a>.
                                 </p>
 
-                                <p class="text-muted mb-0">
+                                <p class="text-muted mb-2 mt-3">
                                     Esta información también está disponible en el footer de la página.
                                 </p>
-                                <br>
 
                                 <div class="form-check mb-2">
                                     <input class="form-check-input"

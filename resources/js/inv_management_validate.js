@@ -1,3 +1,11 @@
+
+document.querySelectorAll('[data-bs-toggle="tooltip"]')
+
+    /*
+       * Activates tool tips
+       */
+    .forEach(el => new bootstrap.Tooltip(el));
+
 document.addEventListener('DOMContentLoaded', function () {
 
     /*

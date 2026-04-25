@@ -41,8 +41,12 @@
                     - Highlights when user is in the kinventory--}}
                 <li class="nav-item flex-fill text-center">
                     <a href="{{ route('kinventory') }}"
-                    class="btn w-100
-                        {{ request()->routeIs('kinventory') ? 'btn-success' : 'btn-outline-success' }}">
+                       class="btn w-100
+                        {{ request()->routeIs('kinventory') ? 'btn-success' : 'btn-outline-success' }}"
+                       data-bs-toggle="tooltip"
+                       data-bs-placement="top"
+                       data-bs-custom-class="custom-tooltip"
+                       data-bs-title="Pide prestado equipo deportivo!">
                         <i class="bi bi-box-seam"></i>
                         Kinventario
                     </a>
@@ -56,7 +60,11 @@
                     <li class="nav-item flex-fill text-center">
                         <a href="{{ route('inventory_management') }}"
                         class="btn w-100
-                        {{ request()->routeIs('inventory_management', 'inventory_management.borrows', 'inventory_management.inventory_statistics') ? 'btn-success' : 'btn-outline-success' }}">
+                        {{ request()->routeIs('inventory_management', 'inventory_management.borrows', 'inventory_management.inventory_statistics') ? 'btn-success' : 'btn-outline-success' }}"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            data-bs-custom-class="custom-tooltip"
+                            data-bs-title="Manejar equipo, préstamos y estadísticas del inventario!">
                             <i class="bi bi-boxes"></i>
                             Gestión de Inventario
                         </a>
@@ -71,8 +79,11 @@
                     <li class="nav-item flex-fill text-center">
                         <a href="{{ route('search_user') }}"
                         class="btn w-100
-                            {{ request()->routeIs('search_user') ? 'btn-success' : 'btn-outline-success' }}">
-
+                            {{ request()->routeIs('search_user') ? 'btn-success' : 'btn-outline-success' }}"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="bottom"
+                            data-bs-custom-class="custom-tooltip"
+                            data-bs-title="Busca usuarios para cambiar su rol o estatus!">
                             <i class="bi bi-people"></i>
 
                             Buscar Usuarios

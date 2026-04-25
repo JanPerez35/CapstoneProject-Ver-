@@ -638,3 +638,13 @@
     border-color: #145c32 !important;
     box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
 }
+
+/* I was thinking the tool tips can be green*/
+.custom-tooltip {
+    --bs-tooltip-bg: #D6D6D6;
+    --bs-tooltip-color: #000000;
+}
+
+.custom-tooltip .tooltip-inner {
+    border-radius: 0 !important;
+}

@@ -8,6 +8,14 @@
  * - handles export button behavior with toast feedback
  * - renders Chart.js bar chart using data from Blade
  */
+
+document.querySelectorAll('[data-bs-toggle="tooltip"]')
+
+        /**
+       * Activates tool tips
+       */
+    .forEach(el => new bootstrap.Tooltip(el));
+
 document.addEventListener('DOMContentLoaded', function () {
 
     /**
