@@ -74,7 +74,7 @@ Route::any('/auth/callback', function () {
     }
 
     // Redirect authenticated user to main system page
-    return redirect()->route('kinventory');
+    return redirect()->route('kinemarket');
 })->name('saml.callback');
 
 /**

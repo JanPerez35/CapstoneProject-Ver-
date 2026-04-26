@@ -11,6 +11,17 @@
  * - shows global success toasts after page reloads
  */
 
+import * as bootstrap from "bootstrap";
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    /**
+     * Activates tool tip
+     */
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-title]');
+    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+});
+
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('#cartModal form');
     const body = document.body;
@@ -653,7 +664,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (cartSuccess && cartToastEl && cartToastMessage) {
             cartToastMessage.textContent = cartSuccess;
-            bootstrap.Toast.getOrCreateInstance(cartToastEl, { delay: 3000 }).show();
+            bootstrap.Toast.getOrCreateInstance(cartToastEl, { delay: 5000 }).show();
+        }
+
+        const errorMessage = bodyEl?.dataset?.errorMessage || '';
+
+        const errorToastEl = document.getElementById('errorToast');
+        const errorToastMessage = document.getElementById('errorToastMessage');
+
+        if (errorMessage && errorToastEl && errorToastMessage) {
+            errorToastMessage.textContent = errorMessage;
+            bootstrap.Toast.getOrCreateInstance(errorToastEl, { delay: 5000 }).show();
         }
 
         const submitToastEl = document.getElementById('submitToast');
@@ -661,7 +682,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (requestSuccess && submitToastEl && submitToastMessage) {
             submitToastMessage.textContent = requestSuccess;
-            bootstrap.Toast.getOrCreateInstance(submitToastEl, { delay: 4000 }).show();
+            bootstrap.Toast.getOrCreateInstance(submitToastEl, { delay: 5000 }).show();
         }
 
         const cartRemovedToastEl = document.getElementById('cartRemovedToast');
@@ -669,7 +690,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (cartRemovedSuccess && cartRemovedToastEl && cartRemovedToastMessage) {
             cartRemovedToastMessage.textContent = cartRemovedSuccess;
-            bootstrap.Toast.getOrCreateInstance(cartRemovedToastEl, { delay: 3000 }).show();
+            bootstrap.Toast.getOrCreateInstance(cartRemovedToastEl, { delay: 5000 }).show();
         }
 
         const termsUpdatedSuccess = bodyEl?.dataset?.termsUpdatedSuccess || '';
@@ -678,7 +699,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (termsUpdatedSuccess && termsUpdatedToastEl && termsUpdatedToastMessage) {
             termsUpdatedToastMessage.textContent = termsUpdatedSuccess;
-            bootstrap.Toast.getOrCreateInstance(termsUpdatedToastEl, { delay: 3000 }).show();
+            bootstrap.Toast.getOrCreateInstance(termsUpdatedToastEl, { delay: 5000 }).show();
         }
     }
 

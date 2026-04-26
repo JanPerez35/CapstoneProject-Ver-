@@ -16,23 +16,35 @@
 
         {{-- Internal navigation for switching between inventory administration, borrow management, and statistics --}}
         <div class="d-flex flex-wrap gap-2 mb-4">
-            
+
             {{-- Inventory administration --}}
             <a href="{{ route('inventory_management') }}"
-               class="btn btn-success px-4 fw-semibold">
+               class="btn btn-success px-4 fw-semibold"
+               data-bs-toggle="tooltip"
+               data-bs-placement="top"
+               data-bs-custom-class="custom-tooltip"
+               data-bs-title="Gestiona el equipo disponible (crear, editar, eliminar)">
                 <i class="bi bi-box"></i>
                 Inventario Administrativo
             </a>
 
             {{-- Borrows --}}
             <a href="{{ route('inventory_management.borrows') }}"
-               class="btn btn-outline-success px-4 fw-semibold">
+               class="btn btn-outline-success px-4 fw-semibold"
+               data-bs-toggle="tooltip"
+               data-bs-placement="bottom"
+               data-bs-custom-class="custom-tooltip"
+               data-bs-title="Aprueba solicitudes y maneja préstamos activos">
                 <i class="bi bi-card-checklist"></i> Préstamos
             </a>
 
             {{-- Statistics --}}
             <a href="{{ route('inventory_management.inventory_statistics') }}"
-               class="btn btn-outline-success px-4 fw-semibold">
+               class="btn btn-outline-success px-4 fw-semibold"
+               data-bs-toggle="tooltip"
+               data-bs-placement="bottom"
+               data-bs-custom-class="custom-tooltip"
+               data-bs-title="Visualiza reportes y descarga estadísticas del inventario">
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
         </div>
@@ -122,7 +134,7 @@
                 {{-- Single inventory card with item summary, availability state, and action buttons --}}
                 <div class="col-md-6 col-lg-4 inventory-card-wrapper">
                     <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
-                        
+
                         {{-- Load image using the stored URL of the image on the database --}}
                         <img
                             src="{{ $item->equipment_photo_url ? asset('storage/' . $item->equipment_photo_url) : asset('images/kinventory_images/default.jpg') }}"
