@@ -20,6 +20,16 @@ window.bootstrap = bootstrap;
 document.addEventListener('DOMContentLoaded', () => {
 
     /**
+     * Activates tool tip
+     */
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+    tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+});
+
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    /**
      * Skip this block when the page explicitly uses its own layout validation.
      */
     if(!window.useDedicatedLayoutValidation) {

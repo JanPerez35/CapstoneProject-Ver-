@@ -96,7 +96,7 @@
         </div>
 
         {{-- Navigation tabs for switching between posts and requests --}}
-        <ul class="nav w-100 flex-wrap gap-2 mb-4" id="profileTabs" role="tablist">
+        <ul class="nav w-100 flex-wrap gap-2 mb-4 ps-3" id="profileTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button
                     class="btn {{ request('tab') === 'requests' ? 'btn-outline-success' : 'btn-success' }} rounded-3 px-4 py-2"
