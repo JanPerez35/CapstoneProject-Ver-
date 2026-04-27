@@ -113,7 +113,7 @@
 
                     data-bs-placement="top"
                     data-bs-custom-class="custom-tooltip"
-                    data-bs-title="Verifica equipo deportivo en tu orden"
+                    data-bs-title="Verifica equipo deportivo en tu carrito"
                 >
                     <i class="bi bi-cart3 me-1"></i>
                     Carrito
@@ -192,8 +192,8 @@
                             {{-- Cart table header --}}
                             <div class="row g-0 px-3 py-3 fw-semibold border-bottom bg-light">
                                 <div class="col-6">Equipo</div>
-                                <div class="col-3 text-center">Cantidad</div>
-                                <div class="col-3 text-center">Eliminar</div>
+                                <div class="col-3 text-center ps-1">Cantidad</div>
+                                <div class="col-3 text-center ps-3">Eliminar</div>
                             </div>
 
                             <div id="cartItemsContainer">
@@ -207,7 +207,7 @@
                                         <button type="button"
                                                 class="btn btn-success"
                                                 data-bs-dismiss="modal">
-                                            Continuar explorando
+                                            Continuar Explorando
                                         </button>
                                     </div>
                                 @else
