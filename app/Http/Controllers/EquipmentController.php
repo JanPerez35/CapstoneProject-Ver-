@@ -99,23 +99,23 @@ class EquipmentController extends Controller
             'image' => 'nullable|image|mimes:jpg,jpeg|max:2048',
         ]);
 
-        // Replace image if a new one is uploaded
+        $imagePath = $item->equipment_photo_url;
+
         if ($request->hasFile('image')) {
             if ($item->equipment_photo_url) {
                 \Storage::disk('public')->delete($item->equipment_photo_url);
             }
 
             $imagePath = $request->file('image')->store('equipment_photos', 'public');
-            $item->equipment_photo_url = $imagePath;
         }
 
-        // Update equipment fields
         $item->update([
             'description' => $validated['description'],
             'category' => $validated['category'],
             'quantity' => $validated['quantity'],
             'available_quantity' => $validated['available_quantity'],
             'location' => $validated['location'],
+            'equipment_photo_url' => $imagePath,
         ]);
 
         $this->logActivity(

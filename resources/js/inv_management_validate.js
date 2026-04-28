@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     let pendingDeleteForm = null;
     let pendingEditForm = null;
+    let isConfirmedEditSubmit = false;
 
     /*
      * Saves and restores scroll position so the user returns to the
@@ -478,7 +479,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 hideModal(confirmEditModalElement);
-                form.submit();
+                isConfirmedEditSubmit = true;
+                form.requestSubmit();
             });
         }
     }
@@ -575,8 +577,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const existingValue = categoryExisting.value.trim();
             const isUsingNew = categoryNew.value !== '';
 
-            clearError(categoryExisting, categoryError);
-            clearError(categoryNew, categoryError);
+            if (showError) {
+                clearError(categoryExisting, categoryError);
+                clearError(categoryNew, categoryError);
+            }
 
             if (isUsingNew) {
                 categoryFinal.value = newValue;
@@ -625,8 +629,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const existingValue = locationExisting.value.trim();
             const isUsingNew = locationNew.value !== '';
 
-            clearError(locationExisting, locationError);
-            clearError(locationNew, locationError);
+            if (showError) {
+                clearError(locationExisting, locationError);
+                clearError(locationNew, locationError);
+            }
+
 
             if (isUsingNew) {
                 locationFinal.value = newValue;
@@ -871,6 +878,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const availableError = form.querySelector('.error-available');
         const imageError = form.querySelector('.error-image');
 
+        const editPreviewWrapper = form.querySelector('.edit-preview-wrapper');
+        const editImagePreview = form.querySelector('.edit-image-preview');
+
         const submitEditBtn = form.querySelector('button[type="submit"]');
 
         /*
@@ -906,8 +916,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const existingValue = categoryExisting.value.trim();
             const isUsingNew = categoryNew.value !== '';
 
-            clearError(categoryExisting, categoryError);
-            clearError(categoryNew, categoryError);
+            if (showError) {
+                clearError(categoryExisting, categoryError);
+                clearError(categoryNew, categoryError);
+            }
 
             if (isUsingNew) {
                 categoryFinal.value = newValue;
@@ -956,8 +968,10 @@ document.addEventListener('DOMContentLoaded', function () {
             const isUsingNew = locationNew.value.trim() !== '';
             const activeInput = isUsingNew ? locationNew : locationExisting;
 
-            clearError(locationExisting, locationError);
-            clearError(locationNew, locationError);
+            if (showError) {
+                clearError(locationExisting, locationError);
+                clearError(locationNew, locationError);
+            }
 
             if (locationNew.value.length > MAX_TEXT_LENGTH) {
                 if (showError) {
@@ -991,6 +1005,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
         function validateEditImage(showError = true) {
             return validateImageField(imageInput, imageError, false, showError);
+        }
+
+        function updateEditPreview() {
+            const file = imageInput.files[0];
+
+            if (!file) {
+                editPreviewWrapper?.classList.add('d-none');
+                if (editImagePreview) editImagePreview.src = '';
+                return;
+            }
+
+            if (file.size > MAX_IMAGE_SIZE || !['image/jpeg', 'image/jpg'].includes(file.type)) {
+                editPreviewWrapper?.classList.add('d-none');
+                if (editImagePreview) editImagePreview.src = '';
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                if (editImagePreview) editImagePreview.src = e.target.result;
+                editPreviewWrapper?.classList.remove('d-none');
+            };
+
+            reader.readAsDataURL(file);
         }
 
 
@@ -1086,6 +1125,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         imageInput.addEventListener('change', function () {
             validateEditImage(true);
+            updateEditPreview();
             updateEditButtonState();
         });
 
@@ -1094,6 +1134,12 @@ document.addEventListener('DOMContentLoaded', function () {
          * If valid, submission is paused until the user confirms the edit.
          */
         form.addEventListener('submit', function (e) {
+
+            if (isConfirmedEditSubmit) {
+                isConfirmedEditSubmit = false;
+                return;
+            }
+
             const valid =
                 validateDescription(true) &&
                 validateCategory(true) &&
