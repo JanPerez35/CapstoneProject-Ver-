@@ -14,6 +14,7 @@
         data-delete-url-base="{{ url('/marketplace') }}"
         data-details-url-base="{{ url('/marketplace') }}"
         data-current-user-id="{{ auth()->id() ?? '' }}"
+        data-current-user-role="{{ auth()->user() ? auth()->user()->role : '' }}"
     >
         {{--Page header introducing the Kinemarket/Kinemercado page--}}
         <div class="mb-4">
@@ -451,7 +452,7 @@
                             </div>
                         </div>
 
-
+                        <div id="postOwnerRestrictedSection">
                         <hr>
 
                         {{--Allows the user to rate the seller--}}
@@ -503,12 +504,15 @@
                                 </button>
                             </div>
 
+
+
                             {{--Link/button to messaging system (Mis Chats) route from a specific post--}}
                             <div class="col-6">
                                 <a href="{{ url('/my_messages') }}" id="postDetailsChatLink" class="btn btn-success w-100 rounded-3">
                                     <i class="bi bi-chat me-2"></i> Enviar Mensaje
                                 </a>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -773,6 +777,5 @@
             </div>
         </div>
     </div>
-
 </x-layout>
 

@@ -1,3 +1,4 @@
+import * as bootstrap from 'bootstrap';
     const REPORTS_PER_PAGE = 18;
     let currentReportsPage = 1;
 
@@ -32,7 +33,7 @@
 
         const row = `
             <tr data-report-id="${report.id}"
-                data-post='${JSON.stringify(report.post || {}).replace(/'/g, "&apos;")}'
+                data-post="${encodeURIComponent(JSON.stringify(report.post || {}))}"
                 data-seller-id="${report.reported_user_id}"
                 data-post-id="${report.post_id}"
                 >
@@ -70,7 +71,6 @@
     filterSearchBy: $('filterSearchBy'),
     filterDate: $('filterDate'),
 
-
     resolveModal: $('resolveQuerellaModal'),
     deleteModal: $('deletePostModal'),
     banModal: $('bloquearUserModal'),
@@ -90,14 +90,13 @@
     resolve: 'resolveToast',
     delete: 'deleteToast',
     ban: 'banToast',
-    view: 'viewToast',
 };
 
     const toasts = Object.fromEntries(
     Object.entries(toastIds).map(([key, id]) => [
-    key,
-    bootstrap.Toast.getOrCreateInstance($(id), { delay: key === 'view' ? 2500 : 3000 })
-    ])
+            key,
+            bootstrap.Toast.getOrCreateInstance($(id), { delay: 3000 })
+       ])
     );
 
     let selected = {
@@ -339,7 +338,6 @@ function bindConfirm(button, key, modalEl, toastKey) {
         const row = selected[key].closest('tr');
         const reportId = row.dataset.reportId;
         const postId = row.dataset.postId;
-        const userId = row.dataset.sellerId;
 
         const csrf = document.querySelector('meta[name="csrf-token"]').content;
 
@@ -431,15 +429,18 @@ document.addEventListener('change', async (e) => {
         bootstrap.Modal.getOrCreateInstance(els.banModal).show();
     }
 
-    if (target.matches('.action-view') && target.checked) {
+    if (target.matches('.action-view')) {
         const row = target.closest('tr');
         const postId = row.dataset.postId;
+
+        if (!postId) return;
+
         const res = await fetch(`/posts/${postId}`);
         const post = await res.json();
 
-        populatePostDetailsModal(post);
-        console.log('POST:', post);
-        populatePostDetailsModal(post);
+        console.log('FULL POST:', post);
+
+        window.populatePostDetailsModal(post);
 
         const modal = bootstrap.Modal.getOrCreateInstance(
             document.getElementById('postDetailsModal')
@@ -447,6 +448,7 @@ document.addEventListener('change', async (e) => {
 
         modal.show();
     }
+
 });
 
 const modalEl = document.getElementById('postDetailsModal');
@@ -467,32 +469,33 @@ modalEl.addEventListener('hidden.bs.modal', () => {
     bindModalReset(els.deleteModal, 'delete');
     bindModalReset(els.banModal, 'ban');
 
-        document.querySelectorAll('#reportsTable tbody tr').forEach((row) => {
+        document.addEventListener('click', (event) => {
+            const radio = event.target;
+
+            if (!radio.matches('.action-radio')) return;
+
+            const row = radio.closest('tr');
             const radios = row.querySelectorAll('.action-radio');
+            const wasChecked = radio.dataset.wasChecked === 'true';
 
-            radios.forEach((radio) => {
-                radio.addEventListener('click', function () {
-                    const wasChecked = this.dataset.wasChecked === 'true';
-
-                    radios.forEach((r) => {
-                        r.dataset.wasChecked = 'false';
-                        r.classList.remove('active-radio');
-                    });
-
-                    if (wasChecked) {
-                        this.checked = false;
-
-                        if (selected.resolve === this) selected.resolve = null;
-                        if (selected.delete === this) selected.delete = null;
-                        if (selected.ban === this) selected.ban = null;
-
-                        return;
-                    }
-
-                    this.dataset.wasChecked = 'true';
-                    this.classList.add('active-radio');
-                });
+            radios.forEach((r) => {
+                r.dataset.wasChecked = 'false';
+                r.classList.remove('active-radio');
             });
+
+            if (wasChecked) {
+                radio.checked = false;
+                radio.dataset.wasChecked = 'false';
+
+                if (selected.resolve === radio) selected.resolve = null;
+                if (selected.delete === radio) selected.delete = null;
+                if (selected.ban === radio) selected.ban = null;
+
+                return;
+            }
+
+            radio.dataset.wasChecked = 'true';
+            radio.classList.add('active-radio');
         });
 
     updateReportsSearchButtonState();

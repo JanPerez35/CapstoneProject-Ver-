@@ -33,6 +33,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!table) return;
 
+    const downloadToastEl = document.getElementById('downloadToast');
+    const downloadToast = downloadToastEl
+        ? bootstrap.Toast.getOrCreateInstance(downloadToastEl, { delay: 3000 })
+        : null;
+
     /**
      * Escapes a value for safe inclusion in a CSV file.
      *
@@ -140,6 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     if (csvBtn) {
         csvBtn.addEventListener('click', () => {
+            downloadToast?.show();
             const rows = getVisibleRows();
             const csv = [];
 

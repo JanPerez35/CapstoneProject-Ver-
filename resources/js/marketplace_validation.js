@@ -400,13 +400,35 @@ function clearImageError() {
  * description, price , condition badge, category badge, seller name,
  * rating and review count, time-ago text, details button, and delete button.
  *
- * The card also stores several post attributes inside data-* attributes,
+ * The card also stores several post attributes inside data attributes,
  * which can later be used by event handlers.
  *
  * @param {Object} post - The marketplace post object returned by the backend.
  * @returns {string} The HTML markup for one marketplace card.
  */
 function createMarketplaceCardHTML(post) {
+    const container = document.getElementById('marketplaceHome');
+    const currentUserId = Number(container.dataset.currentUserId);
+    const currentUserRole = container.dataset.currentUserRole;
+
+    const isAdmin = ['Admin Super', 'Admin Mercado'].includes(currentUserRole);
+    const isOwner = currentUserId === post.user?.id;
+
+    let deleteButton = '';
+
+    if (isAdmin || isOwner) {
+        deleteButton = `
+            <button
+                type="button"
+                class="btn btn-danger rounded-3 open-delete-post-modal"
+                data-id="${post.id}"
+                data-post-title="${post.title}"
+            >
+                Eliminar Publicación
+            </button>
+        `;
+    }
+
     return `
        <div
            class="col-md-6 col-lg-4 marketplace-card"
@@ -473,7 +495,7 @@ function createMarketplaceCardHTML(post) {
                            </div>
 
                            <div>
-                               <i class="bi bi-clock me-2"></i> ${post.time_ago}
+                               <i class="bi bi-clock me-2"></i> Publicado ${post.time_ago}
                            </div>
                        </div>
 
@@ -486,14 +508,7 @@ function createMarketplaceCardHTML(post) {
                                Ver Detalles
                            </button>
 
-                           <button
-                               type="button"
-                               class="btn btn-danger rounded-3 open-delete-post-modal"
-                               data-id="${post.id}"
-                               data-post-title="${post.title}"
-                           >
-                               Eliminar Publicación
-                           </button>
+                            ${deleteButton}
                        </div>
                    </div>
 
@@ -622,10 +637,24 @@ window.populatePostDetailsModal = function (post) {
     if (post.user?.id) {
         reportedUserId = post.user.id;
     }
+
     if (postDetailsModal) {
-    postDetailsModal.dataset.postId = post.id;
+        postDetailsModal.dataset.postId = post.id;
     }
+
+    const container = document.getElementById('marketplaceHome');
+    const currentUserId = container ? Number(container.dataset.currentUserId) : null;
+    const isOwner = container && post.user ? currentUserId === post.user.id : false;
     const postDetailsChatLink = document.getElementById('postDetailsChatLink');
+    const restrictedSection = document.getElementById('postOwnerRestrictedSection');
+
+    if (restrictedSection) {
+        if (isOwner) {
+            restrictedSection.classList.add('d-none');
+        } else {
+            restrictedSection.classList.remove('d-none');
+        }
+    }
 
     if (postDetailsChatLink && post) {
         postDetailsChatLink.onclick = async (e) => {

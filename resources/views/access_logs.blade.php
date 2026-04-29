@@ -1,4 +1,4 @@
-{{-- 
+{{--
     Access Logs View
 
     Displays the administrative access logs dashboard.
@@ -39,7 +39,7 @@
             </button>
         </div>
 
-        {{-- 
+        {{--
             Filters and search form
 
             Allows administrators to:
@@ -259,5 +259,25 @@
                 {{ $logs->links('pagination::bootstrap-5') }}
             </div>
         @endif
+    </div>
+
+    {{--CSV Download Toast Notification--}}
+    <div class="toast-container position-fixed bottom-0 start-0 p-3">
+        <div id="downloadToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2 market-toast"
+             role="alert" aria-live="assertive" aria-atomic="true">
+
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold pe-1 market-toast-body">
+                    Tu documento se descargará en unos instantes.
+                </div>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2 market-toast-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar">
+                </button>
+            </div>
+        </div>
     </div>
 </x-layout>

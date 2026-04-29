@@ -15,7 +15,11 @@
                     - Highlights when user is in the kinemarketplace or messaging related to a post--}}
                 <li class="nav-item flex-fill text-center">
                     <a href="{{ route('kinemarket') }}"
-                       class="btn w-100 {{ request()->routeIs('kinemarket') || (request()->routeIs('my_messages') && request()->filled('post_id')) ? 'btn-success' : 'btn-outline-success' }}">
+                       class="btn w-100 {{ request()->routeIs('kinemarket') || (request()->routeIs('my_messages') && request()->filled('post_id')) ? 'btn-success' : 'btn-outline-success' }}"
+                       data-bs-toggle="tooltip"
+                       data-bs-placement="top"
+                       data-bs-custom-class="custom-tooltip"
+                       data-bs-title="Mercado comunitario para compartir equipos deportivos, conectar y gestionar sus publicaciones!">
                         <i class="bi bi-shop"></i>
                         Kinemercado
                     </a>
@@ -29,7 +33,11 @@
                     <li class="nav-item flex-fill text-center">
                         <a href="{{ route('marketplace_management') }}"
                         class="btn w-100
-                        {{request()->routeIs('marketplace_management')? 'btn-success': 'btn-outline-success'}}">
+                        {{request()->routeIs('marketplace_management')? 'btn-success': 'btn-outline-success'}}"
+                           data-bs-toggle="tooltip"
+                           data-bs-placement="top"
+                           data-bs-custom-class="custom-tooltip"
+                           data-bs-title="Manejas querellas, moderas publicaciones reportadas y resuleves incidencias de publicaciones!">
                             <i class="bi bi-shop-window"></i>
                             Gestión de Mercado
                         </a>
@@ -100,7 +108,11 @@
                     <li class="nav-item flex-fill text-center">
                         <a href="{{ route('access_logs') }}"
                         class="btn w-100
-                            {{ request()->routeIs('access_logs') ? 'btn-success' : 'btn-outline-success' }}">
+                            {{ request()->routeIs('access_logs') ? 'btn-success' : 'btn-outline-success' }}"
+                               data-bs-toggle="tooltip"
+                               data-bs-placement="bottom"
+                               data-bs-custom-class="custom-tooltip"
+                               data-bs-title="Observa, filtra y descarga las actividades registradas de los usarios!">
 
                             <i class="bi bi-clipboard-check"></i>
                             Registros de Acceso
@@ -116,14 +128,18 @@
                     <li class="nav-item flex-fill text-center">
                         <a href="{{ route('facility_management') }}"
                         class="btn w-100
-                        {{ request()->routeIs('facility_management') ? 'btn-success' : 'btn-outline-success' }}">
+                        {{ request()->routeIs('facility_management') ? 'btn-success' : 'btn-outline-success' }}"
+                           data-bs-toggle="tooltip"
+                           data-bs-placement="bottom"
+                           data-bs-custom-class="custom-tooltip"
+                           data-bs-title="Gestiona tarifas, alquileres y reportes de costos operacionales de las áreas dentro del Coliseo Rafael Mangual!"
+                            >
 
                             <i class="bi bi-currency-dollar"></i>
-                            Gestión de Costos (Mangual)
+                            Gestión de Costos Operacionales
                         </a>
                     </li>
                 @endif
-
             </ul>
         </div>
     </header>

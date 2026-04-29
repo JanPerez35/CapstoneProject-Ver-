@@ -40,7 +40,6 @@ window.Echo = new Echo({
 
 
 let currentChannel = null;
-let lastMessageId = null;
 let subscribedChannel = null;
 
 function subscribeToChat(chatId) {
@@ -75,16 +74,31 @@ function subscribeToChat(chatId) {
             .listen('.MessageSent', (data) => {
                 console.log('EVENTO:', data);
 
+                const activeChatId = String(document.getElementById('messagesView')?.dataset.chatId || '');
+                const incomingChatId = String(data.chat_id || '');
+
+                if (activeChatId === incomingChatId) {
+                    fetch(`/messages/${incomingChatId}`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    }).catch(error => {
+                        console.error('Error marcando mensajes como leídos:', error);
+                    });
+                }
+
                 if (document.querySelector(`[data-message-id="${data.id}"]`)) {
                     return;
-                } 
+                }
 
                 renderMessage({
                     id: data.id,
                     message: data.content,
+                    createdAt: data.created_at,
                     time: new Date(data.created_at).toLocaleTimeString([], {
-                        hour: '2-digit', 
-                        minute: '2-digit' 
+                        hour: '2-digit',
+                        minute: '2-digit'
                     }),
                     senderId: data.sender_id,
                     conversationId: data.chat_id,
