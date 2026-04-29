@@ -360,6 +360,7 @@ function bindConfirm(button, key, modalEl, toastKey) {
                     method: 'POST',
                     headers: { 'X-CSRF-TOKEN': csrf }
                 });
+                fetchReports();
             }
 
             if (key === 'ban') {

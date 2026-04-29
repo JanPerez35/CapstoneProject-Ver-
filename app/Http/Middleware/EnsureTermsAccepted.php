@@ -34,6 +34,8 @@ class EnsureTermsAccepted
      */
     public function handle(Request $request, Closure $next): Response
     {
+
+
         // Redirect unauthenticated users to login
         if (!auth()->check()) {
             return redirect()->route('saml.login');
