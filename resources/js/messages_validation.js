@@ -1126,8 +1126,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
 
-            sendFrontendMessage();
-
             input.value = '';
             clearAllValidationErrors();
             updateSendButtonState();
