@@ -108,6 +108,10 @@ class PostController extends Controller
                     'user' => [
                         'id' => $post->user->id,
                         'name' => $sellerName,
+                        'first_name' => $post->user->first_name ?? '',
+                        'last_name' => $post->user->last_name ?? '',
+                        'average_rating' => round($averageRating ?? 0, 1),
+                        'reviews_count' => $reviewsCount,
                     ],
                 ];
             });
@@ -147,6 +151,10 @@ class PostController extends Controller
             'user' => [
                 'id' => $post->user->id,
                 'name' => $sellerName,
+                'first_name' => $post->user->first_name ?? '',
+                'last_name' => $post->user->last_name ?? '',
+                'average_rating' => $averageRating,
+                'reviews_count' => $reviewsCount,
             ]
         ]);
     }
