@@ -187,7 +187,7 @@
                                     data-bs-toggle="modal"
                                     data-bs-target="#editItemModal{{ $item->id }}"
                                 >
-                                    Editar
+                                    Editar Item
                                 </button>
 
                                 {{-- Item delete display on the card and delete form --}}
@@ -393,6 +393,16 @@
                                         Solo 1 imagen permitida. Formato JPEG/JPG. Máximo 2MB.
                                     </small>
                                     <div class="invalid-feedback d-block error-image"></div>
+
+                                    <div class="mb-3 d-none edit-preview-wrapper">
+                                        <label class="form-label fw-semibold">Vista previa</label>
+                                        <img
+                                            src=""
+                                            alt="Vista previa"
+                                            class="img-fluid rounded-4 w-100 edit-image-preview"
+                                            style="height: 220px; object-fit: cover; object-position: center;"
+                                        >
+                                    </div>
 
                                     <div class="modal-footer border-0 px-0 pb-0">
                                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">

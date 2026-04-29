@@ -6,26 +6,72 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function formatDateSeparator(dateValue) {
+    const date = new Date(dateValue);
+    const today = new Date();
+    const yesterday = new Date();
+
+    yesterday.setDate(today.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+        return 'Hoy';
+    }
+
+    if (date.toDateString() === yesterday.toDateString()) {
+        return 'Ayer';
+    }
+
+    return date.toLocaleDateString('es-PR', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+    });
+}
+
+function insertDateSeparatorIfNeeded(messagesContainer, dateValue) {
+    const separatorText = formatDateSeparator(dateValue);
+
+    if (messagesContainer.dataset.lastMessageDate === separatorText) {
+        return;
+    }
+
+    messagesContainer.insertAdjacentHTML('beforeend', `
+        <div class="text-center text-muted small my-3">
+           <div class="d-flex align-items-center my-3">
+                <hr class="flex-grow-1">
+                <span class="px-3 text-muted fs-6 fw-semibold">${separatorText}</span>
+                <hr class="flex-grow-1">
+           </div>
+        </div>
+    `);
+
+    messagesContainer.dataset.lastMessageDate = separatorText;
+}
 
 export function renderMessage(messageObj) {
-        const messagesContainer = document.getElementById('chatMessagesContainer');
-        const emptyState = document.getElementById('chatEmptyState');
+    const messagesContainer = document.getElementById('chatMessagesContainer');
+    const emptyState = document.getElementById('chatEmptyState');
 
-        if (!messagesContainer) {
-            console.error('No se encontró el contenedor de mensajes');
-            return;
-        }
-        if (emptyState) {
-            emptyState.classList.add('d-none');
-        }
+    if (!messagesContainer) {
+        console.error('No se encontró el contenedor de mensajes');
+        return;
+    }
+    if (emptyState) {
+        emptyState.classList.add('d-none');
+    }
 
-        const isMine = messageObj.isMine === true;
+    const isMine = messageObj.isMine === true;
 
-        const alignment = isMine ? 'justify-content-end' : 'justify-content-start';
-        const bubbleClass = isMine ? 'bg-success-subtle text-dark border border-success-subtle' : 'bg-success-subtle text-dark border border-success-subtle';
-        const timeClass = 'small mt-1 text-end text-muted';
+    const alignment = isMine ? 'justify-content-end' : 'justify-content-start';
+    const bubbleClass = isMine ? 'bg-success-subtle text-dark border border-success-subtle' : 'bg-success-subtle text-dark border border-success-subtle';
+    const timeClass = 'small mt-1 text-end text-muted';
 
-        messagesContainer.insertAdjacentHTML('beforeend', `
+    insertDateSeparatorIfNeeded(
+        messagesContainer,
+        messageObj.createdAt || messageObj.created_at || new Date()
+    );
+
+    messagesContainer.insertAdjacentHTML('beforeend', `
             <div class="d-flex ${alignment} mb-3">
                 <div
                     class="${bubbleClass} px-3 py-2 rounded-4 shadow-sm"
@@ -40,11 +86,11 @@ export function renderMessage(messageObj) {
             </div>
         `);
 
-        messagesContainer.scrollTo({
-            top: messagesContainer.scrollHeight,
-            behavior: 'smooth'
-        });
-    }
+    messagesContainer.scrollTo({
+        top: messagesContainer.scrollHeight,
+        behavior: 'smooth'
+    });
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('chatMessageInput');
@@ -62,6 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const messagesSearchInput = document.getElementById('messagesSearchInput');
     const chatListContainer = document.getElementById('chatListContainer');
     const chatSearchEmptyState = document.getElementById('chatSearchEmptyState');
+    const searchMessagesBtn = document.getElementById('searchMessagesBtn');
+    const clearMessagesFiltersBtn = document.getElementById('clearMessagesFiltersBtn');
 
     const messagesVolverBtn = document.getElementById('messagesVolverBtn');
     const postDetailsModal = document.getElementById('postDetailsModal');
@@ -117,12 +165,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!input || !errorEl || !sendBtn || !messagesContainer) return;
 
+    input.addEventListener('focus', () => {
+        if (!messagesView?.dataset.chatId) {
+            input.blur();
+        }
+    });
+
     const MAX_LENGTH = 255;
     const MAX_REPORT_LENGTH = 500;
-    const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-¿?¡!()]+$/;
-    const allowedReportRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-¿?¡!()]+$/;
+    const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-¿?¡!#$]+$/;
+    const allowedReportRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
     const frontendMessages = [];
     const chatId = messagesView?.dataset.chatId;
+    function updateChatInputState() {
+        const hasChat = !!messagesView?.dataset.chatId;
+
+        if (!hasChat) {
+            input.disabled = true;
+            input.placeholder = 'Selecciona un chat para escribir...';
+            sendBtn.disabled = true;
+        } else {
+            input.disabled = false;
+            input.placeholder = 'Escriba un mensaje...';
+            updateSendButtonState(); // reuse your existing logic
+        }
+    }
     const currentUserId = messagesView?.dataset.currentUserId;
 
     let isReportDirty = false;
@@ -225,10 +292,9 @@ document.addEventListener('DOMContentLoaded', () => {
             input.value = value.slice(0, MAX_LENGTH);
 
             if (showError) {
-                setValidationError(
-                    `El mensaje no puede exceder ${MAX_LENGTH} caracteres.`,
-                    'maxlength'
-                );
+                input.classList.add('is-invalid');
+                errorEl.textContent = `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres. No puedes escribir más.`;
+                errorEl.dataset.errorType = 'maxlength-over';
             }
 
             return false;
@@ -241,19 +307,19 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         }
 
-        clearValidationError('maxlength');
+        clearValidationError('maxlength-over');
         clearValidationError('maxlength-limit');
         return true;
     }
 
     function updateSendButtonState() {
         const trimmedValue = input.value.trim();
-        const hasOwnError =
+        const hasBlockingError =
             errorEl.dataset.errorType === 'required' ||
-            errorEl.dataset.errorType === 'maxlength' ||
+            errorEl.dataset.errorType === 'maxlength-over' ||
             errorEl.dataset.errorType === 'characters';
 
-        sendBtn.disabled = !trimmedValue || hasOwnError;
+        sendBtn.disabled = !trimmedValue || hasBlockingError;
     }
 
     function updateCounter() {
@@ -469,14 +535,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function populatePostDetailsModal(post) {
+        if (!post) return;
         if (post.user?.id) {
             reportedUserId = post.user.id;
         }
 
-        if (!post) return;
+        const currentUserId = Number(messagesView?.dataset.currentUserId || 0);
+        const sellerId = Number(post.user?.id || 0);
+        const isOwner = currentUserId === sellerId;
 
-        const sellerRating = Number(post.user?.average_rating ?? 0);
-        const sellerReviews = Number(post.user?.reviews_count ?? 0);
+        const sellerName =
+            post.user?.name ||
+            `${post.user?.first_name ?? ''} ${post.user?.last_name ?? ''}`.trim() ||
+            'Usuario';
+
+        const sellerRating = Number(post.rating ?? post.user?.average_rating ?? 0);
+        const sellerReviews = Number(post.reviews ?? post.user?.reviews_count ?? 0);
+
+        const restrictedSection = document.getElementById('postOwnerRestrictedSection');
+
+        if (restrictedSection) {
+            restrictedSection.classList.toggle('d-none', isOwner);
+        }
 
         if (postDetailsModalLabel) {
             postDetailsModalLabel.textContent = post.title || 'Detalle de la publicación';
@@ -511,12 +591,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (postDetailsSeller) {
-            postDetailsSeller.textContent =`${post.user?.first_name ?? ''} ${post.user?.last_name ?? ''}`.trim() || 'Usuario';
+            postDetailsSeller.textContent = sellerName;
         }
 
         if (reportUserText) {
-            const reportedUserName = `${post.user?.first_name ?? ''} ${post.user?.last_name ?? ''}`.trim() || 'Usuario';
-            reportUserText.textContent = `Reportar a ${reportedUserName} por comportamiento sospechoso`;
+            reportUserText.textContent = `Reportar a ${sellerName} por comportamiento sospechoso`;
         }
 
         if (postDetailsSellerRating) {
@@ -547,20 +626,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderPostDetailsCarousel(images);
     }
-
-
-
-        // if (postDetailsRatingStars) {
-        //     postDetailsRatingStars.innerHTML = buildStarsHTML(post.rating);
-        // }
-
-        // if (postDetailsRatingValue) {
-        //     postDetailsRatingValue.textContent = post.rating || '0.0';
-        // }
-
-        // if (postDetailsReviewCount) {
-        //     postDetailsReviewCount.textContent = `(${post.reviews || 0})`;
-        // }
 
     function initializeSellerRating() {
         if (!ratingContainer || !ratingInput || !ratingText) return;
@@ -740,42 +805,44 @@ document.addEventListener('DOMContentLoaded', () => {
         isReportDirty = hasReason || hasDescription;
     }
 
-async function loadMessages(chatId) {
-    try {
-        const response = await fetch(`/messages/${chatId}`);
-        const messages = await response.json();
-        messagesContainer.innerHTML = '';
+    async function loadMessages(chatId) {
+        try {
+            const response = await fetch(`/messages/${chatId}`);
+            const messages = await response.json();
+            messagesContainer.innerHTML = '';
+            delete messagesContainer.dataset.lastMessageDate;
 
-        if (!messages.length) {
-            if (emptyState) {
-                emptyState.classList.remove('d-none');
+            if (!messages.length) {
+                if (emptyState) {
+                    emptyState.classList.remove('d-none');
+                }
+                return;
             }
-            return;
-        }
 
-        if (emptyState) {
-            emptyState.classList.add('d-none');
-        }
+            if (emptyState) {
+                emptyState.classList.add('d-none');
+            }
 
 
-        messages.forEach(msg => {
-            renderMessage({
-                 id: msg.id,
-                message: msg.content,
-                time: new Date(msg.created_at).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                }),
-                senderId: msg.sender_id,
-                conversationId: chatId,
-                isMine: msg.isMine
+            messages.forEach(msg => {
+                renderMessage({
+                    id: msg.id,
+                    message: msg.content,
+                    createdAt: msg.created_at,
+                    time: new Date(msg.created_at).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }),
+                    senderId: msg.sender_id,
+                    conversationId: chatId,
+                    isMine: msg.isMine
+                });
             });
-        });
 
-    } catch (error) {
-        console.error('ERROR:', error);
+        } catch (error) {
+            console.error('ERROR:', error);
+        }
     }
-}
 
     function tryCloseReportModal() {
         if (!reportUserModal) return;
@@ -826,9 +893,25 @@ async function loadMessages(chatId) {
     }
 
     if (messagesSearchInput) {
-        messagesSearchInput.addEventListener('input', filterChats);
+        messagesSearchInput.addEventListener('input', () => {
+            if (searchMessagesBtn) {
+                searchMessagesBtn.disabled = messagesSearchInput.value.trim() === '';
+            }
+        });
 
-       let currentChannel = null;
+        if (searchMessagesBtn) {
+            searchMessagesBtn.addEventListener('click', filterChats);
+        }
+
+        if (clearMessagesFiltersBtn) {
+            clearMessagesFiltersBtn.addEventListener('click', () => {
+                messagesSearchInput.value = '';
+                searchMessagesBtn.disabled = true;
+                filterChats();
+            });
+        }
+
+        let currentChannel = null;
 
         document.querySelectorAll('.chat-list-item').forEach(item => {
 
@@ -845,6 +928,25 @@ async function loadMessages(chatId) {
 
                 item.classList.remove('bg-white', 'border-success-subtle');
                 item.classList.add('bg-success-subtle', 'border-success', 'shadow-sm');
+                const unreadBadge = item.querySelector('.badge.bg-danger');
+                const itemUnreadCount = Number(unreadBadge?.textContent?.trim() || 0);
+
+                if (unreadBadge) {
+                    unreadBadge.remove();
+                }
+
+                const navbarChatBadge = document.getElementById('miChatsUnreadBadge');
+
+                if (navbarChatBadge) {
+                    const currentCount = Number(navbarChatBadge.textContent.trim() || 0);
+                    const newCount = Math.max(currentCount - itemUnreadCount, 0);
+
+                    if (newCount > 0) {
+                        navbarChatBadge.textContent = newCount;
+                    } else {
+                        navbarChatBadge.remove();
+                    }
+                }
 
                 const isMobile = window.innerWidth < 768;
 
@@ -888,6 +990,7 @@ async function loadMessages(chatId) {
                 }
 
                 messagesView.dataset.chatId = chatId;
+                updateChatInputState();
                 messagesView.dataset.postId = postId;
 
                 if (openChatPostDetailsBtn) {
@@ -897,7 +1000,7 @@ async function loadMessages(chatId) {
 
                 messagesView.dataset.chatId = chatId;
 
-                await loadMessages(chatId); 
+                await loadMessages(chatId);
 
                 if (window.subscribeToChat) {
                     window.subscribeToChat(chatId);
@@ -917,13 +1020,20 @@ async function loadMessages(chatId) {
             const sidebar = document.querySelector('.messages-sidebar');
             const chatColumn = document.querySelector('.messages-chat-column');
 
+            // SHows the sidebar once more
             if (sidebar) {
                 sidebar.classList.remove('d-none');
             }
 
+            // Hides the chat column on mobile
             if (window.innerWidth < 768 && chatColumn) {
                 chatColumn.classList.add('mobile-hidden');
             }
+
+            // Restore all chat items
+            document.querySelectorAll('.chat-list-item').forEach(chat => {
+                chat.classList.remove('d-none-selected-mobile');
+            });
         });
     }
 
@@ -934,16 +1044,49 @@ async function loadMessages(chatId) {
         }
     }
 
+    input.addEventListener('beforeinput', (event) => {
+        const selectionLength = input.selectionEnd - input.selectionStart;
+        const incomingText = event.data || '';
+
+        if (
+            input.value.length - selectionLength + incomingText.length > MAX_LENGTH
+        ) {
+            event.preventDefault();
+
+            input.classList.add('is-invalid');
+            errorEl.textContent = `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres. No puedes escribir más.`;
+            errorEl.dataset.errorType = 'maxlength-over';
+
+            updateSendButtonState();
+        }
+    });
+
     input.addEventListener('input', () => {
         if (input.value.trim()) {
             clearValidationError('required');
         }
+
 
         validateMaxLength(true);
         validateAllowedCharacters(true);
         updateSendButtonState();
         updateCounter();
     });
+
+    input.addEventListener('blur', () => {
+        if (
+            input.value.trim() &&
+            input.value.length <= MAX_LENGTH &&
+            validateAllowedCharacters(false)
+        ) {
+            input.classList.remove('is-invalid');
+            errorEl.textContent = '';
+            delete errorEl.dataset.errorType;
+        }
+
+        updateSendButtonState();
+    });
+
 
     if (!input.dataset.bound) {
         input.dataset.bound = 'true';
@@ -983,7 +1126,7 @@ async function loadMessages(chatId) {
                 })
             });
 
-            // sendFrontendMessage();
+            sendFrontendMessage();
 
             input.value = '';
             clearAllValidationErrors();
@@ -997,7 +1140,7 @@ async function loadMessages(chatId) {
             isSending = false;
         }
     }
-    
+
     if (!sendBtn.dataset.bound) {
         sendBtn.dataset.bound = 'true';
 
@@ -1059,6 +1202,23 @@ async function loadMessages(chatId) {
     }
 
     if (reportDescription) {
+        reportDescription.addEventListener('beforeinput', (event) => {
+            const selectionLength = reportDescription.selectionEnd - reportDescription.selectionStart;
+            const incomingText = event.data || '';
+
+            if (
+                reportDescription.value.length - selectionLength + incomingText.length > MAX_REPORT_LENGTH
+            ) {
+                event.preventDefault();
+
+                reportDescription.classList.add('is-invalid');
+                reportDescriptionError.textContent =
+                    `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres. No puedes escribir más.`;
+
+                updateReportButtonState();
+            }
+        });
+
         reportDescription.addEventListener('input', () => {
             const value = reportDescription.value;
             const currentLength = value.length;
@@ -1066,7 +1226,8 @@ async function loadMessages(chatId) {
             if (currentLength > MAX_REPORT_LENGTH) {
                 reportDescription.value = value.slice(0, MAX_REPORT_LENGTH);
                 reportDescription.classList.add('is-invalid');
-                reportDescriptionError.textContent = `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres. No puedes escribir más.`;
+                reportDescriptionError.textContent =
+                    `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres. No puedes escribir más.`;
             } else if (currentLength === MAX_REPORT_LENGTH) {
                 reportDescription.classList.add('is-invalid');
                 reportDescriptionError.textContent =
@@ -1082,15 +1243,13 @@ async function loadMessages(chatId) {
         reportDescription.addEventListener('change', updateReportDirtyState);
 
         reportDescription.addEventListener('blur', () => {
-            const value = reportDescription.value;
-
-            if (value.length === MAX_REPORT_LENGTH) {
-                reportDescription.classList.add('is-invalid');
-                reportDescriptionError.textContent =
-                    `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres, puedes aún someter esa cantidad.`;
-            } else{
+            if (validateReportDescription(false)) {
+                reportDescription.classList.remove('is-invalid');
+                reportDescriptionError.textContent = '';
+            } else {
                 validateReportDescription(true);
             }
+
             updateReportButtonState();
         });
     }
@@ -1214,10 +1373,27 @@ async function loadMessages(chatId) {
 
     if (chatId) {
         loadMessages(chatId);
+        if (window.subscribeToChat) {
+            window.subscribeToChat(chatId);
+        }
     }
+
+    window.addEventListener('resize', () => {
+        const isMobile = window.innerWidth < 768;
+        const chatColumn = document.querySelector('.messages-chat-column');
+        const sidebar = document.querySelector('.messages-sidebar');
+
+        if (!isMobile) {
+            sidebar?.classList.remove('d-none');
+            chatColumn?.classList.remove('mobile-hidden');
+
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    });
 
     filterChats();
     updateSendButtonState();
     updateCounter();
+    updateChatInputState();
     updateReportButtonState();
 });

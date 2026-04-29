@@ -21,8 +21,8 @@
 
         <!--Header-->
         <div class="mb-4">
-            <h1 class="fw-bold mb-1">Gestión de Costos de Facilidad</h1>
-            <p class="text mb-0">Aquí puedes ver, filtrar y exportar costos estimados de uso de instalaciones.</p>
+            <h1 class="fw-bold mb-1">Gestión de Costos Operacionales</h1>
+            <p class="text mb-0">Aquí puedes ver, filtrar y exportar estimaciones de costos operacionales por área dentro del Coliseo Rafael Mangual.</p>
         </div>
 
         <!--Warning-->
@@ -32,7 +32,7 @@
                 <div>
                     <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong> Los costos mostrados
                     en esta página son
-                    <strong>estimaciones</strong> calculadas según las tarifas configuradas, la área,
+                    <strong>estimaciones</strong> calculadas según las tarifas configuradas, el área,
                     el horario y los servicios seleccionados. Todas las tarifas estan sujetas a cambios y deberan ser
                     ratificadas por el area
                     administrativa para ser consideradas como definitivas.
@@ -42,27 +42,42 @@
 
         <!--Buttons-->
         <div class="d-flex flex-wrap gap-3 mb-4">
-            <button
-                type="button"
-                id="openConfigureRatesModalBtn"
-                class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
-                data-bs-toggle="modal"
-                data-bs-target="#configureRatesModal"
-            >
-                <i class="bi bi-gear"></i>
-                Configurar Tarifas
-            </button>
 
-            <button
-                type="button"
-                id="openAddRentalModalBtn"
-                class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
-                data-bs-toggle="modal"
-                data-bs-target="#addRentalModal"
+            <span
+                data-bs-toggle="tooltip"
+                data-bs-placement="left"
+                data-bs-custom-class="custom-tooltip"
+                data-bs-title="Configura tarifas de áreas, medidas de áreas y costos por período."
             >
-                <i class="bi bi-plus-lg"></i>
-                Agregar Evento
-            </button>
+                <button
+                    type="button"
+                    id="openConfigureRatesModalBtn"
+                    class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
+                    data-bs-toggle="modal"
+                    data-bs-target="#configureRatesModal"
+                >
+                    <i class="bi bi-gear"></i>
+                    Configurar Tarifas
+                </button>
+            </span>
+
+            <span
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-custom-class="custom-tooltip"
+                    data-bs-title="Registra eventos y calcula costos estimados."
+            >
+                <button
+                    type="button"
+                    id="openAddRentalModalBtn"
+                    class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addRentalModal"
+                >
+                    <i class="bi bi-plus-lg"></i>
+                    Agregar Evento
+                </button>
+            </span>
 
             <a href="{{ route('facility.export.csv') }}" id="downloadCsvBtn"
                class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
@@ -76,6 +91,12 @@
                 Exportar a PDF
             </a>
 
+            <span
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-custom-class="custom-tooltip"
+                data-bs-title="Simula la importación de eventos desde EventFlow."
+            >
             <form method="POST" action="{{ route('facility.import.mock') }}" class="d-inline">
                 @csrf
                 <button
@@ -86,7 +107,7 @@
                     Eventflow API Simulado
                 </button>
             </form>
-
+            </span>
         </div>
 
         <!--Search and Filters-->
@@ -684,6 +705,14 @@
                         @csrf
 
                         <div class="row g-3 mb-3 justify-content-center">
+                            <div class="col-12">
+                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
+                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    Solo se puede seleccionar <strong>una (1) área</strong> por evento.
+                                    Las áreas disponibles corresponden exclusivamente a instalaciones internas del Coliseo Rafael Mangual.
+                                </div>
+                            </div>
+
                             <div class="col-md-6 col-lg-6">
                                 <label for="rentalClassroom" class="form-label fw-semibold">
                                     Área <span class="text-danger">*</span>
@@ -724,18 +753,18 @@
                                 </label>
                                 <select id="rentalPeriodType" name="period_type" class="form-select form-select-lg" required>
                                     <option value="" selected disabled>Seleccionar tipo de período</option>
-                                    <option value="workday">Laborable LU-VI 7:30AM - 4:30PM</option>
-                                    <option value="non_workday_saturday">No laborable sábado, LU-VI 4:30PM - 9:30PM</option>
-                                    <option value="non_workday_sunday_holiday">No laborable domingo o festivo, LI-VI 4:30PM - 9:30PM</option>
+                                    <option value="workday">Laborable: LU-VI </option>
+                                    <option value="non_workday_saturday">No laborable sábado: LU-VI</option>
+                                    <option value="non_workday_sunday_holiday">No laborable domingo o festivo: LU-VI</option>
                                 </select>
                             </div>
 
                             <div class="col-md-6">
                                 <label for="rentalRangeType" class="form-label fw-semibold">
-                                    Duración del evento <span class="text-danger">*</span>
+                                    Modo de Tarifa <span class="text-danger">*</span>
                                 </label>
                                 <select id="rentalRangeType" name="rate_mode" class="form-select form-select-lg" required>
-                                    <option value="" selected disabled>Seleccionar duración</option>
+                                    <option value="" selected disabled>Seleccionar Modo</option>
                                     <option value="daily">Día</option>
                                     <option value="weekly">Semana</option>
                                     <option value="monthly">Mes</option>
@@ -1168,85 +1197,6 @@
         @method('DELETE')
     </form>
 
-    <style>
-
-        .money-input::placeholder {
-            color: #6c757d;
-            font-style: italic;
-            opacity: 1;
-        }
-
-        .service-option-card {
-            border: 1px solid #dee2e6;
-            border-radius: 1rem;
-            padding: 1rem;
-            background: #fff;
-            height: 100%;
-        }
-
-        .section-title-match {
-            font-size: 1.25rem;
-        }
-
-        .period-title-small {
-            font-size: 1rem;
-        }
-
-        .total-hour-box {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-        }
-
-        .multi-classroom-card {
-            display: flex;
-            align-items: center;
-            gap: 0.7rem;
-            border: 1px solid #dee2e6;
-            border-radius: 0.85rem;
-            padding: 0.85rem 1rem;
-            background: #fff;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        .multi-classroom-card:hover {
-            background: #f8f9fa;
-        }
-
-        #facilityCostTable thead th,
-        #facilityCostTable tbody td,
-        #facilityCostTable tfoot th,
-        #facilityCostTable tfoot td {
-            padding: 1rem 1rem;
-            vertical-align: middle;
-        }
-
-        #configureRatesModal .modal-scroll-safe {
-            padding-left: 1.25rem;
-            padding-right: 1.25rem;
-        }
-
-        #configureRatesModal .scroll-edge-pad {
-            padding-left: .35rem;
-            padding-right: .35rem;
-        }
-
-        #configureRatesModal .modal-footer-safe {
-            padding-left: 1.5rem !important;
-            padding-right: 1.5rem !important;
-        }
-
-        #configureRatesModal .row {
-            margin-left: 0;
-            margin-right: 0;
-        }
-
-        #configureRatesModal [class*="col-"] {
-            padding-left: .75rem;
-            padding-right: .75rem;
-        }
-    </style>
-
     @php
         $ratesByClassroom = $facilityCosts->mapWithKeys(function ($cost) {
         $isConfigured =
@@ -1295,112 +1245,4 @@
         const ratesByClassroom = @json($ratesByClassroom);
 
     </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-
-            // 🔹 Restore scroll
-            const savedScroll = sessionStorage.getItem('facilityScroll');
-
-            if (savedScroll) {
-                window.scrollTo({
-                    top: parseInt(savedScroll),
-                    behavior: 'smooth'
-                });
-                sessionStorage.removeItem('facilityScroll');
-            }
-
-            // 🔹 Save scroll on filter submit
-            const filterForm = document.getElementById('facilityCostFilterForm');
-
-            if (filterForm) {
-                filterForm.addEventListener('submit', () => {
-                    sessionStorage.setItem('facilityScroll', window.scrollY);
-                });
-            }
-
-            // 🔹 Save scroll on clear filters
-            const clearBtn = document.getElementById('clearFacilityFilters');
-
-            if (clearBtn) {
-                clearBtn.addEventListener('click', () => {
-                    sessionStorage.setItem('facilityScroll', window.scrollY);
-                });
-            }
-
-        });
-    </script>
-
-    <style>
-        .classroom-name {
-            display: block;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 180px;
-        }
-
-        .multi-classroom-card label {
-            min-width: 0;
-            flex: 1;
-        }
-
-        .date-picker-only {
-            cursor: pointer;
-        }
-
-        .date-picker-only::-webkit-calendar-picker-indicator {
-            cursor: pointer;
-        }
-
-        .date-input-shell {
-            position: relative;
-        }
-
-        .date-picker-only {
-            padding-right: 4.25rem;
-        }
-
-        .date-picker-trigger {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 3.5rem;
-            height: 100%;
-            border: 0;
-            border-left: 1px solid #dee2e6;
-            background: #f8f9fa;
-            color: #212529;
-            border-top-right-radius: 0.75rem;
-            border-bottom-right-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .date-picker-trigger:hover {
-            background: #e9ecef;
-        }
-
-        .date-picker-only::-webkit-calendar-picker-indicator {
-            opacity: 0;
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-
-        .date-picker-only::-webkit-inner-spin-button,
-        .date-picker-only::-webkit-clear-button {
-            display: none;
-        }
-
-        .area-col {
-            min-width: 180px;
-            width: 220px;
-        }
-    </style>
-
 </x-layout>

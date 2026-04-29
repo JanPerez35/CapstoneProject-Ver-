@@ -92,7 +92,11 @@
 
                 {{-- Messages button with unread badge updated by JS --}}
                 <a href="{{ route('my_messages', ['return_to' => url()->full()]) }}"
-                   class="btn position-relative {{ request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success' }}">
+                   class="btn position-relative {{ request()->routeIs('my_messages') ? 'btn-success' : 'btn-outline-success' }}"
+                   data-bs-toggle="tooltip"
+                   data-bs-placement="bottom"
+                   data-bs-custom-class="custom-tooltip"
+                   data-bs-title="Comunícate con otros usuarios sobre publicaciones!">
                     <i class="bi bi-chat-left-text"></i> Mis Chats
                     @if($totalUnread > 0)
                         <span
@@ -113,7 +117,7 @@
 
                     data-bs-placement="top"
                     data-bs-custom-class="custom-tooltip"
-                    data-bs-title="Verifica equipo deportivo en tu orden"
+                    data-bs-title="Verifica equipo deportivo en tu carrito"
                 >
                     <i class="bi bi-cart3 me-1"></i>
                     Carrito
@@ -192,8 +196,8 @@
                             {{-- Cart table header --}}
                             <div class="row g-0 px-3 py-3 fw-semibold border-bottom bg-light">
                                 <div class="col-6">Equipo</div>
-                                <div class="col-3 text-center">Cantidad</div>
-                                <div class="col-3 text-center">Eliminar</div>
+                                <div class="col-3 text-center ps-1">Cantidad</div>
+                                <div class="col-3 text-center ps-3">Eliminar</div>
                             </div>
 
                             <div id="cartItemsContainer">
@@ -207,7 +211,7 @@
                                         <button type="button"
                                                 class="btn btn-success"
                                                 data-bs-dismiss="modal">
-                                            Continuar explorando
+                                            Continuar Explorando
                                         </button>
                                     </div>
                                 @else
@@ -680,59 +684,61 @@
                     Soporte técnico y administración general del sistema
                 </p>
 
-                <p class="mb-1">
+                <div class="d-flex align-items-start gap-2 mb-3">
                     <i class="bi bi-envelope text-muted"></i>
-                    @foreach($superAdmin as $admin)
-                    <div>
-                         <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none">
-                            {{ $admin->email }}
-                        </a>
-                    </div>
-                    @endforeach
-                </p>
 
-                <p>
+                    <div>
+                        @foreach($superAdmin as $admin)
+                            <div>
+                                <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none">
+                                    {{ $admin->email }}
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-2">
                     <i class="bi bi-telephone text-muted"></i>
                     <span class="text-success">+1 (787)-832-4040 Ext. 3841, 2008</span>
-                </p>
+                </div>
             </div>
 
             {{-- Department physical address --}}
             <div class="col-md-4 mb-3">
                 <h5>Departamento de Kinesiología</h5>
-                <p class="text-muted mb-0 d-flex">
-                    <i class="bi bi-geo-alt me-2"></i>
-                    <span>
+                <div class="d-flex align-items-start gap-2 text-muted">
+                    <i class="bi bi-geo-alt mt-1 flex-shrink-0"></i>
+
+                    <div>
                         259 Norte Blvd. Alfonso Valdés Cobián<br>
                         Oficina A-2 Coliseo Rafael A. Mangual<br>
                         Mayagüez, Puerto Rico
-                    </span>
-                </p>
+                    </div>
+            </div>
             </div>
 
             {{-- Additional section-specific contact emails --}}
             <div class="col-md-4 mb-3">
                 <h5 class="mb-2">Contactos Adicionales</h5>
 
-                <p class="mb-1">
+                <p class="mb-3">
                     <b>Kinventario</b><br>
+
                     @foreach($inventoryAdmin as $admin)
-                    <div>
-                         <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none">
+                        <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none d-block">
                             {{ $admin->email }}
                         </a>
-                    </div>
                     @endforeach
                 </p>
 
                 <p>
                     <b>Kinemercado</b><br>
+
                     @foreach($marketAdmin as $admin)
-                    <div>
-                         <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none">
+                        <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none d-block">
                             {{ $admin->email }}
                         </a>
-                    </div>
                     @endforeach
                 </p>
             </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\UserReport;
 use App\Http\Controllers\Concerns\LogsActivity;
+use App\Models\Post;
 
 class UserReportController extends Controller
 {
@@ -87,6 +88,8 @@ class UserReportController extends Controller
         $report->reportedUser->update([
             'status' => 'Bloqueado'
         ]);
+
+        Post::where('user_id', $report->reported_user_id)->delete();
 
         $report->update([
             'status' => 'resolved',

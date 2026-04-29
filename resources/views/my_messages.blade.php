@@ -12,200 +12,6 @@
                 : $volverBaseUrl;
 
     @endphp
-    <style>
-        .messages-search-group {
-            border: 1px solid var(--bs-border-color);
-            border-radius: 0.75rem;
-            overflow: hidden;
-            transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
-            background-color: #fff;
-        }
-
-        .messages-search-group .input-group-text,
-        .messages-search-group .form-control {
-            background-color: #fff;
-        }
-
-        .messages-search-group .input-group-text {
-            border-right: 0 !important;
-        }
-
-        .messages-search-group .form-control {
-            border-left: 0 !important;
-            box-shadow: none !important;
-        }
-
-        .messages-search-group:focus-within {
-            border-color: #86b7fe;
-            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-        }
-
-        .messages-card {
-            height: calc(100vh - 140px);
-            min-height: 600px;
-        }
-
-        .messages-sidebar,
-        .messages-chat-column {
-            height: 100%;
-        }
-
-        .messages-container {
-            min-height: 0;
-        }
-
-        .chat-input-area {
-            background: #fff;
-            flex-shrink: 0;
-        }
-
-        .min-w-0 {
-            min-width: 0;
-        }
-
-        @media (max-width: 767.98px) {
-            .messages-card {
-                height: auto;
-                min-height: 0;
-                border-radius: 1rem;
-            }
-
-            .messages-sidebar,
-            .messages-chat-column {
-                height: auto;
-                max-height: none;
-                min-height: 0;
-            }
-
-            .messages-sidebar {
-                overflow: visible;
-                border-right: 0 !important;
-                border-bottom: 1px solid var(--bs-border-color);
-            }
-
-            .messages-chat-column {
-                min-height: 70vh;
-            }
-
-            #chatListContainer {
-                max-height: 280px;
-                overflow-y: auto;
-            }
-
-            #chatMessagesContainer {
-                max-height: 38vh;
-                min-height: 220px;
-            }
-
-            .chat-input-area {
-                position: sticky;
-                bottom: 0;
-                z-index: 2;
-                background: #fff;
-            }
-
-            .chat-header-row {
-                flex-wrap: wrap !important;
-                align-items: flex-start !important;
-            }
-
-            .chat-header-main {
-                flex: 0 0 100%;
-                width: 100%;
-                min-width: 0;
-                order: 2;
-            }
-
-            #backToChatsBtn {
-                order: 1;
-                flex-shrink: 0;
-            }
-
-            #openChatPostDetailsBtn {
-                width: 100%;
-                margin-top: 0.25rem;
-                order: 3;
-            }
-
-            .messages-sidebar .p-4.border-bottom {
-                padding-bottom: 1rem !important;
-            }
-
-            .messages-chat-column > .border-bottom {
-                padding-top: 1rem !important;
-                padding-bottom: 1rem !important;
-            }
-        }
-
-        @media (max-width: 767.98px) {
-            .chat-input-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .chat-counter-wrap {
-                justify-self: end;
-            }
-        }
-
-        .messages-person-item {
-            border-bottom: 1px solid #d6dde5;
-            background-color: #fff;
-            transition: background-color 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .messages-person-item:hover {
-            background-color: #f8fafc;
-        }
-
-        #chatListContainer .text-decoration-none:last-child .messages-person-item {
-            border-bottom: 0;
-        }
-
-        @media (max-width: 767.98px) {
-            .d-none-selected-mobile {
-                display: none !important;
-            }
-        }
-
-        @media (max-width: 767.98px) {
-            .mobile-hidden {
-                display: none !important;
-            }
-        }
-
-        #chatListContainer {
-            overflow-y: auto;
-            max-height: calc(100vh - 260px);
-        }
-
-        .messages-sidebar {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-header-text-wrap {
-            min-width: 0;
-            flex: 1 1 auto;
-        }
-
-        .chat-header-post-summary {
-            min-width: 0;
-            max-width: 100%;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 1;
-            -webkit-box-orient: vertical;
-            white-space: normal;
-            text-overflow: ellipsis;
-            word-break: break-word;
-            line-height: 1.35;
-        }
-
-        #openChatPostDetailsBtn {
-            flex-shrink: 0;
-        }
-
-    </style>
 
     <div
         class="container-fluid py-4"
@@ -230,20 +36,35 @@
                     </div>
 
                     <div class="p-3 border-bottom">
-                        <div class="input-group messages-search-group">
-                            <span class="input-group-text bg-white border-end-0">
-                                <i class="bi bi-search"></i>
-                            </span>
-                            <input
-                                type="text"
-                                id="messagesSearchInput"
-                                class="form-control border-start-0"
-                                placeholder="Buscar conversación..."
-                                autocomplete="off"
-                            >
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <div class="input-group messages-search-group">
+                <span class="input-group-text bg-white border-end-0">
+                    <i class="bi bi-search"></i>
+                </span>
+                                    <input
+                                        type="text"
+                                        id="messagesSearchInput"
+                                        class="form-control border-start-0"
+                                        placeholder="Buscar conversación..."
+                                        autocomplete="off"
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="col-6 d-grid">
+                                <button type="button" class="btn btn-success" id="searchMessagesBtn" disabled>
+                                    Buscar
+                                </button>
+                            </div>
+
+                            <div class="col-6 d-grid">
+                                <button type="button" class="btn btn-outline-secondary" id="clearMessagesFiltersBtn">
+                                    Limpiar Busqueda
+                                </button>
+                            </div>
                         </div>
                     </div>
-
                    <div id="chatListContainer" class="flex-grow-1">
 
                        @foreach($chats as $chat)
@@ -298,7 +119,7 @@
                         class="d-none p-4 text-center text-muted"
                     >
                         <i class="bi bi-search fs-3 d-block mb-2"></i>
-                        <p class="mb-0">No se encontraron chats.</p>
+                        <p class="mb-0">No se encontraron chats que coincidan con la busqueda.</p>
                     </div>
                 </div>
 
@@ -357,7 +178,7 @@
 
                         <div id="chatEmptyState" class="d-none">
                             <div class="row g-4">
-                                <div class="col-12">
+                                <div class="col-12 mb-2">
                                     <div class="card border-0 shadow-sm rounded-0">
                                         <div class="card-body py-5 text-center">
                                             <i class="bi bi-chat-dots fs-1 text-muted"></i>
@@ -379,10 +200,11 @@
                                         id="chatMessageInput"
                                         type="text"
                                         class="form-control form-control-lg"
-                                        placeholder="Escribe un mensaje..."
+                                        placeholder="Selecciona un chat para escribir..."
+                                        disabled
                                     >
 
-                                    <button id="sendChatMessageBtn" class="btn btn-success">
+                                    <button id="sendChatMessageBtn" class="btn btn-success" disabled>
                                         <i class="bi bi-send"></i>
                                     </button>
                                 </div>
@@ -524,7 +346,7 @@
                     </div>
 
                     <hr>
-
+                    <div id="postOwnerRestrictedSection">
                     <div class="mt-4 pb-2">
                         <h5 class="fw-bold mb-3">Calificar Este Vendedor</h5>
 
@@ -565,6 +387,7 @@
                                 <i class="bi bi-flag me-2"></i> Reportar Usuario
                             </button>
                         </div>
+                    </div>
                     </div>
                 </div>
             </div>

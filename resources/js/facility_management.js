@@ -1,5 +1,43 @@
 import * as bootstrap from 'bootstrap';
 document.addEventListener('DOMContentLoaded', () => {
+
+
+        /**
+         * Activates tool tip
+         */
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-title]');
+        tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+
+
+        // 🔹 Restore scroll
+        const savedScroll = sessionStorage.getItem('facilityScroll');
+
+        if (savedScroll) {
+            window.scrollTo({
+                top: parseInt(savedScroll),
+                behavior: 'smooth'
+            });
+            sessionStorage.removeItem('facilityScroll');
+        }
+
+        // 🔹 Save scroll on filter submit
+        const filterForm = document.getElementById('facilityCostFilterForm');
+
+        if (filterForm) {
+            filterForm.addEventListener('submit', () => {
+                sessionStorage.setItem('facilityScroll', window.scrollY);
+            });
+        }
+
+        // 🔹 Save scroll on clear filters
+        const clearBtn = document.getElementById('clearFacilityFilters');
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                sessionStorage.setItem('facilityScroll', window.scrollY);
+            });
+        }
+
     const $ = (id) => document.getElementById(id);
 
     const downloadCsvBtn = $('downloadCsvBtn');
