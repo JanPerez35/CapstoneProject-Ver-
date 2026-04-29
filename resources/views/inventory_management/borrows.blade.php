@@ -14,7 +14,6 @@
         </div>
 
         {{-- Internal navigation between inventory sections --}}
-        {{-- Internal navigation between inventory sections --}}
         <div class="d-flex flex-wrap gap-2 mb-4">
 
             {{-- Inventory administration --}}
@@ -144,7 +143,7 @@
                             @forelse($pending as $lending)
                                 {{-- Single pending request card, the structure for all cards in this area --}}
                                 <div
-                                    class="borrow-request pending-request card border rounded-4 shadow-sm m-3"
+                                    class="borrow-request pending-request card border rounded-0 shadow-sm m-3"
 
                                     {{-- Used for filtering with the JS by date and general search matching --}}
                                     data-search="{{ strtolower(($lending->items->first()->equipment->description ?? 'equipo') . ' ' . ($lending->user->first_name ?? '') . ' ' . ($lending->user->last_name ?? '') . ' ' . ($lending->special_reason ?? '')) }}"
@@ -176,7 +175,7 @@
                                                 {{-- Items list --}}
                                                 <div class="mb-3">
                                                     @forelse($lending->items as $item)
-                                                        <div class="border rounded-3 px-3 py-2 mb-2 bg-light-subtle">
+                                                        <div class="border rounded-0 px-3 py-2 mb-2 bg-light-subtle">
                                                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                                                 <span class="fw-semibold">
                                                                     {{ $item->equipment->description ?? 'Equipo' }}
@@ -226,7 +225,7 @@
 
                                                 {{-- Special reason --}}
                                                 @if($lending->special_reason)
-                                                    <div class="alert alert-warning rounded-4 mb-0 py-2">
+                                                    <div class="alert alert-warning rounded-0 mb-0 py-2">
                                                         <strong>Razón:</strong> {{ $lending->special_reason }}
                                                     </div>
                                                 @endif
@@ -305,7 +304,7 @@
                             @forelse($approved as $lending)
                                 {{-- Individual active request card, blueprint for all of them. --}}
                                 <div
-                                    class="borrow-request active-request card border rounded-4 shadow-sm m-3"
+                                    class="borrow-request active-request card border rounded-0 shadow-sm m-3"
 
                                     {{-- Used by JS for filtering by text and date --}}
                                     data-search="{{ strtolower(($lending->items->first()->equipment->description ?? 'equipo') . ' ' . ($lending->user->first_name ?? '') . ' ' . ($lending->user->last_name ?? '')) }}"
@@ -335,7 +334,7 @@
 
                                             {{-- Shows the item list --}}
                                             @forelse($lending->items as $item)
-                                                <div class="border rounded-3 px-3 py-2 mb-2 bg-light-subtle">
+                                                <div class="border rounded-0 px-3 py-2 mb-2 bg-light-subtle">
                                                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 
                                                         {{-- Equipment name --}}
