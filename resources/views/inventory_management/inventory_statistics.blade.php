@@ -85,7 +85,7 @@
                     {{-- Report type selector (monthly or annual) --}}
                     <div class="col-md-4">
                         <label for="reportType" class="form-label fw-semibold">Tipo de reporte</label>
-                        <select id="reportType" name="type" class="form-select form-select-lg auto-submit">
+                        <select id="reportType" name="type" class="form-select form-select-lg auto-submit border-2 border-dark">
                             <option value="monthly" {{ $type === 'monthly' ? 'selected' : '' }}>Mensual</option>
                             <option value="annual"  {{ $type === 'annual'  ? 'selected' : '' }}>Anual</option>
                         </select>
@@ -94,7 +94,7 @@
                     {{-- Month selector is hidden when annual report type is selected --}}
                     <div class="col-md-4 {{ $type === 'annual' ? 'd-none' : '' }}" id="monthFilterWrapper">
                         <label for="reportMonth" class="form-label fw-semibold">Mes</label>
-                        <select id="reportMonth" name="month" class="form-select form-select-lg auto-submit">
+                        <select id="reportMonth" name="month" class="form-select form-select-lg auto-submit border-2 border-dark">
                             @foreach([1=>'Enero',2=>'Febrero',3=>'Marzo',4=>'Abril',5=>'Mayo',6=>'Junio',7=>'Julio',8=>'Agosto',9=>'Septiembre',10=>'Octubre',11=>'Noviembre',12=>'Diciembre'] as $num => $name)
                                 <option value="{{ $num }}" {{ $month === $num ? 'selected' : '' }}>{{ $name }}</option>
                             @endforeach
@@ -104,7 +104,7 @@
                     {{-- Year selector, the selector is dynamic. Meaning that if data from 2027 gets added it will appear on the selector --}}
                     <div class="col-md-4">
                         <label for="reportYear" class="form-label fw-semibold">Año</label>
-                        <select id="reportYear" name="year" class="form-select form-select-lg auto-submit">
+                        <select id="reportYear" name="year" class="form-select form-select-lg auto-submit border-2 border-dark">
                             @foreach($availableYears as $yr)
                                 <option value="{{ $yr }}" {{ $year === $yr ? 'selected' : '' }}>{{ $yr }}</option>
                             @endforeach

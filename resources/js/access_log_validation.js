@@ -12,7 +12,7 @@
  * Features:
  * - CSV export only includes currently visible (filtered) rows
  * - Proper CSV escaping for special characters and quotes
- * - Dynamic UI feedback for search input and empty table state
+ * - Dynamic UI feedback for search input, date filtering, and empty table state
  *
  * Dependencies:
  * - HTML elements with IDs:
@@ -21,6 +21,7 @@
  *   - accessLogsSearch
  *   - searchAccessLogsBtn
  *   - accessLogsEmptyState
+ *   - accessLogsDateFilter
  *
  * @event DOMContentLoaded Initializes all event listeners and UI state
  */

@@ -33,6 +33,7 @@ import * as bootstrap from 'bootstrap';
 
         const row = `
             <tr data-report-id="${report.id}"
+                data-report-date="${formatReportDateForFilter(report.created_at)}"
                 data-post="${encodeURIComponent(JSON.stringify(report.post || {}))}"
                 data-seller-id="${report.reported_user_id}"
                 data-post-id="${report.post_id}"
@@ -59,6 +60,17 @@ import * as bootstrap from 'bootstrap';
 
     renderReports();
 }
+
+   function formatReportDateForFilter(dateValue) {
+        if (!dateValue) return '';
+
+        const date = new Date(dateValue);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}`;
+    }
 
     function formatDateForDisplay(dateValue) {
     if (!dateValue) return '';
@@ -185,7 +197,7 @@ import * as bootstrap from 'bootstrap';
             const filters = {
                 reason: normalize(els.filterReason.value),
                 user: normalize(els.filterSearchBy.value),
-                date: formatDateForDisplay(els.filterDate.value)
+                date: els.filterDate.value
             };
 
             return [...rows()].filter((row) => {
@@ -197,7 +209,7 @@ import * as bootstrap from 'bootstrap';
                 const reportedBy = normalize(row.cells[0].textContent);
                 const seller = normalize(row.cells[1].textContent);
                 const reason = normalize(row.cells[2].textContent);
-                const date = row.cells[3].textContent.trim();
+                const date = row.dataset.reportDate || '';
 
                 return (
                     (!filters.reason || filters.reason === '' || reason === filters.reason) &&
@@ -407,10 +419,15 @@ function bindConfirm(button, key, modalEl, toastKey) {
             applyFilters();
         });
 
-    [els.filterReason, els.filterDate].forEach((el) => {
-    el.addEventListener('input', applyFilters);
-    el.addEventListener('change', applyFilters);
-});
+    els.filterReason?.addEventListener('change', applyFilters);
+
+    els.filterDate?.addEventListener('change', applyFilters);
+
+    els.filterDate?.addEventListener('input', () => {
+        if (els.filterDate.value === '') {
+                applyFilters();
+        }
+    });
 
 document.addEventListener('change', async (e) => {
     const target = e.target;

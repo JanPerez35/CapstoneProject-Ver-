@@ -116,53 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const rentalPeriodType = $('rentalPeriodType');
 
     const rentalRangeType = $('rentalRangeType');
+    const rentalRateModeDisplay = $('rentalRateModeDisplay');
     const rentalStartDate = $('rentalStartDate');
     const rentalEndDate = $('rentalEndDate');
-    const rentalStartDateTrigger = $('rentalStartDateTrigger');
-    const rentalEndDateTrigger = $('rentalEndDateTrigger');
-    function lockDateTyping(input) {
-        if (!input) return;
-
-        input.addEventListener('keydown', (e) => {
-            e.preventDefault();
-        });
-
-        input.addEventListener('beforeinput', (e) => {
-            e.preventDefault();
-        });
-
-        input.addEventListener('paste', (e) => {
-            e.preventDefault();
-        });
-
-        input.addEventListener('drop', (e) => {
-            e.preventDefault();
-        });
-
-        input.addEventListener('mousedown', () => {
-            if (typeof input.showPicker === 'function') {
-                input.showPicker();
-            }
-        });
-    }
-
-    function bindDateTrigger(button, input) {
-        if (!button || !input) return;
-
-        button.addEventListener('click', () => {
-            input.focus();
-            if (typeof input.showPicker === 'function') {
-                input.showPicker();
-            }
-        });
-    }
-
-    lockDateTyping(rentalStartDate);
-    lockDateTyping(rentalEndDate);
-
-    bindDateTrigger(rentalStartDateTrigger, rentalStartDate);
-    bindDateTrigger(rentalEndDateTrigger, rentalEndDate);
-
 
     const rentalEndDateRow = $('rentalEndDateRow');
     const rentalRangeWarningRow = $('rentalRangeWarningRow');
@@ -174,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rentalServiceChecks = [rentalUtilities, rentalElectricity, rentalWater];
 
     rentalServiceChecks.forEach(input => {
-        input.addEventListener('change', () => {
+        input?.addEventListener('change', () => {
             servicesTouched = true;
             updateRentalSaveState();
         });
@@ -190,6 +146,55 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const confirmDeleteCostEntryBtn = $('confirmDeleteCostEntryBtn');
     const deleteButtons = () => [...document.querySelectorAll('.delete-cost-row-btn')];
+    const editButtons = () => [...document.querySelectorAll('.edit-cost-row-btn')];
+    const customizeDaysButtons = () => [...document.querySelectorAll('.customize-days-btn')];
+    const createRelatedButtons = () => [...document.querySelectorAll('.create-related-btn')];
+
+    const customizeEventId = $('customizeEventId');
+    const saveCustomizeDaysBtn = $('saveCustomizeDaysBtn');
+
+    const editEventId = $('editEventId');
+    const saveEditEventBtn = $('saveEditEventBtn');
+
+    const relatedParentEventId = $('relatedParentEventId');
+    const saveRelatedEventBtn = $('saveRelatedEventBtn');
+    const relatedArea = $('relatedArea');
+    const relatedResponsible = $('relatedResponsible');
+    const relatedDescription = $('relatedDescription');
+    const relatedUtilities = $('relatedUtilities');
+    const relatedElectricity = $('relatedElectricity');
+    const relatedWater = $('relatedWater');
+    const relatedServiceChecks = [relatedUtilities, relatedElectricity, relatedWater];
+    const relatedPeriodType = $('relatedPeriodType');
+    const relatedRateMode = $('relatedRateMode');
+    const relatedRateModeDisplay = $('relatedRateModeDisplay');
+    const relatedStartDate = $('relatedStartDate');
+    const relatedEndDate = $('relatedEndDate');
+    const relatedStartTime = $('relatedStartTime');
+    const relatedEndTime = $('relatedEndTime');
+    const relatedEstimatedTotal = $('relatedEstimatedTotal');
+    const relatedDetectedPeriodLabel = $('relatedDetectedPeriodLabel');
+    const relatedDetectedHoursLabel = $('relatedDetectedHoursLabel');
+    const relatedAreaError = $('relatedAreaError');
+    const relatedResponsibleError = $('relatedResponsibleError');
+    const relatedDescriptionError = $('relatedDescriptionError');
+    const relatedStartDateError = $('relatedStartDateError');
+    const relatedEndDateError = $('relatedEndDateError');
+    const relatedTimeError = $('relatedTimeError');
+    const relatedServicesError = $('relatedServicesError');
+
+    const editResponsible = $('editResponsible');
+    const editDescription = $('editDescription');
+    const editResponsibleError = $('editResponsibleError');
+    const editDescriptionError = $('editDescriptionError');
+
+    const customizeScope = $('customizeScope');
+    const customizeDate = $('customizeDate');
+    const customizeStartTime = $('customizeStartTime');
+    const customizeEndTime = $('customizeEndTime');
+    const customizeScopeError = $('customizeScopeError');
+    const customizeDateError = $('customizeDateError');
+    const customizeTimeError = $('customizeTimeError');
 
 
     const createToastInstance = (id) => {
@@ -202,6 +207,9 @@ document.addEventListener('DOMContentLoaded', () => {
         rentalSaved: createToastInstance('rentalSavedToast'),
         deleteEntry: createToastInstance('deleteEntryToast'),
         download: createToastInstance('downloadToast'),
+        customizeSaved: createToastInstance('customizeSavedToast'),
+        editSaved: createToastInstance('editSavedToast'),
+        relatedSaved: createToastInstance('relatedSavedToast'),
     };
 
     function updateFacilitySearchButtonState() {
@@ -408,7 +416,64 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function requiresEndDate() {
-        return ['weekly', 'monthly'].includes(rentalRangeType?.value);
+        return true;
+    }
+
+    function getInclusiveDays(startValue, endValue) {
+        if (!startValue) return 0;
+
+        const start = new Date(`${startValue}T00:00:00`);
+        const end = new Date(`${endValue || startValue}T00:00:00`);
+
+        const diffMs = end - start;
+        return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+    }
+
+    function resolveRateModeByDuration() {
+        const days = getInclusiveDays(rentalStartDate.value, rentalEndDate.value);
+
+        if (days <= 0) return '';
+
+        if (days < 7) return 'daily';
+        if (days < 28) return 'weekly';
+
+        return 'monthly';
+    }
+
+    function resolveRelatedRateModeByDuration() {
+        const days = getInclusiveDays(relatedStartDate.value, relatedEndDate.value);
+
+        if (days <= 0) return '';
+        if (days < 7) return 'daily';
+        if (days < 28) return 'weekly';
+
+        return 'monthly';
+    }
+
+    function updateRelatedAutomaticRateMode() {
+        const mode = resolveRelatedRateModeByDuration();
+
+        relatedRateMode.value = mode;
+        relatedRateModeDisplay.value = rateModeLabel(mode);
+    }
+
+    function rateModeLabel(value) {
+        if (value === 'daily') return 'Diario';
+        if (value === 'weekly') return 'Semanal';
+        if (value === 'monthly') return 'Mensual';
+        return 'Se calculará automáticamente';
+    }
+
+    function updateAutomaticRateMode() {
+        const mode = resolveRateModeByDuration();
+
+        if (rentalRangeType) {
+            rentalRangeType.value = mode;
+        }
+
+        if (rentalRateModeDisplay) {
+            rentalRateModeDisplay.value = rateModeLabel(mode);
+        }
     }
 
     function toggleRentalDateRangeUI() {
@@ -426,15 +491,6 @@ document.addEventListener('DOMContentLoaded', () => {
             clearFieldError(rentalEndDate, $('rentalEndDateError'));
         }
 
-        if (rentalStartDate.value && requiresEndDate()) {
-            const nextDay = new Date(`${rentalStartDate.value}T00:00:00`);
-            nextDay.setDate(nextDay.getDate() + 1);
-            rentalEndDate.min = nextDay.toISOString().split('T')[0];
-        } else if (rentalStartDate.value) {
-            rentalEndDate.min = rentalStartDate.value;
-        } else {
-            rentalEndDate.min = new Date().toISOString().split('T')[0];
-        }
     }
 
     function validateRentalDates(showError = true, forceRequired = false) {
@@ -603,16 +659,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function getSelectedStartDateDay() {
+        if (!rentalStartDate.value) return null;
+
+        const date = new Date(`${rentalStartDate.value}T00:00:00`);
+        //Sunday =0, Monday = 1, ... , Saturday = 6
+        return date.getDay();
+    }
+
+    function getSelectedRelatedStartDateDay() {
+        if (!relatedStartDate.value) return null;
+
+        const date = new Date(`${relatedStartDate.value}T00:00:00`);
+        return date.getDay();
+    }
+
+    function isRelatedWorkdayPeriod() {
+        return relatedPeriodType?.value === 'workday';
+    }
+
+    function isRelatedNonWorkdayPeriod() {
+        return ['non_workday_saturday', 'non_workday_sunday_holiday'].includes(relatedPeriodType?.value);
+    }
+
     function updateRentalTimeOptions() {
         const previousStart = rentalStartTime.value;
         const previousEnd = rentalEndTime.value;
+        const selectedDay = getSelectedStartDateDay();
 
         if (isWorkdayPeriod()) {
             buildTimeOptions(rentalStartTime, 7, 30, 16, 30, 'Seleccionar hora de inicio');
             buildTimeOptions(rentalEndTime, 7, 45, 16, 30, 'Seleccionar hora de fin');
-        } else if (isNonWorkdayPeriod()) {
-            buildTimeOptions(rentalStartTime, 8, 30, 21, 30, 'Seleccionar hora de inicio');
-            buildTimeOptions(rentalEndTime, 8, 45, 21, 30, 'Seleccionar hora de fin');
+        } else if (rentalPeriodType?.value === 'non_workday_saturday') {
+        if (selectedDay === 6) {
+            buildTimeOptions(rentalStartTime, 8, 0, 21, 30, 'Seleccionar hora de inicio');
+            buildTimeOptions(rentalEndTime, 8, 15, 21, 30, 'Seleccionar hora de fin');
+        } else {
+            buildTimeOptions(rentalStartTime, 16, 30, 21, 30, 'Seleccionar hora de inicio');
+            buildTimeOptions(rentalEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
+        }
+    } else if (rentalPeriodType?.value === 'non_workday_sunday_holiday') {
+            if (selectedDay === 0) {
+                buildTimeOptions(rentalStartTime, 8, 0, 21, 30, 'Seleccionar hora de inicio');
+                buildTimeOptions(rentalEndTime, 8, 15, 21, 30, 'Seleccionar hora de fin');
+            } else {
+                buildTimeOptions(rentalStartTime, 16, 30, 21, 30, 'Seleccionar hora de inicio');
+                buildTimeOptions(rentalEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
+            }
         } else {
             rentalStartTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
             rentalEndTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
@@ -628,6 +721,60 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function updateRelatedTimeOptions() {
+        const previousStart = relatedStartTime.value;
+        const previousEnd = relatedEndTime.value;
+        const selectedDay = getSelectedRelatedStartDateDay();
+
+        if (isRelatedWorkdayPeriod()) {
+            buildTimeOptions(relatedStartTime, 7, 30, 16, 30, 'Seleccionar hora de inicio');
+            buildTimeOptions(relatedEndTime, 7, 45, 16, 30, 'Seleccionar hora de fin');
+        } else if (relatedPeriodType?.value === 'non_workday_saturday') {
+            if (selectedDay === 6) {
+                buildTimeOptions(relatedStartTime, 8, 0, 21, 30, 'Seleccionar hora de inicio');
+                buildTimeOptions(relatedEndTime, 8, 15, 21, 30, 'Seleccionar hora de fin');
+            } else {
+                buildTimeOptions(relatedStartTime, 16, 30, 21, 30, 'Seleccionar hora de inicio');
+                buildTimeOptions(relatedEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
+            }
+        } else if (relatedPeriodType?.value === 'non_workday_sunday_holiday') {
+            if (selectedDay === 0) {
+                buildTimeOptions(relatedStartTime, 8, 0, 21, 30, 'Seleccionar hora de inicio');
+                buildTimeOptions(relatedEndTime, 8, 15, 21, 30, 'Seleccionar hora de fin');
+            } else {
+                buildTimeOptions(relatedStartTime, 16, 30, 21, 30, 'Seleccionar hora de inicio');
+                buildTimeOptions(relatedEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
+            }
+        } else {
+            relatedStartTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
+            relatedEndTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
+            return;
+        }
+
+        if ([...relatedStartTime.options].some(option => option.value === previousStart)) {
+            relatedStartTime.value = previousStart;
+        }
+
+        if ([...relatedEndTime.options].some(option => option.value === previousEnd)) {
+            relatedEndTime.value = previousEnd;
+        }
+    }
+
+    function updateCustomizeTimeOptions() {
+        const previousStart = customizeStartTime.value;
+        const previousEnd = customizeEndTime.value;
+
+        buildTimeOptions(customizeStartTime, 7, 30, 21, 30, 'Seleccionar hora de inicio');
+        buildTimeOptions(customizeEndTime, 7, 45, 21, 30, 'Seleccionar hora de fin');
+
+        if ([...customizeStartTime.options].some(option => option.value === previousStart)) {
+            customizeStartTime.value = previousStart;
+        }
+
+        if ([...customizeEndTime.options].some(option => option.value === previousEnd)) {
+            customizeEndTime.value = previousEnd;
+        }
+    }
     function isAllowedDateForSelectedPeriod(dateString) {
         if (!dateString) return true;
 
@@ -658,26 +805,184 @@ document.addEventListener('DOMContentLoaded', () => {
         today.setHours(0, 0, 0, 0);
 
         const todayString = formatDateLocal(today);
-
-        rentalStartDate.min = todayString;
-        rentalEndDate.min = todayString;
-
         toggleRentalDateRangeUI();
     }
 
     rentalStartDate.addEventListener('change', () => {
-        validateRentalDates(true, false);
+        updateAutomaticRateMode();
+        if (rentalStartDate.value.length === 10 && rentalEndDate.value.length === 10) {
+            validateRentalDates(true, false);
+        }
         updateRentalDateRestrictions();
+        updateRentalTimeOptions();
         calculateRentalEstimate();
         updateRentalSaveState();
     });
 
     rentalEndDate.addEventListener('change', () => {
-        validateRentalDates(true, false);
+        updateAutomaticRateMode();
+        if (rentalStartDate.value.length === 10 && rentalEndDate.value.length === 10) {
+            validateRentalDates(true, false);
+        }
         updateRentalDateRestrictions();
         calculateRentalEstimate();
         updateRentalSaveState();
     });
+
+
+    [
+        editResponsible,
+        editDescription
+    ].forEach(input => {
+        input?.addEventListener('input', () => {
+            validateEditEventForm(true);
+            updateEditSaveState();
+        });
+
+        input?.addEventListener('change', () => {
+            validateEditEventForm(true);
+            updateEditSaveState();
+        });
+    });
+
+    customizeScope?.addEventListener('change', () => {
+        clearFieldError(customizeScope, customizeScopeError);
+
+        if (!customizeScope.value) {
+            setFieldError(customizeScope, customizeScopeError, 'Selecciona el alcance de la modificación.');
+        }
+
+        updateCustomizeSaveState();
+    });
+
+    customizeDate?.addEventListener('change', () => {
+        clearFieldError(customizeDate, customizeDateError);
+
+        if (!customizeDate.value) {
+            setFieldError(customizeDate, customizeDateError, 'La fecha es requerida.');
+        }
+
+        updateCustomizeSaveState();
+    });
+
+    [customizeStartTime, customizeEndTime].forEach(input => {
+        input?.addEventListener('change', () => {
+            customizeStartTime.classList.remove('is-invalid');
+            customizeEndTime.classList.remove('is-invalid');
+            customizeTimeError.textContent = '';
+
+            if (!customizeStartTime.value || !customizeEndTime.value) {
+                customizeStartTime.classList.add('is-invalid');
+                customizeEndTime.classList.add('is-invalid');
+                customizeTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
+            } else if (timeToMinutes(customizeEndTime.value) <= timeToMinutes(customizeStartTime.value)) {
+                customizeStartTime.classList.add('is-invalid');
+                customizeEndTime.classList.add('is-invalid');
+                customizeTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
+            }
+
+            updateCustomizeSaveState();
+        });
+    });
+
+    relatedArea?.addEventListener('change', () => {
+        clearFieldError(relatedArea, relatedAreaError);
+
+        if (!relatedArea.value) {
+            setFieldError(relatedArea, relatedAreaError, 'El área es requerida.');
+        }
+
+        updateRelatedSaveState();
+    });
+
+    relatedResponsible?.addEventListener('input', () => {
+        const value = relatedResponsible.value.trim();
+        const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+
+        clearFieldError(relatedResponsible, relatedResponsibleError);
+
+        if (!value) {
+            setFieldError(relatedResponsible, relatedResponsibleError, 'El responsable es obligatorio.');
+        } else if (!regex.test(value)) {
+            setFieldError(relatedResponsible, relatedResponsibleError, 'Solo se permiten letras y espacios.');
+        } else if (value.length < 8) {
+            setFieldError(relatedResponsible, relatedResponsibleError, 'El responsable debe tener al menos 8 caracteres.');
+        } else if (value.length > 40) {
+            setFieldError(relatedResponsible, relatedResponsibleError, 'El responsable no puede exceder 40 caracteres.');
+        }
+
+        updateRelatedSaveState();
+    });
+
+    relatedDescription?.addEventListener('input', () => {
+        const value = relatedDescription.value.trim();
+        const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
+
+        clearFieldError(relatedDescription, relatedDescriptionError);
+
+        if (!value) {
+            setFieldError(relatedDescription, relatedDescriptionError, 'La descripción es obligatoria.');
+        } else if (!regex.test(value)) {
+            setFieldError(relatedDescription, relatedDescriptionError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+        } else if (value.length < 10) {
+            setFieldError(relatedDescription, relatedDescriptionError, 'La descripción debe tener al menos 10 caracteres.');
+        } else if (value.length > 250) {
+            setFieldError(relatedDescription, relatedDescriptionError, 'La descripción no puede exceder 250 caracteres.');
+        }
+
+        updateRelatedSaveState();
+    });
+
+    relatedPeriodType?.addEventListener('change', () => {
+        relatedStartTime.value = '';
+        relatedEndTime.value = '';
+        updateRelatedTimeOptions();
+        updateRelatedSummary();
+        updateRelatedSaveState();
+    });
+
+    [relatedStartTime, relatedEndTime].forEach(input => {
+        input?.addEventListener('change', () => {
+            relatedStartTime.classList.remove('is-invalid');
+            relatedEndTime.classList.remove('is-invalid');
+            relatedTimeError.textContent = '';
+
+            if (!relatedStartTime.value || !relatedEndTime.value) {
+                relatedStartTime.classList.add('is-invalid');
+                relatedEndTime.classList.add('is-invalid');
+                relatedTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
+            } else if (timeToMinutes(relatedEndTime.value) <= timeToMinutes(relatedStartTime.value)) {
+                relatedStartTime.classList.add('is-invalid');
+                relatedEndTime.classList.add('is-invalid');
+                relatedTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
+            }
+
+            updateRelatedSummary();
+            updateRelatedSaveState();
+        });
+    });
+
+    relatedServiceChecks.forEach(input => {
+        input?.addEventListener('change', () => {
+            toggleRelatedServicesError(!hasRelatedServices());
+            updateRelatedSaveState();
+        });
+    });
+
+    [relatedStartDate, relatedEndDate].forEach(input => {
+        input?.addEventListener('change', () => {
+            if (relatedStartDate.value.length === 10 && relatedEndDate.value.length === 10) {
+                updateRelatedAutomaticRateMode();
+                validateRelatedEventForm(true);
+            }
+
+            updateRelatedTimeOptions();
+            updateRelatedSummary();
+            updateRelatedSaveState();
+        });
+    });
+
+
 
 
     function getSelectedClassrooms() {
@@ -906,6 +1211,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function hasSelectedServices() {
         return rentalServiceChecks.some(input => input.checked);
+    }
+
+    function hasRelatedServices() {
+        return relatedServiceChecks.some(input => input?.checked);
+    }
+
+    function toggleRelatedServicesError(show) {
+        const error = $('relatedServicesError');
+        if (!error) return;
+
+        error.classList.toggle('d-none', !show);
+        error.classList.toggle('d-block', show);
     }
 
     function toggleServicesError(show) {
@@ -1185,6 +1502,25 @@ document.addEventListener('DOMContentLoaded', () => {
         rentalEstimatedTotalInput.value = total.toFixed(2);
         return total;
     }
+    function updateRelatedSummary() {
+        const dailyHours = calculateHours(relatedStartTime.value, relatedEndTime.value);
+        let totalDays = 1;
+
+        if (relatedStartDate.value && relatedEndDate.value) {
+            totalDays = getInclusiveDays(relatedStartDate.value, relatedEndDate.value);
+        }
+
+        const totalHours = dailyHours * Math.max(totalDays, 1);
+
+        if (relatedDetectedPeriodLabel) {
+            relatedDetectedPeriodLabel.textContent = periodLabelFromValue(relatedPeriodType.value);
+        }
+
+        if (relatedDetectedHoursLabel) {
+            relatedDetectedHoursLabel.textContent = `${totalHours.toFixed(2)} horas`;
+        }
+    }
+
     function isRentalFormValid() {
         const timeError = document.getElementById('rentalTimeError');
 
@@ -1219,17 +1555,45 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (timeError) {
                     timeError.textContent = 'Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.';
                 }
-            } else if (isNonWorkdayPeriod() && (startMinutes < 510 || endMinutes > 1290)) {
-                validTimes = false;
-                rentalStartTime.classList.add('is-invalid');
-                rentalEndTime.classList.add('is-invalid');
+            } else if (isNonWorkdayPeriod()) {
+                const selectedDay = getSelectedStartDateDay();
 
-                if (timeError) {
-                    timeError.textContent = 'Para períodos no laborables solo se permiten horarios de 8:30 a.m. a 9:30 p.m.';
+                // 4:30 PM
+                let minMinutes = 990;
+                // 9:30 PM
+                let maxMinutes = 1290;
+                let message = 'Para días lunes a viernes en período no laborable solo se permiten horarios de 4:30 p.m. a 9:30 p.m.';
+
+                if (
+                    rentalPeriodType.value === 'non_workday_saturday' &&
+                    selectedDay === 6
+                ) {
+                    // 8:00 AM
+                    minMinutes = 480;
+                    message = 'Para sábado solo se permiten horarios de 8:00 a.m. a 9:30 p.m.';
+                }
+
+                if (
+                    rentalPeriodType.value === 'non_workday_sunday_holiday' &&
+                    selectedDay === 0
+                ) {
+                    // 8:00 AM
+                    minMinutes = 480;
+                    message = 'Para domingo o festivo solo se permiten horarios de 8:00 a.m. a 9:30 p.m.';
+                }
+
+                if (startMinutes < minMinutes || endMinutes > maxMinutes) {
+                    validTimes = false;
+                    rentalStartTime.classList.add('is-invalid');
+                    rentalEndTime.classList.add('is-invalid');
+
+                    if (timeError) {
+                        timeError.textContent = message;
+                    }
                 }
             }
-        }
 
+        }
         const validResponsible = validateResponsible(false);
         const validDescription = validateDescription(false);
         const validServices = hasSelectedServices();
@@ -1542,7 +1906,469 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         });
     }
 
+    function bindOptionThreeButtons() {
+        editButtons().forEach((btn) => {
+            btn.onclick = () => {
+                const row = btn.closest('tr');
 
+                if (editEventId) {
+                    editEventId.value = btn.dataset.entryId;
+                }
+
+                if (row) {
+                    editResponsible.value = row.children[2]?.textContent.trim() || '';
+                    editDescription.value = row.children[4]?.textContent.trim() || '';
+                }
+
+                clearFieldError(editResponsible, editResponsibleError);
+                clearFieldError(editDescription, editDescriptionError);
+                updateEditSaveState();
+
+                console.log('Editar evento:', btn.dataset.entryId);
+            };
+        });
+
+        customizeDaysButtons().forEach((btn) => {
+            btn.onclick = () => {
+                if (customizeEventId) {
+                    customizeEventId.value = btn.dataset.entryId;
+                }
+
+                customizeScope.value = '';
+                customizeDate.value = '';
+                customizeStartTime.value = '';
+                customizeEndTime.value = '';
+
+                clearFieldError(customizeScope, customizeScopeError);
+                clearFieldError(customizeDate, customizeDateError);
+
+                updateCustomizeTimeOptions();
+
+                customizeStartTime.classList.remove('is-invalid');
+                customizeEndTime.classList.remove('is-invalid');
+                customizeTimeError.textContent = '';
+
+                updateCustomizeSaveState();
+
+                console.log('Personalizar días para evento:', btn.dataset.entryId);
+            };
+        });
+
+        createRelatedButtons().forEach((btn) => {
+            btn.onclick = () => {
+                const row = btn.closest('tr');
+
+                relatedParentEventId.value = btn.dataset.entryId;
+
+                relatedArea.value = '';
+                relatedResponsible.value = row?.children[2]?.textContent.trim() || '';
+                relatedDescription.value = row?.children[4]?.textContent.trim() || '';
+
+                relatedUtilities.checked = false;
+                relatedElectricity.checked = false;
+                relatedWater.checked = false;
+
+                relatedPeriodType.value = '';
+                relatedRateMode.value = '';
+                relatedRateModeDisplay.value = 'Se calculará automáticamente';
+
+                relatedStartDate.value = '';
+                relatedEndDate.value = '';
+
+                relatedStartTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
+                relatedEndTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
+
+                relatedEstimatedTotal.textContent = '$0.00';
+                if (relatedDetectedPeriodLabel) relatedDetectedPeriodLabel.textContent = '—';
+                if (relatedDetectedHoursLabel) relatedDetectedHoursLabel.textContent = '0.00 horas';
+
+                clearFieldError(relatedArea, relatedAreaError);
+                clearFieldError(relatedResponsible, relatedResponsibleError);
+                clearFieldError(relatedDescription, relatedDescriptionError);
+                clearFieldError(relatedStartDate, relatedStartDateError);
+                clearFieldError(relatedEndDate, relatedEndDateError);
+
+                relatedStartTime.classList.remove('is-invalid');
+                relatedEndTime.classList.remove('is-invalid');
+                relatedTimeError.textContent = '';
+
+                toggleRelatedServicesError(false);
+                updateRelatedSaveState();
+
+                console.log('Crear evento relacionado desde:', btn.dataset.entryId);
+            };
+        });
+    }
+
+    function validateCustomizeDaysForm(showError = true) {
+        let valid = true;
+
+        if (showError) {
+            clearFieldError(customizeScope, customizeScopeError);
+            clearFieldError(customizeDate, customizeDateError);
+
+            if (customizeStartTime) customizeStartTime.classList.remove('is-invalid');
+            if (customizeEndTime) customizeEndTime.classList.remove('is-invalid');
+            if (customizeTimeError) customizeTimeError.textContent = '';
+        }
+
+        if (!customizeEventId?.value) {
+            valid = false;
+        }
+
+        if (!customizeScope?.value) {
+            valid = false;
+            if (showError) {
+                setFieldError(customizeScope, customizeScopeError, 'Selecciona el alcance de la modificación.');
+            }
+        }
+
+        if (!customizeDate?.value) {
+            valid = false;
+            if (showError) {
+                setFieldError(customizeDate, customizeDateError, 'La fecha es requerida.');
+            }
+        }
+
+        if (!customizeStartTime?.value || !customizeEndTime?.value) {
+            valid = false;
+            if (showError) {
+                customizeStartTime?.classList.add('is-invalid');
+                customizeEndTime?.classList.add('is-invalid');
+                if (customizeTimeError) customizeTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
+            }
+        } else if (timeToMinutes(customizeEndTime.value) <= timeToMinutes(customizeStartTime.value)) {
+            valid = false;
+            if (showError) {
+                customizeStartTime?.classList.add('is-invalid');
+                customizeEndTime?.classList.add('is-invalid');
+                if (customizeTimeError) customizeTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
+            }
+        }
+
+        if (!valid) return null;
+
+        return {
+            event_id: customizeEventId.value,
+            scope: customizeScope.value,
+            date: customizeDate.value,
+            start_time: customizeStartTime.value,
+            end_time: customizeEndTime.value
+        };
+    }
+
+    function updateCustomizeSaveState() {
+        if (!saveCustomizeDaysBtn) return;
+        saveCustomizeDaysBtn.disabled = !validateCustomizeDaysForm(false);
+    }
+
+
+
+    function validateEditEventForm(showError = true) {
+        let valid = true;
+
+        const responsible = editResponsible?.value.trim() || '';
+        const description = editDescription?.value.trim() || '';
+        const responsibleRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+        const descriptionRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
+
+        if (showError) {
+            clearFieldError(editResponsible, editResponsibleError);
+            clearFieldError(editDescription, editDescriptionError);
+        }
+
+        if (!editEventId?.value) {
+            valid = false;
+        }
+
+        if (!responsible) {
+            valid = false;
+            if (showError) setFieldError(editResponsible, editResponsibleError, 'El responsable es obligatorio.');
+        } else if (!responsibleRegex.test(responsible)) {
+            valid = false;
+            if (showError) setFieldError(editResponsible, editResponsibleError, 'Solo se permiten letras y espacios.');
+        } else if (responsible.length < 8) {
+            valid = false;
+            if (showError) setFieldError(editResponsible, editResponsibleError, 'El responsable debe tener al menos 8 caracteres.');
+        } else if (responsible.length > 40) {
+            valid = false;
+            if (showError) setFieldError(editResponsible, editResponsibleError, 'El responsable no puede exceder 40 caracteres.');
+        }
+
+        if (!description) {
+            valid = false;
+            if (showError) setFieldError(editDescription, editDescriptionError, 'La descripción es obligatoria.');
+        } else if (!descriptionRegex.test(description)) {
+            valid = false;
+            if (showError) setFieldError(editDescription, editDescriptionError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+        } else if (description.length < 10) {
+            valid = false;
+            if (showError) setFieldError(editDescription, editDescriptionError, 'La descripción debe tener al menos 10 caracteres.');
+        } else if (description.length > 250) {
+            valid = false;
+            if (showError) setFieldError(editDescription, editDescriptionError, 'La descripción no puede exceder 250 caracteres.');
+        }
+
+        if (!valid) return null;
+
+        return {
+            event_id: editEventId.value,
+            responsible,
+            description,
+            scope: 'whole_event'
+        };
+    }
+
+    function updateEditSaveState() {
+        if (!saveEditEventBtn) return;
+        saveEditEventBtn.disabled = !validateEditEventForm(false);
+    }
+
+
+
+    function validateRelatedEventForm(showError = true) {
+        let valid = true;
+
+        const services = [];
+        if (relatedUtilities?.checked) services.push('utilities');
+        if (relatedElectricity?.checked) services.push('electricity');
+        if (relatedWater?.checked) services.push('water');
+
+        const responsible = relatedResponsible?.value.trim() || '';
+        const description = relatedDescription?.value.trim() || '';
+        const responsibleRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+        const descriptionRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
+
+        if (showError) {
+            clearFieldError(relatedArea, relatedAreaError);
+            clearFieldError(relatedResponsible, relatedResponsibleError);
+            clearFieldError(relatedDescription, relatedDescriptionError);
+            clearFieldError(relatedStartDate, relatedStartDateError);
+            clearFieldError(relatedEndDate, relatedEndDateError);
+
+            relatedStartTime?.classList.remove('is-invalid');
+            relatedEndTime?.classList.remove('is-invalid');
+
+            if (relatedTimeError) relatedTimeError.textContent = '';
+            toggleRelatedServicesError(false);
+        }
+
+        if (!relatedParentEventId?.value) {
+            valid = false;
+        }
+
+        if (!relatedArea?.value) {
+            valid = false;
+            if (showError) setFieldError(relatedArea, relatedAreaError, 'El área es requerida.');
+        }
+
+        if (!responsible) {
+            valid = false;
+            if (showError) setFieldError(relatedResponsible, relatedResponsibleError, 'El responsable es obligatorio.');
+        } else if (!responsibleRegex.test(responsible)) {
+            valid = false;
+            if (showError) setFieldError(relatedResponsible, relatedResponsibleError, 'Solo se permiten letras y espacios.');
+        } else if (responsible.length < 8) {
+            valid = false;
+            if (showError) setFieldError(relatedResponsible, relatedResponsibleError, 'El responsable debe tener al menos 8 caracteres.');
+        } else if (responsible.length > 40) {
+            valid = false;
+            if (showError) setFieldError(relatedResponsible, relatedResponsibleError, 'El responsable no puede exceder 40 caracteres.');
+        }
+
+        if (!description) {
+            valid = false;
+            if (showError) setFieldError(relatedDescription, relatedDescriptionError, 'La descripción es obligatoria.');
+        } else if (!descriptionRegex.test(description)) {
+            valid = false;
+            if (showError) setFieldError(relatedDescription, relatedDescriptionError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+        } else if (description.length < 10) {
+            valid = false;
+            if (showError) setFieldError(relatedDescription, relatedDescriptionError, 'La descripción debe tener al menos 10 caracteres.');
+        } else if (description.length > 250) {
+            valid = false;
+            if (showError) setFieldError(relatedDescription, relatedDescriptionError, 'La descripción no puede exceder 250 caracteres.');
+        }
+
+        if (!relatedPeriodType?.value) {
+            valid = false;
+        }
+
+        if (!relatedRateMode?.value) {
+            valid = false;
+        }
+
+        if (!relatedStartDate?.value) {
+            valid = false;
+            if (showError) setFieldError(relatedStartDate, relatedStartDateError, 'La fecha inicial es requerida.');
+        }
+
+        if (!relatedEndDate?.value) {
+            valid = false;
+            if (showError) setFieldError(relatedEndDate, relatedEndDateError, 'La fecha final es requerida.');
+        }
+
+        if (relatedStartDate?.value && relatedEndDate?.value) {
+            const startDate = new Date(`${relatedStartDate.value}T00:00:00`);
+            const endDate = new Date(`${relatedEndDate.value}T00:00:00`);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (startDate < today) {
+                valid = false;
+                if (showError) setFieldError(relatedStartDate, relatedStartDateError, 'No puedes seleccionar una fecha anterior a hoy.');
+            }
+
+            if (endDate < today) {
+                valid = false;
+                if (showError) setFieldError(relatedEndDate, relatedEndDateError, 'No puedes seleccionar una fecha anterior a hoy.');
+            }
+
+            if (endDate.getTime() === startDate.getTime()) {
+                valid = false;
+                if (showError) {
+                    setFieldError(relatedEndDate, relatedEndDateError, 'La fecha de fin no puede ser igual a la fecha de inicio.');
+                    relatedStartDate.classList.add('is-invalid');
+                    relatedEndDate.classList.add('is-invalid');
+                }
+            }
+
+            if (endDate < startDate) {
+                valid = false;
+                if (showError) {
+                    setFieldError(relatedEndDate, relatedEndDateError, 'La fecha de fin debe ser posterior a la fecha de inicio.');
+                    relatedStartDate.classList.add('is-invalid');
+                    relatedEndDate.classList.add('is-invalid');
+                }
+            }
+        }
+
+        if (!relatedStartTime?.value || !relatedEndTime?.value) {
+            valid = false;
+            if (showError) {
+                relatedStartTime?.classList.add('is-invalid');
+                relatedEndTime?.classList.add('is-invalid');
+                if (relatedTimeError) relatedTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
+            }
+        } else {
+            const startMinutes = timeToMinutes(relatedStartTime.value);
+            const endMinutes = timeToMinutes(relatedEndTime.value);
+            const selectedDay = getSelectedRelatedStartDateDay();
+
+            if (endMinutes <= startMinutes) {
+                valid = false;
+                if (showError) {
+                    relatedStartTime.classList.add('is-invalid');
+                    relatedEndTime.classList.add('is-invalid');
+                    if (relatedTimeError) relatedTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
+                }
+            } else if (isRelatedWorkdayPeriod() && (startMinutes < 450 || endMinutes > 990)) {
+                valid = false;
+                if (showError) {
+                    relatedStartTime.classList.add('is-invalid');
+                    relatedEndTime.classList.add('is-invalid');
+                    if (relatedTimeError) relatedTimeError.textContent = 'Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.';
+                }
+            } else if (isRelatedNonWorkdayPeriod()) {
+                let minMinutes = 990;
+                let maxMinutes = 1290;
+                let message = 'Para días lunes a viernes en período no laborable solo se permiten horarios de 4:30 p.m. a 9:30 p.m.';
+
+                if (relatedPeriodType.value === 'non_workday_saturday' && selectedDay === 6) {
+                    minMinutes = 480;
+                    message = 'Para sábado solo se permiten horarios de 8:00 a.m. a 9:30 p.m.';
+                }
+
+                if (relatedPeriodType.value === 'non_workday_sunday_holiday' && selectedDay === 0) {
+                    minMinutes = 480;
+                    message = 'Para domingo o festivo solo se permiten horarios de 8:00 a.m. a 9:30 p.m.';
+                }
+
+                if (startMinutes < minMinutes || endMinutes > maxMinutes) {
+                    valid = false;
+                    if (showError) {
+                        relatedStartTime.classList.add('is-invalid');
+                        relatedEndTime.classList.add('is-invalid');
+                        if (relatedTimeError) relatedTimeError.textContent = message;
+                    }
+                }
+            }
+        }
+
+        if (services.length === 0) {
+            valid = false;
+            if (showError) toggleRelatedServicesError(true);
+        }
+
+        if (!valid) return null;
+
+        return {
+            parent_event_id: relatedParentEventId.value,
+            classroom: relatedArea.value,
+            responsible,
+            description,
+            services,
+            period_type: relatedPeriodType.value,
+            rate_mode: relatedRateMode.value,
+            event_date: relatedStartDate.value,
+            end_date: relatedEndDate.value,
+            start_time: relatedStartTime.value,
+            end_time: relatedEndTime.value,
+            relation_type: 'same_event_group'
+        };
+    }
+
+    function updateRelatedSaveState() {
+        if (!saveRelatedEventBtn) return;
+        saveRelatedEventBtn.disabled = !validateRelatedEventForm(false);
+    }
+    if (saveCustomizeDaysBtn) {
+        saveCustomizeDaysBtn.addEventListener('click', () => {
+            const payload = validateCustomizeDaysForm(true);
+
+            if (!payload) {
+                updateCustomizeSaveState();
+                return;
+            }
+
+            console.log('Payload de excepción:', payload);
+
+            bootstrap.Modal.getOrCreateInstance($('customizeDaysModal')).hide();
+            toasts.customizeSaved?.show();
+        });
+    }
+
+    if (saveEditEventBtn) {
+        saveEditEventBtn.addEventListener('click', () => {
+            const payload = validateEditEventForm(true);
+
+            if (!payload) {
+                updateEditSaveState();
+                return;
+            }
+
+            console.log('Payload editar evento:', payload);
+
+            bootstrap.Modal.getOrCreateInstance($('editEventModal')).hide();
+            toasts.editSaved?.show();
+        });
+    }
+
+    if (saveRelatedEventBtn) {
+        saveRelatedEventBtn.addEventListener('click', () => {
+            const payload = validateRelatedEventForm(true);
+
+            if (!payload) {
+                updateRelatedSaveState();
+                return;
+            }
+
+            console.log('Payload crear relacionado:', payload);
+
+            bootstrap.Modal.getOrCreateInstance($('createRelatedModal')).hide();
+            toasts.relatedSaved?.show();
+        });
+    }
     function configureHasChanges() {
         return (
             getSelectedClassrooms().length > 0 ||
@@ -1618,6 +2444,8 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         detectedPeriodLabel.textContent = '—';
         detectedHoursLabel.textContent = '0.00 horas';
 
+        updateAutomaticRateMode();
+        updateRentalTimeOptions();
         updateRentalSaveState();
     }
 
@@ -1637,7 +2465,77 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         setSelectionByList([]);
     });
 
+    function resetEditEventState() {
+        if (editResponsible) editResponsible.value = '';
+        if (editDescription) editDescription.value = '';
 
+        clearFieldError(editResponsible, editResponsibleError);
+        clearFieldError(editDescription, editDescriptionError);
+
+        updateEditSaveState();
+    }
+
+    function resetCustomizeDaysState() {
+        if (customizeScope) customizeScope.value = '';
+        if (customizeDate) customizeDate.value = '';
+        if (customizeStartTime) customizeStartTime.value = '';
+        if (customizeEndTime) customizeEndTime.value = '';
+
+        clearFieldError(customizeScope, customizeScopeError);
+        clearFieldError(customizeDate, customizeDateError);
+
+        customizeStartTime?.classList.remove('is-invalid');
+        customizeEndTime?.classList.remove('is-invalid');
+        if (customizeTimeError) customizeTimeError.textContent = '';
+
+        updateCustomizeSaveState();
+    }
+
+    function resetRelatedEventState() {
+        if (relatedArea) relatedArea.value = '';
+        if (relatedResponsible) relatedResponsible.value = '';
+        if (relatedDescription) relatedDescription.value = '';
+
+        if (relatedUtilities) relatedUtilities.checked = false;
+        if (relatedElectricity) relatedElectricity.checked = false;
+        if (relatedWater) relatedWater.checked = false;
+
+        if (relatedPeriodType) relatedPeriodType.value = '';
+        if (relatedRateMode) relatedRateMode.value = '';
+        if (relatedRateModeDisplay) relatedRateModeDisplay.value = 'Se calculará automáticamente';
+
+        if (relatedStartDate) relatedStartDate.value = '';
+        if (relatedEndDate) relatedEndDate.value = '';
+
+        if (relatedStartTime) {
+            relatedStartTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
+        }
+
+        if (relatedEndTime) {
+            relatedEndTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
+        }
+
+        if (relatedEstimatedTotal) relatedEstimatedTotal.textContent = '$0.00';
+        if (relatedDetectedPeriodLabel) relatedDetectedPeriodLabel.textContent = '—';
+        if (relatedDetectedHoursLabel) relatedDetectedHoursLabel.textContent = '0.00 horas';
+
+        clearFieldError(relatedArea, relatedAreaError);
+        clearFieldError(relatedResponsible, relatedResponsibleError);
+        clearFieldError(relatedDescription, relatedDescriptionError);
+        clearFieldError(relatedStartDate, relatedStartDateError);
+        clearFieldError(relatedEndDate, relatedEndDateError);
+
+        relatedStartTime?.classList.remove('is-invalid');
+        relatedEndTime?.classList.remove('is-invalid');
+        if (relatedTimeError) relatedTimeError.textContent = '';
+
+        toggleRelatedServicesError(false);
+        updateRelatedSaveState();
+    }
+
+    $('editEventModal')?.addEventListener('hidden.bs.modal', resetEditEventState);
+    $('customizeDaysModal')?.addEventListener('hidden.bs.modal', resetCustomizeDaysState);
+    $('createRelatedModal')?.addEventListener('hidden.bs.modal', resetRelatedEventState);
     function handleClassroomCheckboxChange() {
         const selected = getSelectedClassrooms();
 
@@ -1673,7 +2571,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         });
     });
 
-    [rentalClassroom, rentalRangeType, rentalStartTime, rentalEndTime, rentalPeriodType].forEach((el) => {
+    [rentalClassroom,rentalStartTime, rentalEndTime, rentalPeriodType].forEach((el) => {
         if (!el) return;
 
         el.addEventListener('change', () => {
@@ -1681,8 +2579,8 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
 
             if (el === rentalPeriodType) {
-                rentalStartDate.value = '';
-                rentalEndDate.value = '';
+                rentalStartTime.value = '';
+                rentalEndTime.value = '';
                 updateRentalTimeOptions();
                 updateRentalDateRestrictions();
             }
@@ -1971,6 +2869,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     }
 
     bindDeleteButtons();
+    bindOptionThreeButtons();
     bindClassroomCheckboxes();
     toggleMonthFilter();
     updateFacilitySearchButtonState();
