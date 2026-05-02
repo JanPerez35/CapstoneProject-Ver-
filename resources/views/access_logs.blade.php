@@ -118,8 +118,8 @@
 
                         {{-- Facility-related events --}}
                         <optgroup label="Facilidades">
-                            <option value="Agregar salón" {{ request('event') == 'Agregar salón' ? 'selected' : '' }}>Agregar salón</option>
-                            <option value="Eliminar/procesar salones" {{ request('event') == 'Eliminar/procesar salones' ? 'selected' : '' }}>Eliminar/procesar salones</option>
+                            <option value="Agregar área" {{ request('event') == 'Agregar área' ? 'selected' : '' }}>Agregar área</option>
+                            <option value="Eliminar área" {{ request('event') == 'Eliminar área' ? 'selected' : '' }}>Eliminar área</option>
                             <option value="Agregar evento de facilidad" {{ request('event') == 'Agregar evento de facilidad' ? 'selected' : '' }}>Agregar evento de facilidad</option>
                             <option value="Eliminar evento de facilidad" {{ request('event') == 'Eliminar evento de facilidad' ? 'selected' : '' }}>Eliminar evento de facilidad</option>
                             <option value="Guardar tarifas de facilidades" {{ request('event') == 'Guardar tarifas de facilidades' ? 'selected' : '' }}>Guardar tarifas de facilidades</option>

@@ -8,9 +8,12 @@ use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Models\Review;
 use App\Models\User;
+use App\Http\Controllers\Concerns\LogsActivity;
 
 class PostController extends Controller
-{  
+{
+    use LogsActivity;
+
     public function store(Request $request)
     {
         $request->validate([
@@ -31,7 +34,7 @@ class PostController extends Controller
             }
         }
 
-        Post::create([
+        $post = Post::create([
             'user_id' => auth()->id(),
             'title' => $request->title,
             'description' => $request->description,
@@ -43,6 +46,11 @@ class PostController extends Controller
             'photo_2_url' => $paths[1] ?? null,
             'photo_3_url' => $paths[2] ?? null,
         ]);
+
+        $this->logActivity(
+            'Crear publicación',
+            "Se creó la publicación: {$post->title} (ID: {$post->id})"
+        );
 
         return response()->json(['success' => true]);
     }
@@ -63,7 +71,15 @@ class PostController extends Controller
             }
         }
 
+        $postTitle = $post->title;
+        $postId = $post->id;
+
         $post->delete();
+
+        $this->logActivity(
+            'Eliminar publicación',
+            "Se eliminó la publicación: {$postTitle} (ID: {$postId})"
+        );
 
         return response()->json([
             'success' => true,

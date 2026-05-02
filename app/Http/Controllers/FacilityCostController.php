@@ -248,7 +248,7 @@ class FacilityCostController extends Controller
         ]);
 
         $this->logActivity(
-            'Agregar salón',
+            'Agregar área',
             "Se agregó el salón: {$classroom->classroom_name} (ID: {$classroom->id})"
         );
 
@@ -301,7 +301,7 @@ class FacilityCostController extends Controller
         }
 
         $this->logActivity(
-            'Eliminar/procesar salones',
+            'Eliminar área',
             !empty($comments) ? implode(' | ', $comments) : 'No se realizaron cambios'
         );
 

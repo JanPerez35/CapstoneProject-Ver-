@@ -118,7 +118,7 @@
                 {{-- Backend preprocessing for status of each user. Basically verifies in the tables the state of a user --}}
                 @php
                     $isBlocked = in_array($user->status, ['Bloqueado', 'Blocked']);
-                    $isActive = in_array($user->status, ['Activo', 'Active']) || !$isBlocked;
+                    $isActive = in_array($user->status, ['Activo', 'Activo']) || !$isBlocked;
                     $statusLabel = $isBlocked ? 'Bloqueado' : 'Activo';
                 @endphp
 
