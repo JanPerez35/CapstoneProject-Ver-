@@ -216,7 +216,7 @@
                         </select>
                     </div>
 
-                    <div class="col-12 d-flex gap-2">
+                    <div class="col-md-3">
                         <button type="button" class="btn btn-outline-secondary" id="clearFacilityFilters">
                             Limpiar Filtros
                         </button>
@@ -256,18 +256,26 @@
                         </th>
                         <th class="fw-bold">Servicios</th>
                         <th class="fw-bold text-end">Costo Total</th>
-                        <th class="fw-bold text-center">Acción</th>
+                        <th class="fw-bold text-center action-col">Acciones</th>
                     </tr>
                     </thead>
 
                     <tbody id="facilityCostTableBody">
                     @forelse ($items as $item)
                         <tr
-                            data-entry-id="cost-row-{{ $item->id }}"
+                            data-entry-id="{{ $item->id }}"
                             data-date="{{ \Carbon\Carbon::parse($item->event_date)->format('Y-m-d') }}"
+                            data-end-date="{{ \Carbon\Carbon::parse($item->end_date ?? $item->event_date)->format('Y-m-d') }}"
+                            data-responsible="{{ $item->responsible }}"
+                            data-description="{{ $item->event_description }}"
+                            data-start-time="{{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }}"
+                            data-end-time="{{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}"
+                            data-period-type="{{ $item->period_type }}"
+                            data-rate-mode="{{ $item->rate_mode }}"
+                            data-services='@json($item->services ?? [])'
+                            data-classroom="{{ $item->facilityCost->classroom_name }}"
                             data-month="{{ \Carbon\Carbon::parse($item->event_date)->format('n') }}"
                             data-year="{{ \Carbon\Carbon::parse($item->event_date)->format('Y') }}"
-                            data-classroom="{{ $item->facilityCost->classroom_name }}"
                         >
                             <td>{{ \Carbon\Carbon::parse($item->event_date)->format('m/d/Y') }}</td>
                             <td>{{ \Carbon\Carbon::parse($item->end_date ?? $item->event_date)->format('m/d/Y') }}</td>
@@ -328,17 +336,43 @@
                                 @endforeach
                             </td>
                             <td class="text-end fw-semibold">${{ number_format($item->calculated_cost, 2) }}</td>
-                            <td class="text-center">
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-outline-danger delete-cost-row-btn"
-                                    data-entry-id="{{ $item->id }}"
-                                    data-delete-url="{{ route('facility.events.destroy', $item->id) }}"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#deleteCostEntryModal"
-                                >
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                            <td class="text-center action-col">
+                                <div class="d-flex justify-content-center gap-2 flex-nowrap">
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary edit-cost-row-btn"
+                                            data-entry-id="{{ $item->id }}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editEventModal">
+                                        <i class="bi bi-pencil me-1"></i> Editar
+                                    </button>
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-warning customize-days-btn"
+                                            data-entry-id="{{ $item->id }}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#customizeDaysModal">
+                                        <i class="bi bi-calendar-event me-1"></i> Modificar Días
+                                    </button>
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-success create-related-btn"
+                                            data-entry-id="{{ $item->id }}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#createRelatedModal">
+                                        <i class="bi bi-diagram-3 me-1"></i> Crear Evento Relacionado
+                                    </button>
+
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger delete-cost-row-btn"
+                                            data-entry-id="{{ $item->id }}"
+                                            data-delete-url="{{ route('facility.events.destroy', $item->id) }}"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteCostEntryModal">
+                                        <i class="bi bi-trash me-1"></i> Eliminar
+                                    </button>
+
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -710,6 +744,8 @@
                                     <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
                                     Solo se puede seleccionar <strong>una (1) área</strong> por evento.
                                     Las áreas disponibles corresponden exclusivamente a instalaciones internas del Coliseo Rafael Mangual.
+                                    Si un mismo evento utiliza más de un área, primero registre el área principal y luego utilice la opción
+                                    <strong>Crear Evento relacionado</strong> desde la tabla.
                                 </div>
                             </div>
 
@@ -746,90 +782,183 @@
                             </div>
                         </div>
 
+                        <div class="mb-4">
+                            <label for="rentalDescription" class="form-label fw-semibold">
+                                Descripción del evento <span class="text-danger">*</span>
+                            </label>
+                            <textarea
+                                id="rentalDescription"
+                                name="description"
+                                class="form-control form-control-lg"
+                                rows="4"
+                                placeholder="Descripción del evento"
+                                minlength="10"
+                                required
+                            ></textarea>
+                            <small class="text-muted d-block fst-italic">
+                                Entre 10 y 250 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                            </small>
+                            <div class="invalid-feedback" id="rentalDescriptionError">
+                                La descripción debe tener entre 10 y 250 caracteres y solo usar caracteres permitidos.
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                Servicios <span class="text-danger">*</span>
+                            </label>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="service-option-card h-100">
+                                        <div class="form-check">
+                                            <input
+                                                class="form-check-input rental-service-check"
+                                                type="checkbox"
+                                                id="rentalUtilities"
+                                                value="utilities"
+                                                name="services[]"
+                                            >
+                                            <label class="form-check-label fw-semibold" for="rentalUtilities">
+                                                Utilidades
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            Incluye costos generales de utilidades asociados al uso del área.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="service-option-card h-100">
+                                        <div class="form-check">
+                                            <input
+                                                class="form-check-input rental-service-check"
+                                                type="checkbox"
+                                                id="rentalElectricity"
+                                                value="electricity"
+                                                name="services[]"
+                                            >
+                                            <label class="form-check-label fw-semibold" for="rentalElectricity">
+                                                Electricidad
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            Seleccione si el evento requiere consumo eléctrico.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="service-option-card h-100">
+                                        <div class="form-check">
+                                            <input
+                                                class="form-check-input rental-service-check"
+                                                type="checkbox"
+                                                id="rentalWater"
+                                                value="water"
+                                                name="services[]"
+                                            >
+                                            <label class="form-check-label fw-semibold" for="rentalWater">
+                                                Agua
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            Seleccione si el evento requiere consumo de agua.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="invalid-feedback d-block d-none mt-2" id="servicesRequiredMessage">
+                                Debes seleccionar al menos un servicio.
+                            </div>
+                        </div>
+
                         <div class="row g-3 mb-3">
+                            <div class="col-12">
+                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-2 px-3 py-2">
+                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    Si el evento combina días u horarios laborables con días u horarios no laborables,
+                                    seleccione el período no laborable correspondiente:
+                                    <strong>No laborable sábado</strong> o <strong>No laborable domingo o festivo</strong>.
+                                </div>
+                            </div>
+
                             <div class="col-md-6">
                                 <label for="rentalPeriodType" class="form-label fw-semibold">
                                     Tipo de período <span class="text-danger">*</span>
                                 </label>
+
                                 <select id="rentalPeriodType" name="period_type" class="form-select form-select-lg" required>
                                     <option value="" selected disabled>Seleccionar tipo de período</option>
-                                    <option value="workday">Laborable: LU-VI </option>
-                                    <option value="non_workday_saturday">No laborable sábado: LU-VI</option>
-                                    <option value="non_workday_sunday_holiday">No laborable domingo o festivo: LU-VI</option>
+
+                                    <option value="workday">
+                                        Laborable: lunes a viernes, 7:30 a.m. a 4:30 p.m.
+                                    </option>
+
+                                    <option value="non_workday_saturday">
+                                        No laborable sábado: lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m.
+                                    </option>
+
+                                    <option value="non_workday_sunday_holiday">
+                                        No laborable domingo o festivo: lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                    </option>
                                 </select>
                             </div>
 
                             <div class="col-md-6">
-                                <label for="rentalRangeType" class="form-label fw-semibold">
-                                    Modo de Tarifa <span class="text-danger">*</span>
+                                <label for="rentalRateModeDisplay" class="form-label fw-semibold">
+                                    Modo de Tarifa
                                 </label>
-                                <select id="rentalRangeType" name="rate_mode" class="form-select form-select-lg" required>
-                                    <option value="" selected disabled>Seleccionar Modo</option>
-                                    <option value="daily">Día</option>
-                                    <option value="weekly">Semana</option>
-                                    <option value="monthly">Mes</option>
-                                </select>
+
+                                <input
+                                    type="text"
+                                    id="rentalRateModeDisplay"
+                                    class="form-control form-control-lg"
+                                    value="Se calculará automáticamente"
+                                    readonly
+                                >
+
+                                <input type="hidden" id="rentalRangeType" name="rate_mode">
+
+                                <small class="text-muted d-block mt-1">
+                                    El modo de tarifa se calcula automáticamente según la duración del evento.
+                                </small>
                             </div>
 
                             <div class="col-md-6">
                                 <label for="rentalStartDate" class="form-label fw-semibold" id="rentalStartDateLabel">
-                                    Fecha del evento <span class="text-danger">*</span>
+                                    Fecha inicial del evento <span class="text-danger">*</span>
                                 </label>
 
-                                <div class="date-input-shell">
-                                    <input
-                                        type="date"
-                                        id="rentalStartDate"
-                                        name="event_date"
-                                        class="form-control form-control-lg date-picker-only"
-                                        min="{{ now()->toDateString() }}"
-                                        required
-                                        inputmode="none"
-                                        autocomplete="off"
-                                    >
-                                    <button
-                                        type="button"
-                                        class="date-picker-trigger"
-                                        id="rentalStartDateTrigger"
-                                        aria-label="Abrir calendario"
-                                        tabindex="-1"
-                                    >
-                                        <i class="bi bi-calendar3"></i>
-                                    </button>
-                                </div>
+                                <input
+                                    type="date"
+                                    id="rentalStartDate"
+                                    name="event_date"
+                                    class="form-control form-control-lg"
+                                    min="{{ now()->toDateString() }}"
+                                    required
+                                >
 
                                 <div class="invalid-feedback d-block" id="rentalStartDateError"></div>
                             </div>
 
-                            <div class="col-md-6 d-none" id="rentalEndDateRow">
+                            <div class="col-md-6" id="rentalEndDateRow">
                                 <label for="rentalEndDate" class="form-label fw-semibold">
                                     Fecha final del evento <span class="text-danger">*</span>
                                 </label>
 
-                                <div class="date-input-shell">
-                                    <input
-                                        type="date"
-                                        id="rentalEndDate"
-                                        name="event_end_date"
-                                        class="form-control form-control-lg date-picker-only"
-                                        min="{{ now()->toDateString() }}"
-                                        inputmode="none"
-                                        autocomplete="off"
-                                    >
-                                    <button
-                                        type="button"
-                                        class="date-picker-trigger"
-                                        id="rentalEndDateTrigger"
-                                        aria-label="Abrir calendario"
-                                        tabindex="-1"
-                                    >
-                                        <i class="bi bi-calendar3"></i>
-                                    </button>
-                                </div>
+                                <input
+                                    type="date"
+                                    id="rentalEndDate"
+                                    name="event_end_date"
+                                    class="form-control form-control-lg"
+                                    min="{{ now()->toDateString() }}"
+                                >
 
                                 <div class="invalid-feedback d-block" id="rentalEndDateError"></div>
                             </div>
-
                             <div class="col-12 d-none" id="rentalRangeWarningRow">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-0 px-4 py-3">
                                     <div>
@@ -859,87 +988,6 @@
                                 <select id="rentalEndTime" name="end_time" class="form-select form-select-lg"
                                         required></select>
                                 <div class="invalid-feedback d-block" id="rentalTimeError"></div>
-                            </div>
-                        </div>
-
-                        <div class="mb-4">
-                            <label for="rentalDescription" class="form-label fw-semibold">
-                                Descripción del evento <span class="text-danger">*</span>
-                            </label>
-                            <textarea
-                                id="rentalDescription"
-                                name="description"
-                                class="form-control form-control-lg"
-                                rows="4"
-                                placeholder="Descripción del evento"
-                                minlength="10"
-                                required
-                            ></textarea>
-                            <small class="text-muted d-block fst-italic">
-                                Entre 10 y 250 caracteres. Solo letras, números, espacios, punto, coma y guion.
-                            </small>
-                            <div class="invalid-feedback" id="rentalDescriptionError">
-                                La descripción debe tener entre 10 y 250 caracteres y solo usar caracteres permitidos.
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold d-block mb-3">
-                                Servicio a aplicar <span class="text-danger">*</span>
-                            </label>
-
-                            <div class="row g-2">
-                                <div class="col-md-4">
-                                    <div class="multi-classroom-card">
-                                        <label class="d-flex align-items-start gap-3 mb-0 flex-grow-1"
-                                               for="rentalUtilities">
-                                            <input
-                                                class="form-check-input rental-service-check prominent-checkbox"
-                                                type="checkbox"
-                                                value="utilities"
-                                                id="rentalUtilities"
-                                                name="services[]"
-                                            >
-                                            <span class="fw-medium">Utilidades</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <div class="multi-classroom-card">
-                                        <label class="d-flex align-items-start gap-3 mb-0 flex-grow-1"
-                                               for="rentalElectricity">
-                                            <input
-                                                class="form-check-input rental-service-check prominent-checkbox"
-                                                type="checkbox"
-                                                value="electricity"
-                                                id="rentalElectricity"
-                                                name="services[]"
-                                            >
-                                            <span class="fw-medium">Electricidad</span>
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <div class="multi-classroom-card">
-                                        <label class="d-flex align-items-start gap-3 mb-0 flex-grow-1"
-                                               for="rentalWater">
-                                            <input
-                                                class="form-check-input rental-service-check prominent-checkbox"
-                                                type="checkbox"
-                                                value="water"
-                                                id="rentalWater"
-                                                name="services[]"
-                                            >
-                                            <span class="fw-medium">Agua</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="invalid-feedback d-none" id="servicesRequiredMessage">
-                                Debes seleccionar al menos un servicio.
                             </div>
                         </div>
 
@@ -1032,6 +1080,432 @@
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar
                     </button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteCostEntryBtn">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create related event modal -->
+    <div class="modal fade" id="createRelatedModal" tabindex="-1" aria-labelledby="createRelatedModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 pb-0 align-items-start">
+                    <div class="pe-4">
+                        <h4 class="modal-title fw-bold mb-2" id="createRelatedModalLabel">Crear Evento Relacionado</h4>
+                        <p class="text-muted mb-1">
+                            Registra un evento adicional vinculado al evento principal.
+                        </p>
+                        <small class="text-muted">
+                            <span class="text-danger">*</span> Campos requeridos
+                        </small>
+                    </div>
+                    <button type="button" class="btn-close related-close-btn" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body pt-3">
+                    <form id="createRelatedForm" novalidate>
+                        <input type="hidden" id="relatedParentEventId">
+                        <input type="hidden" id="relatedRateMode" name="rate_mode">
+
+                        <div class="row g-3 mb-3 justify-content-center">
+                            <div class="col-12">
+                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
+                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    Este evento será vinculado al evento principal seleccionado.
+                                    Use esta opción cuando un mismo evento requiera otra área interna del Coliseo Rafael Mangual.
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 col-lg-6">
+                                <label for="relatedArea" class="form-label fw-semibold">
+                                    Área <span class="text-danger">*</span>
+                                </label>
+                                <select id="relatedArea" class="form-select form-select-lg" required>
+                                    <option value="" selected disabled>Seleccionar área</option>
+                                    @foreach ($facilityCosts as $cost)
+                                        @php $salon = $cost->classroom_name; @endphp
+                                        <option value="{{ $salon }}">{{ $salon }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="invalid-feedback" id="relatedAreaError"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="relatedResponsible" class="form-label fw-semibold">
+                                    Responsable <span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="relatedResponsible"
+                                    class="form-control form-control-lg"
+                                    placeholder="Nombre del responsable"
+                                    minlength="8"
+                                    maxlength="40"
+                                    required
+                                >
+                                <small class="text-muted d-block fst-italic">
+                                    Incluya nombre y apellido. Escriba entre 8 y 40 caracteres. Solo letras y espacios.
+                                </small>
+                                <div class="invalid-feedback" id="relatedResponsibleError"></div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="relatedDescription" class="form-label fw-semibold">
+                                Descripción del evento <span class="text-danger">*</span>
+                            </label>
+                            <textarea
+                                id="relatedDescription"
+                                class="form-control"
+                                rows="3"
+                                placeholder="Descripción del evento relacionado"
+                                minlength="10"
+                                maxlength="250"
+                                required
+                            ></textarea>
+                            <small class="text-muted d-block fst-italic">
+                                Escriba entre 10 y 250 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                            </small>
+                            <div class="invalid-feedback" id="relatedDescriptionError"></div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                Servicios <span class="text-danger">*</span>
+                            </label>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="service-option-card h-100">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="relatedUtilities" value="utilities">
+                                            <label class="form-check-label fw-semibold" for="relatedUtilities">
+                                                Utilidades
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            Incluye costos generales de utilidades asociados al uso del área.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="service-option-card h-100">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="relatedElectricity" value="electricity">
+                                            <label class="form-check-label fw-semibold" for="relatedElectricity">
+                                                Electricidad
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            Seleccione si el evento requiere consumo eléctrico.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="service-option-card h-100">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="relatedWater" value="water">
+                                            <label class="form-check-label fw-semibold" for="relatedWater">
+                                                Agua
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            Seleccione si el evento requiere consumo de agua.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="invalid-feedback d-block d-none mt-2" id="relatedServicesError">
+                                Debes seleccionar al menos un servicio.
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-3 px-3 py-2">
+                                <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                Si el evento combina días laborables y no laborables, registre el evento relacionado
+                                usando el período que corresponda al horario seleccionado.
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="relatedPeriodType" class="form-label fw-semibold">
+                                        Tipo de período <span class="text-danger">*</span>
+                                    </label>
+                                    <select id="relatedPeriodType" class="form-select form-select-lg" required>
+                                        <option value="" selected disabled>Seleccionar período</option>
+                                        <option value="workday">Laborable</option>
+                                        <option value="non_workday_saturday">No laborable sábado</option>
+                                        <option value="non_workday_sunday_holiday">No laborable domingo o festivo</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="relatedRateModeDisplay" class="form-label fw-semibold">
+                                        Modo de tarifa <span class="text-danger">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="relatedRateModeDisplay"
+                                        class="form-control form-control-lg"
+                                        value="Se calculará automáticamente"
+                                        readonly
+                                    >
+                                    <small class="text-muted d-block fst-italic">
+                                        El modo se calcula automáticamente según la duración del evento.
+                                    </small>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="relatedStartDate" class="form-label fw-semibold">
+                                        Fecha inicial del evento <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" id="relatedStartDate" class="form-control form-control-lg" required>
+                                    <div class="invalid-feedback" id="relatedStartDateError"></div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="relatedEndDate" class="form-label fw-semibold">
+                                        Fecha final del evento <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" id="relatedEndDate" class="form-control form-control-lg" required>
+                                    <div class="invalid-feedback" id="relatedEndDateError"></div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="relatedStartTime" class="form-label fw-semibold">
+                                        Hora de inicio <span class="text-danger">*</span>
+                                    </label>
+                                    <select id="relatedStartTime" class="form-select form-select-lg" required>
+                                        <option value="" selected disabled>Primero selecciona el tipo de período</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="relatedEndTime" class="form-label fw-semibold">
+                                        Hora de fin <span class="text-danger">*</span>
+                                    </label>
+                                    <select id="relatedEndTime" class="form-select form-select-lg" required>
+                                        <option value="" selected disabled>Primero selecciona el tipo de período</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="invalid-feedback d-block mt-2" id="relatedTimeError"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-4 border bg-light p-4">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <div class="fw-bold fs-5">Costo estimado calculado</div>
+                                    <small class="text-muted d-block">Se determina según período y servicios seleccionados.</small>
+                                </div>
+                                <span class="fw-bold text-success fs-2 mb-0" id="relatedEstimatedTotal">$0.00</span>
+                            </div>
+
+                            <div class="mt-3">
+                                <small class="text-muted d-block">
+                                    Período seleccionado:
+                                    <span id="relatedDetectedPeriodLabel" class="fw-semibold">—</span>
+                                </small>
+                                <small class="text-muted d-block">
+                                    Duración estimada:
+                                    <span id="relatedDetectedHoursLabel" class="fw-semibold">0.00 horas</span>
+                                </small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer border-0 pt-0 px-4 modal-footer-safe">
+                    <button type="button" class="btn btn-outline-secondary px-4 related-cancel-btn" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success px-4" id="saveRelatedEventBtn" disabled>
+                        Guardar Evento Relacionado
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customize days modal -->
+    <div class="modal fade" id="customizeDaysModal" tabindex="-1" aria-labelledby="customizeDaysModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 pb-0 align-items-start">
+                    <div class="pe-4">
+                        <h4 class="modal-title fw-bold mb-2" id="customizeDaysModalLabel">Modificar Días</h4>
+                        <p class="text-muted mb-1">
+                            Ajusta una fecha u horario específico del evento seleccionado.
+                        </p>
+                        <small class="text-muted">
+                            <span class="text-danger">*</span> Campos requeridos
+                        </small>
+                    </div>
+                    <button type="button" class="btn-close customize-close-btn" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body pt-3">
+                    <form id="customizeDaysForm" novalidate>
+                        <input type="hidden" id="customizeEventId">
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
+                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    Esta opción permite preparar modificaciones puntuales de días u horarios.
+                                    La conexión final con backend se completará luego.
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="customizeScope" class="form-label fw-semibold">
+                                    Alcance <span class="text-danger">*</span>
+                                </label>
+                                <select id="customizeScope" class="form-select form-select-lg" required>
+                                    <option value="" selected disabled>Seleccionar alcance</option>
+                                    <option value="single_day">Solo este día</option>
+                                    <option value="this_and_following">Este día y siguientes</option>
+                                    <option value="whole_event">Todo el evento</option>
+                                </select>
+                                <small class="text-muted d-block fst-italic">
+                                    Seleccione cómo desea aplicar la modificación.
+                                </small>
+                                <div class="invalid-feedback" id="customizeScopeError"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="customizeDate" class="form-label fw-semibold">
+                                    Fecha <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" id="customizeDate" class="form-control form-control-lg" required>
+                                <small class="text-muted d-block fst-italic">
+                                    Seleccione la fecha que desea modificar.
+                                </small>
+                                <div class="invalid-feedback" id="customizeDateError"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="customizeStartTime" class="form-label fw-semibold">
+                                    Hora de inicio <span class="text-danger">*</span>
+                                </label>
+                                <select id="customizeStartTime" class="form-select form-select-lg" required>
+                                    <option value="" selected disabled>Seleccionar hora de inicio</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="customizeEndTime" class="form-label fw-semibold">
+                                    Hora de fin <span class="text-danger">*</span>
+                                </label>
+                                <select id="customizeEndTime" class="form-select form-select-lg" required>
+                                    <option value="" selected disabled>Seleccionar hora de fin</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="invalid-feedback d-block mt-2" id="customizeTimeError"></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer border-0 pt-0 px-4 modal-footer-safe">
+                    <button type="button" class="btn btn-outline-secondary px-4 customize-cancel-btn" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success px-4" id="saveCustomizeDaysBtn" disabled>
+                        Guardar Modificación
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit event modal -->
+    <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 pb-0 align-items-start">
+                    <div class="pe-4">
+                        <h4 class="modal-title fw-bold mb-2" id="editEventModalLabel">Editar Evento</h4>
+                        <p class="text-muted mb-1">
+                            Modifica la información general del evento seleccionado.
+                        </p>
+                        <small class="text-muted">
+                            <span class="text-danger">*</span> Campos requeridos
+                        </small>
+                    </div>
+                    <button type="button" class="btn-close edit-close-btn" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body pt-3">
+                    <form id="editEventForm" novalidate>
+                        <input type="hidden" id="editEventId">
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
+                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    Esta edición modifica la información del evento seleccionado. Los cambios de backend
+                                    serán conectados cuando el equipo complete esa parte.
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="editResponsible" class="form-label fw-semibold">
+                                    Responsable <span class="text-danger">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    id="editResponsible"
+                                    class="form-control form-control-lg"
+                                    placeholder="Nombre del responsable"
+                                    minlength="8"
+                                    maxlength="40"
+                                    required
+                                >
+                                <small class="text-muted d-block fst-italic">
+                                    Incluya nombre y apellido. Escriba entre 8 y 40 caracteres. Solo letras y espacios.
+                                </small>
+                                <div class="invalid-feedback" id="editResponsibleError"></div>
+                            </div>
+
+                            <div class="col-12">
+                                <label for="editDescription" class="form-label fw-semibold">
+                                    Descripción del evento <span class="text-danger">*</span>
+                                </label>
+                                <textarea
+                                    id="editDescription"
+                                    class="form-control"
+                                    rows="3"
+                                    placeholder="Descripción del evento"
+                                    minlength="10"
+                                    maxlength="250"
+                                    required
+                                ></textarea>
+                                <small class="text-muted d-block fst-italic">
+                                    Escriba entre 10 y 250 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                </small>
+                                <div class="invalid-feedback" id="editDescriptionError"></div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer border-0 pt-0 px-4 modal-footer-safe">
+                    <button type="button" class="btn btn-outline-secondary px-4 edit-cancel-btn" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success px-4" id="saveEditEventBtn" disabled>
+                        Guardar Cambios
+                    </button>
                 </div>
             </div>
         </div>
@@ -1185,6 +1659,48 @@
                 </div>
             </div>
         @endif
+
+        <div id="customizeSavedToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+             role="alert" aria-live="assertive" aria-atomic="true"
+             style="width:auto; max-width:fit-content;">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold pe-1">
+                    La excepción fue guardada correctamente.
+                </div>
+                <button type="button" class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast" aria-label="Cerrar"
+                        style="transform:scale(0.8);"></button>
+            </div>
+        </div>
+
+        <div id="editSavedToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+             role="alert" aria-live="assertive" aria-atomic="true"
+             style="width:auto; max-width:fit-content;">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold pe-1">
+                    El evento fue actualizado correctamente.
+                </div>
+                <button type="button" class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast" aria-label="Cerrar"
+                        style="transform:scale(0.8);"></button>
+            </div>
+        </div>
+
+        <div id="relatedSavedToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+             role="alert" aria-live="assertive" aria-atomic="true"
+             style="width:auto; max-width:fit-content;">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold pe-1">
+                    El evento relacionado fue preparado correctamente.
+                </div>
+                <button type="button" class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast" aria-label="Cerrar"
+                        style="transform:scale(0.8);"></button>
+            </div>
+        </div>
     </div>
 
     <form id="deleteCostEntryForm" method="POST" class="d-none">

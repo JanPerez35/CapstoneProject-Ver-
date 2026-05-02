@@ -25,7 +25,7 @@
         {{-- Page header --}}
         <div class="mb-4">
             <h1 class="fw-bold">Bienvenido al Panel de Administración</h1>
-            <p>Aquí puedes monitorear acceso al sistema.</p>
+            <p>Aquí puedes consultar las acciones registradas en el sistema, incluyendo usuarios, roles, eventos, direcciones IP y fechas de actividad.</p>
         </div>
 
         {{-- Action buttons section --}}
@@ -33,9 +33,9 @@
             <button
                 type="button"
                 id="downloadAccessLogsCsvBtn"
-                class="btn btn-success px-4 py-2"
+                class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
             >
-                <i class="bi bi-box-arrow-in-down me-2"></i>Exportar a CSV
+                <i class="bi bi-download"></i>  Exportar a CSV
             </button>
         </div>
 
@@ -43,9 +43,10 @@
             Filters and search form
 
             Allows administrators to:
-            - Search logs by user, IP, or details
+            - Search logs by user or IP
             - Filter logs by role
             - Filter logs by event type
+            - Filter logs by date
             - Reset filters back to default state
         --}}
         <form id="accessLogsFilterForm" method="GET" action="{{ route('access_logs') }}" class="mb-5">
@@ -61,7 +62,7 @@
                             id="accessLogsSearch"
                             name="search"
                             class="form-control border-0"
-                            placeholder="Buscar por usuario, IP o detalles..."
+                            placeholder="Buscar por usuario o IP..."
                             value="{{ request('search') }}"
                         >
                     </div>
@@ -142,6 +143,18 @@
                     </select>
                 </div>
 
+                {{-- Date filter --}}
+                <div class="col-md-6 col-lg-4">
+                    <input
+                        type="date"
+                        id="accessLogsDateFilter"
+                        name="date"
+                        class="form-control border-2 border-dark"
+                        value="{{ request('date') }}"
+                        onchange="this.form.submit()"
+                    >
+                </div>
+
                 {{-- Reset filters button --}}
                 <div class="col-md-auto">
                     <a href="{{ route('access_logs') }}" class="btn btn-outline-secondary">
@@ -165,7 +178,7 @@
         <div class="card border rounded-4 shadow-sm overflow-hidden">
             <div class="card-body p-4 border-bottom">
                 <h3 class="fw-bold mb-2">Registros de Acceso</h3>
-                <p class="text-muted mb-0 fs-5">Monitoreo en tiempo real del acceso al sistema</p>
+                <p class="text-muted mb-0 fs-5"> Historial de actividades y acciones realizadas dentro del sistema.</p>
             </div>
 
             <div class="table-responsive">

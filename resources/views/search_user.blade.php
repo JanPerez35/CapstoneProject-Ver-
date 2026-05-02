@@ -44,7 +44,7 @@
         <div class="mb-4">
             <h1 class="fw-bold rounded-2">Buscar Usuarios</h1>
             <p class="text mb-0">
-                Aquí puedes buscar usuarios y ver sus perfiles, administrar roles y bloquear/desbloquear cuentas.
+                Aquí puedes buscar usuarios, administrar roles y bloquear/desbloquear cuentas.
             </p>
         </div>
 

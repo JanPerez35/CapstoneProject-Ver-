@@ -6,10 +6,25 @@ use Illuminate\Http\Request;
 use App\Models\UserReport;
 use App\Http\Controllers\Concerns\LogsActivity;
 use App\Models\Post;
+use App\Models\User;
+use App\Services\EmailService;
 
 class UserReportController extends Controller
 {
     use LogsActivity;
+
+    /**
+     * Email service used to send account-related notifications.
+     */
+    protected $emailService;
+
+    /**
+     * Injects the EmailService dependency.
+     */
+    public function __construct(EmailService $emailService)
+    {
+        $this->emailService = $emailService;
+    }
 
     public function store(Request $request)
     {
@@ -85,6 +100,8 @@ class UserReportController extends Controller
     {
         $report->load('reportedUser');
 
+        $previousStatus = $report->reportedUser->status;
+
         $report->reportedUser->update([
             'status' => 'Bloqueado'
         ]);
@@ -95,6 +112,24 @@ class UserReportController extends Controller
             'status' => 'resolved',
             'resolved_at' => now()
         ]);
+
+        $superAdmin = User::where('role', 'Admin Super')
+            ->where('status', 'Activo')
+            ->first();
+
+        $superAdminEmail = $superAdmin?->email ?? '+1 (787)-832-4040 Ext. 3841, 2008';
+
+        /**
+         * Send email when a reported user is banned.
+         * Only triggers if the user was not already blocked.
+         */
+        if ($previousStatus !== 'Bloqueado') {
+            $this->emailService->send(
+                $report->reportedUser->email,
+                'Cuenta bloqueada',
+                'Tu cuenta ha sido bloqueada de la plataforma MAIKINE. Si entiendes que esto fue un error, comunícate con el super administrador (' . $superAdminEmail . ').'
+            );
+        }
 
         $this->logActivity(
             'Bloquear usuario',
