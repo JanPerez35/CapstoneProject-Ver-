@@ -275,7 +275,7 @@
                                         </div>
                                         <div>
                                             <i class="bi bi-clock me-2"></i>
-                                            {{ $post->created_at?->diffForHumans() }}
+                                           Publicado {{ $post->created_at?->diffForHumans() }}
                                         </div>
                                     </div> {{-- marketplace-card-meta --}}
                                     </div>
@@ -448,7 +448,7 @@
                                     </div>
 
                                     @php
-                                        /*
+                                        /**
                                          * Maps request status to a visual badge class.
                                          * Ensures consistent UI representation across states.
                                          */
@@ -604,20 +604,24 @@
     <div class="modal fade" id="deletePostModal" tabindex="-1" aria-labelledby="deletePostModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
-                <div class="modal-header border-0 pb-0">
-                    <div>
-                        <h4 class="modal-title fw-bold" id="deletePostModalLabel">¿Seguro que quieres borrar?</h4>
+
+                <div class="modal-header border-0 pb-3 align-items-start">
+                    <div class="pe-3">
+                        <h4 class="modal-title fw-bold mb-2" id="deletePostModalLabel">
+                            ¿Seguro que quieres borrar?
+                        </h4>
+
                         <p class="text-muted mb-0" id="deletePostModalText">
-                            Esta publicación será eliminada de la vista.
+                            "Balon de Baloncesto" será eliminada permanentemente.
                         </p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
 
-                <div class="modal-body pt-3">
-                    <div class="alert alert-warning rounded-4 mb-0">
-                        Esta acción no se puede deshacer en esta vista.
-                    </div>
+                    <button
+                        type="button"
+                        class="btn-close mt-1"
+                        data-bs-dismiss="modal"
+                        aria-label="Cerrar"
+                    ></button>
                 </div>
 
                 {{-- Cancel post deletion --}}
@@ -627,7 +631,7 @@
                     </button>
                     {{-- Confirm post deletion --}}
                     <button type="button" class="btn btn-danger px-4" id="confirmDeletePost">
-                        Continuar
+                        Eliminar
                     </button>
                 </div>
             </div>

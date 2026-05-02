@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
      * the active page in the client-side posts pagination.
      */
     let postCardToDelete = null;
+    let postIdToDelete = null;
     let currentPostsPage = 1;
 
     /**
@@ -469,17 +470,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     /*
-     * Saves or clears scroll position depending on the clicked link.
-     * Pagination keeps default behavior and does not restore scroll.
-     */
+  * Saves scroll position before link navigation.
+  * This keeps the user's position after GET reloads such as
+  * requests pagination and filter links.
+  */
     document.querySelectorAll('a').forEach((link) => {
         link.addEventListener('click', () => {
-            if (isPaginationLink(link)) {
-                clearScrollPosition();
-                return;
-            }
-
             saveScrollPosition();
+
+            if (isPaginationLink(link)) {
+                saveActiveTab('requests');
+            }
         });
     });
 
@@ -640,10 +641,12 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.open-delete-post-modal').forEach((button) => {
         button.addEventListener('click', function () {
             const postTitle = this.dataset.postTitle || 'esta publicación';
+
+            postIdToDelete = this.dataset.postId;
             postCardToDelete = this.closest('.post-card-wrapper');
 
             if (deletePostModalText) {
-                deletePostModalText.textContent = `"${postTitle}" será eliminada de la vista.`;
+                deletePostModalText.textContent = `"${postTitle}" será eliminada permanentemente.`;
             }
 
             if (deletePostModalEl && window.bootstrap) {
@@ -658,22 +661,44 @@ document.addEventListener('DOMContentLoaded', function () {
      * refreshes the publications grid.
      */
     if (confirmDeletePostBtn) {
-        confirmDeletePostBtn.addEventListener('click', function () {
-            if (!postCardToDelete) return;
+        confirmDeletePostBtn.addEventListener('click', async function () {
+            if (!postIdToDelete || !postCardToDelete) return;
 
-            if (deletePostModalEl && window.bootstrap) {
-                const modal = window.bootstrap.Modal.getOrCreateInstance(deletePostModalEl);
-                modal.hide();
-            }
+            confirmDeletePostBtn.disabled = true;
 
-            showToast(deletePostToastEl);
+            try {
+                const response = await fetch(`/posts/${postIdToDelete}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                });
 
-            setTimeout(() => {
+                if (!response.ok) {
+                    throw new Error('No se pudo eliminar la publicación.');
+                }
+
+                if (deletePostModalEl && window.bootstrap) {
+                    const modal = window.bootstrap.Modal.getOrCreateInstance(deletePostModalEl);
+                    modal.hide();
+                }
+
                 postCardToDelete.remove();
                 postCardToDelete = null;
+                postIdToDelete = null;
+
                 updatePostsTabCount();
                 filterPosts(true);
-            }, 500);
+                showToast(deletePostToastEl);
+
+            } catch (error) {
+                console.error(error);
+                alert('No se pudo eliminar la publicación. Intenta nuevamente.');
+            } finally {
+                confirmDeletePostBtn.disabled = false;
+            }
         });
     }
 
