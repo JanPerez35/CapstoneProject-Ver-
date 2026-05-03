@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Concerns\LogsActivity;
+use Illuminate\Support\Str;
 
 /**
  * Class FacilityCostController
@@ -132,6 +133,21 @@ class FacilityCostController extends Controller
         $allFacilityCosts = FacilityCost::orderBy('classroom_name')->get();
 
         $items = $this->buildFilteredQuery($request)->get();
+
+        $eventGroups = $items
+            ->groupBy(function ($item) {
+                return $item->event_group_id ?: 'single-' . $item->id;
+            })
+            ->map(function ($group) {
+                $parent = $group->firstWhere('is_group_parent', true) ?? $group->first();
+
+                $parent->sub_items = $group->values();
+                $parent->group_total = $group->sum('calculated_cost');
+
+                return $parent;
+            })
+            ->values();
+
         $grandTotal = $items->sum('calculated_cost');
 
         $minYear = FacilityCostReportItem::selectRaw('MIN(YEAR(event_date)) as min_year')->value('min_year');
@@ -144,6 +160,7 @@ class FacilityCostController extends Controller
             'facilityCosts',
             'allFacilityCosts',
             'items',
+            'eventGroups',
             'grandTotal',
             'reportType',
             'reportMonth',
@@ -344,6 +361,8 @@ class FacilityCostController extends Controller
         'period_type' => $validated['period_type'],
         'rate_mode' => $validated['rate_mode'],
         'services' => $validated['services'],
+        'event_group_id' => (string) Str::uuid(),
+        'is_group_parent' => true,
     ];
 
     $item = $this->createFacilityReportItemFromPayload($payload);
@@ -363,6 +382,129 @@ class FacilityCostController extends Controller
 
     return redirect()->route('facility_management')
         ->with('rental_saved', 'Evento guardado correctamente.');
+}
+
+public function updateEvent(Request $request, FacilityCostReportItem $item)
+{
+    $validated = $request->validate([
+        'responsible' => ['required', 'string', 'min:5', 'max:60'],
+        'description' => ['required', 'string', 'min:10', 'max:1000'],
+    ]);
+
+    if (!$item->event_group_id) {
+        $item->update([
+            'responsible' => $validated['responsible'],
+            'event_description' => $validated['description'],
+        ]);
+
+        $this->logActivity(
+            'Editar evento de facilidad',
+            "Se editó el evento individual {$item->id}."
+        );
+
+        return response()->json([
+            'message' => 'Evento actualizado correctamente.',
+        ]);
+    }
+
+    FacilityCostReportItem::where('event_group_id', $item->event_group_id)
+        ->update([
+            'responsible' => $validated['responsible'],
+            'event_description' => $validated['description'],
+        ]);
+
+    $this->logActivity(
+        'Editar evento de facilidad',
+        "Se editó el grupo de evento {$item->event_group_id}."
+    );
+
+    return response()->json([
+        'message' => 'Evento actualizado correctamente.',
+    ]);
+}
+
+public function updateEventSchedule(Request $request, FacilityCostReportItem $item)
+{
+    $validated = $request->validate([
+        'start_time' => ['required'],
+        'end_time' => ['required'],
+    ]);
+
+    $parent = $this->getGroupParent($item);
+
+    if (!$parent->is_group_parent) {
+        return response()->json([
+            'message' => 'Solo el evento principal puede modificarse con esta acción.',
+        ], 422);
+    }
+
+    $parentStart = Carbon::parse($parent->event_date)->startOfDay();
+    $parentEnd = Carbon::parse($parent->end_date ?? $parent->event_date)->startOfDay();
+
+    $payload = [
+        'classroom' => $parent->facilityCost->classroom_name,
+        'event_date' => $parentStart->toDateString(),
+        'event_end_date' => $parentEnd->toDateString(),
+        'start_time' => $validated['start_time'],
+        'end_time' => $validated['end_time'],
+        'description' => $parent->event_description,
+        'responsible' => $parent->responsible,
+        'period_type' => $parent->period_type,
+        'rate_mode' => $parent->rate_mode,
+        'services' => $parent->services ?? [],
+    ];
+
+    $newCostData = $this->calculateFacilityCostFromPayload($payload);
+
+    $customDayDeductedTotal = FacilityCostReportItem::where('event_group_id', $parent->event_group_id)
+        ->where('sub_event_type', 'custom_day')
+        ->where('id', '!=', $parent->id)
+        ->sum('parent_deducted_cost');
+
+    $parent->update([
+        'facility_cost_id' => $newCostData['facility_cost_id'],
+        'start_time' => $newCostData['start_time'],
+        'end_time' => $newCostData['end_time'],
+        'hours_used' => $newCostData['hours_used'],
+        'calculated_cost' => max(
+            (float) $newCostData['calculated_cost'] - (float) $customDayDeductedTotal,
+            0
+        ),
+    ]);
+
+    $this->logActivity(
+        'Modificar horario de evento completo',
+        "Se modificó el horario completo del evento principal {$parent->id}."
+    );
+
+    return response()->json([
+        'message' => 'Evento completo actualizado correctamente.',
+        'item_id' => $parent->id,
+        'calculated_cost' => $parent->fresh()->calculated_cost,
+    ]);
+}
+
+private function calculateParentDeductionForCustomPeriod(
+    FacilityCostReportItem $parent,
+    string $customStartDate,
+    string $customEndDate
+): float {
+    $payload = [
+        'classroom' => $parent->facilityCost->classroom_name,
+        'event_date' => $customStartDate,
+        'event_end_date' => $customEndDate,
+        'start_time' => Carbon::parse($parent->start_time)->format('H:i:s'),
+        'end_time' => Carbon::parse($parent->end_time)->format('H:i:s'),
+        'description' => $parent->event_description,
+        'responsible' => $parent->responsible,
+        'period_type' => $parent->period_type,
+        'rate_mode' => $parent->rate_mode,
+        'services' => $parent->services ?? [],
+    ];
+
+    $costData = $this->calculateFacilityCostFromPayload($payload);
+
+    return (float) $costData['calculated_cost'];
 }
 
     /**
@@ -438,6 +580,9 @@ class FacilityCostController extends Controller
     return FacilityCostReportItem::create([
         'facility_cost_report_id' => $report->id,
         'facility_cost_id' => $facilityCost->id,
+        'event_group_id' => $data['event_group_id'] ?? (string) Str::uuid(),
+        'is_group_parent' => $data['is_group_parent'] ?? true,
+        'sub_event_type' => $data['sub_event_type'] ?? null,
         'responsible' => $data['responsible'],
         'period_type' => $data['period_type'],
         'services' => $data['services'],
@@ -449,7 +594,163 @@ class FacilityCostController extends Controller
         'event_description' => $data['description'],
         'hours_used' => $hoursUsed,
         'calculated_cost' => round($total, 2),
+        'parent_deducted_cost' => $data['parent_deducted_cost'] ?? null,
+        'custom_parent_item_id' => $data['custom_parent_item_id'] ?? null,
     ]);
+}
+
+public function updateSubEvent(Request $request, FacilityCostReportItem $item)
+{
+    if ($item->is_group_parent) {
+        return response()->json([
+            'message' => 'El evento principal no puede editarse con esta acción.',
+        ], 422);
+    }
+
+    $validated = $request->validate([
+        'classroom' => ['required', 'string'],
+        'event_date' => ['required', 'date'],
+        'event_end_date' => ['required', 'date', 'after_or_equal:event_date'],
+        'start_time' => ['required'],
+        'end_time' => ['required'],
+        'description' => ['required', 'string', 'min:10', 'max:1000'],
+        'responsible' => ['required', 'string', 'min:5', 'max:60'],
+        'period_type' => ['required', 'string'],
+        'rate_mode' => ['required', 'in:daily,weekly,monthly'],
+        'services' => ['required', 'array', 'min:1'],
+    ]);
+
+    $parent = $item->sub_event_type === 'custom_day' && $item->custom_parent_item_id
+        ? FacilityCostReportItem::findOrFail($item->custom_parent_item_id)
+        : $this->getGroupParent($item);
+
+    $subStart = Carbon::parse($validated['event_date'])->startOfDay();
+    $subEnd = Carbon::parse($validated['event_end_date'])->startOfDay();
+
+    $parentStart = Carbon::parse($parent->event_date)->startOfDay();
+    $parentEnd = Carbon::parse($parent->end_date ?? $parent->event_date)->startOfDay();
+
+    if ($subStart->lt($parentStart) || $subEnd->gt($parentEnd)) {
+        return response()->json([
+            'message' => 'El sub-evento debe estar dentro del rango de fechas del evento principal.',
+        ], 422);
+    }
+
+    $oldParentDeduction = (float) ($item->parent_deducted_cost ?? 0);
+
+    $newCostData = $this->calculateFacilityCostFromPayload($validated);
+
+    $newParentDeduction = null;
+
+    if ($item->sub_event_type === 'custom_day') {
+        $newParentDeduction = $this->calculateParentDeductionForCustomPeriod(
+            $parent,
+            $validated['event_date'],
+            $validated['event_end_date']
+        );
+    }
+
+    $item->update([
+        'facility_cost_id' => $newCostData['facility_cost_id'],
+        'responsible' => $validated['responsible'],
+        'event_description' => $validated['description'],
+        'period_type' => $validated['period_type'],
+        'services' => $validated['services'],
+        'rate_mode' => $validated['rate_mode'],
+        'start_time' => $newCostData['start_time'],
+        'end_time' => $newCostData['end_time'],
+        'event_date' => $validated['event_date'],
+        'end_date' => $validated['event_end_date'],
+        'hours_used' => $newCostData['hours_used'],
+        'calculated_cost' => $newCostData['calculated_cost'],
+        'parent_deducted_cost' => $newParentDeduction,
+    ]);
+
+    $parent->refresh();
+
+    if ($item->sub_event_type === 'custom_day') {
+        $parent->update([
+            'calculated_cost' => max(
+                (float) $parent->calculated_cost + $oldParentDeduction - (float) $newParentDeduction,
+                0
+            ),
+        ]);
+    }
+
+    $this->logActivity(
+        'Editar sub-evento de facilidad',
+        "Se editó el sub-evento {$item->id} del grupo {$item->event_group_id}."
+    );
+
+    return response()->json([
+        'message' => 'Sub-evento actualizado correctamente.',
+        'item_id' => $item->id,
+        'calculated_cost' => $newCostData['calculated_cost'],
+    ]);
+}
+
+private function getCustomizableTarget(FacilityCostReportItem $item): FacilityCostReportItem
+{
+    if ($item->sub_event_type === 'custom_day') {
+        abort(422, 'No puedes modificar días desde una modificación existente.');
+    }
+
+    return $item;
+}
+
+private function calculateFacilityCostFromPayload(array $data): array
+{
+    $facilityCost = FacilityCost::where('classroom_name', $data['classroom'])
+        ->where('pending_deletion', false)
+        ->firstOrFail();
+
+    $startDate = Carbon::parse($data['event_date'])->startOfDay();
+    $endDate = Carbon::parse($data['event_end_date'] ?? $data['event_date'])->startOfDay();
+
+    $startTime = Carbon::parse($data['start_time']);
+    $endTime = Carbon::parse($data['end_time']);
+
+    if ($endTime->lessThanOrEqualTo($startTime)) {
+        abort(422, 'La hora de finalización debe ser mayor que la hora de inicio.');
+    }
+
+    $hoursPerDay = $startTime->diffInMinutes($endTime) / 60;
+    $daysUsed = $startDate->diffInDays($endDate) + 1;
+    $hoursUsed = $hoursPerDay * $daysUsed;
+
+    $rate = $this->getRateByPeriodAndMode(
+        $facilityCost,
+        $data['period_type'],
+        $data['rate_mode']
+    );
+
+    $unitsUsed = $this->getUnitsUsed($startDate, $endDate, $data['rate_mode']);
+
+    $baseCost = $facilityCost->classroom_space * $rate * $unitsUsed;
+
+    $servicesCost = 0;
+
+    if (in_array('utilities', $data['services'])) {
+        $servicesCost += $facilityCost->supply_cost * $hoursUsed;
+    }
+
+    if (in_array('electricity', $data['services'])) {
+        $servicesCost += $facilityCost->electricity_cost * $hoursUsed;
+    }
+
+    if (in_array('water', $data['services'])) {
+        $servicesCost += $facilityCost->water_cost * $hoursUsed;
+    }
+
+    $total = round($baseCost + $servicesCost, 2);
+
+    return [
+        'facility_cost_id' => $facilityCost->id,
+        'start_time' => $startDate->copy()->setTimeFrom($startTime),
+        'end_time' => $endDate->copy()->setTimeFrom($endTime),
+        'hours_used' => $hoursUsed,
+        'calculated_cost' => $total,
+    ];
 }
 
     /**
@@ -596,24 +897,226 @@ class FacilityCostController extends Controller
      */
     public function destroy(FacilityCostReportItem $item)
     {
-        $classroomName = $item->facilityCost->classroom_name ?? 'Salón desconocido';
-        $eventDate = $item->event_date;
-        $endDate = $item->end_date;
-        $startTime = $item->start_time ? \Carbon\Carbon::parse($item->start_time)->format('H:i') : 'N/A';
-        $endTime = $item->end_time ? \Carbon\Carbon::parse($item->end_time)->format('H:i') : 'N/A';
-        $responsible = $item->responsible ?? 'N/A';
-        $cost = $item->calculated_cost ?? 0;
+        if ($item->is_group_parent && $item->event_group_id) {
+            $deleted = FacilityCostReportItem::where('event_group_id', $item->event_group_id)->delete();
+
+            $this->logActivity(
+                'Eliminar evento principal de facilidad',
+                "Se eliminó el evento principal {$item->id} y todos sus sub-eventos del grupo {$item->event_group_id}. Total eliminado: {$deleted}."
+            );
+
+            return redirect()
+                ->route('facility_management')
+                ->with('entry_deleted', 'Evento principal y sub-eventos eliminados correctamente.');
+        }
+
+        $parent = null;
+
+        if ($item->sub_event_type === 'custom_day' && $item->custom_parent_item_id) {
+            $parent = FacilityCostReportItem::find($item->custom_parent_item_id);
+        } elseif ($item->event_group_id) {
+            $parent = FacilityCostReportItem::where('event_group_id', $item->event_group_id)
+                ->where('is_group_parent', true)
+                ->first();
+        }
+
         $itemId = $item->id;
+        $groupId = $item->event_group_id;
+
+        if ($parent && $item->sub_event_type === 'custom_day') {
+            $this->restoreSubEventCostToParent($parent, $item);
+        }
 
         $item->delete();
 
         $this->logActivity(
-            'Eliminar evento de facilidad',
-            "Evento eliminado | ID: {$itemId} | Salón: {$classroomName} | Fecha: {$eventDate} | Fecha fin: {$endDate} | Hora: {$startTime}-{$endTime} | Responsable: {$responsible} | Costo: {$cost}"
+            'Eliminar sub-evento de facilidad',
+            $groupId
+                ? "Se eliminó el sub-evento {$itemId} del grupo {$groupId}."
+                : "Se eliminó el evento individual {$itemId}."
         );
 
-        return redirect()->route('facility_management')->with('entry_deleted', 'true');
+        return redirect()
+            ->route('facility_management')
+            ->with('entry_deleted', 'Evento eliminado correctamente.');
     }
+
+    public function storeRelatedEvent(Request $request, FacilityCostReportItem $item)
+{
+    $validated = $request->validate([
+        'classroom' => ['required', 'string'],
+        'event_date' => ['required', 'date'],
+        'event_end_date' => ['required', 'date', 'after_or_equal:event_date'],
+        'start_time' => ['required'],
+        'end_time' => ['required'],
+        'description' => ['required', 'string', 'min:10', 'max:1000'],
+        'responsible' => ['required', 'string', 'min:5', 'max:60'],
+        'period_type' => ['required', 'string'],
+        'rate_mode' => ['required', 'in:daily,weekly,monthly'],
+        'services' => ['required', 'array', 'min:1'],
+    ]);
+
+    $parent = $this->getGroupParent($item);
+
+    $relatedStart = Carbon::parse($validated['event_date'])->startOfDay();
+    $relatedEnd = Carbon::parse($validated['event_end_date'])->startOfDay();
+
+    $parentStart = Carbon::parse($parent->event_date)->startOfDay();
+    $parentEnd = Carbon::parse($parent->end_date ?? $parent->event_date)->startOfDay();
+
+    if ($relatedStart->lt($parentStart) || $relatedEnd->gt($parentEnd)) {
+        return response()->json([
+            'message' => 'El evento relacionado debe estar dentro del rango de fechas del evento principal.',
+        ], 422);
+    }
+
+    $groupId = $parent->event_group_id ?? (string) Str::uuid();
+
+    if (!$parent->event_group_id) {
+        $parent->update([
+            'event_group_id' => $groupId,
+            'is_group_parent' => true,
+        ]);
+    }
+
+    $payload = [
+        'classroom' => $validated['classroom'],
+        'event_date' => $validated['event_date'],
+        'event_end_date' => $validated['event_end_date'],
+        'start_time' => $validated['start_time'],
+        'end_time' => $validated['end_time'],
+        'description' => $validated['description'],
+        'responsible' => $validated['responsible'],
+        'period_type' => $validated['period_type'],
+        'rate_mode' => $validated['rate_mode'],
+        'services' => $validated['services'],
+        'event_group_id' => $groupId,
+        'is_group_parent' => false,
+        'sub_event_type' => 'related_area',
+    ];
+
+    $newItem = $this->createFacilityReportItemFromPayload($payload);
+
+    $this->logActivity(
+        'Crear evento relacionado',
+        "Se creó un sub-evento relacionado al grupo {$groupId}."
+    );
+
+    return response()->json([
+        'message' => 'Evento relacionado creado correctamente.',
+        'item_id' => $newItem->id,
+    ], 201);
+}
+
+public function customizeDays(Request $request, FacilityCostReportItem $item)
+{
+    $validated = $request->validate([
+        'scope' => ['required', 'in:single_day,this_and_following'],
+        'date' => ['required', 'date'],
+        'start_time' => ['required'],
+        'end_time' => ['required'],
+    ]);
+
+    $parent = $this->getCustomizableTarget($item);
+
+    $selectedDate = Carbon::parse($validated['date'])->startOfDay();
+    $parentStart = Carbon::parse($parent->event_date)->startOfDay();
+    $parentEnd = Carbon::parse($parent->end_date ?? $parent->event_date)->startOfDay();
+
+    if ($selectedDate->lt($parentStart) || $selectedDate->gt($parentEnd)) {
+        return response()->json([
+            'message' => 'La fecha seleccionada debe estar dentro del rango del evento principal.',
+        ], 422);
+    }
+
+    $customStartDate = $selectedDate;
+    $customEndDate = $validated['scope'] === 'this_and_following'
+        ? $parentEnd
+        : $selectedDate;
+
+    $groupId = $parent->event_group_id ?? (string) Str::uuid();
+
+    if (!$parent->event_group_id) {
+        $parent->update([
+            'event_group_id' => $groupId,
+            'is_group_parent' => true,
+        ]);
+    }
+
+    $payload = [
+        'classroom' => $parent->facilityCost->classroom_name,
+        'event_date' => $customStartDate->toDateString(),
+        'event_end_date' => $customEndDate->toDateString(),
+        'start_time' => $validated['start_time'],
+        'end_time' => $validated['end_time'],
+        'description' => $parent->event_description,
+        'responsible' => $parent->responsible,
+        'period_type' => $parent->period_type,
+        'rate_mode' => $parent->rate_mode,
+        'services' => $parent->services ?? [],
+        'event_group_id' => $groupId,
+        'is_group_parent' => false,
+        'sub_event_type' => 'custom_day',
+        'custom_parent_item_id' => $parent->id,
+    ];
+
+    $parentDeductedCost = $this->calculateParentDeductionForCustomPeriod(
+        $parent,
+        $customStartDate->toDateString(),
+        $customEndDate->toDateString()
+    );
+
+    if ($parentDeductedCost > (float) $parent->calculated_cost) {
+        return response()->json([
+            'message' => 'El costo del período a modificar no puede exceder el costo restante del evento principal.',
+        ], 422);
+    }
+
+    $payload['parent_deducted_cost'] = $parentDeductedCost;
+
+    $newItem = $this->createFacilityReportItemFromPayload($payload);
+
+    $parent->refresh();
+
+    $parent->update([
+        'calculated_cost' => max(
+            (float) $parent->calculated_cost - $parentDeductedCost,
+            0
+        ),
+    ]);
+
+    $this->logActivity(
+        'Modificar días de evento',
+        "Se creó una modificación '{$validated['scope']}' desde {$customStartDate->toDateString()} hasta {$customEndDate->toDateString()} en el grupo {$groupId}."
+    );
+
+    return response()->json([
+        'message' => 'Modificación creada correctamente.',
+        'item_id' => $newItem->id,
+    ], 201);
+}
+
+private function restoreSubEventCostToParent(
+    FacilityCostReportItem $parent,
+    FacilityCostReportItem $subEvent
+): void {
+    $amountToRestore = (float) ($subEvent->parent_deducted_cost ?? 0);
+
+    $parent->update([
+        'calculated_cost' => (float) $parent->calculated_cost + $amountToRestore,
+    ]);
+}
+
+private function getGroupParent(FacilityCostReportItem $item): FacilityCostReportItem
+{
+    if ($item->is_group_parent || !$item->event_group_id) {
+        return $item;
+    }
+
+    return FacilityCostReportItem::where('event_group_id', $item->event_group_id)
+        ->where('is_group_parent', true)
+        ->firstOrFail();
+}
 
     /**
      * Exports filtered facility cost report items as a CSV file.
