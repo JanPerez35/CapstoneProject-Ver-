@@ -271,6 +271,101 @@ const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
 const MAX_IMAGES = 3;
 const MIN_IMAGES = 1;
 
+
+/**
+ * Daily post limit modal references.
+ *
+ * These elements are used to:
+ * - disable the create-post button when the user reaches the daily limit
+ * - open the max-post-limit modal
+ * - display the next time the user can create another post
+ */
+const openCreatePostBtn = document.querySelector('.open-create-post');
+const maxPostLimitModal = document.getElementById('maxPostLimitModal');
+const nextPostAvailableTime = document.getElementById('nextPostAvailableTime');
+
+/**
+ * Maximum number of marketplace posts a user may create within 24 hours.
+ */
+const MAX_DAILY_POSTS = 15;
+
+/**
+ * Temporary mock count until backend support is added.
+ *
+ * Change this value to 15 to test the disabled create button
+ * and the max-post-limit modal.
+ */
+let userPostsLast24Hours = 15;
+
+
+/**
+ * Builds the next available posting time shown in the max-post-limit modal.
+ *
+ * This temporary frontend version calculates the time as 24 hours from
+ * the current moment. When backend support is added, this should use the
+ * timestamp returned by the server instead.
+ *
+ * @returns {string} Formatted date and time when the user can post again.
+ */
+function formatNextPostAvailableTime() {
+    const nextTime = new Date();
+    nextTime.setHours(nextTime.getHours() + 24);
+
+    return nextTime.toLocaleString('es-PR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+    });
+}
+
+/**
+ * Applies the current daily post limit state to the create-post button.
+ *
+ * If the mock post count is equal to or greater than MAX_DAILY_POSTS,
+ * the create-post button is disabled and the modal timestamp is prepared.
+ *
+ * If the user is below the limit, the button remains enabled.
+ */
+function applyPostLimitState() {
+    if (!openCreatePostBtn) return;
+
+    const hasReachedLimit = userPostsLast24Hours >= MAX_DAILY_POSTS;
+
+    openCreatePostBtn.disabled = hasReachedLimit;
+    openCreatePostBtn.classList.toggle('disabled', hasReachedLimit);
+
+    if (hasReachedLimit && nextPostAvailableTime) {
+        nextPostAvailableTime.textContent = formatNextPostAvailableTime();
+    }
+}
+
+/**
+ * Initializes the daily post limit state when the marketplace page loads.
+ */
+applyPostLimitState();
+
+
+/**
+ * Handles clicks on the create-post button when the daily limit is reached.
+ *
+ * Prevents the create-post modal from opening, refreshes the next available
+ * posting time, and opens the max-post-limit modal instead.
+ */
+openCreatePostBtn?.addEventListener('click', (event) => {
+    if (userPostsLast24Hours < MAX_DAILY_POSTS) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (nextPostAvailableTime) {
+        nextPostAvailableTime.textContent = formatNextPostAvailableTime();
+    }
+
+    bootstrap.Modal.getOrCreateInstance(maxPostLimitModal).show();
+});
+
 /**
  * Marketplace runtime state.
  *
@@ -391,6 +486,36 @@ function clearImageError() {
     imageError.classList.add('d-none');
 }
 
+/**
+ * Formats the post publication text shown on each marketplace card.
+ *
+ * If the post was created less than 24 hours ago, it keeps the relative
+ * time text from the backend, such as "hace 2 horas".
+ * If 24 hours or more have passed, it shows the exact publication date
+ * using Spanish month names.
+ *
+ * @param {Object} post - Marketplace post object.
+ * @returns {string} Formatted publication text.
+ */
+function formatPostPublishedDate(post) {
+    if (!post.created_at) {
+        return `Publicado ${post.time_ago}`;
+    }
+
+    const createdAt = new Date(post.created_at);
+    const now = new Date();
+    const hoursPassed = (now - createdAt) / (1000 * 60 * 60);
+
+    if (hoursPassed < 24) {
+        return `Publicado ${post.time_ago}`;
+    }
+
+    return `Publicado el ${createdAt.toLocaleDateString('es-PR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+    })}`;
+}
 
 /**
  * Builds the HTML string for a single marketplace card.
@@ -495,7 +620,7 @@ function createMarketplaceCardHTML(post) {
                            </div>
 
                            <div>
-                               <i class="bi bi-clock me-2"></i> Publicado ${post.time_ago}
+                               <i class="bi bi-clock me-2"></i> ${formatPostPublishedDate(post)}
                            </div>
                        </div>
 
@@ -1239,7 +1364,7 @@ function validatePrice(showError = true) {
             setFieldError(
                 postPrice,
                 postPriceError,
-                'Ingresa un precio válida usando solo números, sin ceros a la izquierda y hasta 2 dígitos después del punto decimal.'
+                'Ingresa un precio válido usando solo números, sin ceros a la izquierda y con hasta 2 dígitos después del punto decimal.'
             );
             postPriceGroup?.classList.add('is-invalid');
         }
@@ -1286,6 +1411,27 @@ function validateSelect(field, showError = true) {
 
     return isValid;
 }
+
+/**
+ * Validates the required category and condition dropdowns whenever
+ * the user changes their selected value.
+ *
+ * The default placeholder options have an empty value, so returning
+ * to those options marks the field as invalid and shows the related
+ * Bootstrap invalid-feedback message.
+ *
+ * After each change, the publish button state is recalculated so the
+ * user can only publish when both dropdowns contain valid selections.
+ */
+postCategory?.addEventListener('change', () => {
+    validateSelect(postCategory, true);
+    updatePublishButtonState();
+});
+
+postCondition?.addEventListener('change', () => {
+    validateSelect(postCondition, true);
+    updatePublishButtonState();
+});
 
 /**
  * Validates selected create-post images.
@@ -1397,7 +1543,11 @@ function renderImagePreviews(files) {
 
             selectedPostImages.splice(index, 1);
             renderImagePreviews(selectedPostImages);
-            clearImageError();
+            if (selectedPostImages.length < MIN_IMAGES) {
+                validateImages(true);
+            } else {
+                clearImageError();
+            }
 
             if (postImage) {
                 postImage.value = '';
@@ -1540,15 +1690,17 @@ function updateCreatePostDirtyState() {
  * @returns {boolean} True if a reason is selected, otherwise false.
  */
 function validateReportReason(showError = true) {
-    if (!reportReason) return true;
+    if (!reportReason  || !reportReasonError) return true;
 
     const isValid = !!reportReason.value;
 
     if (showError) {
         if (!isValid) {
             reportReason.classList.add('is-invalid');
+            reportReasonError.textContent = 'Selecciona una razón para reportar al usuario.';
         } else {
             reportReason.classList.remove('is-invalid');
+            reportReasonError.textContent = '';
         }
     }
 
@@ -1723,6 +1875,19 @@ function tryCloseReportModal() {
         const confirmModal = bootstrap.Modal.getOrCreateInstance(cancelReportConfirmModal);
         confirmModal.show();
     }
+}
+
+/**
+ * Reopens the post details modal when the report modal is dismissed
+ * by clicking outside the modal or by using Bootstrap's default close behavior.
+ */
+if (reportUserModal && postDetailsModal) {
+    reportUserModal.addEventListener('hidden.bs.modal', () => {
+        if (allowReportClose) return;
+
+        const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
+        postModalInstance.show();
+    });
 }
 
 /**
@@ -1998,7 +2163,7 @@ if (postTitle) {
             setFieldError(
                 postTitle,
                 postTitleError,
-                'Has alcanzado el máximo de 100 caracteres, puedes aún someter esa cantidad.'
+                'Has alcanzado el máximo de 100 caracteres. Puedes someter el texto tal como está.'
             );
         } else {
             validateTitle(true);
@@ -2049,7 +2214,7 @@ if (postDescription) {
             setFieldError(
                 postDescription,
                 postDescriptionError,
-                'Has alcanzado el máximo de 500 caracteres, puedes aún someter esa cantidad.'
+                'Has alcanzado el máximo de 500 caracteres. Puedes someter el texto tal como está.'
             );
         } else {
             validateDescription(true);
@@ -2096,7 +2261,7 @@ if (reportDescription) {
         } else if (value.length === 500) {
             reportDescription.classList.add('is-invalid');
             reportDescriptionError.textContent =
-                'Has alcanzado el máximo de 500 caracteres, puedes aún someter esa cantidad.';
+                'Has alcanzado el máximo de 500 caracteres. Puedes someter el texto tal como está.';
         } else {
             validateReportDescription(true);
         }
