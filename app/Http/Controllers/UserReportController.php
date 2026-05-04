@@ -7,10 +7,31 @@ use App\Models\UserReport;
 use App\Http\Controllers\Concerns\LogsActivity;
 use App\Models\Post;
 
+/**
+ * Class UserReportController
+ *
+ * Handles user reporting and moderation actions.
+ *
+ * Responsibilities:
+ * - creating reports
+ * - retrieving reports
+ * - resolving reports
+ * - banning users
+ */
 class UserReportController extends Controller
 {
     use LogsActivity;
 
+    /**
+     * Stores a new user report.
+     *
+     * Validates:
+     * - reported user
+     * - related post
+     * - reason and description
+     *
+     * Logs the report creation.
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -38,6 +59,16 @@ class UserReportController extends Controller
             'success' => true
         ]);
     }
+        /**
+        * Retrieves all pending user reports.
+        *
+        * Includes:
+        * - reporter info
+        * - reported user info
+        * - related post info
+        *
+        * Returns JSON response for API or view for management.
+        */
     public function getReports()
     {
         $reports = UserReport::with([
@@ -52,6 +83,12 @@ class UserReportController extends Controller
         return response()->json($reports);
     }
 
+    /**
+     * Displays reports management view.
+     *
+     * Filters:
+     * - only pending reports
+     */
     public function index()
     {
         $reports = UserReport::with(['reporter', 'reportedUser', 'post'])
@@ -61,7 +98,15 @@ class UserReportController extends Controller
 
         return view('marketplace_management.reports_management', compact('reports'));
     }
-
+    /**
+     * Marks a report as resolved.
+     *
+     * Updates:
+     * - status
+     * - resolved timestamp
+     *
+     * Logs the action.
+     */
     public function resolve(UserReport $report)
     {
         $report->load('reportedUser');
@@ -80,7 +125,15 @@ class UserReportController extends Controller
             'success' => true
         ]);
     }
-
+    /**
+     * Bans a reported user.
+     *
+     * Actions:
+     * - updates user status to "Bloqueado"
+     * - deletes all user's posts
+     * - resolves the report
+     * - logs the action
+     */
     public function ban(UserReport $report)
     {
         $report->load('reportedUser');

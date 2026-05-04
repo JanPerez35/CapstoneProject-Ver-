@@ -9,10 +9,34 @@ use App\Events\MessageSent;
 use App\Jobs\SendUnreadMessageReminder;
 use App\Http\Controllers\Concerns\LogsActivity;
 
+/**
+ * Class MessageController
+ *
+ * Handles messaging functionality within chats.
+ *
+ * Responsibilities:
+ * - sending messages
+ * - retrieving chat messages
+ * - marking messages as read
+ * - triggering events and background jobs
+ */
 class MessageController extends Controller
 {
     use LogsActivity;
 
+    /**
+     * Stores a new message in a chat.
+     *
+     * Validates:
+     * - chat existence
+     * - message content
+     *
+     * Actions:
+     * - creates message
+     * - broadcasts event (real-time)
+     * - logs activity
+     * - dispatches reminder job if unread
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -50,6 +74,19 @@ class MessageController extends Controller
         return response()->json($message);
     }
 
+    /**
+     * Retrieves all messages for a given chat.
+     *
+     * Actions:
+     * - marks unread messages as read (except own messages)
+     * - resets unread reminder flag
+     * - returns formatted message collection
+     *
+     * Includes:
+     * - sender info
+     * - read status
+     * - ownership flag (isMine)
+     */
     public function getMessages($chatId)
     {
         $userId = auth()->id();
