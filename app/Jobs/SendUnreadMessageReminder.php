@@ -145,5 +145,3 @@ class SendUnreadMessageReminder implements ShouldQueue
         $chat->save();
     }
 }
-
-

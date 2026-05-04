@@ -48,17 +48,12 @@
                         </select>
                     </div>
 
-                    <div class="col-md-6 col-lg-4 position-relative">
+                    <div class="col-md-6 col-lg-4">
                         <input
                             type="date"
                             id="filterDate"
-                            class="form-control border-2 border-dark pe-5"
+                            class="form-control border-2 border-dark flex-grow-1"
                         >
-
-                        <!-- custom icon -->
-                        <span class="date-icon">
-                             <i class="bi bi-calendar3"></i>
-                        </span>
                     </div>
 
                     <div class="col-md-3 d-flex align-items-end">

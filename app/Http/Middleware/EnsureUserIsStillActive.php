@@ -43,6 +43,8 @@ class EnsureUserIsStillActive
      */
     public function handle(Request $request, Closure $next)
     {
+        \Log::info('MIDDLEWARE HIT - User: ' . auth()->id());
+
         if (Auth::check()) {
             $user = Auth::user()->fresh();
 

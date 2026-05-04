@@ -94,6 +94,7 @@
                 {{-- Date filter and clear all filters --}}
                 <div class="d-flex flex-column flex-md-row gap-3 align-items-stretch">
                     <div style="max-width: 540px; width: 100%;">
+                        <div class="input-group search-group h-100">
                         <input
                             type="date"
                             id="borrowDateFilter"
@@ -101,6 +102,7 @@
                             class="form-control py-2"
                             value="{{ request('date') }}"
                         >
+                        </div>
                     </div>
 
                     <div>

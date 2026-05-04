@@ -91,7 +91,7 @@ class MessageController extends Controller
     {
         $userId = auth()->id();
 
-        Message::where('chat_id', $chatId)
+        $readCount = Message::where('chat_id', $chatId)
             ->where('user_id', '!=', $userId)
             ->whereNull('read_at')
             ->update([
@@ -104,9 +104,11 @@ class MessageController extends Controller
          * This allows future email reminders to be sent again
          * if new unread messages appear later.
          */
-        Chat::where('id', $chatId)->update([
-            'unread_reminder_sent_at' => null,
-        ]);
+        if ($readCount > 0) {
+            Chat::where('id', $chatId)->update([
+                'unread_reminder_sent_at' => null,
+            ]);
+        }
 
         $messages = Message::where('chat_id', $chatId)
             ->with('user')
