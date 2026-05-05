@@ -8,12 +8,31 @@ use App\Models\Post;
 use App\Models\Message;
 use App\Http\Controllers\Concerns\LogsActivity;
 
+/**
+ * Class ChatController
+ *
+ * Handles chat-related functionality within the application.
+ *
+ * Responsibilities:
+ * - listing user chats
+ * - opening or creating chats
+ * - redirecting to specific chats
+ */
 class ChatController extends Controller
 {
     use LogsActivity;
 
     /**
-     * Mostrar lista de chats + chat activo
+     * Displays the list of chats for the authenticated user.
+     *
+     * Includes:
+     * - buyer and seller info
+     * - related post
+     * - last message timestamp
+     * - unread message count
+     *
+     * Optionally selects an active chat using:
+     * - chat_id (query param)
      */
     public function index(Request $request)
     {
@@ -43,7 +62,16 @@ class ChatController extends Controller
 
 
     /**
-     * Crear o abrir chat desde un post
+     * Creates or retrieves an existing chat based on:
+     * - post_id
+     * - buyer_user_id (auth user)
+     * - seller_user_id
+     *
+     * Logs activity if the chat is newly created.
+     *
+     * Redirects to messages view with:
+     * - selected chat
+     * - return route reference
      */
     public function openOrCreate(Request $request)
     {
@@ -79,7 +107,12 @@ class ChatController extends Controller
 
 
     /**
-     * Abrir chat directamente por ID
+     * Redirects to a specific chat by ID.
+     *
+     * Ensures the authenticated user:
+     * - is either the buyer or seller of the chat
+     *
+     * Prevents unauthorized access.
      */
     public function show($chatId)
     {

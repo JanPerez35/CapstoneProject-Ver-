@@ -81,7 +81,7 @@ class TermsController extends Controller
             "El usuario {$user->email} aceptó los términos y condiciones."
         );
 
-        return redirect()->route('kinventory')
+        return redirect()->route('kinemarket')
             ->with('success', 'Términos y condiciones aceptados correctamente.');
     }
 
