@@ -33,10 +33,7 @@ class AccessLogController extends Controller
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
-                $q->where('action', 'like', "%{$search}%")
-                  ->orWhere('comment', 'like', "%{$search}%")
-                  ->orWhere('ip_address', 'like', "%{$search}%")
-                  ->orWhere('role', 'like', "%{$search}%")
+                $q->where('ip_address', 'like', "%{$search}%")
                   ->orWhereHas('user', function ($u) use ($search) {
                       $u->where('first_name', 'like', "%{$search}%")
                         ->orWhere('last_name', 'like', "%{$search}%")
@@ -51,6 +48,10 @@ class AccessLogController extends Controller
 
         if ($event = $request->input('event')) {
             $query->where('action', $event);
+        }
+
+        if ($date = $request->input('date')) {
+            $query->whereDate('created_at', $date);
         }
 
         $logs = $query->paginate(10)->withQueryString();

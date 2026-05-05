@@ -333,6 +333,7 @@
     min-width: 0;
     overflow: hidden;
     display: -webkit-box;
+    line-clamp: 1;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     white-space: normal;
@@ -344,6 +345,7 @@
 .marketplace-card-description {
     overflow: hidden;
     display: -webkit-box;
+    line-clamp: 1;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     white-space: normal;
@@ -544,6 +546,50 @@
     color: white;
 }
 
+.event-group-header td {
+    background: #eaf7ef !important;
+    border-top: 3px solid #198754 !important;
+    border-bottom: 1px solid #b7dfc4 !important;
+    padding: 0.85rem 1rem !important;
+}
+
+.parent-event-row td {
+    background: #ffffff !important;
+    border-bottom: 1px solid #dee2e6 !important;
+}
+
+.sub-event-related_area td {
+    background: #eef8ff !important;
+    border-bottom: 1px dashed #9ec5fe !important;
+}
+
+.sub-event-custom_day td {
+    background: #fff8e6 !important;
+    border-bottom: 1px dashed #ffc107 !important;
+}
+
+.sub-event-row td {
+    background: #f8f9fa !important;
+    border-bottom: 1px dashed #ced4da !important;
+}
+
+.sub-event-row td:first-child {
+    padding-left: 1.5rem !important;
+}
+
+.sub-event-arrow {
+    color: #6c757d;
+    font-weight: 700;
+    margin-right: 0.35rem;
+}
+
+.event-group-spacer td {
+    height: 18px;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
 /* Avoid overflow on description table */
 #facilityCostTable {
     width: 100%;
@@ -715,6 +761,7 @@
     max-width: 100%;
     overflow: hidden;
     display: -webkit-box;
+    line-clamp: 1;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     white-space: normal;
@@ -1140,3 +1187,84 @@
     }
 }
 
+
+
+.app-header {
+    background: linear-gradient(135deg, #24282b 0%, #2f3539 100%);
+    border-bottom: 1px solid #3c4449 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+}
+
+.app-header .fs-3,
+.app-header .fw-semibold {
+    color: #ffffff !important;
+}
+
+.app-header small.text-muted {
+    color: #b8c0c7 !important;
+}
+
+.app-header .btn-outline-success {
+    color: #7ee0a1;
+    border-color: #2f9e68;
+    background-color: transparent;
+}
+/*Header stuff*/
+.app-header .btn-outline-success:hover {
+    color: #ffffff;
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.app-header .btn-success {
+    background-color: #198754;
+    border-color: #198754;
+    color: #ffffff;
+}
+
+.app-header .btn-success:hover {
+    background-color: #157347;
+    border-color: #157347;
+}
+
+.app-header .text-success {
+    color: #8ee4af !important;
+}
+
+.app-brand-title {
+    color: #198754;
+}
+
+.app-navbar {
+    background-color: #E6E6E6;
+
+}
+
+
+.date-picker-wrapper {
+    position: relative;
+}
+
+.date-picker-wrapper .date-picker-input,
+.date-picker-wrapper .flatpickr-input {
+    padding-right: 3.25rem !important;
+}
+
+.date-picker-icon {
+    position: absolute;
+    top: 50%;
+    right: 0.9rem;
+    transform: translateY(-50%);
+    z-index: 10;
+    border: 0;
+    background: transparent;
+    color: #212529;
+    font-size: 1.25rem;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+}
+
+.date-picker-icon:hover {
+    color: #198754;
+}

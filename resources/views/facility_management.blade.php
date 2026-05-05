@@ -263,123 +263,83 @@
                     </thead>
 
                     <tbody id="facilityCostTableBody">
-                    @forelse ($items as $item)
-                        <tr
-                            data-entry-id="{{ $item->id }}"
-                            data-date="{{ \Carbon\Carbon::parse($item->event_date)->format('Y-m-d') }}"
-                            data-end-date="{{ \Carbon\Carbon::parse($item->end_date ?? $item->event_date)->format('Y-m-d') }}"
-                            data-responsible="{{ $item->responsible }}"
-                            data-description="{{ $item->event_description }}"
-                            data-start-time="{{ \Carbon\Carbon::parse($item->start_time)->format('H:i') }}"
-                            data-end-time="{{ \Carbon\Carbon::parse($item->end_time)->format('H:i') }}"
-                            data-period-type="{{ $item->period_type }}"
-                            data-rate-mode="{{ $item->rate_mode }}"
-                            data-services='@json($item->services ?? [])'
-                            data-classroom="{{ $item->facilityCost->classroom_name }}"
-                            data-month="{{ \Carbon\Carbon::parse($item->event_date)->format('n') }}"
-                            data-year="{{ \Carbon\Carbon::parse($item->event_date)->format('Y') }}"
-                        >
-                            <td>{{ \Carbon\Carbon::parse($item->event_date)->format('m/d/Y') }}</td>
-                            <td>{{ \Carbon\Carbon::parse($item->end_date ?? $item->event_date)->format('m/d/Y') }}</td>
-                            <td>{{ $item->responsible }}</td>
-                            <td>{{ $item->facilityCost->classroom_name }}</td>
-                            <td>{{ $item->event_description }}</td>
-                            <td>
-                                {{ \Carbon\Carbon::parse($item->start_time)->format('h:i A') }}
-                                -
-                                {{ \Carbon\Carbon::parse($item->end_time)->format('h:i A') }}
-                            </td>
-                            <td>
-                                @if ($item->period_type === 'workday')
-                                    Laborable
-                                @elseif ($item->period_type === 'non_workday_saturday')
-                                    No laborable sábado
-                                @elseif ($item->period_type === 'non_workday_sunday_holiday')
-                                    No laborable domingo o festivo
-                                @else
-                                    {{ $item->period_type }}
-                                @endif
-                            </td>
+                        @forelse ($eventGroups as $event)
+                            @php
+                                $subItems = collect($event->sub_items ?? [$event]);
+                                $parent = $subItems->firstWhere('is_group_parent', true) ?? $event;
+                                $children = $subItems->where('id', '!=', $parent->id);
+                                $groupKey = $parent->event_group_id ?: 'single-' . $parent->id;
+                            @endphp
 
-                            <td>
-                                @if ($item->rate_mode === 'daily')
-                                    Diario
-                                @elseif ($item->rate_mode === 'weekly')
-                                    Semanal
-                                @elseif ($item->rate_mode === 'monthly')
-                                    Mensual
-                                @else
-                                    {{ $item->rate_mode }}
-                                @endif
-                            </td>
+                            {{-- Group header --}}
+                            <tr class="event-group-header" data-group-key="{{ $groupKey }}" data-group-header="1">
+                                <td colspan="11">
+                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                        <div>
+                                            <span class="fw-bold">
+                                                Evento principal #{{ $parent->id }}
+                                            </span>
 
-                            <td>
-                                @foreach (($item->services ?? []) as $service)
-                                    @php
-                                        $badgeClass = match($service) {
-                                            'electricity' => 'badge-electricidad',
-                                            'water' => 'badge-agua',
-                                            'utilities' => 'badge-available',
-                                            default => 'badge-available',
-                                        };
-                                    @endphp
+                                            <span class="text-muted ms-2">
+                                                {{ \Carbon\Carbon::parse($parent->event_date)->format('m/d/Y') }}
+                                                -
+                                                {{ \Carbon\Carbon::parse($parent->end_date ?? $parent->event_date)->format('m/d/Y') }}
+                                            </span>
 
-                                    <span class="label-badge {{ $badgeClass }} me-2 mb-1">
-                                            @if ($service === 'utilities')
-                                            Utilidades
-                                        @elseif ($service === 'electricity')
-                                            Electricidad
-                                        @elseif ($service === 'water')
-                                            Agua
-                                        @else
-                                            {{ ucfirst($service) }}
-                                        @endif
-                                        </span>
-                                @endforeach
-                            </td>
-                            <td class="text-end fw-semibold">${{ number_format($item->calculated_cost, 2) }}</td>
-                            <td class="text-center action-col">
-                                <div class="d-flex justify-content-center gap-2 flex-nowrap">
+                                            @php
+                                                $relatedAreasCount = $children->where('sub_event_type', 'related_area')->count();
+                                                $modificationsCount = $children->where('sub_event_type', 'custom_day')->count();
+                                            @endphp
 
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-primary edit-cost-row-btn"
-                                            data-entry-id="{{ $item->id }}"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#editEventModal">
-                                        <i class="bi bi-pencil me-1"></i> Editar
-                                    </button>
+                                            @if($relatedAreasCount > 0)
+                                                <span class="badge bg-info-subtle text-info-emphasis ms-2">
+                                                    {{ $relatedAreasCount }} área(s) relacionada(s)
+                                                </span>
+                                            @endif
 
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-warning customize-days-btn"
-                                            data-entry-id="{{ $item->id }}"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#customizeDaysModal">
-                                        <i class="bi bi-calendar-event me-1"></i> Modificar Días
-                                    </button>
+                                            @if($modificationsCount > 0)
+                                                <span class="badge bg-warning-subtle text-warning-emphasis ms-2">
+                                                    {{ $modificationsCount }} modificación(es)
+                                                </span>
+                                            @endif
 
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-success create-related-btn"
-                                            data-entry-id="{{ $item->id }}"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#createRelatedModal">
-                                        <i class="bi bi-diagram-3 me-1"></i> Crear Evento Relacionado
-                                    </button>
+                                            @if($children->count() === 0)
+                                                <span class="badge bg-secondary-subtle text-secondary-emphasis ms-2">
+                                                    Sin elementos relacionados
+                                                </span>
+                                            @endif
+                                        </div>
 
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-danger delete-cost-row-btn"
-                                            data-entry-id="{{ $item->id }}"
-                                            data-delete-url="{{ route('facility.events.destroy', $item->id) }}"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#deleteCostEntryModal">
-                                        <i class="bi bi-trash me-1"></i> Eliminar
-                                    </button>
+                                        <div class="fw-bold text-success">
+                                            Total del evento: ${{ number_format($event->group_total, 2) }}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
 
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                    @endforelse
-                    </tbody>
+                            {{-- Parent row --}}
+                            @include('partials.facility_event_row', [
+                                'item' => $parent,
+                                'rowType' => 'parent',
+                                'groupKey' => $groupKey
+                            ])
+
+                            {{-- Sub-event rows --}}
+                            @foreach ($children as $child)
+                                @include('partials.facility_event_row', [
+                                    'item' => $child,
+                                    'rowType' => 'child',
+                                    'groupKey' => $groupKey
+                                ])
+                            @endforeach
+
+                            {{-- Space between event groups --}}
+                            <tr class="event-group-spacer" data-group-key="{{ $groupKey }}" data-group-spacer="1">
+                                <td colspan="11"></td>
+                            </tr>
+                        @empty
+                        @endforelse
+                        </tbody>
 
                     <tfoot class="table-light">
                     <tr>
@@ -1111,10 +1071,11 @@
 
                         <div class="row g-3 mb-3 justify-content-center">
                             <div class="col-12">
-                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
-                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
-                                    Este evento será vinculado al evento principal seleccionado.
-                                    Use esta opción cuando un mismo evento requiera otra área interna del Coliseo Rafael Mangual.
+                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-3">
+                                    <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso:</strong>
+                                    <span id="relatedModalNoticeText">
+                                        Esta opción permite agregar otra área relacionada al mismo evento principal.
+                                    </span>
                                 </div>
                             </div>
 
@@ -1362,7 +1323,6 @@
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
                                     <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
                                     Esta opción permite preparar modificaciones puntuales de días u horarios.
-                                    La conexión final con backend se completará luego.
                                 </div>
                             </div>
 
@@ -1455,9 +1415,7 @@
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
                                     <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
-                                    Esta edición modifica la información del evento seleccionado. Los cambios de backend
-                                    serán conectados cuando el equipo complete esa parte.
-                                </div>
+                                    Esta edición modifica la información del evento seleccionado.
                             </div>
 
                             <div class="col-12">

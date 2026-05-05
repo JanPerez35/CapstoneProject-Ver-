@@ -132,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     rentalServiceChecks.forEach(input => {
         input?.addEventListener('change', () => {
             servicesTouched = true;
+            calculateRentalEstimate();
             updateRentalSaveState();
         });
     });
@@ -149,6 +150,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const editButtons = () => [...document.querySelectorAll('.edit-cost-row-btn')];
     const customizeDaysButtons = () => [...document.querySelectorAll('.customize-days-btn')];
     const createRelatedButtons = () => [...document.querySelectorAll('.create-related-btn')];
+
+    const editSubEventButtons = () => [...document.querySelectorAll('.edit-sub-event-btn')];
+
+    let relatedModalMode = 'create';
+    let editingSubEventId = null;
 
     const customizeEventId = $('customizeEventId');
     const saveCustomizeDaysBtn = $('saveCustomizeDaysBtn');
@@ -211,6 +217,29 @@ document.addEventListener('DOMContentLoaded', () => {
         editSaved: createToastInstance('editSavedToast'),
         relatedSaved: createToastInstance('relatedSavedToast'),
     };
+
+    
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    async function sendJson(url, method, payload) {
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(data.message || 'Ocurrió un error procesando la solicitud.');
+        }
+
+        return data;
+    }
 
     function updateFacilitySearchButtonState() {
         if (!facilitySearch || !searchFacilityBtn) return;
@@ -555,19 +584,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
-        if (endDate.getTime() === startDate.getTime()) {
-            if (showError) {
-                setFieldError(
-                    rentalEndDate,
-                    endError,
-                    'La fecha de fin no puede ser igual a la fecha de inicio para eventos semanales o mensuales.'
-                );
-                rentalStartDate.classList.add('is-invalid');
-                rentalEndDate.classList.add('is-invalid');
-            }
-            return false;
-        }
-
         if (endDate < startDate) {
             if (showError) {
                 setFieldError(
@@ -775,6 +791,190 @@ document.addEventListener('DOMContentLoaded', () => {
             customizeEndTime.value = previousEnd;
         }
     }
+
+if (saveCustomizeDaysBtn) {
+    saveCustomizeDaysBtn.addEventListener('click', async () => {
+        const payload = validateCustomizeDaysForm(true);
+
+        if (!payload) {
+            updateCustomizeSaveState();
+            return;
+        }
+
+        const body = {
+            scope: payload.scope,
+            date: payload.date,
+            start_time: payload.start_time,
+            end_time: payload.end_time,
+        };
+
+        const isEntireEvent = payload.scope === 'entire_event';
+
+        const url = isEntireEvent
+            ? `/facility/events/${payload.event_id}/schedule`
+            : `/facility/events/${payload.event_id}/customize-days`;
+
+        const method = isEntireEvent ? 'PUT' : 'POST';
+
+        try {
+            await sendJson(url, method, body);
+
+            bootstrap.Modal.getOrCreateInstance($('customizeDaysModal')).hide();
+            toasts.customizeSaved?.show();
+
+            window.location.reload();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+}
+
+if (saveRelatedEventBtn) {
+    saveRelatedEventBtn.addEventListener('click', async () => {
+        const payload = validateRelatedEventForm(true);
+
+        if (!payload) {
+            updateRelatedSaveState();
+            return;
+        }
+
+        const body = {
+            classroom: payload.classroom,
+            responsible: payload.responsible,
+            description: payload.description,
+            services: payload.services,
+            period_type: payload.period_type,
+            rate_mode: payload.rate_mode,
+            event_date: payload.event_date,
+            event_end_date: payload.end_date,
+            start_time: payload.start_time,
+            end_time: payload.end_time,
+        };
+
+        const url = relatedModalMode === 'edit'
+            ? `/facility/events/${editingSubEventId}/sub-event`
+            : `/facility/events/${payload.parent_event_id}/related`;
+
+        const method = relatedModalMode === 'edit' ? 'PUT' : 'POST';
+
+        try {
+            await sendJson(url, method, body);
+
+            bootstrap.Modal.getOrCreateInstance($('createRelatedModal')).hide();
+            toasts.relatedSaved?.show();
+
+            window.location.reload();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+}
+
+function setRelatedModalTitle(text) {
+    const title = $('createRelatedModalLabel');
+    if (title) title.textContent = text;
+}
+
+function setRelatedModalNotice(text) {
+    const notice = $('relatedModalNoticeText');
+
+    if (notice) {
+        notice.textContent = text;
+    }
+}
+
+function setRelatedSaveButtonText(text) {
+    if (saveRelatedEventBtn) {
+        saveRelatedEventBtn.textContent = text;
+    }
+}
+
+function getParentRowForGroup(row) {
+    const groupKey = row?.dataset.groupKey;
+    if (!groupKey) return null;
+
+    return facilityCostTableBody.querySelector(
+        `tr.parent-event-row[data-group-key="${groupKey}"]`
+    );
+}
+
+function setRelatedModalDateRangeFromParent(parentRow) {
+    if (!parentRow) return;
+
+    const startDate = parentRow.dataset.date || '';
+    const endDate = parentRow.dataset.endDate || startDate;
+
+    relatedStartDate.min = startDate;
+    relatedStartDate.max = endDate;
+
+    relatedEndDate.min = startDate;
+    relatedEndDate.max = endDate;
+}
+
+function fillRelatedModalFromRow(row) {
+    if (!row) return;
+
+    relatedArea.value = row.dataset.classroom || '';
+    relatedResponsible.value = row.dataset.responsible || '';
+    relatedDescription.value = row.dataset.description || '';
+
+    relatedStartDate.value = row.dataset.date || '';
+    relatedEndDate.value = row.dataset.endDate || row.dataset.date || '';
+
+    relatedPeriodType.value = row.dataset.periodType || '';
+    relatedRateMode.value = row.dataset.rateMode || '';
+    relatedRateModeDisplay.value = rateModeLabel(row.dataset.rateMode || '');
+
+    updateRelatedTimeOptions();
+
+    relatedStartTime.value = row.dataset.startTime || '';
+    relatedEndTime.value = row.dataset.endTime || '';
+
+    relatedUtilities.checked = false;
+    relatedElectricity.checked = false;
+    relatedWater.checked = false;
+
+    let services = [];
+
+    try {
+        services = JSON.parse(row.dataset.services || '[]');
+    } catch {
+        services = [];
+    }
+
+    relatedUtilities.checked = services.includes('utilities');
+    relatedElectricity.checked = services.includes('electricity');
+    relatedWater.checked = services.includes('water');
+
+    updateRelatedSummary();
+    updateRelatedSaveState();
+}
+
+if (saveEditEventBtn) {
+    saveEditEventBtn.addEventListener('click', async () => {
+        const payload = validateEditEventForm(true);
+
+        if (!payload) {
+            updateEditSaveState();
+            return;
+        }
+
+        try {
+            await sendJson(`/facility/events/${payload.event_id}`, 'PUT', {
+                responsible: payload.responsible,
+                description: payload.description,
+            });
+
+            bootstrap.Modal.getOrCreateInstance($('editEventModal')).hide();
+            toasts.editSaved?.show();
+
+            window.location.reload();
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+}
+
     function isAllowedDateForSelectedPeriod(dateString) {
         if (!dateString) return true;
 
@@ -892,6 +1092,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setFieldError(relatedArea, relatedAreaError, 'El área es requerida.');
         }
 
+        updateRelatedSummary();
         updateRelatedSaveState();
     });
 
@@ -965,6 +1166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     relatedServiceChecks.forEach(input => {
         input?.addEventListener('change', () => {
             toggleRelatedServicesError(!hasRelatedServices());
+            updateRelatedSummary();
             updateRelatedSaveState();
         });
     });
@@ -1448,6 +1650,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function getBillingUnits(startValue, endValue, rateMode) {
+        const daysUsed = getInclusiveDays(startValue, endValue || startValue);
+
+        if (daysUsed <= 0) return 1;
+
+        if (rateMode === 'daily') {
+            return daysUsed;
+        }
+
+        if (rateMode === 'weekly') {
+            return Math.ceil(daysUsed / 7);
+        }
+
+        if (rateMode === 'monthly') {
+            return getMonthsCrossed(startValue, endValue || startValue);
+        }
+
+        return 1;
+    }
+
+    function getMonthsCrossed(startValue, endValue) {
+        if (!startValue) return 1;
+
+        const start = new Date(`${startValue}T00:00:00`);
+        const end = new Date(`${endValue || startValue}T00:00:00`);
+
+        const startMonthIndex = start.getFullYear() * 12 + start.getMonth();
+        const endMonthIndex = end.getFullYear() * 12 + end.getMonth();
+
+        return Math.max(1, endMonthIndex - startMonthIndex + 1);
+    }
+
     function calculateRentalEstimate() {
         const classroomId = rentalClassroom.value;
         const startTime = rentalStartTime.value;
@@ -1492,7 +1726,13 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedRate = periodRates.monthly;
         }
 
-        let total = area * selectedRate;
+        const unitsUsed = getBillingUnits(
+            rentalStartDate.value,
+            rentalEndDate.value,
+            rentalRangeType.value
+        );
+
+        let total = area * selectedRate * unitsUsed;
 
         if (rentalUtilities.checked) total += toNumber(data.utilities) * totalHours;
         if (rentalElectricity.checked) total += toNumber(data.electricity) * totalHours;
@@ -1503,7 +1743,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return total;
     }
     function updateRelatedSummary() {
-        const dailyHours = calculateHours(relatedStartTime.value, relatedEndTime.value);
+        const classroomId = relatedArea.value;
+        const startTime = relatedStartTime.value;
+        const endTime = relatedEndTime.value;
+        const periodType = relatedPeriodType.value;
+        const rateMode = relatedRateMode.value;
+
+        const dailyHours = calculateHours(startTime, endTime);
+
         let totalDays = 1;
 
         if (relatedStartDate.value && relatedEndDate.value) {
@@ -1513,12 +1760,53 @@ document.addEventListener('DOMContentLoaded', () => {
         const totalHours = dailyHours * Math.max(totalDays, 1);
 
         if (relatedDetectedPeriodLabel) {
-            relatedDetectedPeriodLabel.textContent = periodLabelFromValue(relatedPeriodType.value);
+            relatedDetectedPeriodLabel.textContent = periodLabelFromValue(periodType);
         }
 
         if (relatedDetectedHoursLabel) {
             relatedDetectedHoursLabel.textContent = `${totalHours.toFixed(2)} horas`;
         }
+
+        if (
+            !classroomId ||
+            !dailyHours ||
+            !periodType ||
+            !rateMode ||
+            !ratesByClassroom[classroomId]
+        ) {
+            relatedEstimatedTotal.textContent = formatMoney(0);
+            return 0;
+        }
+
+        const data = ratesByClassroom[classroomId];
+        const area = toNumber(data.area);
+        const periodRates = getPeriodRateData(classroomId, periodType);
+
+        let selectedRate = 0;
+
+        if (rateMode === 'daily') {
+            selectedRate = periodRates.daily;
+        } else if (rateMode === 'weekly') {
+            selectedRate = periodRates.weekly;
+        } else if (rateMode === 'monthly') {
+            selectedRate = periodRates.monthly;
+        }
+
+        const unitsUsed = getBillingUnits(
+            relatedStartDate.value,
+            relatedEndDate.value,
+            rateMode
+        );
+
+        let total = area * selectedRate * unitsUsed;
+
+        if (relatedUtilities.checked) total += toNumber(data.utilities) * totalHours;
+        if (relatedElectricity.checked) total += toNumber(data.electricity) * totalHours;
+        if (relatedWater.checked) total += toNumber(data.water) * totalHours;
+
+        relatedEstimatedTotal.textContent = formatMoney(total);
+
+        return total;
     }
 
     function isRentalFormValid() {
@@ -1770,7 +2058,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     }
 
     function getVisibleFacilityRows() {
-        return [...facilityCostTableBody.querySelectorAll('tr')]
+        return [...facilityCostTableBody.querySelectorAll('tr[data-entry-id]')]
             .filter((row) => row.style.display !== 'none');
     }
 
@@ -1785,49 +2073,63 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         const rateMode = filterRateMode?.value || '';
         const service = filterServices?.value || '';
 
-        const allRows = [...facilityCostTableBody.querySelectorAll('tr')];
+        const allGroups = [...facilityCostTableBody.querySelectorAll('tr.event-group-header')];
+        const allRows = [...facilityCostTableBody.querySelectorAll('tr[data-entry-id]')];
+        const allTableRows = [...facilityCostTableBody.querySelectorAll('tr')];
 
-        const filteredRows = allRows.filter((row) => {
-            const rowMonth = row.dataset.month;
-            const rowYear = row.dataset.year;
-            const rowClassroom = row.dataset.classroom;
-            const rowText = row.textContent.toLowerCase();
-
-            const rowPeriodType = row.cells[6]?.textContent.trim() || '';
-            const rowRateMode = row.cells[7]?.textContent.trim() || '';
-            const rowServices = row.cells[8]?.textContent.trim() || '';
-
-            const matchesType =
-                !type ||
-                (type === 'annual' && (!year || rowYear === year)) ||
-                (type === 'monthly' && (!year || rowYear === year) && (!month || rowMonth === month));
-
-            const matchesClassroom =
-                !classroom || classroom === 'all' || rowClassroom === classroom;
-
-            const matchesPeriodType =
-                !periodType || rowPeriodType === periodType;
-
-            const matchesRateMode =
-                !rateMode || rowRateMode === rateMode;
-
-            const matchesService =
-                !service || rowServices.includes(service);
-
-            const matchesSearch =
-                !searchValue || rowText.includes(searchValue);
-
-            return (
-                matchesType &&
-                matchesClassroom &&
-                matchesPeriodType &&
-                matchesRateMode &&
-                matchesService &&
-                matchesSearch
-            );
+        // Hide absolutely everything first: headers, parent rows, sub rows, spacers.
+        allTableRows.forEach((row) => {
+            row.style.display = 'none';
         });
 
-        const totalPages = Math.max(1, Math.ceil(filteredRows.length / FACILITY_COSTS_PER_PAGE));
+        // A group matches if at least one real row inside the group matches the filters.
+        const filteredGroups = allGroups.filter((groupHeader) => {
+            const groupKey = groupHeader.dataset.groupKey;
+            const groupRows = allRows.filter(row => row.dataset.groupKey === groupKey);
+
+            return groupRows.some((row) => {
+                const rowMonth = row.dataset.month;
+                const rowYear = row.dataset.year;
+                const rowClassroom = row.dataset.classroom;
+                const rowText = row.textContent.toLowerCase();
+
+                const rowPeriodType = row.cells[6]?.textContent.trim() || '';
+                const rowRateMode = row.cells[7]?.textContent.trim() || '';
+                const rowServices = row.cells[8]?.textContent.trim() || '';
+
+                const matchesType =
+                    !type ||
+                    (type === 'annual' && (!year || rowYear === year)) ||
+                    (type === 'monthly' && (!year || rowYear === year) && (!month || rowMonth === month));
+
+                const matchesClassroom =
+                    !classroom || classroom === 'all' || rowClassroom === classroom;
+
+                const matchesPeriodType =
+                    !periodType || rowPeriodType === periodType;
+
+                const matchesRateMode =
+                    !rateMode || rowRateMode === rateMode;
+
+                const matchesService =
+                    !service || rowServices.includes(service);
+
+                const matchesSearch =
+                    !searchValue || rowText.includes(searchValue);
+
+                return (
+                    matchesType &&
+                    matchesClassroom &&
+                    matchesPeriodType &&
+                    matchesRateMode &&
+                    matchesService &&
+                    matchesSearch
+                );
+            });
+        });
+
+        // Pagination is now based on event groups, not individual rows.
+        const totalPages = Math.max(1, Math.ceil(filteredGroups.length / FACILITY_COSTS_PER_PAGE));
 
         if (currentFacilityCostsPage > totalPages) {
             currentFacilityCostsPage = totalPages;
@@ -1835,31 +2137,47 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
         const start = (currentFacilityCostsPage - 1) * FACILITY_COSTS_PER_PAGE;
         const end = start + FACILITY_COSTS_PER_PAGE;
-        const paginatedRows = filteredRows.slice(start, end);
+        const paginatedGroups = filteredGroups.slice(start, end);
 
-        allRows.forEach((row) => {
-            row.style.display = 'none';
+        // Show selected groups: header + all real rows inside + spacer.
+        paginatedGroups.forEach((groupHeader) => {
+            const groupKey = groupHeader.dataset.groupKey;
+
+            groupHeader.style.display = '';
+
+            allRows
+                .filter(row => row.dataset.groupKey === groupKey)
+                .forEach(row => {
+                    row.style.display = '';
+                });
+
+            const spacer = facilityCostTableBody.querySelector(
+                `tr.event-group-spacer[data-group-key="${groupKey}"]`
+            );
+
+            if (spacer) {
+                spacer.style.display = '';
+            }
         });
 
-        paginatedRows.forEach((row) => {
-            row.style.display = '';
-        });
+        // Total only from visible real rows, not group headers/spacers.
+        const visibleRows = allRows.filter((row) => row.style.display !== 'none');
 
-        const totalAmount = filteredRows.reduce((sum, row) => {
+        const totalAmount = visibleRows.reduce((sum, row) => {
             const amountCell = row.querySelector('td:nth-child(10)');
-            return sum + parseMoney(amountCell.textContent || '0');
+            return sum + parseMoney(amountCell?.textContent || '0');
         }, 0);
 
         facilityCostGrandTotal.textContent = formatMoney(totalAmount);
 
-        const hasRows = filteredRows.length > 0;
-        facilityCostTable.classList.toggle('d-none', !hasRows);
-        facilityCostEmptyState.classList.toggle('d-none', hasRows);
+        const hasGroups = filteredGroups.length > 0;
+        facilityCostTable.classList.toggle('d-none', !hasGroups);
+        facilityCostEmptyState.classList.toggle('d-none', hasGroups);
 
         renderLocalPagination(
             facilityCostPagination,
             currentFacilityCostsPage,
-            filteredRows.length,
+            filteredGroups.length,
             FACILITY_COSTS_PER_PAGE,
             (page) => {
                 currentFacilityCostsPage = page;
@@ -1930,12 +2248,20 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
         customizeDaysButtons().forEach((btn) => {
             btn.onclick = () => {
+                const row = btn.closest('tr');
+
                 if (customizeEventId) {
                     customizeEventId.value = btn.dataset.entryId;
                 }
 
+                const startDate = row?.dataset.date || '';
+                const endDate = row?.dataset.endDate || startDate;
+
                 customizeScope.value = '';
                 customizeDate.value = '';
+                customizeDate.min = startDate;
+                customizeDate.max = endDate;
+
                 customizeStartTime.value = '';
                 customizeEndTime.value = '';
 
@@ -1958,7 +2284,25 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             btn.onclick = () => {
                 const row = btn.closest('tr');
 
+                relatedModalMode = 'create';
+                editingSubEventId = null;
+                setRelatedModalTitle('Crear Evento Relacionado');
+                setRelatedSaveButtonText('Guardar Evento Relacionado');
+
+                setRelatedModalNotice(
+                    'Esta opción permite agregar otra área relacionada al mismo evento principal. Su costo se suma al total del evento, sin alterar el costo del evento principal.'
+                );
+
                 relatedParentEventId.value = btn.dataset.entryId;
+
+                const startDate = row?.dataset.date || '';
+                const endDate = row?.dataset.endDate || startDate;
+
+                relatedStartDate.min = startDate;
+                relatedStartDate.max = endDate;
+
+                relatedEndDate.min = startDate;
+                relatedEndDate.max = endDate;
 
                 relatedArea.value = '';
                 relatedResponsible.value = row?.children[2]?.textContent.trim() || '';
@@ -1996,6 +2340,41 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 updateRelatedSaveState();
 
                 console.log('Crear evento relacionado desde:', btn.dataset.entryId);
+            };
+        });
+
+        editSubEventButtons().forEach((btn) => {
+            btn.onclick = () => {
+                relatedModalMode = 'edit';
+                editingSubEventId = btn.dataset.entryId;
+
+                setRelatedModalTitle('Editar Sub-evento');
+                setRelatedSaveButtonText('Actualizar Sub-evento');
+
+                setRelatedModalNotice(
+                    'Esta opción permite modificar únicamente este sub-evento. Los cambios recalcularán su costo y se mantendrán dentro del rango de fechas del evento principal.'
+                );
+
+                const row = btn.closest('tr');
+                const parentRow = getParentRowForGroup(row);
+
+                relatedParentEventId.value = editingSubEventId;
+
+                setRelatedModalDateRangeFromParent(parentRow);
+                fillRelatedModalFromRow(row);
+
+                clearFieldError(relatedArea, relatedAreaError);
+                clearFieldError(relatedResponsible, relatedResponsibleError);
+                clearFieldError(relatedDescription, relatedDescriptionError);
+                clearFieldError(relatedStartDate, relatedStartDateError);
+                clearFieldError(relatedEndDate, relatedEndDateError);
+
+                relatedStartTime.classList.remove('is-invalid');
+                relatedEndTime.classList.remove('is-invalid');
+                relatedTimeError.textContent = '';
+
+                toggleRelatedServicesError(false);
+                updateRelatedSaveState();
             };
         });
     }
@@ -2222,15 +2601,6 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             if (endDate < today) {
                 valid = false;
                 if (showError) setFieldError(relatedEndDate, relatedEndDateError, 'No puedes seleccionar una fecha anterior a hoy.');
-            }
-
-            if (endDate.getTime() === startDate.getTime()) {
-                valid = false;
-                if (showError) {
-                    setFieldError(relatedEndDate, relatedEndDateError, 'La fecha de fin no puede ser igual a la fecha de inicio.');
-                    relatedStartDate.classList.add('is-invalid');
-                    relatedEndDate.classList.add('is-invalid');
-                }
             }
 
             if (endDate < startDate) {
@@ -2492,6 +2862,15 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     }
 
     function resetRelatedEventState() {
+        relatedModalMode = 'create';
+        editingSubEventId = null;
+        setRelatedModalTitle('Crear Evento Relacionado');
+        setRelatedSaveButtonText('Guardar Evento Relacionado');
+
+        setRelatedModalNotice(
+            'Esta opción permite agregar otra área relacionada al mismo evento principal.'
+        );
+
         if (relatedArea) relatedArea.value = '';
         if (relatedResponsible) relatedResponsible.value = '';
         if (relatedDescription) relatedDescription.value = '';

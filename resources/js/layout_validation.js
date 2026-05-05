@@ -12,6 +12,9 @@
  */
 
 import * as bootstrap from "bootstrap";
+import flatpickr from "flatpickr";
+import { Spanish } from "flatpickr/dist/l10n/es.js";
+import "flatpickr/dist/flatpickr.min.css";
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -43,14 +46,18 @@ document.addEventListener('DOMContentLoaded', function () {
      * the validation and modal behavior logic.
      */
     const pickupDate = document.getElementById('pickup_date');
+    const pickupDateIcon = document.getElementById('pickupDateIcon');
     const pickupTime = document.getElementById('pickup_time');
     const specialCase = document.getElementById('special_case');
     const specialCaseFields = document.getElementById('specialCaseFields');
     const returnDate = document.getElementById('return_date');
+    const returnDateIcon = document.getElementById('returnDateIcon');
     const specialReason = document.getElementById('special_reason');
     const acceptTerms = document.getElementById('accept_terms');
     const submitBtn = document.getElementById('submitLoanRequest');
     const cartCount = document.getElementById('cartCount');
+    const cartButton = document.querySelector('[data-bs-target="#cartModal"]');
+    const cartModal = document.getElementById('cartModal');
 
     /**
     * Validation message containers/variables
@@ -107,7 +114,14 @@ document.addEventListener('DOMContentLoaded', function () {
      * @param {string} message - Validation message to show.
      */
     function setError(field, errorEl, message) {
-        if (field) field.classList.add('is-invalid');
+        if (field) {
+            field.classList.add('is-invalid');
+
+            if (field._flatpickr?.altInput) {
+                field._flatpickr.altInput.classList.add('is-invalid');
+            }
+        }
+
         if (errorEl) errorEl.textContent = message;
     }
 
@@ -119,10 +133,16 @@ document.addEventListener('DOMContentLoaded', function () {
      * @param {HTMLElement|null} errorEl - Associated error message container.
      */
     function clearError(field, errorEl) {
-        if (field) field.classList.remove('is-invalid');
+        if (field) {
+            field.classList.remove('is-invalid');
+
+            if (field._flatpickr?.altInput) {
+                field._flatpickr.altInput.classList.remove('is-invalid');
+            }
+        }
+
         if (errorEl) errorEl.textContent = '';
     }
-
 
     /**
      * Hides and clears the PDF upload validation message
@@ -274,6 +294,94 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
+     * Cleans tool tip so it doesnt get stuck on opened modals like the cart
+     */
+    function attachCartTooltipCleanup() {
+        if (!cartButton) return;
+
+        cartButton.addEventListener('click', () => {
+            const tooltip = bootstrap.Tooltip.getInstance(cartButton);
+            if (tooltip) tooltip.hide();
+        });
+
+        cartModal?.addEventListener('shown.bs.modal', () => {
+            const tooltip = bootstrap.Tooltip.getInstance(cartButton);
+            if (tooltip) tooltip.hide();
+        });
+
+        cartModal?.addEventListener('hidden.bs.modal', () => {
+            const tooltip = bootstrap.Tooltip.getInstance(cartButton);
+            if (tooltip) tooltip.hide();
+
+            document.querySelectorAll('.tooltip').forEach(el => el.remove());
+        });
+    }
+
+    function initializeSpanishDatePickers() {
+        const sharedOptions = {
+            locale: Spanish,
+
+            /**
+             * This is the real value submitted to Laravel.
+             * Keep this as YYYY-MM-DD so backend validation continues working.
+             */
+            dateFormat: 'Y-m-d',
+
+            /**
+             * This is what the user sees.
+             */
+            altInput: true,
+            altFormat: 'd-F-Y',
+
+            allowInput: false,
+            disableMobile: true,
+            minDate: minPickupDateString(),
+
+            /**
+             * Disable Friday, Saturday, and Sunday.
+             */
+            disable: [
+                function (date) {
+                    const day = date.getDay();
+                    return day === 5 || day === 6 || day === 0;
+                }
+            ]
+        };
+
+        if (pickupDate) {
+            flatpickr(pickupDate, {
+                ...sharedOptions,
+                onChange: function () {
+                    validatePickupDate(true);
+
+                    if (returnDate?._flatpickr && pickupDate.value) {
+                        returnDate._flatpickr.set('minDate', pickupDate.value);
+                    }
+
+                    validateReturnDate(true);
+                    updateSubmitButtonStateQuietly();
+                }
+            });
+            pickupDateIcon?.addEventListener('click', function () {
+                pickupDate._flatpickr?.open();
+            });
+        }
+
+        if (returnDate) {
+            flatpickr(returnDate, {
+                ...sharedOptions,
+                onChange: function () {
+                    validateReturnDate(true);
+                    updateSubmitButtonStateQuietly();
+                }
+            });
+            returnDateIcon?.addEventListener('click', function () {
+                returnDate._flatpickr?.open();
+            });
+        }
+    }
+
+    /**
      * Shows or hides the special-case fields depending on whether
      * the special-case checkbox is selected.
      *
@@ -291,7 +399,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (returnDate) {
                 returnDate.required = false;
-                returnDate.value = '';
+
+                if (returnDate._flatpickr) {
+                    returnDate._flatpickr.clear();
+                } else {
+                    returnDate.value = '';
+                }
+
                 clearError(returnDate, returnDateError);
             }
 
@@ -880,8 +994,10 @@ document.addEventListener('DOMContentLoaded', function () {
     * updates counters, and shows any toast messages waiting from the backend.
     */
     setMinDates();
+    initializeSpanishDatePickers();
     toggleSpecialCaseFields();
     attachCartQuantityControls();
+    attachCartTooltipCleanup();
     attachRemoveCartConfirmEvents();
     updateCartBadgeFromRows();
     updateSubmitButtonStateQuietly();
