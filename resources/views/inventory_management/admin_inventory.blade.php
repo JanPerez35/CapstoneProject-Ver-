@@ -59,15 +59,17 @@
             </div>
 
             {{-- Add item button --}}
-            <button
-                type="button"
-                class="btn btn-success d-flex align-items-center gap-2"
-                data-bs-toggle="modal"
-                data-bs-target="#addItemModal"
-            >
-                <i class="bi bi-plus-lg"></i>
-                Agregar Item
-            </button>
+            <div style="width: 200px;">
+                <button
+                    type="button"
+                    class="btn btn-success w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#addItemModal"
+                >
+                    <i class="bi bi-plus-lg"></i>
+                    Agregar Item
+                </button>
+            </div>
         </div>
 
         {{-- Search and category filter form --}}
@@ -651,7 +653,7 @@
                             </button>
                             {{-- Add new item with completed fields to the database --}}
                             <button type="submit" class="btn btn-success" id="submitAddItemBtn" disabled>
-                                <i class="bi bi-plus-lg me-1"></i> Agregar Item
+                                <i class="bi bi-plus-lg me-1 "></i> Agregar Item
                             </button>
                         </div>
                     </form>
