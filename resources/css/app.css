@@ -87,11 +87,6 @@
 .pagination .page-link:hover {
     color: #145c32;
 }
-.post-details-body {
-    max-height: 85vh;
-    overflow-y: auto;
-    padding-bottom: 2rem;
-}
 
 .post-carousel-inner {
     height: 320px;
@@ -113,8 +108,8 @@
 }
 
 .post-carousel-img {
-    width: 75% !important;
-    height: 75% !important;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: contain !important;
 }
 
@@ -845,154 +840,7 @@
     }
 }
 
-/*Marketplace management report tables*/
-/* Market management reports table */
-.table-fit-wrapper { padding: 0; }
-
-.reports-table {
-    width: 100%;
-    table-layout: fixed;
-    margin-bottom: 0;
-}
-
-.reports-table thead th,
-.reports-table tbody td {
-    vertical-align: middle;
-    padding: 0.95rem 0.8rem;
-    font-size: 0.95rem;
-    line-height: 1.35;
-    white-space: normal;
-    word-break: break-word;
-    overflow-wrap: break-word;
-}
-
-.reports-table thead th {
-    background: #f8f9fa;
-    font-size: 0.9rem;
-    font-weight: 700;
-}
-
-.reports-table th:nth-child(1), .reports-table td:nth-child(1) { width: 14%; }
-.reports-table th:nth-child(2), .reports-table td:nth-child(2) { width: 13%; }
-.reports-table th:nth-child(3), .reports-table td:nth-child(3) { width: 14%; }
-.reports-table th:nth-child(4), .reports-table td:nth-child(4) { width: 15%; }
-.reports-table th:nth-child(5), .reports-table td:nth-child(5) { width: 24%; }
-
-.reports-table th:nth-child(6), .reports-table td:nth-child(6),
-.reports-table th:nth-child(7), .reports-table td:nth-child(7),
-.reports-table th:nth-child(8), .reports-table td:nth-child(8),
-.reports-table th:nth-child(9), .reports-table td:nth-child(9) {
-    width: 5%;
-}
-
-.report-description-cell {
-    line-height: 1.45;
-}
-
-.action-col {
-    min-width: 0;
-    text-align: center;
-}
-
-.action-header-icon {
-    padding-left: 0.45rem;
-    padding-right: 0.45rem;
-}
-
-.action-radio {
-    transform: scale(1.2);
-    cursor: pointer;
-    margin: 0;
-    accent-color: #198754;
-    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25));
-    transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
-}
-
-.action-radio:hover {
-    transform: scale(1.55);
-}
-
-.action-radio.active-radio {
-    opacity: 1;
-    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));
-}
-
-.reports-empty-state {
-    border-top: 1px solid #dee2e6;
-}
-
-.modal-header-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    padding: 1.1rem 1.1rem 0.25rem 1.1rem;
-}
-
-.modal-close-top {
-    margin: 0.1rem 0 0 0;
-    flex-shrink: 0;
-}
-
-/* Toast sizing moved from inline styles */
-.market-toast {
-    width: auto;
-    max-width: fit-content;
-}
-
-.market-toast-body {
-    padding-right: 0;
-}
-
-.market-toast-close {
-    background-color: transparent;
-    border: none;
-    transform: scale(0.8);
-}
-
-@media (max-width: 1199.98px) {
-    .reports-table thead th,
-    .reports-table tbody td {
-        padding: 0.75rem 0.5rem;
-        font-size: 0.84rem;
-    }
-
-    .reports-table thead th {
-        font-size: 0.8rem;
-    }
-
-    .action-radio {
-        transform: scale(1.2);
-    }
-}
-
-@media (max-width: 991.98px) {
-    .table-fit-wrapper {
-        overflow-x: auto;
-    }
-
-    .reports-table {
-        min-width: 900px;
-    }
-
-    .reports-table thead th,
-    .reports-table tbody td {
-        padding: 0.7rem 0.45rem;
-        font-size: 0.8rem;
-    }
-
-    .reports-table thead th {
-        font-size: 0.76rem;
-    }
-
-    .action-radio {
-        transform: scale(1.1);
-    }
-}
-
 /*Facility Management styles*/
-/* ========================= */
-/* FACILITY MANAGEMENT STYLES */
-/* ========================= */
 
 .money-input::placeholder {
     color: #6c757d;
@@ -1072,9 +920,7 @@
     padding-right: .75rem;
 }
 
-/* ========================= */
 /* SECOND STYLE BLOCK */
-/* ========================= */
 
 .classroom-name {
     display: block;
@@ -1164,3 +1010,133 @@
 .facility-row-exception {
     background-color: #fff9e6;
 }
+
+
+/* Report User Admin Marketplace Management Table */
+
+.table-fit-wrapper {
+    position: relative;
+    height: calc(100vh - 260px);
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 0;
+}
+
+.reports-table {
+    width: 100%;
+    table-layout: fixed;
+    margin-bottom: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.reports-table thead th,
+.reports-table tbody td {
+    vertical-align: middle;
+    padding: 0.95rem 0.8rem;
+    font-size: 0.95rem;
+    line-height: 1.35;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.reports-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background-color: #f8f9fa;
+    font-size: 0.9rem;
+    font-weight: 700;
+    box-shadow: inset 0 -1px 0 #dee2e6;
+}
+
+.reports-table th:nth-child(1), .reports-table td:nth-child(1) { width: 14%; }
+.reports-table th:nth-child(2), .reports-table td:nth-child(2) { width: 13%; }
+.reports-table th:nth-child(3), .reports-table td:nth-child(3) { width: 14%; }
+.reports-table th:nth-child(4), .reports-table td:nth-child(4) { width: 15%; }
+.reports-table th:nth-child(5), .reports-table td:nth-child(5) { width: 24%; }
+
+.reports-table th:nth-child(6), .reports-table td:nth-child(6),
+.reports-table th:nth-child(7), .reports-table td:nth-child(7),
+.reports-table th:nth-child(8), .reports-table td:nth-child(8),
+.reports-table th:nth-child(9), .reports-table td:nth-child(9) {
+    width: 5%;
+}
+
+.report-description-cell {
+    line-height: 1.45;
+}
+
+
+.action-header-icon {
+    width: 75px;
+    white-space: nowrap;
+    padding-left: 0.8rem;
+    padding-right: 0.8rem;
+}
+
+.action-radio {
+    transform: scale(1.2);
+    cursor: pointer;
+    margin: 0;
+    accent-color: #198754;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25));
+    transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
+}
+
+.action-radio:hover {
+    transform: scale(1.55);
+}
+
+.action-radio.active-radio {
+    opacity: 1;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));
+}
+
+.reports-empty-state {
+    border-top: 1px solid #dee2e6;
+}
+
+
+/* Responsive marketplace reports table */
+@media (max-width: 1199.98px) {
+    .reports-table thead th,
+    .reports-table tbody td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.84rem;
+    }
+
+    .reports-table thead th {
+        font-size: 0.8rem;
+    }
+
+    .action-radio {
+        transform: scale(1.2);
+    }
+}
+
+@media (max-width: 991.98px) {
+    .table-fit-wrapper {
+        overflow-x: auto;
+    }
+
+    .reports-table {
+        min-width: 900px;
+    }
+
+    .reports-table thead th,
+    .reports-table tbody td {
+        padding: 0.7rem 0.45rem;
+        font-size: 0.8rem;
+    }
+
+    .reports-table thead th {
+        font-size: 0.76rem;
+    }
+
+    .action-radio {
+        transform: scale(1.1);
+    }
+}
+
