@@ -9,8 +9,30 @@ use Carbon\Carbon;
 use App\Models\Review;
 use App\Models\User;
 
+/**
+ * Class PostController
+ *
+ * Handles marketplace post management.
+ *
+ * Responsibilities:
+ * - creating posts
+ * - deleting posts
+ * - listing posts
+ * - retrieving post details
+ */
 class PostController extends Controller
 {  
+    /**
+     * Stores a new marketplace post.
+     *
+     * Validates:
+     * - title, cost, category, condition
+     * - optional images (max 3)
+     *
+     * Handles:
+     * - image upload to storage
+     * - saving post data
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -46,6 +68,18 @@ class PostController extends Controller
 
         return response()->json(['success' => true]);
     }
+    /**
+     * Deletes a post.
+     *
+     * Authorization:
+     * - owner of the post
+     * - Admin Super
+     * - Admin Mercado
+     *
+     * Actions:
+     * - deletes associated images
+     * - deletes post record
+     */
     public function destroy(Post $post)
     {
         if ($post->user_id !== auth()->id() && !in_array(auth()->user()->role, ['Admin Super', 'Admin Mercado'])) {
@@ -70,13 +104,26 @@ class PostController extends Controller
             'message' => 'Post eliminado exitosamente'
             ]);
     }
-
+    /**
+     * Displays all posts (view).
+     *
+     * Returns:
+     * - latest posts ordered by creation date
+     */
     public function index()
     {
         $posts = Post::latest()->get();
         return view('kinemarket', compact('posts'));
     }
-
+    /**
+     * Returns all posts in JSON format.
+     *
+     * Includes:
+     * - seller info
+     * - rating average
+     * - reviews count
+     * - formatted time (time ago)
+     */
     public function getPosts()
     {
         $posts = Post::with('user')
@@ -114,7 +161,14 @@ class PostController extends Controller
 
         return response()->json($posts);
     }
-
+    /**
+     * Retrieves a single post by ID.
+     *
+     * Includes:
+     * - seller info
+     * - rating average
+     * - reviews count
+     */
     public function show($id)
     {
         $post = Post::with('user')->findOrFail($id);
