@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Models\Review;
 use App\Models\User;
+use App\Http\Controllers\Concerns\LogsActivity;
 
 /**
  * Class PostController
