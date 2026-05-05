@@ -642,12 +642,13 @@
 
 /* Custom tool tip coloring to make it grey*/
 .custom-tooltip {
-    --bs-tooltip-bg: #D6D6D6;
+    --bs-tooltip-bg: #8f8f8f;
     --bs-tooltip-color: #000000;
+    --bs-tooltip-opacity: 1;
 }
 
 .custom-tooltip .tooltip-inner {
-    border-radius: 0 !important;
+    border-radius: 4px !important;
 }
 
 /* Messaging & chat styling */
@@ -1163,4 +1164,85 @@
 
 .facility-row-exception {
     background-color: #fff9e6;
+}
+
+
+.app-header {
+    background: linear-gradient(135deg, #24282b 0%, #2f3539 100%);
+    border-bottom: 1px solid #3c4449 !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+}
+
+.app-header .fs-3,
+.app-header .fw-semibold {
+    color: #ffffff !important;
+}
+
+.app-header small.text-muted {
+    color: #b8c0c7 !important;
+}
+
+.app-header .btn-outline-success {
+    color: #7ee0a1;
+    border-color: #2f9e68;
+    background-color: transparent;
+}
+/*Header stuff*/
+.app-header .btn-outline-success:hover {
+    color: #ffffff;
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.app-header .btn-success {
+    background-color: #198754;
+    border-color: #198754;
+    color: #ffffff;
+}
+
+.app-header .btn-success:hover {
+    background-color: #157347;
+    border-color: #157347;
+}
+
+.app-header .text-success {
+    color: #8ee4af !important;
+}
+
+.app-brand-title {
+    color: #198754;
+}
+
+.app-navbar {
+    background-color: #E6E6E6;
+
+}
+
+
+.date-picker-wrapper {
+    position: relative;
+}
+
+.date-picker-wrapper .date-picker-input,
+.date-picker-wrapper .flatpickr-input {
+    padding-right: 3.25rem !important;
+}
+
+.date-picker-icon {
+    position: absolute;
+    top: 50%;
+    right: 0.9rem;
+    transform: translateY(-50%);
+    z-index: 10;
+    border: 0;
+    background: transparent;
+    color: #212529;
+    font-size: 1.25rem;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+}
+
+.date-picker-icon:hover {
+    color: #198754;
 }

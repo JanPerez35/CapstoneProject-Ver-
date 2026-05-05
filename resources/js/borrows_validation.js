@@ -9,6 +9,10 @@
  * - shows success toasts after actions complete
  */
 
+import flatpickr from "flatpickr";
+import { Spanish } from "flatpickr/dist/l10n/es.js";
+import "flatpickr/dist/flatpickr.min.css";
+
 document.querySelectorAll('[data-bs-toggle="tooltip"]')
 
     /**
@@ -44,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
     * Search and date filter elements used to narrow visible requests.
     */
     const borrowDateFilter = document.getElementById('borrowDateFilter');
+    const borrowDateFilterIcon = document.getElementById('borrowDateFilterIcon');
     const borrowSearch = document.getElementById('borrowSearch');
     const borrowSearchBtn = document.getElementById('borrowSearchBtn');
 
@@ -221,6 +226,42 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateBorrowSearchButtonState() {
         if (!borrowSearch || !borrowSearchBtn) return;
         borrowSearchBtn.disabled = borrowSearch.value.trim().length === 0;
+    }
+
+    /**
+     * Initializes the borrow date filter with a Spanish Flatpickr calendar.
+     *
+     * The visible date uses day-month-year with the month name,
+     * while the submitted value stays in YYYY-MM-DD format for Laravel and filtering.
+     */
+    function initializeBorrowDatePicker() {
+        if (!borrowDateFilter) return;
+
+        flatpickr(borrowDateFilter, {
+            locale: Spanish,
+
+            // Real value submitted to Laravel: 2026-05-05
+            dateFormat: 'Y-m-d',
+
+            // Visible value shown to the user: 5-mayo-2026
+            altInput: true,
+            altFormat: 'j-F-Y',
+
+            allowInput: false,
+            disableMobile: true,
+
+            onChange: function () {
+                applyFiltersAndPagination(true);
+            }
+        });
+
+        if (borrowDateFilter._flatpickr?.altInput) {
+            borrowDateFilter._flatpickr.altInput.placeholder = 'dd-mm-aaaa';
+            borrowDateFilter._flatpickr.altInput.classList.add('date-picker-input');
+        }
+        borrowDateFilterIcon?.addEventListener('click', function () {
+            borrowDateFilter._flatpickr?.open();
+        });
     }
 
     /**
@@ -656,6 +697,7 @@ document.addEventListener('DOMContentLoaded', function () {
     attachApproveEvents();
     attachDenyEvents();
     attachReturnEvents();
+    initializeBorrowDatePicker();
     updateBorrowSearchButtonState();
     applyFiltersAndPagination(true);
     handleStoredToasts();

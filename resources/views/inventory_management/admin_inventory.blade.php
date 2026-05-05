@@ -133,7 +133,7 @@
 
                 {{-- Single inventory card with item summary, availability state, and action buttons --}}
                 <div class="col-md-6 col-lg-4 inventory-card-wrapper">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
+                    <div class="card h-100 border-dark border-3 rounded-4 overflow-hidden item-card">
 
                         {{-- Load image using the stored URL of the image on the database --}}
                         <img
