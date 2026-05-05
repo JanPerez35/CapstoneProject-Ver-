@@ -66,12 +66,12 @@
         </form>
 
         {{--Equipment grid display, where all the inventory items are displayed--}}
-        <div class="row g-4 mt-2">
+        <div class="row g-4 mt-2 ">
             @forelse($items as $item)
 
                 {{--How the card looks individually--}}
                 <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden item-card">
+                    <div class="card h-100 border-dark border-3 rounded-4 overflow-hidden item-card">
 
                         {{--Equipment image with a fall back if none exists--}}
                         <img

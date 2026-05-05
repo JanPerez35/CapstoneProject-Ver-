@@ -20,7 +20,7 @@
     {{-- Frontend script for CSV export, search state, and empty-state handling --}}
     @vite('resources/js/access_log_validation.js')
 
-    <div class="container-fluid py-4 px-4">
+    <div class="container py-4 px-4">
 
         {{-- Page header --}}
         <div class="mb-4">

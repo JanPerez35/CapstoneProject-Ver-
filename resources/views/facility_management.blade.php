@@ -43,6 +43,7 @@
         <!--Buttons-->
         <div class="d-flex flex-wrap gap-3 mb-4">
 
+            @if(auth()->user()->role === 'Admin Super')
             <span
                 data-bs-toggle="tooltip"
                 data-bs-placement="left"
@@ -60,6 +61,7 @@
                     Configurar Tarifas
                 </button>
             </span>
+            @endif
 
             <span
                     data-bs-toggle="tooltip"

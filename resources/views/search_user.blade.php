@@ -123,7 +123,7 @@
                 @endphp
 
                 {{-- Individual user card --}}
-                <div class="card border-0 shadow-sm rounded-4 user-card"
+                <div class="card border-dark border-2 rounded-4 user-card"
 
                      {{-- Data attributes used by JS for filtering and actions --}}
                      data-user-id="{{ $user->id }}"

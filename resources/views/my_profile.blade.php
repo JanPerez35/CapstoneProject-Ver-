@@ -214,7 +214,7 @@
                             data-sport="{{ strtolower($post->category ?? '') }}"
                             data-price="{{ $post->cost ?? 0 }}"
                         >
-                            <div class="card h-100 shadow-sm rounded-4 overflow-hidden item-card border-0 marketplace-card-shell">
+                            <div class="card h-100 border-dark border-3 rounded-4 overflow-hidden item-card marketplace-card-shell">
                                 <img
                                     src="{{ $post->photo_1_url ? asset('storage/' . $post->photo_1_url) : asset('images/marketplace_images/picture-not-available.png') }}"
                                     class="card-img-top"
@@ -416,9 +416,9 @@
                                     : strtolower($request->status);
                             @endphp
 
+
                             <div
-                                class="border rounded-4 p-4 mb-3 request-card"
-                                data-title="{{ strtolower($itemsText) }}"
+                                class="border border-2 border-dark rounded-4 p-4 mb-3 request-card"                                data-title="{{ strtolower($itemsText) }}"
                                 data-status="{{ $normalizedStatus }}"
                             >
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -436,14 +436,12 @@
 
                                         {{-- Item requested date --}}
                                         <p class="text-muted mb-0">
-                                            Solicitado: {{ \Carbon\Carbon::parse($request->created_at)->format('m/d/Y') }}
-                                        </p>
+                                            Solicitado: {{ \Carbon\Carbon::parse($request->created_at)->locale('es')->translatedFormat('j-F-Y') }}                                        </p>
 
                                         {{-- Item returned or pending return date --}}
                                         @if($request->status === 'returned')
                                             <p class="text-muted mb-0">
-                                                Devuelto: {{ \Carbon\Carbon::parse($request->end_time)->format('m/d/Y') }}
-                                            </p>
+                                                Devuelto: {{ \Carbon\Carbon::parse($request->end_time)->locale('es')->translatedFormat('j-F-Y') }}                                            </p>
                                         @endif
                                     </div>
 
