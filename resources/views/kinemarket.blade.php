@@ -20,7 +20,7 @@
         <div class="mb-4">
             <h1 class="fw-bold">Bienvenido al Kinemercado</h1>
             <p>
-                Aquí puedes buscar equipamiento deportivo y contactar con posibles vendedores.
+                Aquí puedes crear y buscar equipamiento deportivo. También puedes comunicarte con vendedores.
             </p>
         </div>
 
@@ -38,6 +38,12 @@
             </button>
         </div>
 
+        {{--Maximum post per day notice--}}
+        <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-3">
+            <strong><i class="bi bi-info-circle me-2"></i>Límite diario:</strong>
+            Puedes crear un máximo de <strong>15 publicaciones cada 24 horas</strong>.
+        </div>
+
 
         {{--Modal used to create a new marketplace post--}}
         <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostLabel" aria-hidden="true">
@@ -46,9 +52,9 @@
                     {{--Create post modal header with subtext included--}}
                     <div class="modal-header border-0 pb-0 pt-4 px-4 pb-2 align-items-start">
                         <div class="pe-3">
-                            <h4 class="modal-title fw-bold mb-2" id="createPostLabel">Crear Nueva Publicación</h4>
+                            <h4 class="modal-title fw-bold mb-2" id="createPostLabel">Crear una Nueva Publicación</h4>
                             <p class="text-muted mb-1">
-                                Publica tu equipo deportivo a la venta para otros usuarios
+                                Publica tu equipo deportivo para la venta a otros usuarios
                             </p>
                             <small class="text-muted">
                                 <span class="text-danger">*</span> Campos requeridos
@@ -68,8 +74,8 @@
                                         <div>
                                             {{--Post lifecycle notification--}}
                                             <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
-                                            Las publicaciones en Kinemercado solo permanecen activas por
-                                            <strong>15 días</strong>. Luego de ese periodo, la publicación será
+                                            Las publicaciones en Kinemercado solo permanecen activas por un máximo de
+                                            <strong>15 días</strong>. Luego de ese período, la publicación será
                                             <strong>eliminada automáticamente</strong>.
                                         </div>
                                     </div>
@@ -104,7 +110,7 @@
                                     class="form-control form-control-lg"
                                     id="postDescription"
                                     rows="4"
-                                    placeholder="Describe el estado y detalles"
+                                    placeholder="Describe el estado y detalles del equipo"
                                 ></textarea>
                                 <small class="text-muted d-block fst-italic">
                                     Si escribes una descripción, debe tener como máximo 500 caracteres.
@@ -138,8 +144,7 @@
 
                                     {{--Price helper text instructions for price input--}}
                                     <small class="text-muted d-block fst-italic">
-                                        Escribe solo números y hasta 2 dígitos después del punto decimal.
-                                        El máximo valor permitido es $10,000.00.
+                                        Escribe solo números. Los decimales son opcionales; si los usas, puedes ingresar hasta 2 dígitos después del punto decimal. El valor máximo permitido es $10,000.00.
                                     </small>
                                     {{--Displays error if there is invalid inputs in price format--}}
                                     <div class="invalid-feedback d-block" id="postPriceError"></div>
@@ -152,7 +157,7 @@
                                         Categoría<span class="text-danger">*</span>
                                     </label>
                                     <select class="form-select form-select-lg" id="postCategory" required>
-                                        <option value="" selected disabled>Seleccionar</option>
+                                        <option value="" selected>Selecciona un deporte</option>
                                         <option value="Baloncesto">Baloncesto</option>
                                         <option value="Tenis">Tenis</option>
                                         <option value="Fútbol">Fútbol</option>
@@ -162,7 +167,7 @@
                                         <option  value="Otros">Otros</option>
                                     </select>
                                     {{--Category selection error, if not selection was made before posting a product--}}
-                                    <div class="invalid-feedback">Selecciona una categoría.</div>
+                                    <div class="invalid-feedback">Selecciona la categoría deportiva a la que pertenece el equipo.</div>
                                 </div>
                             </div>
 
@@ -172,20 +177,20 @@
                                     Condición<span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select form-select-lg" id="postCondition" required>
-                                    <option value="" selected disabled>Seleccionar</option>
+                                    <option value="" selected>Selecciona una condición</option>
                                     <option>Nuevo</option>
                                     <option>Como Nuevo</option>
                                     <option>Buen Estado</option>
                                     <option>Justo</option>
                                 </select>
                                 {{--Condition selection error, if not selection was made before posting a product--}}
-                                <div class="invalid-feedback">Seleciona una condición.</div>
+                                <div class="invalid-feedback">Selecciona la condición a la que pertenece el equipo.</div>
                             </div>
 
                             {{--Image upload input with restrictions (1–3 images, JPG/JPEG only)--}}
                             <div class="mb-2">
                                 <label for="postImage" class="form-label fw-semibold">
-                                    Fotos<span class="text-danger">*</span>
+                                    Fotos del equipo<span class="text-danger">*</span>
                                 </label>
                                 {{--Hidden file input triggered by custom made upload button--}}
                                 <input
@@ -279,7 +284,7 @@
                         type="text"
                         class="form-control border-0"
                         id="marketplaceSearch"
-                        placeholder="Buscar publicaciones..."
+                        placeholder="Buscar publicaciones por título, descripción, categoría, condición o vendedor..."
                     >
                 </div>
             </div>
@@ -308,7 +313,7 @@
             {{--Seller star rating filter connects with backend to request posts with matching seller ratings--}}
             <div class="col-md-3">
                 <select class="form-select border-2 border-dark" id="marketplaceRatingFilter">
-                    <option value="all">Calificaciones</option>
+                    <option value="all">Calificaciones del Vendedor</option>
                     <option value="0">0 estrellas</option>
                     <option value="1">Entre 0 a 1 estrella</option>
                     <option value="2">Entre 1 a  2 estrellas</option>
@@ -333,7 +338,7 @@
             {{--Post equipment condition filter connects with backend to request posts with matching equipment condition--}}
             <div class="col-md-3">
                 <select class="form-select border-2 border-dark" id="marketplaceConditionFilter">
-                    <option value="all">Condición de Equipo</option>
+                    <option value="all">Condición del Equipo</option>
                     <option value="Nuevo">Nuevo</option>
                     <option value="Como Nuevo">Como Nuevo</option>
                     <option value="Buen Estado">Buen Estado</option>
@@ -519,6 +524,42 @@
             </div>
         </div>
 
+        {{--Modal to inform the user they have reached the maximum amount of post for the day--}}
+        <div class="modal fade" id="maxPostLimitModal" tabindex="-1" aria-labelledby="maxPostLimitModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <div class="modal-header border-0 position-relative">
+                        <h5 class="modal-title fw-bold pe-5" id="maxPostLimitModalLabel">
+                            Límite de publicaciones alcanzado
+                        </h5>
+
+                        <button
+                            type="button"
+                            class="btn-close position-absolute top-0 end-0 m-3"
+                            data-bs-dismiss="modal"
+                            aria-label="Cerrar"
+                        ></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <p class="mb-2">
+                            Has alcanzado el máximo de <strong>15 publicaciones</strong> permitidas en 24 horas.
+                        </p>
+
+                        <p class="mb-0">
+                            Podrás crear una nueva publicación nuevamente el
+                            <strong id="nextPostAvailableTime">--</strong>.
+                        </p>
+                    </div>
+
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            Entendido
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         {{--Modal to report a seller for an inappropriate or misleading post--}}
         <div class="modal fade" id="reportUserModal" tabindex="-1" aria-labelledby="reportUserModalLabel" aria-hidden="true">
@@ -560,13 +601,20 @@
                     <div class="modal-body px-4 pt-2 pb-4">
                         @csrf
                         <form id="reportUserForm" novalidate>
+
+                            {{--Notice message explaining report review process--}}
+                            <div class="alert alert-warning rounded-4 mb-3">
+                                <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong> Los querellas son revisados por los administradores de mercado.
+                                Las querellas válidas pueden resultar en restricciones de cuenta.
+                            </div>
+
                             {{--Report reason dropdown selector--}}
                             <div class="mb-3">
                                 <label for="reportReason" class="form-label fw-semibold">
-                                    Razón <span class="text-danger">*</span>
+                                    Razón de la Querella <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select form-select-lg" id="reportReason" required>
-                                    <option value="" selected disabled>Seleccionar una razón</option>
+                                    <option value="" selected>Selecciona una razón</option>
                                     <option value="Fraude o estafa">Fraude o estafa</option>
                                     <option value="Información falsa">Información falsa</option>
                                     <option value="Lenguaje ofensivo">Lenguaje ofensivo</option>
@@ -575,7 +623,7 @@
                                 </select>
 
                                 {{-- Displays error if the report/querella is attempted to be sent without selectiing a reason--}}
-                                <div class="invalid-feedback" id="reportReasonError">Seleciona una razón.</div>
+                                <div class="invalid-feedback" id="reportReasonError">Selecciona una razón.</div>
                             </div>
 
                             {{--Report/querella description input field with connection to marketplace JS validation--}}
@@ -596,13 +644,6 @@
                                 </small>
                                 {{--Displays error if the report/querella is attempted to be sent an incorrect description format--}}
                                 <div class="invalid-feedback d-block" id="reportDescriptionError"></div>
-                            </div>
-
-
-                            {{--Notice message explaining report review process--}}
-                            <div class="alert alert-warning rounded-4 mb-0">
-                                <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong> Los querellas son revisados por los administradores de mercado.
-                                Las querellas válidas pueden resultar en restricciones de cuenta.
                             </div>
                         </form>
                     </div>
