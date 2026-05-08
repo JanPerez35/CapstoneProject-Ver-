@@ -25,7 +25,7 @@
             <p class="text mb-0">Aquí puedes ver, filtrar y exportar estimaciones de costos operacionales por área dentro del Coliseo Rafael Mangual.</p>
         </div>
 
-        <!--Warning-->
+        <!--Notice-->
         <div class="alert bg-warning-subtle text-warning-emphasis rounded-4 border-0 shadow-sm mb-4 px-4 py-4"
              id="costEstimateNotice">
             <div class="d-flex align-items-start gap-3">
@@ -36,6 +36,10 @@
                     el horario y los servicios seleccionados. Todas las tarifas estan sujetas a cambios y deberan ser
                     ratificadas por el area
                     administrativa para ser consideradas como definitivas.
+
+                    <br><br>
+                    Los registros de estimados de costos operacionales permanecerán almacenados en el sistema durante un período de <strong>3 años </strong> a partir de su fecha de creación. Luego de ese período,
+                    serán eliminados automáticamente del sistema.
                 </div>
             </div>
         </div>
@@ -81,17 +85,31 @@
                 </button>
             </span>
 
-            <a href="{{ route('facility.export.csv') }}" id="downloadCsvBtn"
-               class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
-                <i class="bi bi-download"></i>
-                Exportar a CSV
-            </a>
+                <span
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-custom-class="custom-tooltip"
+                    data-bs-title="Solo incluye la información según los filtros aplicados."
+                >
+                    <a href="{{ route('facility.export.csv') }}" id="downloadCsvBtn"
+                       class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
+                        <i class="bi bi-download"></i>
+                        Exportar a CSV
+                    </a>
+                </span>
 
-            <a href="{{ route('facility.export.pdf') }}" id="downloadPdfBtn"
-               class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
-                <i class="bi bi-download"></i>
-                Exportar a PDF
-            </a>
+                <span
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    data-bs-custom-class="custom-tooltip"
+                    data-bs-title="Solo incluye la información según los filtros aplicados."
+                >
+                    <a href="{{ route('facility.export.pdf') }}" id="downloadPdfBtn"
+                       class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
+                        <i class="bi bi-download"></i>
+                        Exportar a PDF
+                    </a>
+                </span>
 
             <span
                 data-bs-toggle="tooltip"
@@ -143,7 +161,7 @@
 
                     <div class="col-md-3">
                         <select id="reportType" name="report_type" class="form-select border-2 border-dark">
-                            <option value="" {{ $reportType === '' ? 'selected' : '' }}>Tipo de Reporte</option>
+                            <option value="" {{ $reportType === '' ? 'selected' : '' }}>Tipo de Informe</option>
                             <option value="monthly" {{ $reportType === 'monthly' ? 'selected' : '' }}>Mensual</option>
                             <option value="annual" {{ $reportType === 'annual' ? 'selected' : '' }}>Anual</option>
                         </select>
@@ -202,7 +220,7 @@
 
                     <div class="col-md-3">
                         <select id="filterRateMode" name="filter_rate_mode" class="form-select border-2 border-dark">
-                            <option value="">Modo de Tarifa</option>
+                            <option value="">Tipo de Tarifa</option>
                             <option value="Diario">Diario</option>
                             <option value="Semanal">Semanal</option>
                             <option value="Mensual">Mensual</option>
@@ -228,10 +246,37 @@
         </div>
 
         <!--Data Table-->
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card border-dark border-2 shadow-sm rounded-4 overflow-hidden">
             <div class="card-body p-4 border-bottom">
-                <h2 class="fw-bold mb-1">Uso de Instalaciones y Costos</h2>
-                <p class="text-muted mb-0">Seguimiento estimado del uso de instalaciones y costos asociados.</p>
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                        <h2 class="fw-bold mb-1">Uso de Áreas y Costos Estimados</h2>
+                        <p class="text-muted mb-0">Organización de eventos y estimaciones de costos operacionales</p>
+                        <p class="text-muted mb-0">Desliza para ver más información <i class="bi bi-arrow-right"></i></p>
+                    </div>
+
+                    <div class="d-flex align-items-start gap-3 me-3">
+                        <span class="fw-semibold">Leyenda:</span>
+
+                        <div class="d-flex flex-column align-items-start">
+                            <span class="d-flex align-items-center gap-2">
+                                <i class="bi bi-pencil text-primary"></i> Editar Evento
+                            </span>
+
+                            <span class="d-flex align-items-center gap-2">
+                                  <i class="bi bi-calendar-event text-warning"></i> Modificar Días
+                            </span>
+
+                            <span class="d-flex align-items-center gap-2">
+                                <i class="bi bi-diagram-3 text-success"></i> Crear Evento <br>Relacionado
+                            </span>
+
+                            <span class="d-flex align-items-center gap-2">
+                                <i class="bi bi-trash text-danger"></i> Eliminar Evento
+                            </span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="table-responsive">
@@ -240,12 +285,12 @@
                     <tr>
                         <th class="fw-bold">
                             Fecha inicial del evento <br>
-                            <small>(mm/dd/yyyy)</small>
+                            <small>(dd-mm-aaaa)</small>
                         </th>
 
                         <th class="fw-bold">
                             Fecha final del evento <br>
-                            <small>(mm/dd/yyyy)</small>
+                            <small>(dd-mm-aaaa)</small>
                         </th>
                         <th class="fw-bold">Responsable</th>
                         <th class="fw-bold area-col">Área</th>
@@ -253,12 +298,34 @@
                         <th class="fw-bold">Hora</th>
                         <th class="fw-bold">Periodo</th>
                         <th class="fw-bold">
-                            Modo <br>
+                            Tipo <br>
                             <small>de Tarifa</small>
                         </th>
                         <th class="fw-bold">Servicios</th>
                         <th class="fw-bold text-end">Costo Total</th>
-                        <th class="fw-bold text-center action-col">Acciones</th>
+                        <th class="text-center action-header-icon px-2" style="width: 58px; min-width: 58px;">
+                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Editar Evento">
+                                <i class="bi bi-pencil fs-5 text-primary"></i>
+                            </span>
+                        </th>
+
+                        <th class="text-center action-header-icon px-2" style="width: 58px; min-width: 58px;">
+                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Modificar Días">
+                                <i class="bi bi-calendar-event fs-5 text-warning"></i>
+                            </span>
+                        </th>
+
+                        <th class="text-center action-header-icon px-2" style="width: 58px; min-width: 58px;">
+                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Crear Evento Relacionado">
+                                <i class="bi bi-diagram-3 fs-5 text-success"></i>
+                            </span>
+                        </th>
+
+                        <th class="text-center action-header-icon px-2" style="width: 58px; min-width: 58px;">
+                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Eliminar evento">
+                                <i class="bi bi-trash fs-5 text-danger"></i>
+                            </span>
+                        </th>
                     </tr>
                     </thead>
 
@@ -273,7 +340,7 @@
 
                             {{-- Group header --}}
                             <tr class="event-group-header" data-group-key="{{ $groupKey }}" data-group-header="1">
-                                <td colspan="11">
+                                <td colspan="14">
                                     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                         <div>
                                             <span class="fw-bold">
@@ -281,9 +348,17 @@
                                             </span>
 
                                             <span class="text-muted ms-2">
-                                                {{ \Carbon\Carbon::parse($parent->event_date)->format('m/d/Y') }}
-                                                -
-                                                {{ \Carbon\Carbon::parse($parent->end_date ?? $parent->event_date)->format('m/d/Y') }}
+                                                {{ \Illuminate\Support\Str::title(
+                                                    \Carbon\Carbon::parse($parent->event_date)
+                                                        ->locale('es')
+                                                        ->isoFormat('DD-MMMM-YYYY')
+                                                ) }}
+                                                <i class="bi bi-arrow-right"></i>
+                                               {{ \Illuminate\Support\Str::title(
+                                                    \Carbon\Carbon::parse($parent->end_date ?? $parent->event_date)
+                                                        ->locale('es')
+                                                        ->isoFormat('DD-MMMM-YYYY')
+                                                ) }}
                                             </span>
 
                                             @php
@@ -309,10 +384,6 @@
                                                 </span>
                                             @endif
                                         </div>
-
-                                        <div class="fw-bold text-success">
-                                            Total del evento: ${{ number_format($event->group_total, 2) }}
-                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -333,9 +404,21 @@
                                 ])
                             @endforeach
 
+                            <tr class="event-group-total" data-group-key="{{ $groupKey }}">
+                                <td colspan="9" class="text-end fw-bold text-muted bg-light">
+                                    Total del evento
+                                </td>
+
+                                <td class="text-end fw-bold bg-light" style="min-width: 140px;">
+                                    ${{ number_format($event->group_total, 2) }}
+                                </td>
+
+                                <td colspan="4" class="bg-light"></td>
+                            </tr>
+
                             {{-- Space between event groups --}}
                             <tr class="event-group-spacer" data-group-key="{{ $groupKey }}" data-group-spacer="1">
-                                <td colspan="11"></td>
+                                <td colspan="14"></td>
                             </tr>
                         @empty
                         @endforelse
@@ -344,9 +427,9 @@
                     <tfoot class="table-light">
                     <tr>
                         <th colspan="9" class="fw-bold text-end">Total estimado del período</th>
-                        <th class="text-end fw-bold" id="facilityCostGrandTotal">
+                        <th class="text-end fw-bold" id="facilityCostGrandTotal" style="min-width: 140px;">
                             ${{ number_format($grandTotal, 2) }}</th>
-                        <th></th>
+                        <th colspan="4"></th>
                     </tr>
                     </tfoot>
                 </table>
@@ -371,7 +454,7 @@
     <!--Configuration button function-->
     <div class="modal fade" id="configureRatesModal" tabindex="-1" aria-labelledby="configureRatesModalLabel"
          aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-xl modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-lg-down modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0 align-items-start">
                     <div class="pe-4">
@@ -393,39 +476,39 @@
                             @csrf
 
                             <div class="mb-4">
-                                <label class="form-label fw-semibold fs-5">
+                                <label class="form-label fw-semibold fs-5 mb-3">
                                     Áreas a configurar <span class="text-danger">*</span>
                                 </label>
-
-                                <div class="d-flex flex-wrap gap-2 mb-3">
-                                    <button type="button" class="btn btn-outline-success btn-sm"
-                                            id="selectAllClassroomsBtn">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-3 justify-content-start">
+                                    <button type="button" class="btn btn-outline-success btn-sm" id="selectAllClassroomsBtn">
                                         <i class="bi bi-check2-square me-1"></i>Seleccionar Todos
                                     </button>
-                                    <button type="button" class="btn btn-outline-success btn-sm"
-                                            id="selectAcademicClassroomsBtn">
+
+                                    <button type="button" class="btn btn-outline-success btn-sm" id="selectAcademicClassroomsBtn">
                                         <i class="bi bi-building me-1"></i>Solo Salones
                                     </button>
-                                    <button type="button" class="btn btn-outline-success btn-sm"
-                                            id="selectLateralClassroomsBtn">
+
+                                    <button type="button" class="btn btn-outline-success btn-sm" id="selectLateralClassroomsBtn">
                                         <i class="bi bi-grid me-1"></i>Solo Laterales
                                     </button>
-                                    <button type="button" class="btn btn-outline-success btn-sm"
-                                            id="clearClassroomsSelectionBtn">
+
+                                    <button type="button" class="btn btn-outline-success btn-sm" id="clearClassroomsSelectionBtn">
                                         <i class="bi bi-eraser me-1"></i>Limpiar Selección
                                     </button>
 
-                                    <div class="d-flex flex-wrap gap-2 ms-md-2">
-                                        <button type="button" class="btn btn-success btn-sm"
-                                                id="openAddClassroomModalBtn"
-                                                data-bs-toggle="modal" data-bs-target="#addClassroomModal">
-                                            <i class="bi bi-plus-lg me-1"></i>Agregar Área
-                                        </button>
-                                        <button type="button" class="btn btn-danger btn-sm"
-                                                id="openDiscardSelectedClassroomsBtn" disabled>
-                                            <i class="bi bi-trash me-1"></i>Descartar Área(s)
-                                        </button>
-                                    </div>
+                                    <button type="button" class="btn btn-success btn-sm"
+                                            id="openAddClassroomModalBtn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#addClassroomModal">
+                                        <i class="bi bi-plus-lg me-1"></i>Agregar Área
+                                    </button>
+
+                                    <button type="button"
+                                            class="btn btn-danger btn-sm"
+                                            id="openDiscardSelectedClassroomsBtn"
+                                            disabled>
+                                        <i class="bi bi-trash me-1"></i>Descartar Área(s)
+                                    </button>
                                 </div>
 
                                 <div class="row g-2" id="configClassroomGroup">
@@ -470,8 +553,8 @@
                                 </div>
                                 <h5 class="mb-3 section-title-match">Información base del área</h5>
 
-                                <div class="row g-3 mb-3 justify-content-center">
-                                    <div class="col-md-12 mx-auto">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-12 col-lg-5">
                                         <div class="service-option-card">
                                             <label for="configClassroomArea" class="form-label fw-semibold">
                                                 Medida del área <span class="text-danger">*</span>
@@ -502,7 +585,7 @@
                                         ['id' => 'configElectricity', 'label' => 'Electricidad', 'name' => 'electricity_cost'],
                                         ['id' => 'configWater', 'label' => 'Agua', 'name' => 'water_cost'],
                                     ] as $campo)
-                                        <div class="col-md-4">
+                                        <div class="col-12 col-lg-4">
                                             <div class="service-option-card">
                                                 <label for="{{ $campo['id'] }}" class="form-label fw-semibold">
                                                     {{ $campo['label'] }} <span class="text-danger">*</span>
@@ -531,7 +614,7 @@
                             </div>
 
                             <div class="mb-4">
-                                <h6 class="fw-semibold mb-3 period-title-small">Tarifas por período</h6>
+                                <h5 class="form-label fw-semibold fs-5 mb-3">Tarifas por período</h5>
 
                                 <div class="row g-3">
                                     @php
@@ -564,7 +647,7 @@
                                     @endphp
 
                                     @foreach ($periodos as $periodo)
-                                        <div class="col-lg-4">
+                                        <div class="col-12 col-lg-4">
                                             <div class="service-option-card h-100">
                                                 <h6 class="fw-bold mb-2">{{ $periodo['titulo'] }}</h6>
                                                 <p class="text-muted small mb-3">{{ $periodo['texto'] }}</p>
@@ -641,21 +724,21 @@
                             </div>
 
                             <div class="row g-3">
-                                <div class="col-lg-4">
+                                <div class="col-12 col-lg-4">
                                     <div class="total-hour-box rounded-4 p-4 h-100">
                                         <div class="fw-bold fs-6 mb-2">Vista previa período laborable</div>
                                         <div class="fw-bold text-success fs-4" id="configWorkdayPreview">$0.00</div>
                                     </div>
                                 </div>
 
-                                <div class="col-lg-4">
+                                <div class="col-12 col-lg-4">
                                     <div class="total-hour-box rounded-4 p-4 h-100">
                                         <div class="fw-bold fs-6 mb-2">Vista previa no laborable sábado</div>
                                         <div class="fw-bold text-success fs-4" id="configSaturdayPreview">$0.00</div>
                                     </div>
                                 </div>
 
-                                <div class="col-lg-4">
+                                <div class="col-12 col-lg-4">
                                     <div class="total-hour-box rounded-4 p-4 h-100">
                                         <div class="fw-bold fs-6 mb-2">Vista previa domingo o festivo</div>
                                         <div class="fw-bold text-success fs-4" id="configSundayHolidayPreview">$0.00
@@ -681,7 +764,7 @@
 
     <!--Add event button-->
     <div class="modal fade" id="addRentalModal" tabindex="-1" aria-labelledby="addRentalModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-xl modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-lg-down modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0 align-items-start">
                     <div class="pe-4">
@@ -700,7 +783,7 @@
                     <form id="addRentalForm" method="POST" action="{{ route('facility.events.store') }}" novalidate>
                         @csrf
 
-                        <div class="row g-3 mb-3 justify-content-center">
+                        <div class="row g-2 mb-2 justify-content-center">
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
                                     <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
@@ -715,7 +798,7 @@
                                 <label for="rentalClassroom" class="form-label fw-semibold">
                                     Área <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalClassroom" name="classroom" class="form-select form-select-lg" required>
+                                <select id="rentalClassroom" name="classroom" class="form-select form-select-sm" required>
                                     <option value="" selected disabled>Seleccionar área</option>
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
@@ -732,7 +815,7 @@
                                     type="text"
                                     id="rentalResponsible"
                                     name="responsible"
-                                    class="form-control form-control-lg"
+                                    class="form-control form-control-sm"
                                     placeholder="Nombre del responsable"
                                     minlength="8"
                                     required
@@ -744,14 +827,14 @@
                             </div>
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label for="rentalDescription" class="form-label fw-semibold">
                                 Descripción del evento <span class="text-danger">*</span>
                             </label>
                             <textarea
                                 id="rentalDescription"
                                 name="description"
-                                class="form-control form-control-lg"
+                                class="form-control"
                                 rows="4"
                                 placeholder="Descripción del evento"
                                 minlength="10"
@@ -765,7 +848,7 @@
                             </div>
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label class="form-label fw-semibold">
                                 Servicios <span class="text-danger">*</span>
                             </label>
@@ -852,7 +935,7 @@
                                     Tipo de período <span class="text-danger">*</span>
                                 </label>
 
-                                <select id="rentalPeriodType" name="period_type" class="form-select form-select-lg" required>
+                                <select id="rentalPeriodType" name="period_type" class="form-select" required>
                                     <option value="" selected disabled>Seleccionar tipo de período</option>
 
                                     <option value="workday">
@@ -871,13 +954,13 @@
 
                             <div class="col-md-6">
                                 <label for="rentalRateModeDisplay" class="form-label fw-semibold">
-                                    Modo de Tarifa
+                                    Tipo de Tarifa
                                 </label>
 
                                 <input
                                     type="text"
                                     id="rentalRateModeDisplay"
-                                    class="form-control form-control-lg"
+                                    class="form-control"
                                     value="Se calculará automáticamente"
                                     readonly
                                 >
@@ -885,7 +968,7 @@
                                 <input type="hidden" id="rentalRangeType" name="rate_mode">
 
                                 <small class="text-muted d-block mt-1">
-                                    El modo de tarifa se calcula automáticamente según la duración del evento.
+                                    El tipo de tarifa se calcula automáticamente según la duración del evento.
                                 </small>
                             </div>
 
@@ -894,14 +977,25 @@
                                     Fecha inicial del evento <span class="text-danger">*</span>
                                 </label>
 
-                                <input
-                                    type="date"
-                                    id="rentalStartDate"
-                                    name="event_date"
-                                    class="form-control form-control-lg"
-                                    min="{{ now()->toDateString() }}"
-                                    required
-                                >
+                                <div class="date-picker-wrapper">
+                                    <input
+                                        type="text"
+                                        id="rentalStartDate"
+                                        name="event_start_date"
+                                        class="form-control date-picker-input"
+                                        placeholder="dd-mm-aaaa"
+                                        autocomplete="off"
+                                        inputmode="none"
+                                        required
+                                    >
+
+                                    <button type="button"
+                                            class="date-picker-icon"
+                                            id="rentalStartDateIcon"
+                                            aria-label="Abrir calendario de fecha inicial del evento">
+                                        <i class="bi bi-calendar3"></i>
+                                    </button>
+                                </div>
 
                                 <div class="invalid-feedback d-block" id="rentalStartDateError"></div>
                             </div>
@@ -911,13 +1005,25 @@
                                     Fecha final del evento <span class="text-danger">*</span>
                                 </label>
 
-                                <input
-                                    type="date"
-                                    id="rentalEndDate"
-                                    name="event_end_date"
-                                    class="form-control form-control-lg"
-                                    min="{{ now()->toDateString() }}"
-                                >
+                                <div class="date-picker-wrapper">
+                                    <input
+                                        type="text"
+                                        id="rentalEndDate"
+                                        name="event_end_date"
+                                        class="form-control date-picker-input"
+                                        placeholder="dd-mm-aaaa"
+                                        autocomplete="off"
+                                        inputmode="none"
+                                        required
+                                    >
+
+                                    <button type="button"
+                                            class="date-picker-icon"
+                                            id="rentalEndDateIcon"
+                                            aria-label="Abrir calendario de fecha final del evento">
+                                        <i class="bi bi-calendar3"></i>
+                                    </button>
+                                </div>
 
                                 <div class="invalid-feedback d-block" id="rentalEndDateError"></div>
                             </div>
@@ -939,7 +1045,7 @@
                                 <label for="rentalStartTime" class="form-label fw-semibold">
                                     Horario inicial del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalStartTime" name="start_time" class="form-select form-select-lg"
+                                <select id="rentalStartTime" name="start_time" class="form-select"
                                         required></select>
                             </div>
 
@@ -947,7 +1053,7 @@
                                 <label for="rentalEndTime" class="form-label fw-semibold">
                                     Horario final del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalEndTime" name="end_time" class="form-select form-select-lg"
+                                <select id="rentalEndTime" name="end_time" class="form-select"
                                         required></select>
                                 <div class="invalid-feedback d-block" id="rentalTimeError"></div>
                             </div>
@@ -976,7 +1082,7 @@
 
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-outline-secondary px-4 rental-cancel-btn">Cancelar</button>
-                    <button type="submit" form="addRentalForm" class="btn btn-success px-4" id="saveRentalBtn">
+                    <button type="button" class="btn btn-success px-4" id="saveRentalBtn">
                         Guardar Evento
                     </button>
                 </div>
@@ -1049,7 +1155,7 @@
 
     <!-- Create related event modal -->
     <div class="modal fade" id="createRelatedModal" tabindex="-1" aria-labelledby="createRelatedModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-xl modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-lg-down modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0 align-items-start">
                     <div class="pe-4">
@@ -1069,7 +1175,7 @@
                         <input type="hidden" id="relatedParentEventId">
                         <input type="hidden" id="relatedRateMode" name="rate_mode">
 
-                        <div class="row g-3 mb-3 justify-content-center">
+                        <div class="row g-2 mb-2 justify-content-center">
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-3">
                                     <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso:</strong>
@@ -1083,7 +1189,7 @@
                                 <label for="relatedArea" class="form-label fw-semibold">
                                     Área <span class="text-danger">*</span>
                                 </label>
-                                <select id="relatedArea" class="form-select form-select-lg" required>
+                                <select id="relatedArea" class="form-select" required>
                                     <option value="" selected disabled>Seleccionar área</option>
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
@@ -1100,7 +1206,7 @@
                                 <input
                                     type="text"
                                     id="relatedResponsible"
-                                    class="form-control form-control-lg"
+                                    class="form-control"
                                     placeholder="Nombre del responsable"
                                     minlength="8"
                                     maxlength="40"
@@ -1113,7 +1219,7 @@
                             </div>
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label for="relatedDescription" class="form-label fw-semibold">
                                 Descripción del evento <span class="text-danger">*</span>
                             </label>
@@ -1132,7 +1238,7 @@
                             <div class="invalid-feedback" id="relatedDescriptionError"></div>
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label class="form-label fw-semibold">
                                 Servicios <span class="text-danger">*</span>
                             </label>
@@ -1186,11 +1292,12 @@
                             </div>
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-3 px-3 py-2">
                                 <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
-                                Si el evento combina días laborables y no laborables, registre el evento relacionado
-                                usando el período que corresponda al horario seleccionado.
+                                Si el evento combina días u horarios laborables con días u horarios no laborables,
+                                seleccione el período no laborable correspondiente:
+                                <strong>No laborable sábado</strong> o <strong>No laborable domingo o festivo</strong>.
                             </div>
 
                             <div class="row g-3">
@@ -1198,7 +1305,7 @@
                                     <label for="relatedPeriodType" class="form-label fw-semibold">
                                         Tipo de período <span class="text-danger">*</span>
                                     </label>
-                                    <select id="relatedPeriodType" class="form-select form-select-lg" required>
+                                    <select id="relatedPeriodType" class="form-select" required>
                                         <option value="" selected disabled>Seleccionar período</option>
                                         <option value="workday">Laborable</option>
                                         <option value="non_workday_saturday">No laborable sábado</option>
@@ -1208,17 +1315,17 @@
 
                                 <div class="col-md-6">
                                     <label for="relatedRateModeDisplay" class="form-label fw-semibold">
-                                        Modo de tarifa <span class="text-danger">*</span>
+                                        tipo de tarifa <span class="text-danger">*</span>
                                     </label>
                                     <input
                                         type="text"
                                         id="relatedRateModeDisplay"
-                                        class="form-control form-control-lg"
+                                        class="form-control"
                                         value="Se calculará automáticamente"
                                         readonly
                                     >
                                     <small class="text-muted d-block fst-italic">
-                                        El modo se calcula automáticamente según la duración del evento.
+                                        El tipo se calcula automáticamente según la duración del evento.
                                     </small>
                                 </div>
 
@@ -1226,7 +1333,25 @@
                                     <label for="relatedStartDate" class="form-label fw-semibold">
                                         Fecha inicial del evento <span class="text-danger">*</span>
                                     </label>
-                                    <input type="date" id="relatedStartDate" class="form-control form-control-lg" required>
+                                    <div class="date-picker-wrapper">
+                                        <input
+                                            type="text"
+                                            id="relatedStartDate"
+                                            name="related_event_start_date"
+                                            class="form-control date-picker-input"
+                                            placeholder="dd-mm-aaaa"
+                                            autocomplete="off"
+                                            inputmode="none"
+                                            required
+                                        >
+
+                                        <button type="button"
+                                                class="date-picker-icon"
+                                                id="relatedStartDateIcon"
+                                                aria-label="Abrir calendario de fecha inicial del evento relacionado">
+                                            <i class="bi bi-calendar3"></i>
+                                        </button>
+                                    </div>
                                     <div class="invalid-feedback" id="relatedStartDateError"></div>
                                 </div>
 
@@ -1234,24 +1359,42 @@
                                     <label for="relatedEndDate" class="form-label fw-semibold">
                                         Fecha final del evento <span class="text-danger">*</span>
                                     </label>
-                                    <input type="date" id="relatedEndDate" class="form-control form-control-lg" required>
+                                    <div class="date-picker-wrapper">
+                                        <input
+                                            type="text"
+                                            id="relatedEndDate"
+                                            name="related_event_end_date"
+                                            class="form-control date-picker-input"
+                                            placeholder="dd-mm-aaaa"
+                                            autocomplete="off"
+                                            inputmode="none"
+                                            required
+                                        >
+
+                                        <button type="button"
+                                                class="date-picker-icon"
+                                                id="relatedEndDateIcon"
+                                                aria-label="Abrir calendario de fecha inicial">
+                                            <i class="bi bi-calendar3"></i>
+                                        </button>
+                                    </div>
                                     <div class="invalid-feedback" id="relatedEndDateError"></div>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label for="relatedStartTime" class="form-label fw-semibold">
-                                        Hora de inicio <span class="text-danger">*</span>
+                                        Horario inicial del evento <span class="text-danger">*</span>
                                     </label>
-                                    <select id="relatedStartTime" class="form-select form-select-lg" required>
+                                    <select id="relatedStartTime" class="form-select" required>
                                         <option value="" selected disabled>Primero selecciona el tipo de período</option>
                                     </select>
                                 </div>
 
                                 <div class="col-md-6">
                                     <label for="relatedEndTime" class="form-label fw-semibold">
-                                        Hora de fin <span class="text-danger">*</span>
+                                        Horario final del evento <span class="text-danger">*</span>
                                     </label>
-                                    <select id="relatedEndTime" class="form-select form-select-lg" required>
+                                    <select id="relatedEndTime" class="form-select" required>
                                         <option value="" selected disabled>Primero selecciona el tipo de período</option>
                                     </select>
                                 </div>
@@ -1327,52 +1470,73 @@
                             </div>
 
                             <div class="col-md-6">
-                                <label for="customizeScope" class="form-label fw-semibold">
-                                    Alcance <span class="text-danger">*</span>
-                                </label>
-                                <select id="customizeScope" class="form-select form-select-lg" required>
-                                    <option value="" selected disabled>Seleccionar alcance</option>
-                                    <option value="single_day">Solo este día</option>
-                                    <option value="this_and_following">Este día y siguientes</option>
-                                    <option value="whole_event">Todo el evento</option>
-                                </select>
-                                <small class="text-muted d-block fst-italic">
-                                    Seleccione cómo desea aplicar la modificación.
-                                </small>
-                                <div class="invalid-feedback" id="customizeScopeError"></div>
-                            </div>
-
-                            <div class="col-md-6">
                                 <label for="customizeDate" class="form-label fw-semibold">
                                     Fecha <span class="text-danger">*</span>
                                 </label>
-                                <input type="date" id="customizeDate" class="form-control form-control-lg" required>
+
+                                <div class="date-picker-wrapper">
+                                <input
+                                    type="text"
+                                    id="customizeDate"
+                                    name="event_start_date"
+                                    class="form-control date-picker-input"
+                                    placeholder="dd-mm-aaaa"
+                                    autocomplete="off"
+                                    inputmode="none"
+                                    required
+                                >
+
+                                <button type="button"
+                                        class="date-picker-icon"
+                                        id="customizeDateIcon"
+                                        aria-label="Abrir calendario de personalizar fechas">
+                                    <i class="bi bi-calendar3"></i>
+                                </button>
+                            </div>
+
                                 <small class="text-muted d-block fst-italic">
                                     Seleccione la fecha que desea modificar.
                                 </small>
+
                                 <div class="invalid-feedback" id="customizeDateError"></div>
                             </div>
 
+                            <div class="col-12"></div>
                             <div class="col-md-6">
                                 <label for="customizeStartTime" class="form-label fw-semibold">
-                                    Hora de inicio <span class="text-danger">*</span>
+                                    Horario inicial del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="customizeStartTime" class="form-select form-select-lg" required>
+                                <select id="customizeStartTime" class="form-select" required>
                                     <option value="" selected disabled>Seleccionar hora de inicio</option>
                                 </select>
                             </div>
 
                             <div class="col-md-6">
                                 <label for="customizeEndTime" class="form-label fw-semibold">
-                                    Hora de fin <span class="text-danger">*</span>
+                                    Horario final del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="customizeEndTime" class="form-select form-select-lg" required>
+                                <select id="customizeEndTime" class="form-select" required>
                                     <option value="" selected disabled>Seleccionar hora de fin</option>
                                 </select>
                             </div>
 
                             <div class="col-12">
                                 <div class="invalid-feedback d-block mt-2" id="customizeTimeError"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="customizeScope" class="form-label fw-semibold">
+                                    Alcance <span class="text-danger">*</span>
+                                </label>
+                                <select id="customizeScope" class="form-select" required>
+                                    <option value="" selected disabled>Seleccionar alcance</option>
+                                    <option value="single_day">Solo este día</option>
+                                    <option value="this_and_following">Este día y siguientes</option>
+                                </select>
+                                <small class="text-muted d-block fst-italic">
+                                    Seleccione cómo desea aplicar la modificación.
+                                </small>
+                                <div class="invalid-feedback" id="customizeScopeError"></div>
                             </div>
                         </div>
                     </form>
@@ -1392,13 +1556,13 @@
 
     <!-- Edit event modal -->
     <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-lg-down modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0 align-items-start">
                     <div class="pe-4">
                         <h4 class="modal-title fw-bold mb-2" id="editEventModalLabel">Editar Evento</h4>
                         <p class="text-muted mb-1">
-                            Modifica la información general del evento seleccionado.
+                            Modifica la información del evento seleccionado.
                         </p>
                         <small class="text-muted">
                             <span class="text-danger">*</span> Campos requeridos
@@ -1410,22 +1574,38 @@
                 <div class="modal-body pt-3">
                     <form id="editEventForm" novalidate>
                         <input type="hidden" id="editEventId">
+                        <input type="hidden" id="editRateMode" name="rate_mode">
 
-                        <div class="row g-3">
+                        <div class="row g-2 mb-2 justify-content-center">
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
                                     <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
-                                    Esta edición modifica la información del evento seleccionado.
+                                    Si editas un evento principal y cambias su rango de fechas, cualquier modificación fuera del nuevo rango puede ser eliminada.
+                                </div>
                             </div>
 
-                            <div class="col-12">
+                            <div class="col-md-6 col-lg-6">
+                                <label for="editClassroom" class="form-label fw-semibold">
+                                    Área <span class="text-danger">*</span>
+                                </label>
+                                <select id="editClassroom" class="form-select" required>
+                                    <option value="" selected disabled>Seleccionar área</option>
+                                    @foreach ($facilityCosts as $cost)
+                                        @php $salon = $cost->classroom_name; @endphp
+                                        <option value="{{ $salon }}">{{ $salon }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="invalid-feedback" id="editClassroomError"></div>
+                            </div>
+
+                            <div class="col-md-6">
                                 <label for="editResponsible" class="form-label fw-semibold">
                                     Responsable <span class="text-danger">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     id="editResponsible"
-                                    class="form-control form-control-lg"
+                                    class="form-control"
                                     placeholder="Nombre del responsable"
                                     minlength="8"
                                     maxlength="40"
@@ -1436,24 +1616,207 @@
                                 </small>
                                 <div class="invalid-feedback" id="editResponsibleError"></div>
                             </div>
+                        </div>
 
+                        <div class="mb-3">
+                            <label for="editDescription" class="form-label fw-semibold">
+                                Descripción del evento <span class="text-danger">*</span>
+                            </label>
+                            <textarea
+                                id="editDescription"
+                                class="form-control"
+                                rows="4"
+                                placeholder="Descripción del evento"
+                                minlength="10"
+                                maxlength="250"
+                                required
+                            ></textarea>
+                            <small class="text-muted d-block fst-italic">
+                                Entre 10 y 250 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                            </small>
+                            <div class="invalid-feedback" id="editDescriptionError"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Servicios <span class="text-danger">*</span>
+                            </label>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="service-option-card h-100">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="editUtilities" value="utilities">
+                                            <label class="form-check-label fw-semibold" for="editUtilities">
+                                                Utilidades
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            Incluye costos generales de utilidades asociados al uso del área.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="service-option-card h-100">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="editElectricity" value="electricity">
+                                            <label class="form-check-label fw-semibold" for="editElectricity">
+                                                Electricidad
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            Seleccione si el evento requiere consumo eléctrico.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="service-option-card h-100">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="editWater" value="water">
+                                            <label class="form-check-label fw-semibold" for="editWater">
+                                                Agua
+                                            </label>
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            Seleccione si el evento requiere consumo de agua.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="invalid-feedback d-block d-none mt-2" id="editServicesError">
+                                Debes seleccionar al menos un servicio.
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
                             <div class="col-12">
-                                <label for="editDescription" class="form-label fw-semibold">
-                                    Descripción del evento <span class="text-danger">*</span>
+                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-2 px-3 py-2">
+                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    Si el evento combina días u horarios laborables con días u horarios no laborables,
+                                    seleccione el período no laborable correspondiente:
+                                    <strong>No laborable sábado</strong> o <strong>No laborable domingo o festivo</strong>.
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editPeriodType" class="form-label fw-semibold">
+                                    Tipo de período <span class="text-danger">*</span>
                                 </label>
-                                <textarea
-                                    id="editDescription"
+
+                                <select id="editPeriodType" class="form-select" required>
+                                    <option value="" selected disabled>Seleccionar tipo de período</option>
+                                    <option value="workday">
+                                        Laborable: lunes a viernes, 7:30 a.m. a 4:30 p.m.
+                                    </option>
+                                    <option value="non_workday_saturday">
+                                        No laborable sábado: lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m.
+                                    </option>
+                                    <option value="non_workday_sunday_holiday">
+                                        No laborable domingo o festivo: lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editRateModeDisplay" class="form-label fw-semibold">
+                                    Tipo de Tarifa
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="editRateModeDisplay"
                                     class="form-control"
-                                    rows="3"
-                                    placeholder="Descripción del evento"
-                                    minlength="10"
-                                    maxlength="250"
-                                    required
-                                ></textarea>
-                                <small class="text-muted d-block fst-italic">
-                                    Escriba entre 10 y 250 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                    value="Se calculará automáticamente"
+                                    readonly
+                                >
+
+                                <small class="text-muted d-block mt-1">
+                                    El tipo de tarifa se calcula automáticamente según la duración del evento.
                                 </small>
-                                <div class="invalid-feedback" id="editDescriptionError"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editStartDate" class="form-label fw-semibold">
+                                    Fecha inicial del evento <span class="text-danger">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="editStartDate"
+                                    class="form-control date-picker-input"
+                                    placeholder="dd-mm-aaaa"
+                                    autocomplete="off"
+                                    inputmode="none"
+                                    required
+                                >
+
+                                <div class="invalid-feedback d-block" id="editStartDateError"></div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editEndDate" class="form-label fw-semibold">
+                                    Fecha final del evento <span class="text-danger">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="editEndDate"
+                                    class="form-control date-picker-input"
+                                    placeholder="dd-mm-aaaa"
+                                    autocomplete="off"
+                                    inputmode="none"
+                                    required
+                                >
+
+                                <div class="invalid-feedback d-block" id="editEndDateError"></div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="editStartTime" class="form-label fw-semibold">
+                                    Horario inicial del evento <span class="text-danger">*</span>
+                                </label>
+                                <select id="editStartTime" class="form-select" required>
+                                    <option value="" selected disabled>Primero selecciona el tipo de período</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="editEndTime" class="form-label fw-semibold">
+                                    Horario final del evento <span class="text-danger">*</span>
+                                </label>
+                                <select id="editEndTime" class="form-select" required>
+                                    <option value="" selected disabled>Primero selecciona el tipo de período</option>
+                                </select>
+                                <div class="invalid-feedback d-block" id="editTimeError"></div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-4 border bg-light p-4">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <div class="fw-bold fs-5">Costo estimado calculado</div>
+                                    <small class="text-muted d-block">
+                                        Se determina según período y servicios seleccionados.
+                                    </small>
+                                </div>
+                                <span class="fw-bold text-success fs-2 mb-0" id="editEstimatedTotal">$0.00</span>
+                            </div>
+
+                            <div class="mt-3">
+                                <small class="text-muted d-block">
+                                    Período seleccionado:
+                                    <span id="editDetectedPeriodLabel" class="fw-semibold">—</span>
+                                </small>
+                                <small class="text-muted d-block">
+                                    Duración estimada:
+                                    <span id="editDetectedHoursLabel" class="fw-semibold">0.00 horas</span>
+                                </small>
                             </div>
                         </div>
                     </form>
@@ -1470,6 +1833,7 @@
             </div>
         </div>
     </div>
+
 
     <!--Add Classroom Modal-->
     <div class="modal fade" id="addClassroomModal" tabindex="-1" aria-labelledby="addClassroomModalLabel"
@@ -1490,6 +1854,15 @@
 
 
                 <div class="modal-body pt-0">
+                    <label for="newClassroomType" class="form-label fw-semibold">
+                        Tipo de área <span class="text-danger">*</span>
+                    </label>
+                    <select id="newClassroomType" class="form-select border-2 border-dark mb-3">
+                        <option value="" selected disabled>Seleccionar tipo de área</option>
+                        <option value="classroom">Salón</option>
+                        <option value="lateral">Lateral</option>
+                    </select>
+
                     <label for="newClassroomName" class="form-label fw-semibold">
                         Nombre del área <span class="text-danger">*</span>
                     </label>
@@ -1497,14 +1870,13 @@
                         type="text"
                         id="newClassroomName"
                         class="form-control border-2 border-dark"
-                        placeholder="Ej. CM 211"
+                        placeholder="Ej. CM 211 o Lateral 3"
                     >
                     <small class="text-muted d-block fst-italic">
                         Entre 6 y 40 caracteres. Solo letras, números, espacios, coma, punto y guion.
                     </small>
                     <div class="invalid-feedback d-block" id="newClassroomNameError"></div>
                 </div>
-
 
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" id="cancelAddClassroomBtn"
@@ -1517,6 +1889,7 @@
                           class="d-none">
                         @csrf
                         <input type="hidden" name="classroom_name" id="hiddenNewClassroomName">
+                        <input type="hidden" name="classroom_type" id="hiddenNewClassroomType">
                     </form>
                 </div>
             </div>
@@ -1549,6 +1922,34 @@
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-danger" id="confirmDeleteClassroomBtn">
                         Eliminar Área(s)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="parentRangeWarningModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Advertencia de rango</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p class="mb-0" id="parentRangeWarningText">
+                        Esta edición deja una o más modificaciones fuera del rango del evento padre.
+                        Si continúas, esas modificaciones serán eliminadas.
+                    </p>
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Arreglar evento padre
+                    </button>
+
+                    <button type="button" class="btn btn-danger" id="confirmParentRangeDeleteBtn">
+                        Continuar y borrar modificaciones
                     </button>
                 </div>
             </div>

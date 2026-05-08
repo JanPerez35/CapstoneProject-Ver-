@@ -2,7 +2,10 @@
     $isChild = ($rowType ?? '') === 'child';
     $isRelatedArea = $item->sub_event_type === 'related_area';
     $isCustomDay = $item->sub_event_type === 'custom_day';
-    $canUseParentActions = !$isChild || $isRelatedArea;
+
+    $canEditEvent = !$isChild || $isRelatedArea || $isCustomDay;
+    $canCustomizeDays = !$isChild || $isRelatedArea;
+    $canCreateRelated = !$isChild || $isRelatedArea;
 @endphp
 
 <tr
@@ -41,15 +44,29 @@
                 </span>
             @endif
         @else
-            <span class="badge bg-success-subtle text-success-emphasis me-1">
-                Principal
-            </span>
+            <div>
+                <span class="badge bg-success-subtle text-success-emphasis me-1 position-relative" style="top: -18px;">
+                    Principal
+                </span>
+            </div>
         @endif
-
-        {{ \Carbon\Carbon::parse($item->event_date)->format('m/d/Y') }}
+        <div style="margin-top: -12px;">
+            {{ \Illuminate\Support\Str::title(
+        \Carbon\Carbon::parse($item->event_date)
+        ->locale('es')
+        ->isoFormat('DD-MMMM-YYYY')
+        ) }}
+        </div>
     </td>
 
-    <td>{{ \Carbon\Carbon::parse($item->end_date ?? $item->event_date)->format('m/d/Y') }}</td>
+   <td>
+       {{ \Illuminate\Support\Str::title(
+        \Carbon\Carbon::parse($item->end_date ?? $item->event_date)
+        ->locale('es')
+        ->isoFormat('DD-MMMM-YYYY')
+    ) }}
+   </td>
+
     <td>{{ $item->responsible }}</td>
     <td>{{ $item->facilityCost->classroom_name }}</td>
     <td>{{ $item->event_description }}</td>
@@ -109,56 +126,46 @@
         @endforeach
     </td>
 
-    <td class="text-end fw-semibold">${{ number_format($item->calculated_cost, 2) }}</td>
-
-    <td class="text-center action-col">
-        <div class="d-flex justify-content-center gap-2 flex-nowrap">
-
-            @if($canUseParentActions)
-                <button type="button"
-                        class="btn btn-sm btn-outline-primary edit-cost-row-btn"
-                        data-entry-id="{{ $item->id }}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#editEventModal">
-                    <i class="bi bi-pencil me-1"></i> Editar
-                </button>
-
-                <button type="button"
-                        class="btn btn-sm btn-outline-warning customize-days-btn"
-                        data-entry-id="{{ $item->id }}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#customizeDaysModal">
-                    <i class="bi bi-calendar-event me-1"></i> Modificar Días
-                </button>
-
-                <button type="button"
-                        class="btn btn-sm btn-outline-success create-related-btn"
-                        data-entry-id="{{ $item->id }}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#createRelatedModal">
-                    <i class="bi bi-diagram-3 me-1"></i> Crear Evento Relacionado
-                </button>
-            @endif
-
-            @if($isCustomDay)
-                <button type="button"
-                        class="btn btn-sm btn-outline-primary edit-sub-event-btn"
-                        data-entry-id="{{ $item->id }}"
-                        data-bs-toggle="modal"
-                        data-bs-target="#createRelatedModal">
-                    <i class="bi bi-pencil me-1"></i> Editar Modificación
-                </button>
-            @endif
-
-            <button type="button"
-                    class="btn btn-sm btn-outline-danger delete-cost-row-btn"
-                    data-entry-id="{{ $item->id }}"
-                    data-delete-url="{{ route('facility.events.destroy', $item->id) }}"
-                    data-bs-toggle="modal"
-                    data-bs-target="#deleteCostEntryModal">
-                <i class="bi bi-trash me-1"></i> Eliminar
-            </button>
-
-        </div>
+    <td class="text-end fw-semibold" style="min-width: 140px;">
+        ${{ number_format($item->calculated_cost, 2) }}
     </td>
-</tr>
+
+    <td class="text-center action-radio-cell px-2" style="width: 58px; min-width: 58px;">
+        <input
+            class="form-check-input action-radio edit-cost-row-btn"
+            type="radio"
+            name="facility_action_{{ $item->id }}"
+            data-entry-id="{{ $item->id }}"
+            {{ !$canEditEvent ? 'disabled' : '' }}
+        >
+    </td>
+
+    <td class="text-center action-radio-cell px-2" style="width: 58px; min-width: 58px;">
+        <input
+            class="form-check-input action-radio customize-days-btn"
+            type="radio"
+            name="facility_action_{{ $item->id }}"
+            data-entry-id="{{ $item->id }}"
+            {{ !$canCustomizeDays ? 'disabled' : '' }}
+        >
+    </td>
+
+    <td class="text-center action-radio-cell px-2" style="width: 58px; min-width: 58px;">
+        <input
+            class="form-check-input action-radio create-related-btn"
+            type="radio"
+            name="facility_action_{{ $item->id }}"
+            data-entry-id="{{ $item->id }}"
+            {{ !$canCreateRelated ? 'disabled' : '' }}
+        >
+    </td>
+
+    <td class="text-center action-radio-cell px-2" style="width: 58px; min-width: 58px;">
+        <input
+            class="form-check-input action-radio delete-cost-row-btn"
+            type="radio"
+            name="facility_action_{{ $item->id }}"
+            data-entry-id="{{ $item->id }}"
+            data-delete-url="{{ route('facility.events.destroy', $item->id) }}"
+        >
+    </td>

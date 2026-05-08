@@ -245,22 +245,13 @@ document.addEventListener('DOMContentLoaded', function () {
     function initializeActiveTab() {
         const url = new URL(window.location.href);
         const tabFromUrl = url.searchParams.get('tab');
-        const savedTab = getSavedActiveTab();
 
         if (tabFromUrl === 'requests') {
             activateTab(requestsTab);
-            saveActiveTab('requests');
-            return;
-        }
-
-        if (savedTab === 'requests') {
-            activateTab(requestsTab);
-            updateTabInUrl('requests');
             return;
         }
 
         activateTab(postsTab);
-        saveActiveTab('posts');
     }
 
     /**

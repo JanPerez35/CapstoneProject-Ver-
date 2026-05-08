@@ -145,14 +145,25 @@
 
                 {{-- Date filter --}}
                 <div class="col-md-6 col-lg-4">
-                    <input
-                        type="date"
-                        id="accessLogsDateFilter"
-                        name="date"
-                        class="form-control border-2 border-dark"
-                        value="{{ request('date') }}"
-                        onchange="this.form.submit()"
-                    >
+                    <div class="date-picker-wrapper h-100">
+                        <input
+                            type="text"
+                            id="accessLogsDateFilter"
+                            name="date"
+                            class="form-control border-dark border-2 py-2 date-picker-input"
+                            placeholder="dd-mm-aaaa"
+                            autocomplete="off"
+                            inputmode="none"
+                            value="{{ request('date') }}"
+                        >
+
+                        <button type="button"
+                                class="date-picker-icon"
+                                id="accessLogsDateFilterIcon"
+                                aria-label="Abrir calendario del filtro de registros de acceso">
+                            <i class="bi bi-calendar3"></i>
+                        </button>
+                    </div>
                 </div>
 
                 {{-- Reset filters button --}}

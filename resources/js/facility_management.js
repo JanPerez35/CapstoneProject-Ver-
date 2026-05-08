@@ -1,4 +1,7 @@
 import * as bootstrap from 'bootstrap';
+import flatpickr from "flatpickr";
+import { Spanish } from "flatpickr/dist/l10n/es.js";
+import "flatpickr/dist/flatpickr.min.css";
 document.addEventListener('DOMContentLoaded', () => {
 
 
@@ -39,11 +42,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
     const $ = (id) => document.getElementById(id);
+    function clearActionRadios() {
+        document.querySelectorAll('.action-radio').forEach((radio) => {
+            radio.checked = false;
+        });
+    }
 
     const downloadCsvBtn = $('downloadCsvBtn');
     const downloadPdfBtn = $('downloadPdfBtn');
 
     const newClassroomName = $('newClassroomName');
+    const newClassroomType = $('newClassroomType');
     const newClassroomNameError = $('newClassroomNameError');
     const confirmAddClassroomBtn = $('confirmAddClassroomBtn');
     const addClassroomModal = $('addClassroomModal');
@@ -187,10 +196,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const relatedStartDateError = $('relatedStartDateError');
     const relatedEndDateError = $('relatedEndDateError');
     const relatedTimeError = $('relatedTimeError');
-    const relatedServicesError = $('relatedServicesError');
 
     const editResponsible = $('editResponsible');
     const editDescription = $('editDescription');
+    const editClassroom = $('editClassroom');
+    const editStartDate = $('editStartDate');
+    const editEndDate = $('editEndDate');
+    const editStartTime = $('editStartTime');
+    const editEndTime = $('editEndTime');
+    const editPeriodType = $('editPeriodType');
+    const editRateMode = $('editRateMode');
+    const editRateModeDisplay = $('editRateModeDisplay');
+
+    const editUtilities = $('editUtilities');
+    const editElectricity = $('editElectricity');
+    const editWater = $('editWater');
+    const editServiceChecks = [editUtilities, editElectricity, editWater];
+
+    const editEstimatedTotal = $('editEstimatedTotal');
+    const editDetectedPeriodLabel = $('editDetectedPeriodLabel');
+    const editDetectedHoursLabel = $('editDetectedHoursLabel');
+
+    const editClassroomError = $('editClassroomError');
+    const editStartDateError = $('editStartDateError');
+    const editEndDateError = $('editEndDateError');
+    const editTimeError = $('editTimeError');
+    const editServicesError = $('editServicesError');
     const editResponsibleError = $('editResponsibleError');
     const editDescriptionError = $('editDescriptionError');
 
@@ -201,6 +232,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const customizeScopeError = $('customizeScopeError');
     const customizeDateError = $('customizeDateError');
     const customizeTimeError = $('customizeTimeError');
+
+    const rentalStartDateIcon = $('rentalStartDateIcon');
+    const rentalEndDateIcon = $('rentalEndDateIcon');
+    const relatedStartDateIcon = $('relatedStartDateIcon');
+    const relatedEndDateIcon = $('relatedEndDateIcon');
+    const customizeDateIcon = $('customizeDateIcon');
 
 
     const createToastInstance = (id) => {
@@ -218,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
         relatedSaved: createToastInstance('relatedSavedToast'),
     };
 
-    
+
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
     async function sendJson(url, method, payload) {
@@ -374,7 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateAddClassroomButtonState() {
         if (!confirmAddClassroomBtn) return;
-        confirmAddClassroomBtn.disabled = !validateNewClassroomName(false);
+        confirmAddClassroomBtn.disabled = !validateNewClassroomName(false) || !newClassroomType?.value;
     }
 
     function getAllRenderedClassrooms() {
@@ -426,6 +463,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             updateAddClassroomButtonState();
         });
+
+        newClassroomType?.addEventListener('change', () => {
+            updateAddClassroomButtonState();
+        });
     }
 
 
@@ -438,6 +479,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             document.getElementById('hiddenNewClassroomName').value =
                 newClassroomName.value.trim();
+
+            document.getElementById('hiddenNewClassroomType').value =
+                newClassroomType.value;
 
             sessionStorage.setItem('reopenConfigureRatesModal', 'true');
             document.getElementById('addClassroomForm').submit();
@@ -776,6 +820,62 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function getSelectedEditStartDateDay() {
+        if (!editStartDate?.value) return null;
+
+        const date = new Date(`${editStartDate.value}T00:00:00`);
+        return date.getDay();
+    }
+
+    function isEditWorkdayPeriod() {
+        return editPeriodType?.value === 'workday';
+    }
+
+    function isEditNonWorkdayPeriod() {
+        return ['non_workday_saturday', 'non_workday_sunday_holiday'].includes(editPeriodType?.value);
+    }
+
+    function updateEditTimeOptions() {
+        const previousStart = editStartTime?.value || '';
+        const previousEnd = editEndTime?.value || '';
+        const selectedDay = getSelectedEditStartDateDay();
+
+        if (!editStartTime || !editEndTime) return;
+
+        if (isEditWorkdayPeriod()) {
+            buildTimeOptions(editStartTime, 7, 30, 16, 30, 'Seleccionar hora de inicio');
+            buildTimeOptions(editEndTime, 7, 45, 16, 30, 'Seleccionar hora de fin');
+        } else if (editPeriodType?.value === 'non_workday_saturday') {
+            if (selectedDay === 6) {
+                buildTimeOptions(editStartTime, 8, 0, 21, 30, 'Seleccionar hora de inicio');
+                buildTimeOptions(editEndTime, 8, 15, 21, 30, 'Seleccionar hora de fin');
+            } else {
+                buildTimeOptions(editStartTime, 16, 30, 21, 30, 'Seleccionar hora de inicio');
+                buildTimeOptions(editEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
+            }
+        } else if (editPeriodType?.value === 'non_workday_sunday_holiday') {
+            if (selectedDay === 0) {
+                buildTimeOptions(editStartTime, 8, 0, 21, 30, 'Seleccionar hora de inicio');
+                buildTimeOptions(editEndTime, 8, 15, 21, 30, 'Seleccionar hora de fin');
+            } else {
+                buildTimeOptions(editStartTime, 16, 30, 21, 30, 'Seleccionar hora de inicio');
+                buildTimeOptions(editEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
+            }
+        } else {
+            editStartTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
+            editEndTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
+            return;
+        }
+
+        if ([...editStartTime.options].some(option => option.value === previousStart)) {
+            editStartTime.value = previousStart;
+        }
+
+        if ([...editEndTime.options].some(option => option.value === previousEnd)) {
+            editEndTime.value = previousEnd;
+        }
+    }
+
     function updateCustomizeTimeOptions() {
         const previousStart = customizeStartTime.value;
         const previousEnd = customizeEndTime.value;
@@ -792,37 +892,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-if (saveCustomizeDaysBtn) {
-    saveCustomizeDaysBtn.addEventListener('click', async () => {
-        const payload = validateCustomizeDaysForm(true);
 
-        if (!payload) {
-            updateCustomizeSaveState();
-            return;
-        }
+    if (saveCustomizeDaysBtn) {
+        saveCustomizeDaysBtn.addEventListener('click', async () => {
+            const payload = validateCustomizeDaysForm(true);
 
-        const body = {
-            scope: payload.scope,
-            date: payload.date,
-            start_time: payload.start_time,
-            end_time: payload.end_time,
-        };
+            if (!payload) {
+                updateCustomizeSaveState();
+                return;
+            }
 
-        const isEntireEvent = payload.scope === 'entire_event';
+            const body = {
+                scope: payload.scope,
+                date: payload.date,
+                start_time: payload.start_time,
+                end_time: payload.end_time,
+            };
 
-        const url = isEntireEvent
-            ? `/facility/events/${payload.event_id}/schedule`
-            : `/facility/events/${payload.event_id}/customize-days`;
-
-        const method = isEntireEvent ? 'PUT' : 'POST';
-
+            const url = `/facility/events/${payload.event_id}/customize-days`;
+            const method = 'POST';
         try {
             await sendJson(url, method, body);
 
             bootstrap.Modal.getOrCreateInstance($('customizeDaysModal')).hide();
             toasts.customizeSaved?.show();
 
-            window.location.reload();
+            setTimeout(() => {
+                window.location.reload();
+            }, 900);
         } catch (error) {
             alert(error.message);
         }
@@ -863,7 +960,9 @@ if (saveRelatedEventBtn) {
             bootstrap.Modal.getOrCreateInstance($('createRelatedModal')).hide();
             toasts.relatedSaved?.show();
 
-            window.location.reload();
+            setTimeout(() => {
+                window.location.reload();
+            }, 900);
         } catch (error) {
             alert(error.message);
         }
@@ -950,30 +1049,73 @@ function fillRelatedModalFromRow(row) {
     updateRelatedSaveState();
 }
 
-if (saveEditEventBtn) {
-    saveEditEventBtn.addEventListener('click', async () => {
-        const payload = validateEditEventForm(true);
+    let pendingEditPayload = null;
+    let editingIsCustomDay = false;
 
-        if (!payload) {
-            updateEditSaveState();
-            return;
-        }
-
+    async function submitEditEvent(payload, deleteOutOfRangeCustomDays = false) {
         try {
             await sendJson(`/facility/events/${payload.event_id}`, 'PUT', {
+                classroom: payload.classroom,
                 responsible: payload.responsible,
                 description: payload.description,
+                services: payload.services,
+                period_type: payload.period_type,
+                rate_mode: payload.rate_mode,
+                event_date: payload.event_date,
+                event_end_date: payload.event_end_date,
+                start_time: payload.start_time,
+                end_time: payload.end_time,
+                delete_out_of_range_custom_days: deleteOutOfRangeCustomDays,
             });
 
             bootstrap.Modal.getOrCreateInstance($('editEventModal')).hide();
             toasts.editSaved?.show();
 
-            window.location.reload();
+            setTimeout(() => {
+                window.location.reload();
+            }, 900);
         } catch (error) {
             alert(error.message);
         }
+    }
+
+    const confirmParentRangeDeleteBtn = $('confirmParentRangeDeleteBtn');
+
+    function getCustomDaysOutsideEditedParentRange(parentId, newStart, newEnd) {
+        const parentRow = document.querySelector(`tr.parent-event-row[data-entry-id="${parentId}"]`);
+        const groupKey = parentRow?.dataset.groupKey;
+
+        if (!groupKey) return [];
+
+        const start = new Date(`${newStart}T00:00:00`);
+        const end = new Date(`${newEnd}T00:00:00`);
+
+        return [...document.querySelectorAll(`tr.sub-event-row[data-group-key="${groupKey}"][data-sub-event-type="custom_day"]`)]
+            .filter(row => {
+                const customDate = new Date(`${row.dataset.date}T00:00:00`);
+                return customDate < start || customDate > end;
+            });
+    }
+
+    function showParentRangeWarning(count) {
+        const text = $('parentRangeWarningText');
+
+        if (text) {
+            text.textContent = `Esta edición deja ${count} modificación(es) fuera del rango del evento padre. Si continúas, esas modificaciones serán eliminadas.`;
+        }
+
+        bootstrap.Modal.getOrCreateInstance($('parentRangeWarningModal')).show();
+    }
+
+    confirmParentRangeDeleteBtn?.addEventListener('click', async () => {
+        if (!pendingEditPayload) return;
+
+        bootstrap.Modal.getOrCreateInstance($('parentRangeWarningModal')).hide();
+
+        await submitEditEvent(pendingEditPayload, true);
+
+        pendingEditPayload = null;
     });
-}
 
     function isAllowedDateForSelectedPeriod(dateString) {
         if (!dateString) return true;
@@ -1008,42 +1150,6 @@ if (saveEditEventBtn) {
         toggleRentalDateRangeUI();
     }
 
-    rentalStartDate.addEventListener('change', () => {
-        updateAutomaticRateMode();
-        if (rentalStartDate.value.length === 10 && rentalEndDate.value.length === 10) {
-            validateRentalDates(true, false);
-        }
-        updateRentalDateRestrictions();
-        updateRentalTimeOptions();
-        calculateRentalEstimate();
-        updateRentalSaveState();
-    });
-
-    rentalEndDate.addEventListener('change', () => {
-        updateAutomaticRateMode();
-        if (rentalStartDate.value.length === 10 && rentalEndDate.value.length === 10) {
-            validateRentalDates(true, false);
-        }
-        updateRentalDateRestrictions();
-        calculateRentalEstimate();
-        updateRentalSaveState();
-    });
-
-
-    [
-        editResponsible,
-        editDescription
-    ].forEach(input => {
-        input?.addEventListener('input', () => {
-            validateEditEventForm(true);
-            updateEditSaveState();
-        });
-
-        input?.addEventListener('change', () => {
-            validateEditEventForm(true);
-            updateEditSaveState();
-        });
-    });
 
     customizeScope?.addEventListener('change', () => {
         clearFieldError(customizeScope, customizeScopeError);
@@ -1055,27 +1161,19 @@ if (saveEditEventBtn) {
         updateCustomizeSaveState();
     });
 
-    customizeDate?.addEventListener('change', () => {
-        clearFieldError(customizeDate, customizeDateError);
-
-        if (!customizeDate.value) {
-            setFieldError(customizeDate, customizeDateError, 'La fecha es requerida.');
-        }
-
-        updateCustomizeSaveState();
-    });
-
     [customizeStartTime, customizeEndTime].forEach(input => {
         input?.addEventListener('change', () => {
             customizeStartTime.classList.remove('is-invalid');
             customizeEndTime.classList.remove('is-invalid');
             customizeTimeError.textContent = '';
 
-            if (!customizeStartTime.value || !customizeEndTime.value) {
-                customizeStartTime.classList.add('is-invalid');
-                customizeEndTime.classList.add('is-invalid');
-                customizeTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
-            } else if (timeToMinutes(customizeEndTime.value) <= timeToMinutes(customizeStartTime.value)) {
+            if (!customizeStartTime.value && !customizeEndTime.value) {
+                customizeTimeError.textContent = '';
+            } else if (customizeStartTime.value && !customizeEndTime.value) {
+                clearFieldError(customizeEndTime, customizeTimeError);
+            } else if (!customizeStartTime.value && customizeEndTime.value) {
+                clearFieldError(customizeStartTime, customizeTimeError);
+            }else if (timeToMinutes(customizeEndTime.value) <= timeToMinutes(customizeStartTime.value)) {
                 customizeStartTime.classList.add('is-invalid');
                 customizeEndTime.classList.add('is-invalid');
                 customizeTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
@@ -1096,43 +1194,19 @@ if (saveEditEventBtn) {
         updateRelatedSaveState();
     });
 
-    relatedResponsible?.addEventListener('input', () => {
-        const value = relatedResponsible.value.trim();
-        const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
+    attachResponsibleBehavior(
+        editResponsible,
+        editResponsibleError,
+        (showError) => validateResponsible(showError, editResponsible, editResponsibleError),
+        updateEditSaveState
+    );
 
-        clearFieldError(relatedResponsible, relatedResponsibleError);
-
-        if (!value) {
-            setFieldError(relatedResponsible, relatedResponsibleError, 'El responsable es obligatorio.');
-        } else if (!regex.test(value)) {
-            setFieldError(relatedResponsible, relatedResponsibleError, 'Solo se permiten letras y espacios.');
-        } else if (value.length < 8) {
-            setFieldError(relatedResponsible, relatedResponsibleError, 'El responsable debe tener al menos 8 caracteres.');
-        } else if (value.length > 40) {
-            setFieldError(relatedResponsible, relatedResponsibleError, 'El responsable no puede exceder 40 caracteres.');
-        }
-
-        updateRelatedSaveState();
-    });
-
-    relatedDescription?.addEventListener('input', () => {
-        const value = relatedDescription.value.trim();
-        const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
-
-        clearFieldError(relatedDescription, relatedDescriptionError);
-
-        if (!value) {
-            setFieldError(relatedDescription, relatedDescriptionError, 'La descripción es obligatoria.');
-        } else if (!regex.test(value)) {
-            setFieldError(relatedDescription, relatedDescriptionError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
-        } else if (value.length < 10) {
-            setFieldError(relatedDescription, relatedDescriptionError, 'La descripción debe tener al menos 10 caracteres.');
-        } else if (value.length > 250) {
-            setFieldError(relatedDescription, relatedDescriptionError, 'La descripción no puede exceder 250 caracteres.');
-        }
-
-        updateRelatedSaveState();
-    });
+    attachDescriptionBehavior(
+        editDescription,
+        editDescriptionError,
+        (showError) => validateDescription(showError, editDescription, editDescriptionError),
+        updateEditSaveState
+    );
 
     relatedPeriodType?.addEventListener('change', () => {
         relatedStartTime.value = '';
@@ -1170,22 +1244,6 @@ if (saveEditEventBtn) {
             updateRelatedSaveState();
         });
     });
-
-    [relatedStartDate, relatedEndDate].forEach(input => {
-        input?.addEventListener('change', () => {
-            if (relatedStartDate.value.length === 10 && relatedEndDate.value.length === 10) {
-                updateRelatedAutomaticRateMode();
-                validateRelatedEventForm(true);
-            }
-
-            updateRelatedTimeOptions();
-            updateRelatedSummary();
-            updateRelatedSaveState();
-        });
-    });
-
-
-
 
     function getSelectedClassrooms() {
         return getConfigClassroomChecks()
@@ -1434,15 +1492,203 @@ if (saveEditEventBtn) {
 
     function setFieldError(field, errorElement, message) {
         if (!field) return;
+
         field.classList.add('is-invalid');
+
+        if (field._flatpickr?.altInput) {
+            field._flatpickr.altInput.classList.add('is-invalid');
+        }
+
         if (errorElement) errorElement.textContent = message;
     }
 
     function clearFieldError(field, errorElement) {
         if (!field) return;
+
         field.classList.remove('is-invalid');
+
+        if (field._flatpickr?.altInput) {
+            field._flatpickr.altInput.classList.remove('is-invalid');
+        }
+
         if (errorElement) errorElement.textContent = '';
     }
+
+    function attachResponsibleBehavior(input, errorElement, validateFn, saveStateFn) {
+        input?.addEventListener('input', () => {
+            const value = input.value;
+
+            if (value.length > 40) {
+                input.value = value.slice(0, 40);
+                setFieldError(input, errorElement, 'Has alcanzado el máximo de 40 caracteres. No puedes escribir más.');
+            } else if (value.length === 40) {
+                setFieldError(input, errorElement, 'Has alcanzado el máximo de 40 caracteres, puedes aún someter esa cantidad.');
+            } else {
+                validateFn(true);
+            }
+
+            saveStateFn();
+        });
+
+        input?.addEventListener('blur', () => {
+            input.value = input.value.trim();
+
+            if (input.value.length === 40) {
+                clearFieldError(input, errorElement);
+            } else {
+                validateFn(true);
+            }
+
+            saveStateFn();
+        });
+    }
+
+    function attachDescriptionBehavior(input, errorElement, validateFn, saveStateFn) {
+        input?.addEventListener('input', () => {
+            const value = input.value;
+
+            if (value.length > 250) {
+                input.value = value.slice(0, 250);
+                setFieldError(input, errorElement, 'Has alcanzado el máximo de 250 caracteres. No puedes escribir más.');
+            } else if (value.length === 250) {
+                setFieldError(input, errorElement, 'Has alcanzado el máximo de 250 caracteres, puedes aún someter esa cantidad.');
+            } else {
+                validateFn(true);
+            }
+
+            saveStateFn();
+        });
+
+        input?.addEventListener('blur', () => {
+            input.value = input.value.trim();
+
+            if (input.value.length === 250) {
+                clearFieldError(input, errorElement);
+            } else {
+                validateFn(true);
+            }
+
+            saveStateFn();
+        });
+    }
+
+    attachResponsibleBehavior(
+        editResponsible,
+        editResponsibleError,
+        validateEditEventForm,
+        updateEditSaveState
+    );
+
+    attachDescriptionBehavior(
+        editDescription,
+        editDescriptionError,
+        validateEditEventForm,
+        updateEditSaveState
+    );
+
+    function initializeFacilityDatePickers() {
+        const options = {
+            locale: Spanish,
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'd-F-Y',
+            allowInput: false,
+            disableMobile: true,
+            minDate: 'today'
+        };
+
+        const setupPicker = (input, icon, onChangeCallback) => {
+            if (!input) return;
+
+            flatpickr(input, {
+                ...options,
+                onChange: () => {
+                    if (typeof onChangeCallback === 'function') {
+                        onChangeCallback();
+                    }
+                }
+            });
+
+            icon?.addEventListener('click', () => {
+                input._flatpickr?.open();
+            });
+        };
+
+        setupPicker(rentalStartDate, rentalStartDateIcon, () => {
+            updateAutomaticRateMode();
+
+            if (rentalEndDate?._flatpickr && rentalStartDate.value) {
+                rentalEndDate._flatpickr.set('minDate', rentalStartDate.value);
+            }
+
+            validateRentalDates(true, false);
+            updateRentalDateRestrictions();
+            updateRentalTimeOptions();
+            calculateRentalEstimate();
+            updateRentalSaveState();
+        });
+
+        setupPicker(rentalEndDate, rentalEndDateIcon, () => {
+            updateAutomaticRateMode();
+            validateRentalDates(true, false);
+            updateRentalDateRestrictions();
+            calculateRentalEstimate();
+            updateRentalSaveState();
+        });
+
+        setupPicker(customizeDate, customizeDateIcon, () => {
+            clearFieldError(customizeDate, customizeDateError);
+
+            if (!customizeDate.value) {
+                setFieldError(customizeDate, customizeDateError, 'La fecha es requerida.');
+            }
+
+            updateCustomizeSaveState();
+        });
+
+        setupPicker(relatedStartDate, relatedStartDateIcon, () => {
+            updateRelatedAutomaticRateMode();
+
+            if (relatedEndDate?._flatpickr && relatedStartDate.value) {
+                relatedEndDate._flatpickr.set('minDate', relatedStartDate.value);
+            }
+
+            validateRelatedEventForm(true);
+            updateRelatedTimeOptions();
+            updateRelatedSummary();
+            updateRelatedSaveState();
+        });
+
+        setupPicker(relatedEndDate, relatedEndDateIcon, () => {
+            updateRelatedAutomaticRateMode();
+            validateRelatedEventForm(true);
+            updateRelatedSummary();
+            updateRelatedSaveState();
+        });
+
+        setupPicker(editStartDate, null, () => {
+            updateEditAutomaticRateMode();
+
+            if (editEndDate?._flatpickr && editStartDate.value) {
+                editEndDate._flatpickr.set('minDate', editStartDate.value);
+            }
+
+            clearFieldError(editStartDate, editStartDateError);
+            validateEditEventForm(true);
+            updateEditTimeOptions();
+            updateEditSummary();
+            updateEditSaveState();
+        });
+
+        setupPicker(editEndDate, null, () => {
+            updateEditAutomaticRateMode();
+            clearFieldError(editEndDate, editEndDateError);
+            validateEditEventForm(true);
+            updateEditSummary();
+            updateEditSaveState();
+        });
+    }
+
 
     function validateMoneyField(input, showError = true) {
         if (!input) return true;
@@ -1554,38 +1800,38 @@ if (saveEditEventBtn) {
     return true;
     }
 
-    function validateResponsible(showError = true) {
-        const value = rentalResponsible.value.trim();
+    function validateResponsible(showError = true, input = rentalResponsible, errorElement = rentalResponsibleError) {
+        const value = input.value.trim();
         const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
 
         if (showError){
-            clearFieldError(rentalResponsible, rentalResponsibleError);
+            clearFieldError(input, errorElement);
         }
 
         if (!value) {
             if (showError) {
-                setFieldError(rentalResponsible, rentalResponsibleError, 'El responsable es un campo obligatorio para llenar.');
+                setFieldError(input, errorElement, 'El responsable es un campo obligatorio para llenar.');
             }
             return false;
         }
 
         if (!regex.test(value)){
             if (showError){
-                setFieldError(rentalResponsible, rentalResponsibleError, 'Solo se permiten letras y espacios.');
+                setFieldError(input, errorElement, 'Solo se permiten letras y espacios.');
             }
             return false;
         }
 
         if (value.length < 8) {
             if (showError) {
-                setFieldError(rentalResponsible, rentalResponsibleError, 'El responsable debe tener al menos 8 caracteres.');
+                setFieldError(input, errorElement,  'El responsable debe tener al menos 8 caracteres.');
             }
             return false;
         }
 
         if (value.length > 40) {
             if (showError) {
-                setFieldError(rentalResponsible, rentalResponsibleError, 'El responsable no puede exceder 40 caracteres.');
+                setFieldError(input, errorElement, 'El responsable no puede exceder 40 caracteres.');
             }
             return false;
         }
@@ -1593,39 +1839,36 @@ if (saveEditEventBtn) {
         return true;
     }
 
-    function validateDescription(showError = true) {
-        const value = rentalDescription.value.trim();
+    function validateDescription(showError = true, input = rentalDescription, errorElement = rentalDescriptionError) {
+        const value = input.value.trim();
         const regex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
 
         if (showError) {
-            clearFieldError(rentalDescription, rentalDescriptionError);
+            clearFieldError(input, errorElement);
         }
 
         if (!value) {
             if (showError) {
-                setFieldError(rentalDescription, rentalDescriptionError, 'La descripción es obligatoria.');
+                setFieldError(input, errorElement, 'La descripción es obligatoria.');
             }
             return false;
         }
 
         if(!regex.test(value)) {
             if(showError) {
-                setFieldError(rentalDescription, rentalDescriptionError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+                setFieldError(input, errorElement, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
             }
             return false;
         }
 
         if (value.length < 10) {
-            if (showError) setFieldError(rentalDescription, rentalDescriptionError, 'La descripción debe tener al menos 10 caracteres.');
+            if (showError) setFieldError(input, errorElement, 'La descripción debe tener al menos 10 caracteres.');
             return false;
         }
 
         if (value.length > 250) {
             if (showError) {
-                setFieldError(
-                    rentalDescription,
-                    rentalDescriptionError,
-                    'Has alcanzado el máximo de 250 caracteres. No puedes escribir más.'
+                setFieldError( input, errorElement, 'Has alcanzado el máximo de 250 caracteres. No puedes escribir más.'
                 );
             }
             return false;
@@ -2151,6 +2394,14 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                     row.style.display = '';
                 });
 
+            const totalRow = facilityCostTableBody.querySelector(
+                `tr.event-group-total[data-group-key="${groupKey}"]`
+            );
+
+            if (totalRow) {
+                totalRow.style.display = '';
+            }
+
             const spacer = facilityCostTableBody.querySelector(
                 `tr.event-group-spacer[data-group-key="${groupKey}"]`
             );
@@ -2216,35 +2467,89 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     }
 
 
+    function openModalById(modalId) {
+        const modalEl = $(modalId);
+        if (!modalEl) return;
+
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
+    }
+
+    function clearActionRadios() {
+        document.querySelectorAll('.action-radio').forEach((radio) => {
+            radio.checked = false;
+        });
+    }
     function bindDeleteButtons() {
         deleteButtons().forEach((btn) => {
-            btn.onclick = () => {
+            btn.onchange = () => {
+                if (!btn.checked) return;
+
                 selectedDeleteUrl = btn.dataset.deleteUrl;
+                openModalById('deleteCostEntryModal');
             };
         });
     }
 
+    document.addEventListener('click', (event) => {
+        const btn = event.target.closest('.edit-cost-row-btn');
+        if (!btn) return;
+
+        btn.checked = true;
+
+        const row = btn.closest('tr');
+        if (!row) return;
+
+        editingIsCustomDay = row.dataset.subEventType === 'custom_day';
+
+        editEventId.value = btn.dataset.entryId;
+        editClassroom.value = row.dataset.classroom || '';
+        editResponsible.value = row.dataset.responsible || '';
+        editDescription.value = row.dataset.description || '';
+        editStartDate.value = row.dataset.date || '';
+        editEndDate.value = row.dataset.endDate || row.dataset.date || '';
+        editPeriodType.value = row.dataset.periodType || '';
+        editRateMode.value = row.dataset.rateMode || '';
+        editRateModeDisplay.value = rateModeLabel(row.dataset.rateMode || '');
+
+        updateEditTimeOptions();
+
+        editStartTime.value = row.dataset.startTime || '';
+        editEndTime.value = row.dataset.endTime || '';
+
+        if (editUtilities) editUtilities.checked = false;
+        if (editElectricity) editElectricity.checked = false;
+        if (editWater) editWater.checked = false;
+
+        let services = [];
+
+        try {
+            services = JSON.parse(row.dataset.services || '[]');
+        } catch {
+            services = [];
+        }
+
+        if (editUtilities) editUtilities.checked = services.includes('utilities');
+        if (editElectricity) editElectricity.checked = services.includes('electricity');
+        if (editWater) editWater.checked = services.includes('water');
+
+        const disableFullFields = editingIsCustomDay;
+
+        if (editClassroom) editClassroom.disabled = disableFullFields;
+        if (editResponsible) editResponsible.disabled = disableFullFields;
+        if (editDescription) editDescription.disabled = disableFullFields;
+
+        if (editUtilities) editUtilities.disabled = disableFullFields;
+        if (editElectricity) editElectricity.disabled = disableFullFields;
+        if (editWater) editWater.disabled = disableFullFields;
+
+        clearEditErrors();
+        updateEditSummary();
+        updateEditSaveState();
+
+        openModalById('editEventModal');
+    });
+
     function bindOptionThreeButtons() {
-        editButtons().forEach((btn) => {
-            btn.onclick = () => {
-                const row = btn.closest('tr');
-
-                if (editEventId) {
-                    editEventId.value = btn.dataset.entryId;
-                }
-
-                if (row) {
-                    editResponsible.value = row.children[2]?.textContent.trim() || '';
-                    editDescription.value = row.children[4]?.textContent.trim() || '';
-                }
-
-                clearFieldError(editResponsible, editResponsibleError);
-                clearFieldError(editDescription, editDescriptionError);
-                updateEditSaveState();
-
-                console.log('Editar evento:', btn.dataset.entryId);
-            };
-        });
 
         customizeDaysButtons().forEach((btn) => {
             btn.onclick = () => {
@@ -2258,9 +2563,17 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 const endDate = row?.dataset.endDate || startDate;
 
                 customizeScope.value = '';
+
                 customizeDate.value = '';
                 customizeDate.min = startDate;
                 customizeDate.max = endDate;
+
+                if (customizeDate?._flatpickr) {
+                    customizeDate._flatpickr.set('minDate', startDate);
+                    customizeDate._flatpickr.set('maxDate', endDate);
+                    customizeDate._flatpickr.clear();
+                    customizeDate._flatpickr.jumpToDate(startDate);
+                }
 
                 customizeStartTime.value = '';
                 customizeEndTime.value = '';
@@ -2277,6 +2590,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 updateCustomizeSaveState();
 
                 console.log('Personalizar días para evento:', btn.dataset.entryId);
+                openModalById('customizeDaysModal');
             };
         });
 
@@ -2340,6 +2654,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 updateRelatedSaveState();
 
                 console.log('Crear evento relacionado desde:', btn.dataset.entryId);
+                openModalById('createRelatedModal');
             };
         });
 
@@ -2442,22 +2757,137 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     }
 
 
+    function hasEditServices() {
+        return editServiceChecks.some(input => input?.checked);
+    }
+
+    function toggleEditServicesError(show) {
+        if (!editServicesError) return;
+
+        editServicesError.classList.toggle('d-none', !show);
+        editServicesError.classList.toggle('d-block', show);
+    }
+
+    function clearEditErrors() {
+        clearFieldError(editClassroom, editClassroomError);
+        clearFieldError(editResponsible, editResponsibleError);
+        clearFieldError(editDescription, editDescriptionError);
+        clearFieldError(editStartDate, editStartDateError);
+        clearFieldError(editEndDate, editEndDateError);
+
+        editStartTime?.classList.remove('is-invalid');
+        editEndTime?.classList.remove('is-invalid');
+
+        if (editTimeError) editTimeError.textContent = '';
+
+        toggleEditServicesError(false);
+    }
+
+    function updateEditAutomaticRateMode() {
+        if (!editRateMode || !editRateModeDisplay) return;
+
+        const days = getInclusiveDays(editStartDate?.value, editEndDate?.value);
+
+        let mode = '';
+
+        if (days > 0 && days < 7) {
+            mode = 'daily';
+        } else if (days >= 7 && days < 28) {
+            mode = 'weekly';
+        } else if (days >= 28) {
+            mode = 'monthly';
+        }
+
+        editRateMode.value = mode;
+        editRateModeDisplay.value = rateModeLabel(mode);
+    }
+
+    function updateEditSummary() {
+        updateEditAutomaticRateMode();
+
+        const classroomId = editClassroom?.value;
+        const startTime = editStartTime?.value;
+        const endTime = editEndTime?.value;
+        const periodType = editPeriodType?.value;
+        const rateMode = editRateMode?.value;
+
+        const dailyHours = calculateHours(startTime, endTime);
+        const totalDays = getInclusiveDays(editStartDate?.value, editEndDate?.value);
+        const totalHours = dailyHours * Math.max(totalDays, 1);
+
+        if (editDetectedPeriodLabel) {
+            editDetectedPeriodLabel.textContent = periodLabelFromValue(periodType);
+        }
+
+        if (editDetectedHoursLabel) {
+            editDetectedHoursLabel.textContent = `${totalHours.toFixed(2)} horas`;
+        }
+
+        if (
+            !classroomId ||
+            !dailyHours ||
+            !periodType ||
+            !rateMode ||
+            !ratesByClassroom[classroomId]
+        ) {
+            if (editEstimatedTotal) editEstimatedTotal.textContent = formatMoney(0);
+            return 0;
+        }
+
+        const data = ratesByClassroom[classroomId];
+        const area = toNumber(data.area);
+        const periodRates = getPeriodRateData(classroomId, periodType);
+
+        let selectedRate = 0;
+
+        if (rateMode === 'daily') selectedRate = periodRates.daily;
+        if (rateMode === 'weekly') selectedRate = periodRates.weekly;
+        if (rateMode === 'monthly') selectedRate = periodRates.monthly;
+
+        const unitsUsed = getBillingUnits(
+            editStartDate.value,
+            editEndDate.value,
+            rateMode
+        );
+
+        let total = area * selectedRate * unitsUsed;
+
+        if (editUtilities?.checked) total += toNumber(data.utilities) * totalHours;
+        if (editElectricity?.checked) total += toNumber(data.electricity) * totalHours;
+        if (editWater?.checked) total += toNumber(data.water) * totalHours;
+
+        if (editEstimatedTotal) {
+            editEstimatedTotal.textContent = formatMoney(total);
+        }
+
+        return total;
+    }
 
     function validateEditEventForm(showError = true) {
         let valid = true;
 
+        const services = [];
+        if (editUtilities?.checked) services.push('utilities');
+        if (editElectricity?.checked) services.push('electricity');
+        if (editWater?.checked) services.push('water');
+
         const responsible = editResponsible?.value.trim() || '';
         const description = editDescription?.value.trim() || '';
+
         const responsibleRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
         const descriptionRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
 
         if (showError) {
-            clearFieldError(editResponsible, editResponsibleError);
-            clearFieldError(editDescription, editDescriptionError);
+            clearEditErrors();
         }
 
         if (!editEventId?.value) {
             valid = false;
+        }
+
+        if (!editClassroom?.value) {
+            valid = false;
+            if (showError) setFieldError(editClassroom, editClassroomError, 'El área es requerida.');
         }
 
         if (!responsible) {
@@ -2488,12 +2918,72 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             if (showError) setFieldError(editDescription, editDescriptionError, 'La descripción no puede exceder 250 caracteres.');
         }
 
+        if (!editStartDate?.value) {
+            valid = false;
+            if (showError) setFieldError(editStartDate, editStartDateError, 'La fecha de inicio es requerida.');
+        }
+
+        if (!editEndDate?.value) {
+            valid = false;
+            if (showError) setFieldError(editEndDate, editEndDateError, 'La fecha de fin es requerida.');
+        }
+
+        if (editStartDate?.value && editEndDate?.value) {
+            const start = new Date(`${editStartDate.value}T00:00:00`);
+            const end = new Date(`${editEndDate.value}T00:00:00`);
+
+            if (end < start) {
+                valid = false;
+                if (showError) {
+                    setFieldError(editEndDate, editEndDateError, 'La fecha de fin debe ser posterior a la fecha de inicio.');
+                    editStartDate.classList.add('is-invalid');
+                }
+            }
+        }
+
+        if (!editPeriodType?.value) {
+            valid = false;
+        }
+
+        if (!editRateMode?.value) {
+            valid = false;
+        }
+
+        if (!editStartTime?.value || !editEndTime?.value) {
+            valid = false;
+            if (showError) {
+                editStartTime?.classList.add('is-invalid');
+                editEndTime?.classList.add('is-invalid');
+                if (editTimeError) editTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
+            }
+        } else if (timeToMinutes(editEndTime.value) <= timeToMinutes(editStartTime.value)) {
+            valid = false;
+            if (showError) {
+                editStartTime?.classList.add('is-invalid');
+                editEndTime?.classList.add('is-invalid');
+                if (editTimeError) editTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
+            }
+        }
+
+        if (!editingIsCustomDay && !services.length) {
+            valid = false;
+            if (showError) toggleEditServicesError(true);
+        }
+
         if (!valid) return null;
 
         return {
             event_id: editEventId.value,
+            classroom: editClassroom.value,
             responsible,
             description,
+            services,
+            period_type: editPeriodType.value,
+            rate_mode: editRateMode.value,
+            event_date: editStartDate.value,
+            event_end_date: editEndDate.value,
+            start_time: editStartTime.value,
+            end_time: editEndTime.value,
             scope: 'whole_event'
         };
     }
@@ -2502,8 +2992,6 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         if (!saveEditEventBtn) return;
         saveEditEventBtn.disabled = !validateEditEventForm(false);
     }
-
-
 
     function validateRelatedEventForm(showError = true) {
         let valid = true;
@@ -2693,7 +3181,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         saveRelatedEventBtn.disabled = !validateRelatedEventForm(false);
     }
     if (saveCustomizeDaysBtn) {
-        saveCustomizeDaysBtn.addEventListener('click', () => {
+        saveCustomizeDaysBtn.addEventListener('click', async () => {
             const payload = validateCustomizeDaysForm(true);
 
             if (!payload) {
@@ -2701,15 +3189,38 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 return;
             }
 
-            console.log('Payload de excepción:', payload);
+            const body = {
+                scope: payload.scope,
+                date: payload.date,
+                start_time: payload.start_time,
+                end_time: payload.end_time,
+            };
 
-            bootstrap.Modal.getOrCreateInstance($('customizeDaysModal')).hide();
-            toasts.customizeSaved?.show();
+            const isEntireEvent = payload.scope === 'entire_event';
+
+            const url = isEntireEvent
+                ? `/facility/events/${payload.event_id}/schedule`
+                : `/facility/events/${payload.event_id}/customize-days`;
+
+            const method = isEntireEvent ? 'PUT' : 'POST';
+
+            try {
+                await sendJson(url, method, body);
+
+                bootstrap.Modal.getOrCreateInstance($('customizeDaysModal')).hide();
+                toasts.customizeSaved?.show();
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 900);
+            } catch (error) {
+                alert(error.message);
+            }
         });
     }
 
     if (saveEditEventBtn) {
-        saveEditEventBtn.addEventListener('click', () => {
+        saveEditEventBtn.addEventListener('click', async () => {
             const payload = validateEditEventForm(true);
 
             if (!payload) {
@@ -2717,15 +3228,26 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 return;
             }
 
-            console.log('Payload editar evento:', payload);
+            if (!editingIsCustomDay) {
+                const affectedCustomDays = getCustomDaysOutsideEditedParentRange(
+                    payload.event_id,
+                    payload.event_date,
+                    payload.event_end_date
+                );
 
-            bootstrap.Modal.getOrCreateInstance($('editEventModal')).hide();
-            toasts.editSaved?.show();
+                if (affectedCustomDays.length > 0) {
+                    pendingEditPayload = payload;
+                    showParentRangeWarning(affectedCustomDays.length);
+                    return;
+                }
+            }
+
+            await submitEditEvent(payload, false);
         });
     }
 
     if (saveRelatedEventBtn) {
-        saveRelatedEventBtn.addEventListener('click', () => {
+        saveRelatedEventBtn.addEventListener('click', async () => {
             const payload = validateRelatedEventForm(true);
 
             if (!payload) {
@@ -2733,10 +3255,37 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 return;
             }
 
-            console.log('Payload crear relacionado:', payload);
+            const body = {
+                classroom: payload.classroom,
+                responsible: payload.responsible,
+                description: payload.description,
+                services: payload.services,
+                period_type: payload.period_type,
+                rate_mode: payload.rate_mode,
+                event_date: payload.event_date,
+                event_end_date: payload.end_date,
+                start_time: payload.start_time,
+                end_time: payload.end_time,
+            };
 
-            bootstrap.Modal.getOrCreateInstance($('createRelatedModal')).hide();
-            toasts.relatedSaved?.show();
+            const url = relatedModalMode === 'edit'
+                ? `/facility/events/${editingSubEventId}/sub-event`
+                : `/facility/events/${payload.parent_event_id}/related`;
+
+            const method = relatedModalMode === 'edit' ? 'PUT' : 'POST';
+
+            try {
+                await sendJson(url, method, body);
+
+                bootstrap.Modal.getOrCreateInstance($('createRelatedModal')).hide();
+                toasts.relatedSaved?.show();
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 900);
+            } catch (error) {
+                alert(error.message);
+            }
         });
     }
     function configureHasChanges() {
@@ -3013,44 +3562,64 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         });
     });
 
-    if (rentalResponsible) {
-        rentalResponsible.addEventListener('input', () => {
-            rentalDirty = true;
+    attachResponsibleBehavior(
+        relatedResponsible,
+        relatedResponsibleError,
+        (showError) => validateResponsible(showError, relatedResponsible, relatedResponsibleError),
+        updateRelatedSaveState
+    );
 
-            const value = rentalResponsible.value;
+    attachDescriptionBehavior(
+        relatedDescription,
+        relatedDescriptionError,
+        (showError) => validateDescription(showError, relatedDescription, relatedDescriptionError),
+        updateRelatedSaveState
+    );
 
-            if (value.length > 40) {
-                rentalResponsible.value = value.slice(0, 40);
-                setFieldError(
-                    rentalResponsible,
-                    rentalResponsibleError,
-                    'Has alcanzado el máximo de 40 caracteres. No puedes escribir más.'
-                );
-            } else if (value.length === 40) {
-                setFieldError(
-                    rentalResponsible,
-                    rentalResponsibleError,
-                    'Has alcanzado el máximo de 40 caracteres, puedes aún someter esa cantidad.'
-                );
-            } else {
-                validateResponsible(true);
+    editClassroom?.addEventListener('change', () => {
+        clearFieldError(editClassroom, editClassroomError);
+        updateEditSummary();
+        updateEditSaveState();
+    });
+
+    editPeriodType?.addEventListener('change', () => {
+        if (editStartTime) editStartTime.value = '';
+        if (editEndTime) editEndTime.value = '';
+
+        updateEditTimeOptions();
+        updateEditSummary();
+        updateEditSaveState();
+    });
+
+    [editStartTime, editEndTime].forEach(input => {
+        input?.addEventListener('change', () => {
+            editStartTime?.classList.remove('is-invalid');
+            editEndTime?.classList.remove('is-invalid');
+            if (editTimeError) editTimeError.textContent = '';
+
+            if (!editStartTime?.value || !editEndTime?.value) {
+                editStartTime?.classList.add('is-invalid');
+                editEndTime?.classList.add('is-invalid');
+                if (editTimeError) editTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
+            } else if (timeToMinutes(editEndTime.value) <= timeToMinutes(editStartTime.value)) {
+                editStartTime.classList.add('is-invalid');
+                editEndTime.classList.add('is-invalid');
+                if (editTimeError) editTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
             }
 
-            updateRentalSaveState();
+            updateEditSummary();
+            updateEditSaveState();
         });
+    });
 
-        rentalResponsible.addEventListener('blur', () => {
-            const value = rentalResponsible.value.trim();
-
-            if (value.length === 40) {
-                clearFieldError(rentalResponsible, rentalResponsibleError);
-            } else {
-                validateResponsible(true);
-            }
-
-            updateRentalSaveState();
+    editServiceChecks.forEach(input => {
+        input?.addEventListener('change', () => {
+            toggleEditServicesError(!hasEditServices());
+            updateEditSummary();
+            updateEditSaveState();
         });
-    }
+    });
+
 
     [reportType, reportMonth, reportYear, filterClassroom, filterPeriodType, filterRateMode, filterServices].forEach((el) => {
         if (!el) return;
@@ -3073,21 +3642,27 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         configureRatesForm.submit();
     });
 
-    addRentalForm.addEventListener('submit', (e) => {
-    addRentalForm.classList.add('was-validated');
+    saveRentalBtn?.addEventListener('click', () => {
+        addRentalForm.classList.add('was-validated');
 
-    const responsibleOk = validateResponsible(true);
-    const descriptionOk = validateDescription(true);
-    const servicesOk = hasSelectedServices();
-    toggleServicesError(!servicesOk);
+        updateAutomaticRateMode();
+        calculateRentalEstimate();
 
+        const responsibleOk = validateResponsible(true);
+        const descriptionOk = validateDescription(true);
+        const servicesOk = hasSelectedServices();
         const datesOk = validateRentalDates(true, true);
+        const formOk = isRentalFormValid();
 
-        if (!(isRentalFormValid() && datesOk && responsibleOk && descriptionOk && servicesOk)) {
-        e.preventDefault();
-        updateRentalSaveState();
-    }
-});
+        toggleServicesError(!servicesOk);
+
+        if (!(formOk && datesOk && responsibleOk && descriptionOk && servicesOk)) {
+            updateRentalSaveState();
+            return;
+        }
+
+        addRentalForm.submit();
+    });
 
     if (confirmDeleteCostEntryBtn) {
         confirmDeleteCostEntryBtn.addEventListener('click', () => {
@@ -3188,11 +3763,19 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
     if (addRentalModal) {
         addRentalModal.addEventListener('show.bs.modal', () => {
+            resetRentalFormState();
             servicesTouched = false;
+            rentalDirty = false;
+            allowRentalModalClose = false;
+
             toggleServicesError(false);
             updateRentalTimeOptions();
             updateRentalDateRestrictions();
             updateRentalSaveState();
+
+            setTimeout(() => {
+                rentalDirty = false;
+            }, 0);
         });
     }
 
@@ -3256,9 +3839,21 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     resetRentalFormState();
     applyTableFilters();
     updateDiscardButtonState();
+    initializeFacilityDatePickers();
 
     if (sessionStorage.getItem('reopenConfigureRatesModal') === 'true' && configureRatesModal) {
         bootstrap.Modal.getOrCreateInstance(configureRatesModal).show();
         sessionStorage.removeItem('reopenConfigureRatesModal');
     }
+
+    [
+        'editEventModal',
+        'customizeDaysModal',
+        'createRelatedModal',
+        'deleteCostEntryModal'
+    ].forEach((modalId) => {
+        const modal = $(modalId);
+        modal?.addEventListener('hidden.bs.modal', clearActionRadios);
+    });
+
 });

@@ -49,11 +49,23 @@
                     </div>
 
                     <div class="col-md-6 col-lg-4">
-                        <input
-                            type="date"
-                            id="filterDate"
-                            class="form-control border-2 border-dark flex-grow-1"
-                        >
+                        <div class="date-picker-wrapper h-100">
+                            <input
+                                type="text"
+                                id="filterDate"
+                                class="form-control border-dark border-2 py-2 date-picker-input"
+                                placeholder="dd-mm-aaaa"
+                                autocomplete="off"
+                                inputmode="none"
+                            >
+
+                            <button type="button"
+                                    class="date-picker-icon"
+                                    id="filterDateIcon"
+                                    aria-label="Abrir calendario del filtro de querellas">
+                                <i class="bi bi-calendar3"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="col-md-3 d-flex align-items-end">
@@ -131,7 +143,7 @@
                                 data-bs-toggle="tooltip"
                                 data-bs-placement="top"
                                 data-bs-custom-class="custom-tooltip"
-                                data-bs-title="Ver publicación"
+                                data-bs-title="Ver Publicación"
                             >
                                 <i class="bi bi-eye fs-5 text-secondary"></i>
                             </span>
@@ -141,7 +153,7 @@
                                 data-bs-toggle="tooltip"
                                 data-bs-placement="top"
                                 data-bs-custom-class="custom-tooltip"
-                                data-bs-title="Resolver querella"
+                                data-bs-title="Resolver Querella"
                             >
                                 <i class="bi bi-check-circle fs-5 text-success"></i>
                             </span>
@@ -152,7 +164,7 @@
                                 data-bs-toggle="tooltip"
                                 data-bs-placement="top"
                                 data-bs-custom-class="custom-tooltip"
-                                data-bs-title="Eliminar publicación"
+                                data-bs-title="Eliminar Publicación"
                             >
                                 <i class="bi bi-trash fs-5 text-danger"></i>
                             </span>
@@ -163,7 +175,7 @@
                                 data-bs-toggle="tooltip"
                                 data-bs-placement="top"
                                 data-bs-custom-class="custom-tooltip"
-                                data-bs-title="Bloquear usuario"
+                                data-bs-title="Bloquear Usuario"
                             >
                                 <i class="bi bi-ban fs-5 text-danger"></i>
                             </span>
@@ -195,7 +207,7 @@
         <div class="modal fade" id="resolveQuerellaModal" tabindex="-1" aria-labelledby="resolveQuerellaModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
-                    <div class="modal-header modal-header-top border-0">
+                    <div class="modal-header modal-header-top border-0 align-items-start">
                         <div class="pe-3">
                             <h4 class="modal-title fw-bold mb-1" id="resolveQuerellaModalLabel">Resolver querella</h4>
                             <p class="text-dark mb-0">¿Estás seguro de que deseas marcar este querella como resuelto?</p>
@@ -215,7 +227,7 @@
         <div class="modal fade" id="deletePostModal" tabindex="-1" aria-labelledby="deletePostModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
-                    <div class="modal-header modal-header-top border-0">
+                    <div class="modal-header modal-header-top border-0 align-items-start">
                         <div class="pe-3">
                             <h4 class="modal-title fw-bold mb-1" id="deletePostModalLabel">Eliminar publicación</h4>
                             <p class="text-dark mb-0">¿Estás seguro de que deseas eliminar esta publicación?</p>
@@ -235,7 +247,7 @@
         <div class="modal fade" id="bloquearUserModal" tabindex="-1" aria-labelledby="bloquearUserModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
-                    <div class="modal-header modal-header-top border-0">
+                    <div class="modal-header modal-header-top border-0 align-items-start">
                         <div class="pe-3">
                             <h4 class="modal-title fw-bold mb-1" id="bloquearUserModalLabel">Bloquear usuario</h4>
                             <p class="text-dark mb-0">¿Estás seguro de que deseas bloquear este usuario?<br> Sus publicaciones dejarán de estar visibles y esta querella se marcará como resuelto.</p>

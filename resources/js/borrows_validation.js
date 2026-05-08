@@ -9,6 +9,7 @@
  * - shows success toasts after actions complete
  */
 
+import * as bootstrap from 'bootstrap';
 import flatpickr from "flatpickr";
 import { Spanish } from "flatpickr/dist/l10n/es.js";
 import "flatpickr/dist/flatpickr.min.css";

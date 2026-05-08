@@ -1,4 +1,16 @@
 /**
+ * Flatpickr imports
+ *
+ * Responsibilities:
+ * - Provides the custom calendar component used by the access logs date filter
+ * - Replaces the browser-native date input for consistent UI behavior
+ * - Enables Spanish localization support
+ * - Loads Flatpickr default styles
+ */
+import flatpickr from "flatpickr";
+import { Spanish } from "flatpickr/dist/l10n/es.js";
+import "flatpickr/dist/flatpickr.min.css";
+/**
  * Access Logs Frontend Controller
  *
  * Handles client-side interactions for the Access Logs view.
@@ -39,6 +51,45 @@ document.addEventListener('DOMContentLoaded', () => {
         ? bootstrap.Toast.getOrCreateInstance(downloadToastEl, { delay: 3000 })
         : null;
 
+    const dateFilter = document.getElementById('accessLogsDateFilter');
+    const dateFilterIcon = document.getElementById('accessLogsDateFilterIcon');
+    const filterForm = document.getElementById('accessLogsFilterForm');
+
+    /**
+     * Initializes the access logs date filter using Flatpickr.
+     *
+     * - Replaces the native HTML date input with the shared borrows-style calendar component
+     * - Displays the calendar in Spanish
+     * - Keeps Laravel-compatible values in YYYY-MM-DD format
+     * - Displays user-friendly dates using day-month-year format
+     * - Automatically submits the filter form when a date is selected
+     * - Opens the calendar when the custom calendar icon is clicked
+     */
+    function initializeAccessLogsDatePicker() {
+        if (!dateFilter) return;
+
+        flatpickr(dateFilter, {
+            locale: Spanish,
+            dateFormat: 'Y-m-d',
+            altInput: true,
+            altFormat: 'j-F-Y',
+            allowInput: false,
+            disableMobile: true,
+            onChange: function () {
+                filterForm?.submit();
+            }
+        });
+
+        if (dateFilter._flatpickr?.altInput) {
+            dateFilter._flatpickr.altInput.placeholder = 'dd-mm-aaaa';
+            dateFilter._flatpickr.altInput.classList.add('date-picker-input');
+        }
+
+        dateFilterIcon?.addEventListener('click', () => {
+            dateFilter._flatpickr?.open();
+        });
+    }
+
     /**
      * Escapes a value for safe inclusion in a CSV file.
      *
@@ -74,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Toggles the visibility of the empty state row.
      *
-     * Shows the empty state when no visible rows exist,
+     * - Shows the empty state when no visible rows exist,
      * otherwise hides it.
      *
      * @returns {void}
@@ -185,4 +236,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateSearchButtonState();
     updateEmptyState();
+    initializeAccessLogsDatePicker();
 });

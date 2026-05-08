@@ -43,7 +43,7 @@
                data-bs-toggle="tooltip"
                data-bs-placement="bottom"
                data-bs-custom-class="custom-tooltip"
-               data-bs-title="Visualiza reportes y descarga estadísticas del inventario">
+               data-bs-title="Visualiza informes y descarga estadísticas del inventario">
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
         </div>
@@ -51,9 +51,9 @@
         {{-- Page title and export actions --}}
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-lg-center gap-3 mb-4">
             <div>
-                <h2 class="fw-bold mb-1">Reporte de Estadísticas</h2>
+                <h2 class="fw-bold mb-1">Informe de Estadísticas</h2>
                 <p class="text-muted mb-0">
-                    Visualiza los artículos más solicitados y descarga reportes del inventario.
+                    Visualiza los artículos más solicitados y descarga informes del inventario.
                 </p>
             </div>
 
@@ -84,7 +84,7 @@
 
                     {{-- Report type selector (monthly or annual) --}}
                     <div class="col-md-4">
-                        <label for="reportType" class="form-label fw-semibold">Tipo de reporte</label>
+                        <label for="reportType" class="form-label fw-semibold">Tipo de informe</label>
                         <select id="reportType" name="type" class="form-select form-select-md auto-submit border-2 border-dark">
                             <option value="monthly" {{ $type === 'monthly' ? 'selected' : '' }}>Mensual</option>
                             <option value="annual"  {{ $type === 'annual'  ? 'selected' : '' }}>Anual</option>

@@ -225,15 +225,30 @@
                                                     <div class="col-md-4">
                                                         <div>
                                                             <span class="text-muted">Recogida:</span>
-                                                            <strong>{{ \Carbon\Carbon::parse($lending->start_time)->locale('es')->translatedFormat('j-F-Y h:i A') }}</strong>
+                                                            <strong>
+                                                            {{ mb_convert_case(
+                                                                \Carbon\Carbon::parse($lending->start_time)
+                                                                    ->locale('es')
+                                                                    ->translatedFormat('j-F-Y h:i a'),
+                                                                MB_CASE_TITLE,
+                                                                "UTF-8"
+                                                            ) }}
+                                                            </strong>
                                                         </div>
                                                     </div>
 
                                                     <div class="col-md-4">
                                                         <div>
                                                             <span class="text-muted">Devolución:</span>
-                                                            <strong>{{ \Carbon\Carbon::parse($lending->end_time)->locale('es')->translatedFormat('j-F-Y h:i A') }}</strong>
-                                                        </div>
+                                                            <strong>
+                                                                {{ mb_convert_case(
+                                                                    \Carbon\Carbon::parse($lending->end_time)
+                                                                        ->locale('es')
+                                                                        ->translatedFormat('j-F-Y h:i a'),
+                                                                    MB_CASE_TITLE,
+                                                                    "UTF-8"
+                                                                ) }}
+                                                            </strong>                                                        </div>
                                                     </div>
                                                 </div>
 
@@ -397,12 +412,26 @@
                                                 <div>
 
                                                     <span class="text-muted">Recogida:</span>
-                                                    <strong>{{ \Carbon\Carbon::parse($lending->start_time)->locale('es')->translatedFormat('j-F-Y h:i A') }}</strong>
-                                                </div>
+                                                    <strong>
+                                                        {{ mb_convert_case(
+                                                            \Carbon\Carbon::parse($lending->start_time)
+                                                                ->locale('es')
+                                                                ->translatedFormat('j-F-Y h:i a'),
+                                                            MB_CASE_TITLE,
+                                                            "UTF-8"
+                                                        ) }}
+                                                    </strong>                                                </div>
                                                 <div>
                                                     <span class="text-muted">Devolución:</span>
-                                                    <strong>{{ \Carbon\Carbon::parse($lending->end_time)->locale('es')->translatedFormat('j-F-Y h:i A') }}</strong>
-                                                </div>
+                                                    <strong>
+                                                        {{ mb_convert_case(
+                                                            \Carbon\Carbon::parse($lending->end_time)
+                                                                ->locale('es')
+                                                                ->translatedFormat('j-F-Y h:i a'),
+                                                            MB_CASE_TITLE,
+                                                            "UTF-8"
+                                                        ) }}
+                                                    </strong>                                                </div>
                                             </div>
                                         </div>
 

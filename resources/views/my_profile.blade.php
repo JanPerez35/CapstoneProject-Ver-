@@ -436,13 +436,29 @@
 
                                         {{-- Item requested date --}}
                                         <p class="text-muted mb-0">
-                                            Solicitado: {{ \Carbon\Carbon::parse($request->created_at)->locale('es')->translatedFormat('j-F-Y') }}                                        </p>
-
+                                            Solicitado:
+                                            <strong>
+                                                {{ mb_convert_case(
+                                                    \Carbon\Carbon::parse($request->created_at)
+                                                        ->locale('es')
+                                                        ->translatedFormat('j-F-Y'),
+                                                    MB_CASE_TITLE,
+                                                    "UTF-8"
+                                                ) }}
+                                            </strong>
                                         {{-- Item returned or pending return date --}}
                                         @if($request->status === 'returned')
                                             <p class="text-muted mb-0">
-                                                Devuelto: {{ \Carbon\Carbon::parse($request->end_time)->locale('es')->translatedFormat('j-F-Y') }}                                            </p>
-                                        @endif
+                                                Devuelto:
+                                                <strong>
+                                                    {{ mb_convert_case(
+                                                        \Carbon\Carbon::parse($request->end_time)
+                                                            ->locale('es')
+                                                            ->translatedFormat('j-F-Y'),
+                                                        MB_CASE_TITLE,
+                                                        "UTF-8"
+                                                    ) }}
+                                                </strong>                                        @endif
                                     </div>
 
                                     @php

@@ -1268,3 +1268,103 @@
 .date-picker-icon:hover {
     color: #198754;
 }
+
+/*Operational cost page size modification*/
+@media (max-width: 576px) {
+
+    #addRentalModal .modal-dialog,
+    #editEventModal .modal-dialog,
+    #customizeDaysModal .modal-dialog,
+    #createRelatedModal .modal-dialog,
+    #configureRatesModal .modal-dialog {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+    }
+
+    #addRentalModal .modal-content,
+    #editEventModal .modal-content,
+    #customizeDaysModal .modal-content,
+    #createRelatedModal .modal-content,
+    #configureRatesModal .modal-content {
+        max-height: calc(100vh - 1rem);
+        border-radius: 1rem;
+    }
+
+    #configureRatesModal .service-option-card {
+        padding: 1rem;
+    }
+
+    #configureRatesModal .row > [class*="col-"] {
+        width: 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    #configureRatesModal .input-group-lg {
+        flex-wrap: nowrap;
+    }
+
+    #configureRatesModal .input-group-text {
+        width: auto;
+        min-width: 52px;
+    }
+
+    #configureRatesModal .form-control {
+        min-width: 0;
+    }
+
+    #configureRatesModal small {
+        line-height: 1.35;
+    }
+
+    #configureRatesModal .d-flex.flex-wrap.align-items-center.gap-2.mb-3 {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+
+    #configureRatesModal .d-flex.flex-wrap.align-items-center.gap-2.mb-3 .btn {
+        width: 100%;
+    }
+
+    #configureRatesModal .multi-classroom-card {
+        padding: 1rem;
+    }
+
+    #editEventModal .row > [class*="col-"],
+    #createRelatedModal .row > [class*="col-"],
+    #customizeDaysModal .row > [class*="col-"],
+    #addRentalModal .row > [class*="col-"] {
+        width: 100%;
+        max-width: 100%;
+        flex: 0 0 100%;
+    }
+
+    #editEventModal textarea,
+    #createRelatedModal textarea,
+    #addRentalModal textarea {
+        min-height: 110px;
+    }
+
+    #customizeDaysModal .form-select,
+    #customizeDaysModal .form-control {
+        font-size: 1rem;
+    }
+
+    #customizeDaysModal .modal-body,
+    #editEventModal .modal-body,
+    #createRelatedModal .modal-body,
+    #addRentalModal .modal-body,
+    #configureRatesModal .modal-body {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+    }
+}

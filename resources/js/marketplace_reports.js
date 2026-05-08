@@ -1,4 +1,8 @@
 import * as bootstrap from 'bootstrap';
+import flatpickr from "flatpickr";
+import { Spanish } from "flatpickr/dist/l10n/es.js";
+import "flatpickr/dist/flatpickr.min.css";
+
     const REPORTS_PER_PAGE = 18;
     let currentReportsPage = 1;
 
@@ -85,6 +89,7 @@ import * as bootstrap from 'bootstrap';
         filterReason: $('filterReason'),
         filterSearchBy: $('filterSearchBy'),
         filterDate: $('filterDate'),
+        filterDateIcon: $('filterDateIcon'),
 
         resolveModal: $('resolveQuerellaModal'),
         deleteModal: $('deletePostModal'),
@@ -230,7 +235,8 @@ import * as bootstrap from 'bootstrap';
         clearReportsFiltersBtn?.addEventListener('click', () => {
         els.filterSearchBy.value = '';
         els.filterReason.value = '';
-        els.filterDate.value = '';
+        els.filterDate._flatpickr?.clear();
+
         updateReportsSearchButtonState();
         applyFilters();
     });
@@ -424,13 +430,36 @@ import * as bootstrap from 'bootstrap';
 
         els.filterReason?.addEventListener('change', applyFilters);
 
-        els.filterDate?.addEventListener('change', applyFilters);
-
         els.filterDate?.addEventListener('input', () => {
             if (els.filterDate.value === '') {
                     applyFilters();
             }
         });
+
+        function initializeReportsDatePicker() {
+            if (!els.filterDate) return;
+
+            flatpickr(els.filterDate, {
+                locale: Spanish,
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'j-F-Y',
+                allowInput: false,
+                disableMobile: true,
+                onChange: function () {
+                    applyFilters();
+                }
+            });
+
+            if (els.filterDate._flatpickr?.altInput) {
+                els.filterDate._flatpickr.altInput.placeholder = 'dd-mm-aaaa';
+                els.filterDate._flatpickr.altInput.classList.add('date-picker-input');
+            }
+
+            els.filterDateIcon?.addEventListener('click', () => {
+                els.filterDate._flatpickr?.open();
+            });
+        }
 
     document.addEventListener('change', async (e) => {
         const target = e.target;
@@ -527,5 +556,6 @@ import * as bootstrap from 'bootstrap';
 
         renderReports();
         fetchReports();
+        initializeReportsDatePicker();
     });
 
