@@ -8,7 +8,7 @@
         <div class="mb-4">
             <h1 class="fw-bold">Gestión de Mercado</h1>
             <p>
-                Aquí puedes administrar los reportes del mercado.
+                Aquí puedes administrar los informes del mercado.
             </p>
         </div>
 
@@ -90,7 +90,7 @@
                     <div>
                         <h2 class="fw-bold mb-1">Querellas del Kinemercado</h2>
                         <p class="text-muted mb-0">
-                            Revisión y administración de querellas realizados sobre publicaciones y vendedores.
+                            Revisión y administración de querellas realizados sobre publicaciones y sus vendedores.
                         </p>
                     </div>
 
@@ -135,7 +135,7 @@
                         <th>Reportado por</th>
                         <th>Vendedor</th>
                         <th>Razón</th>
-                        <th>Fecha Reportada (mm/dd/yyyy)</th>
+                        <th>Fecha Reportada (Día Mes Año)</th>
                         <th>Descripción de la Querella</th>
 
                         <th class="text-center action-header-icon">

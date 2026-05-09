@@ -165,6 +165,7 @@ class PostController extends Controller
                     'photo_1_url' => $post->photo_1_url,
                     'photo_2_url' => $post->photo_2_url,
                     'photo_3_url' => $post->photo_3_url,
+                    'created_at' => $post->created_at?->toISOString(),
                     'time_ago' => $post->created_at?->diffForHumans(),
                     'rating' => round($averageRating ?? 0, 1),
                     'reviews' => $reviewsCount,

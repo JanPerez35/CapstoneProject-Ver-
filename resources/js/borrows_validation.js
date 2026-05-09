@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Visible value shown to the user: 5-mayo-2026
             altInput: true,
-            altFormat: 'j-F-Y',
+            altFormat: 'j F Y',
 
             allowInput: false,
             disableMobile: true,
@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         if (borrowDateFilter._flatpickr?.altInput) {
-            borrowDateFilter._flatpickr.altInput.placeholder = 'dd-mm-aaaa';
+            borrowDateFilter._flatpickr.altInput.placeholder = 'Día Mes Año';
             borrowDateFilter._flatpickr.altInput.classList.add('date-picker-input');
         }
         borrowDateFilterIcon?.addEventListener('click', function () {

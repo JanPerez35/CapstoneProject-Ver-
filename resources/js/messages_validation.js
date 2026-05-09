@@ -21,11 +21,23 @@ function formatDateSeparator(dateValue) {
         return 'Ayer';
     }
 
-    return date.toLocaleDateString('es-PR', {
-        month: 'long',
+    const formattedDate = date.toLocaleDateString('es-PR', {
         day: 'numeric',
+        month: 'long',
         year: 'numeric'
     });
+
+    return formattedDate
+        .replaceAll(' de ', ' ')
+        .split(' ')
+        .map((part, index) => {
+            if (index === 1) {
+                return part.charAt(0).toUpperCase() + part.slice(1);
+            }
+
+            return part;
+        })
+        .join(' ');
 }
 
 function insertDateSeparatorIfNeeded(messagesContainer, dateValue) {

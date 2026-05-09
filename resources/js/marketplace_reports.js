@@ -23,28 +23,28 @@ import "flatpickr/dist/flatpickr.min.css";
         const allowedSearchCharRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]$/;
 
         function sanitizeSearchValue(value) {
-        return [...value]
-        .filter((char) => allowedSearchCharRegex.test(char))
-        .join('');
-    }
+            return [...value]
+                .filter((char) => allowedSearchCharRegex.test(char))
+                .join('');
+        }
 
         async function fetchReports() {
-        const res = await fetch('/reports/data');
-        const data = await res.json();
+            const res = await fetch('/reports/data');
+            const data = await res.json();
 
-        renderReportsFromBackend(data);
-    }
+            renderReportsFromBackend(data);
+        }
 
         function renderReportsFromBackend(reports) {
-        const tbody = document.querySelector('#reportsTable tbody');
-        tbody.innerHTML = '';
+            const tbody = document.querySelector('#reportsTable tbody');
+            tbody.innerHTML = '';
 
-        reports.forEach(report => {
+            reports.forEach(report => {
 
-            console.log('REPORT COMPLETO:', report);
-            console.log('POST ID:', report.post_id);
+                console.log('REPORT COMPLETO:', report);
+                console.log('POST ID:', report.post_id);
 
-            const row = `
+                const row = `
                 <tr data-report-id="${report.id}"
                     data-report-date="${formatReportDateForFilter(report.created_at)}"
                     data-post="${encodeURIComponent(JSON.stringify(report.post || {}))}"
@@ -54,7 +54,7 @@ import "flatpickr/dist/flatpickr.min.css";
                     <td>${report.reporter?.name || ''}</td>
                     <td>${report.reported_user?.name || ''}</td>
                     <td>${report.report_reason}</td>
-                    <td>${new Date(report.created_at).toLocaleDateString()}</td>
+                    <td>${formatReportDisplayDate(report.created_at)}</td>
                     <td>${report.description}</td>
 
                     <td class="text-center"><input class="form-check-input action-radio action-view" type="radio" name="action_${report.id}"></td>
@@ -64,16 +64,51 @@ import "flatpickr/dist/flatpickr.min.css";
                 </tr>
             `;
 
-            tbody.insertAdjacentHTML('beforeend', row);
-        });
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
 
-        bindAction('.action-resolve', els.resolveModal, 'resolve');
-        bindAction('.action-delete-post', els.deleteModal, 'delete');
-        bindAction('.action-block-user', els.banModal, 'ban');
+            bindAction('.action-resolve', els.resolveModal, 'resolve');
+            bindAction('.action-delete-post', els.deleteModal, 'delete');
+            bindAction('.action-block-user', els.banModal, 'ban');
 
-        renderReports();
-    }
+            renderReports();
+        }
 
+        /**
+         * Formats report dates for display inside the reports table.
+         *
+         * Converts backend timestamps into the format:
+         * Day Month Year
+         *
+         * Example:
+         * 9 Mayo 2026
+         *
+         * @param {string} dateValue - Backend report creation date.
+         * @returns {string} Formatted display date.
+         */
+        function formatReportDisplayDate(dateValue) {
+            if (!dateValue) return '';
+
+            const date = new Date(dateValue);
+
+            const formattedDate = date.toLocaleDateString('es-PR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+
+            return formattedDate
+                .replaceAll(' de ', ' ')
+                .split(' ')
+                .map((part, index) => {
+                    if (index === 1) {
+                        return part.charAt(0).toUpperCase() + part.slice(1);
+                    }
+
+                    return part;
+                })
+                .join(' ');
+        }
        function formatReportDateForFilter(dateValue) {
             if (!dateValue) return '';
 
@@ -443,7 +478,7 @@ import "flatpickr/dist/flatpickr.min.css";
                 locale: Spanish,
                 dateFormat: 'Y-m-d',
                 altInput: true,
-                altFormat: 'j-F-Y',
+                altFormat: 'j F Y',
                 allowInput: false,
                 disableMobile: true,
                 onChange: function () {
@@ -452,7 +487,7 @@ import "flatpickr/dist/flatpickr.min.css";
             });
 
             if (els.filterDate._flatpickr?.altInput) {
-                els.filterDate._flatpickr.altInput.placeholder = 'dd-mm-aaaa';
+                els.filterDate._flatpickr.altInput.placeholder = 'Día Mes Año';
                 els.filterDate._flatpickr.altInput.classList.add('date-picker-input');
             }
 
