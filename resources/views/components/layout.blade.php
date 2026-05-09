@@ -26,7 +26,7 @@
 @endphp
 
     <!doctype html>
-<html lang="en">
+<html lang="es-PR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -59,8 +59,7 @@
 >
 {{-- Top navigation bar with branding, user info, quick actions, and logout --}}
 <div class="container-fluid px-0">
-    <header class="d-flex flex-wrap align-items-center justify-content-between py-2 px-2 border-bottom bg-light">
-
+    <header class="app-header d-flex flex-wrap align-items-center justify-content-between py-2 px-3 border-bottom">
         {{-- Application logo and home link --}}
         <a href="/kinemarket" class="d-flex align-items-center mb-2 mb-md-0 text-decoration-none">
             <img src="/images/kine_logo.png"
@@ -68,7 +67,7 @@
                  style="height: 75px; width:auto;"
                  class="me-2">
 
-            <span class="fs-3 fw-bold text-success m-0">MAIKINE</span>
+            <span class="fs-3 fw-bold text-white m-0">MAIKINE</span>
         </a>
 
         <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2 gap-lg-3">
@@ -114,10 +113,10 @@
                     class="btn btn-outline-success position-relative"
                     data-bs-toggle="modal"
                     data-bs-target="#cartModal"
-
                     data-bs-placement="top"
                     data-bs-custom-class="custom-tooltip"
                     data-bs-title="Verifica equipo deportivo en tu carrito"
+                    data-bs-trigger="hover"
                 >
                     <i class="bi bi-cart3 me-1"></i>
                     Carrito
@@ -331,11 +330,23 @@
                                 <label for="pickup_date" class="form-label fw-semibold">
                                     Fecha de Recogida <span class="text-danger">*</span>
                                 </label>
-                                <input type="date"
-                                       class="form-control form-control-lg"
-                                       id="pickup_date"
-                                       name="pickup_date"
-                                       required>
+                                <div class="date-picker-wrapper">
+                                    <input type="text"
+                                           class="form-control form-control-lg date-picker-input"
+                                           id="pickup_date"
+                                           name="pickup_date"
+                                           placeholder="dd-mm-aaaa"
+                                           autocomplete="off"
+                                           inputmode="none"
+                                           required>
+
+                                    <button type="button"
+                                            class="date-picker-icon"
+                                            id="pickupDateIcon"
+                                            aria-label="Abrir calendario de recogida">
+                                        <i class="bi bi-calendar3"></i>
+                                    </button>
+                                </div>
                                 <div class="form-text">
                                     Solo días laborables permitidos. Si la solicitud se realiza luego de la 1:00 PM,
                                     no se permitirá seleccionar el próximo día laborable inmediato.
@@ -392,10 +403,23 @@
                                     <label for="return_date" class="form-label fw-semibold">
                                         Fecha de Devolución Propuesta <span class="text-danger">*</span>
                                     </label>
-                                    <input type="date"
-                                           class="form-control form-control-lg"
-                                           id="return_date"
-                                           name="return_date">
+                                    <div class="date-picker-wrapper">
+                                        <input type="text"
+                                               class="form-control form-control-lg date-picker-input"
+                                               id="return_date"
+                                               name="return_date"
+                                               placeholder="dd-mm-aaaa"
+                                               autocomplete="off"
+                                               inputmode="none">
+
+                                        <button type="button"
+                                                class="date-picker-icon"
+                                                id="returnDateIcon"
+                                                aria-label="Abrir calendario de devolución">
+                                            <i class="bi bi-calendar3"></i>
+                                        </button>
+                                    </div>
+
                                     <div class="form-text">Debe ser una fecha futura. No se permiten viernes, sábados ni domingos.</div>
                                     <div class="invalid-feedback d-block" id="return_date_error"></div>
                                 </div>
@@ -454,10 +478,13 @@
 
                                 <p class="text-muted mb-2 mt-3">
                                     De tener algún inconveniente, contacta al administrador del inventario
-                                    <a href="mailto:orlando.cruz@upr.edu"
-                                       class="text-success text-decoration-none fw-semibold">
-                                        orlando.cruz@upr.edu
-                                    </a>.
+
+                                    @foreach($inventoryAdmin as $admin)
+                                        <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none d-block">
+                                            {{ $admin->email }}
+                                        </a>
+                                    @endforeach
+
                                 </p>
 
                                 <p class="text-muted mb-2 mt-3">

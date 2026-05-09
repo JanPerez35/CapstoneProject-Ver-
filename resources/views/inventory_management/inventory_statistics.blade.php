@@ -43,17 +43,17 @@
                data-bs-toggle="tooltip"
                data-bs-placement="bottom"
                data-bs-custom-class="custom-tooltip"
-               data-bs-title="Visualiza reportes y descarga estadísticas del inventario">
+               data-bs-title="Visualiza informes y descarga estadísticas del inventario">
                 <i class="bi bi-graph-up-arrow me-1"></i> Estadísticas
             </a>
         </div>
 
         {{-- Page title and export actions --}}
-        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-lg-center gap-3 mb-4">
             <div>
-                <h2 class="fw-bold mb-1">Reporte de Estadísticas</h2>
+                <h2 class="fw-bold mb-1">Informe de Estadísticas</h2>
                 <p class="text-muted mb-0">
-                    Visualiza los artículos más solicitados y descarga reportes del inventario.
+                    Visualiza los artículos más solicitados y descarga informes del inventario.
                 </p>
             </div>
 
@@ -74,8 +74,8 @@
         </div>
 
         {{-- Report filters, they allow the user to pick data from specific periods of time --}}
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-body p-4">
+        <div class="card border-dark border-2 rounded-4 mb-4">
+            <div class="card-body p-3">
                 {{-- Filter form auto-submits through JS when selections change and reloads page --}}
                 <form method="GET"
                       action="{{ route('inventory_management.inventory_statistics') }}"
@@ -84,8 +84,8 @@
 
                     {{-- Report type selector (monthly or annual) --}}
                     <div class="col-md-4">
-                        <label for="reportType" class="form-label fw-semibold">Tipo de reporte</label>
-                        <select id="reportType" name="type" class="form-select form-select-lg auto-submit border-2 border-dark">
+                        <label for="reportType" class="form-label fw-semibold">Tipo de informe</label>
+                        <select id="reportType" name="type" class="form-select form-select-md auto-submit border-2 border-dark">
                             <option value="monthly" {{ $type === 'monthly' ? 'selected' : '' }}>Mensual</option>
                             <option value="annual"  {{ $type === 'annual'  ? 'selected' : '' }}>Anual</option>
                         </select>
@@ -94,7 +94,7 @@
                     {{-- Month selector is hidden when annual report type is selected --}}
                     <div class="col-md-4 {{ $type === 'annual' ? 'd-none' : '' }}" id="monthFilterWrapper">
                         <label for="reportMonth" class="form-label fw-semibold">Mes</label>
-                        <select id="reportMonth" name="month" class="form-select form-select-lg auto-submit border-2 border-dark">
+                        <select id="reportMonth" name="month" class="form-select form-select-md auto-submit border-2 border-dark">
                             @foreach([1=>'Enero',2=>'Febrero',3=>'Marzo',4=>'Abril',5=>'Mayo',6=>'Junio',7=>'Julio',8=>'Agosto',9=>'Septiembre',10=>'Octubre',11=>'Noviembre',12=>'Diciembre'] as $num => $name)
                                 <option value="{{ $num }}" {{ $month === $num ? 'selected' : '' }}>{{ $name }}</option>
                             @endforeach
@@ -104,7 +104,7 @@
                     {{-- Year selector, the selector is dynamic. Meaning that if data from 2027 gets added it will appear on the selector --}}
                     <div class="col-md-4">
                         <label for="reportYear" class="form-label fw-semibold">Año</label>
-                        <select id="reportYear" name="year" class="form-select form-select-lg auto-submit border-2 border-dark">
+                        <select id="reportYear" name="year" class="form-select form-select-md auto-submit border-2 border-dark">
                             @foreach($availableYears as $yr)
                                 <option value="{{ $yr }}" {{ $year === $yr ? 'selected' : '' }}>{{ $yr }}</option>
                             @endforeach
@@ -116,12 +116,12 @@
         </div>
 
         {{-- Summary cards showing key statistics for the selected period --}}
-        <div class="row g-4 mb-4">
+        <div class="row g-3 mb-4">
 
             {{-- Most requested item --}}
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body p-4">
+            <div class="col-sm-4">
+                <div class="card border-dark border-2 shadow-sm rounded-4 h-100">
+                    <div class="card-body py-3 px-3">
                         <p class="text-muted mb-2">Objeto con más pedidos</p>
                         <h4 class="fw-bold mb-1">
                             {{ $topItem ? $topItem->description : '—' }}
@@ -135,8 +135,8 @@
 
             {{-- Total number of requests in selected period --}}
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body p-4">
+                <div class="card border-dark border-2 rounded-4 h-100">
+                    <div class="card-body py-3 px-3">
                         <p class="text-muted mb-2">Total de pedidos</p>
                         <h4 class="fw-bold mb-1">{{ $totalReqs }}</h4>
                         <p class="mb-0 text-muted">En el periodo seleccionado</p>
@@ -146,8 +146,8 @@
 
             {{-- Total number of analyzed items --}}
             <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
-                    <div class="card-body p-4">
+                <div class="card border-dark border-2 rounded-4 h-100">
+                    <div class="card-body py-3 px-3">
                         <p class="text-muted mb-2">Cantidad de artículos analizados</p>
                         <h4 class="fw-bold mb-1">{{ $totalItems }}</h4>
                         <p class="mb-0 text-muted">Resumen del inventario más solicitado</p>
@@ -160,8 +160,8 @@
         <div class="row g-4">
 
             {{-- Left side: chart showing most requested items, limited to the top 5 --}}
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="col-md-8">
+                <div class="card border-dark border-2 rounded-4 h-100">
                     <div class="card-body p-4">
                         <h4 class="fw-bold mb-1">Artículos con más pedidos</h4>
                         <p class="text-muted mb-3">Gráfica comparativa del periodo seleccionado</p>
@@ -183,8 +183,8 @@
             </div>
 
             {{-- Right side with top 3 table summary --}}
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="col-md-4">
+                <div class="card border-2 border-dark rounded-4 h-100">
                     <div class="card-body p-4">
                         <h4 class="fw-bold mb-3">Top 3 artículos</h4>
 
@@ -216,7 +216,7 @@
                             </table>
                         </div>
 
-                        <hr class="my-4">
+
 
                         {{-- Data source note clarifying that they may not be 100% validated --}}
                         <p class="text-muted small mb-0">

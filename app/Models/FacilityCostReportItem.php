@@ -12,6 +12,9 @@ class FacilityCostReportItem extends Model
     protected $fillable = [
         'facility_cost_report_id',
         'facility_cost_id',
+        'event_group_id',
+        'is_group_parent',
+        'sub_event_type',
         'responsible',
         'period_type',
         'services',
@@ -23,13 +26,17 @@ class FacilityCostReportItem extends Model
         'event_description',
         'hours_used',
         'calculated_cost',
+        'parent_deducted_cost',
+        'custom_parent_item_id',
     ];
 
     protected $casts = [
         'event_date' => 'date',
+        'end_date' => 'date',
         'start_time' => 'datetime',
         'end_time' => 'datetime',
         'services' => 'array',
+        'is_group_parent' => 'boolean',
     ];
 
     public function report()
@@ -40,5 +47,10 @@ class FacilityCostReportItem extends Model
     public function facilityCost()
     {
         return $this->belongsTo(FacilityCost::class);
+    }
+
+    public function groupItems()
+    {
+        return $this->hasMany(self::class, 'event_group_id', 'event_group_id');
     }
 }

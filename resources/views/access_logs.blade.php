@@ -20,7 +20,7 @@
     {{-- Frontend script for CSV export, search state, and empty-state handling --}}
     @vite('resources/js/access_log_validation.js')
 
-    <div class="container-fluid py-4 px-4">
+    <div class="container py-4 px-4">
 
         {{-- Page header --}}
         <div class="mb-4">
@@ -119,8 +119,8 @@
 
                         {{-- Facility-related events --}}
                         <optgroup label="Facilidades">
-                            <option value="Agregar salón" {{ request('event') == 'Agregar salón' ? 'selected' : '' }}>Agregar salón</option>
-                            <option value="Eliminar/procesar salones" {{ request('event') == 'Eliminar/procesar salones' ? 'selected' : '' }}>Eliminar/procesar salones</option>
+                            <option value="Agregar área" {{ request('event') == 'Agregar área' ? 'selected' : '' }}>Agregar área</option>
+                            <option value="Eliminar área" {{ request('event') == 'Eliminar área' ? 'selected' : '' }}>Eliminar área</option>
                             <option value="Agregar evento de facilidad" {{ request('event') == 'Agregar evento de facilidad' ? 'selected' : '' }}>Agregar evento de facilidad</option>
                             <option value="Eliminar evento de facilidad" {{ request('event') == 'Eliminar evento de facilidad' ? 'selected' : '' }}>Eliminar evento de facilidad</option>
                             <option value="Guardar tarifas de facilidades" {{ request('event') == 'Guardar tarifas de facilidades' ? 'selected' : '' }}>Guardar tarifas de facilidades</option>
@@ -145,14 +145,25 @@
 
                 {{-- Date filter --}}
                 <div class="col-md-6 col-lg-4">
-                    <input
-                        type="date"
-                        id="accessLogsDateFilter"
-                        name="date"
-                        class="form-control border-2 border-dark"
-                        value="{{ request('date') }}"
-                        onchange="this.form.submit()"
-                    >
+                    <div class="date-picker-wrapper h-100">
+                        <input
+                            type="text"
+                            id="accessLogsDateFilter"
+                            name="date"
+                            class="form-control border-dark border-2 py-2 date-picker-input"
+                            placeholder="dd-mm-aaaa"
+                            autocomplete="off"
+                            inputmode="none"
+                            value="{{ request('date') }}"
+                        >
+
+                        <button type="button"
+                                class="date-picker-icon"
+                                id="accessLogsDateFilterIcon"
+                                aria-label="Abrir calendario del filtro de registros de acceso">
+                            <i class="bi bi-calendar3"></i>
+                        </button>
+                    </div>
                 </div>
 
                 {{-- Reset filters button --}}

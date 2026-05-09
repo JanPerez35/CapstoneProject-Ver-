@@ -49,11 +49,23 @@
                     </div>
 
                     <div class="col-md-6 col-lg-4">
-                        <input
-                            type="date"
-                            id="filterDate"
-                            class="form-control border-2 border-dark flex-grow-1"
-                        >
+                        <div class="date-picker-wrapper h-100">
+                            <input
+                                type="text"
+                                id="filterDate"
+                                class="form-control border-dark border-2 py-2 date-picker-input"
+                                placeholder="dd-mm-aaaa"
+                                autocomplete="off"
+                                inputmode="none"
+                            >
+
+                            <button type="button"
+                                    class="date-picker-icon"
+                                    id="filterDateIcon"
+                                    aria-label="Abrir calendario del filtro de querellas">
+                                <i class="bi bi-calendar3"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="col-md-3 d-flex align-items-end">
@@ -64,57 +76,59 @@
                 </div>
             </div>
 
-        <!--Legend-->
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-body py-3 px-4">
-                <h5 class="fw-bold mb-3">Leyenda</h5>
-
-                <div class="row g-3">
-                    <div class="col-sm-6 col-lg-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-eye fs-5 text-secondary"></i>
-                            <span>Ver Publicación</span>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-6 col-lg-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-check-circle fs-5 text-success"></i>
-                            <span>Resolver Querella</span>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-6 col-lg-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-trash fs-5 text-danger"></i>
-                            <span>Eliminar Publicación</span>
-                        </div>
-                    </div>
-
-                    <div class="col-sm-6 col-lg-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="bi bi-ban fs-5 text-danger"></i>
-                            <span>Bloquear Usuario</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-       <!--Potential Backend Connection-->
+       <!--Backend Connection-->
         @php
             $reports = $reports
         @endphp
 
         <!--Reports table-->
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+
+        <div class="card border-dark border-2 rounded-2 overflow-hidden">
             <div class="card-body p-4 border-bottom">
-                <h2 class="fw-bold mb-1">Querellas del Kinemercado</h2>
-                <p class="text-muted mb-0">
-                    Revisión y administración de querellas realizados sobre publicaciones y vendedores.
-                </p>
+
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
+                    <div>
+                        <h2 class="fw-bold mb-1">Querellas del Kinemercado</h2>
+                        <p class="text-muted mb-0">
+                            Revisión y administración de querellas realizados sobre publicaciones y vendedores.
+                        </p>
+                    </div>
+
+                    <div class="d-flex align-items-start gap-3">
+
+                        <!-- Left side for the leyend title-->
+                        <div class="fw-bold">
+                            Leyenda:
+                        </div>
+
+                        <!-- Right (Vertical list) -->
+                        <div class="d-flex flex-column gap-1">
+
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="bi bi-eye text-secondary"></i> Ver Publicación
+                            </span>
+
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="bi bi-check-circle text-success"></i> Resolver Querella
+                            </span>
+
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="bi bi-trash text-danger"></i> Eliminar Publicación
+                            </span>
+
+                            <span class="d-flex align-items-center gap-1">
+                                <i class="bi bi-ban text-danger"></i> Bloquear Usuario
+                            </span>
+
+                        </div>
+
+                    </div>
+                    </div>
+                </div>
+
             </div>
-            <div class="table-fit-wrapper">
+
+        <div class="table-fit-wrapper border border-2 border-dark rounded-2 mt-3">
                 <table class="table align-middle mb-0 reports-table" id="reportsTable">
                     <thead class="table-light">
                     <tr>
@@ -124,23 +138,53 @@
                         <th>Fecha Reportada (mm/dd/yyyy)</th>
                         <th>Descripción de la Querella</th>
 
-                        <th class="text-center action-header-icon" title="Ver publicación" aria-label="Ver publicación">
-                            <i class="bi bi-eye fs-5 text-secondary"></i>
+                        <th class="text-center action-header-icon">
+                            <span
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                data-bs-custom-class="custom-tooltip"
+                                data-bs-title="Ver Publicación"
+                            >
+                                <i class="bi bi-eye fs-5 text-secondary"></i>
+                            </span>
                         </th>
-                        <th class="text-center action-header-icon" title="Resolver querella" aria-label="Resolver querella">
-                            <i class="bi bi-check-circle fs-5 text-success"></i>
+                        <th class="text-center action-header-icon">
+                            <span
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                data-bs-custom-class="custom-tooltip"
+                                data-bs-title="Resolver Querella"
+                            >
+                                <i class="bi bi-check-circle fs-5 text-success"></i>
+                            </span>
                         </th>
-                        <th class="text-center action-header-icon" title="Eliminar publicación" aria-label="Eliminar publicación">
-                            <i class="bi bi-trash fs-5 text-danger"></i>
+
+                        <th class="text-center action-header-icon">
+                            <span
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                data-bs-custom-class="custom-tooltip"
+                                data-bs-title="Eliminar Publicación"
+                            >
+                                <i class="bi bi-trash fs-5 text-danger"></i>
+                            </span>
                         </th>
-                        <th class="text-center action-header-icon" title="Bloquear usuario" aria-label="Bloquear usuario">
-                            <i class="bi bi-ban fs-5 text-danger"></i>
-                        </th>
-                    </tr>
+
+                        <th class="text-center action-header-icon">
+                            <span
+                                data-bs-toggle="tooltip"
+                                data-bs-placement="top"
+                                data-bs-custom-class="custom-tooltip"
+                                data-bs-title="Bloquear Usuario"
+                            >
+                                <i class="bi bi-ban fs-5 text-danger"></i>
+                            </span>
+                         </th>
+
+                      </tr>
                     </thead>
 
                     <tbody>
-
                     </tbody>
                 </table>
 
@@ -163,7 +207,7 @@
         <div class="modal fade" id="resolveQuerellaModal" tabindex="-1" aria-labelledby="resolveQuerellaModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
-                    <div class="modal-header modal-header-top border-0">
+                    <div class="modal-header modal-header-top border-0 align-items-start">
                         <div class="pe-3">
                             <h4 class="modal-title fw-bold mb-1" id="resolveQuerellaModalLabel">Resolver querella</h4>
                             <p class="text-dark mb-0">¿Estás seguro de que deseas marcar este querella como resuelto?</p>
@@ -183,7 +227,7 @@
         <div class="modal fade" id="deletePostModal" tabindex="-1" aria-labelledby="deletePostModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
-                    <div class="modal-header modal-header-top border-0">
+                    <div class="modal-header modal-header-top border-0 align-items-start">
                         <div class="pe-3">
                             <h4 class="modal-title fw-bold mb-1" id="deletePostModalLabel">Eliminar publicación</h4>
                             <p class="text-dark mb-0">¿Estás seguro de que deseas eliminar esta publicación?</p>
@@ -203,7 +247,7 @@
         <div class="modal fade" id="bloquearUserModal" tabindex="-1" aria-labelledby="bloquearUserModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
-                    <div class="modal-header modal-header-top border-0">
+                    <div class="modal-header modal-header-top border-0 align-items-start">
                         <div class="pe-3">
                             <h4 class="modal-title fw-bold mb-1" id="bloquearUserModalLabel">Bloquear usuario</h4>
                             <p class="text-dark mb-0">¿Estás seguro de que deseas bloquear este usuario?<br> Sus publicaciones dejarán de estar visibles y esta querella se marcará como resuelto.</p>
@@ -223,7 +267,7 @@
         <div class="toast-container position-fixed bottom-0 start-0 p-3">
             <div id="resolveToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2 market-toast" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="d-flex align-items-center">
-                    <div class="toast-body fw-semibold rounded-0 pe-1 market-toast-body">Querella resuelto correctamente.</div>
+                    <div class="toast-body fw-semibold rounded-0 pe-1 market-toast-body">Querella resuelta correctamente.</div>
                     <button type="button" class="btn-close p-0 ms-1 me-2 market-toast-close" data-bs-dismiss="toast" aria-label="Cerrar"></button>
                 </div>
             </div>

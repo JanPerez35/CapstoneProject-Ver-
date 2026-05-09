@@ -153,12 +153,12 @@
 @endphp
 
 {{--Report title--}}
-<h1>Reporte de Costos de Facilidades</h1>
+<h1>Reporte de Costos de Instalaciones</h1>
 
 {{--Report description--}}
 <p>
     Este reporte fue generado a través de la página de MAIKINE. Representa una lista de los eventos
-    registrados y sus costos estimados según el período seleccionado, el salón y los servicios aplicados.
+    registrados y sus costos estimados según el período seleccionado, el áreas y los servicios aplicados.
 </p>
 
 {{--Report metadata that connects to backend information--}}

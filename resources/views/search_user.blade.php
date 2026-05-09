@@ -118,12 +118,12 @@
                 {{-- Backend preprocessing for status of each user. Basically verifies in the tables the state of a user --}}
                 @php
                     $isBlocked = in_array($user->status, ['Bloqueado', 'Blocked']);
-                    $isActive = in_array($user->status, ['Activo', 'Active']) || !$isBlocked;
+                    $isActive = in_array($user->status, ['Activo', 'Activo']) || !$isBlocked;
                     $statusLabel = $isBlocked ? 'Bloqueado' : 'Activo';
                 @endphp
 
                 {{-- Individual user card --}}
-                <div class="card border-0 shadow-sm rounded-4 user-card"
+                <div class="card border-dark border-2 rounded-4 user-card"
 
                      {{-- Data attributes used by JS for filtering and actions --}}
                      data-user-id="{{ $user->id }}"

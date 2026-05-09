@@ -93,20 +93,32 @@
 
                 {{-- Date filter and clear all filters --}}
                 <div class="d-flex flex-column flex-md-row gap-3 align-items-stretch">
-                    <div style="max-width: 540px; width: 100%;">
-                        <div class="input-group search-group h-100">
-                        <input
-                            type="date"
-                            id="borrowDateFilter"
-                            name="date"
-                            class="form-control py-2"
-                            value="{{ request('date') }}"
-                        >
+                    <div style="max-width: 315px; width: 100%;">
+                        <div class="date-picker-wrapper h-100">
+
+                            <input
+                                type="text"
+                                id="borrowDateFilter"
+                                name="date"
+                                class="form-control border-dark border-2 py-2 date-picker-input"
+                                placeholder="dd-mm-aaaa"
+                                autocomplete="off"
+                                inputmode="none"
+                                value="{{ request('date') }}"
+                            >
+
+                            <button type="button"
+                                    class="date-picker-icon"
+                                    id="borrowDateFilterIcon"
+                                    aria-label="Abrir calendario del filtro de préstamos">
+                                <i class="bi bi-calendar3"></i>
+                            </button>
+
                         </div>
                     </div>
 
                     <div>
-                        <a href="{{ route('inventory_management.borrows') }}" class="btn btn-outline-secondary py-2 px-4">
+                        <a href="{{ route('inventory_management.borrows') }}" class="btn btn-outline-secondary py-2 px-2">
                             Limpiar Filtros
                         </a>
                     </div>
@@ -119,11 +131,11 @@
 
             {{-- LEFT COLUMN: Pending special requests --}}
             <div class="col-lg-6">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card border-2 border-dark shadow-sm rounded-4 ">
                     <div class="card-body p-0">
 
                         {{-- Header --}}
-                        <div class="p-4 border-bottom">
+                        <div class="p-4">
                             <h4 class="fw-bold mb-1">
                                 <i class="bi bi-exclamation-circle me-2 text-warning"></i>
                                 Solicitudes por Revisar
@@ -145,7 +157,7 @@
                             @forelse($pending as $lending)
                                 {{-- Single pending request card, the structure for all cards in this area --}}
                                 <div
-                                    class="borrow-request pending-request card border rounded-0 shadow-sm m-3"
+                                    class="borrow-request pending-request card border  border-dark border-2 rounded-0 m-3"
 
                                     {{-- Used for filtering with the JS by date and general search matching --}}
                                     data-search="{{ strtolower(($lending->items->first()->equipment->description ?? 'equipo') . ' ' . ($lending->user->first_name ?? '') . ' ' . ($lending->user->last_name ?? '') . ' ' . ($lending->special_reason ?? '')) }}"
@@ -153,8 +165,8 @@
                                 >
                                     <div class="card-body p-4">
                                         {{-- Request content --}}
-                                        <div class="d-flex flex-column h-100">
-                                            <div class="flex-grow-1">
+                                        <div class="d-flex flex-column ">
+                                            <div class="flex-grow-1 ">
 
                                                 {{-- Title for each card, for standardizing --}}
                                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
@@ -213,15 +225,30 @@
                                                     <div class="col-md-4">
                                                         <div>
                                                             <span class="text-muted">Recogida:</span>
-                                                            <strong>{{ \Carbon\Carbon::parse($lending->start_time)->format('m/d/Y h:i A') }}</strong>
+                                                            <strong>
+                                                            {{ mb_convert_case(
+                                                                \Carbon\Carbon::parse($lending->start_time)
+                                                                    ->locale('es')
+                                                                    ->translatedFormat('j-F-Y h:i a'),
+                                                                MB_CASE_TITLE,
+                                                                "UTF-8"
+                                                            ) }}
+                                                            </strong>
                                                         </div>
                                                     </div>
 
                                                     <div class="col-md-4">
                                                         <div>
                                                             <span class="text-muted">Devolución:</span>
-                                                            <strong>{{ \Carbon\Carbon::parse($lending->end_time)->format('m/d/Y h:i A') }}</strong>
-                                                        </div>
+                                                            <strong>
+                                                                {{ mb_convert_case(
+                                                                    \Carbon\Carbon::parse($lending->end_time)
+                                                                        ->locale('es')
+                                                                        ->translatedFormat('j-F-Y h:i a'),
+                                                                    MB_CASE_TITLE,
+                                                                    "UTF-8"
+                                                                ) }}
+                                                            </strong>                                                        </div>
                                                     </div>
                                                 </div>
 
@@ -278,11 +305,11 @@
 
             {{-- RIGHT: Active approved requests --}}
             <div class="col-lg-6">
-                <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card border-2 border-dark rounded-4 h-100">
                     <div class="card-body p-0">
 
                         {{-- Section header --}}
-                        <div class="p-4 border-bottom">
+                        <div class="p-4 ">
                             <h4 class="fw-bold mb-1">
                                 <i class="bi bi-check-circle me-2 text-success"></i>
                                 Solicitudes Activas
@@ -306,7 +333,7 @@
                             @forelse($approved as $lending)
                                 {{-- Individual active request card, blueprint for all of them. --}}
                                 <div
-                                    class="borrow-request active-request card border rounded-0 shadow-sm m-3"
+                                    class="borrow-request active-request card border rounded-0 border-dark border-2 m-3"
 
                                     {{-- Used by JS for filtering by text and date --}}
                                     data-search="{{ strtolower(($lending->items->first()->equipment->description ?? 'equipo') . ' ' . ($lending->user->first_name ?? '') . ' ' . ($lending->user->last_name ?? '')) }}"
@@ -383,13 +410,28 @@
                                             {{-- Dates --}}
                                             <div class="col-md-6">
                                                 <div>
+
                                                     <span class="text-muted">Recogida:</span>
-                                                    <strong>{{ \Carbon\Carbon::parse($lending->start_time)->format('m/d/Y h:i A') }}</strong>
-                                                </div>
+                                                    <strong>
+                                                        {{ mb_convert_case(
+                                                            \Carbon\Carbon::parse($lending->start_time)
+                                                                ->locale('es')
+                                                                ->translatedFormat('j-F-Y h:i a'),
+                                                            MB_CASE_TITLE,
+                                                            "UTF-8"
+                                                        ) }}
+                                                    </strong>                                                </div>
                                                 <div>
                                                     <span class="text-muted">Devolución:</span>
-                                                    <strong>{{ \Carbon\Carbon::parse($lending->end_time)->format('m/d/Y h:i A') }}</strong>
-                                                </div>
+                                                    <strong>
+                                                        {{ mb_convert_case(
+                                                            \Carbon\Carbon::parse($lending->end_time)
+                                                                ->locale('es')
+                                                                ->translatedFormat('j-F-Y h:i a'),
+                                                            MB_CASE_TITLE,
+                                                            "UTF-8"
+                                                        ) }}
+                                                    </strong>                                                </div>
                                             </div>
                                         </div>
 

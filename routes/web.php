@@ -268,7 +268,20 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
     Route::post('/facility/import-mock-events', [FacilityCostController::class, 'importMockEvents'])
         ->name('facility.import.mock');
 
+    Route::put('/facility/events/{item}', [FacilityCostController::class, 'updateEvent'])
+        ->name('facility.events.update');
 
+    Route::post('/facility/events/{item}/related', [FacilityCostController::class, 'storeRelatedEvent'])
+        ->name('facility.events.related');
+
+    Route::post('/facility/events/{item}/customize-days', [FacilityCostController::class, 'customizeDays'])
+        ->name('facility.events.customize-days');
+
+    Route::put('/facility/events/{item}/sub-event', [FacilityCostController::class, 'updateSubEvent'])
+        ->name('facility.events.sub-event.update');
+
+    Route::put('/facility/events/{item}/schedule', [FacilityCostController::class, 'updateEventSchedule'])
+        ->name('facility.events.schedule.update');
 
     /**
      * Profile

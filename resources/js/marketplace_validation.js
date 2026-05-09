@@ -290,8 +290,7 @@ const nextPostAvailableTime = document.getElementById('nextPostAvailableTime');
  * Change this value to 15 to test the disabled create button
  * and the max-post-limit modal.
  */
-let userPostsLast15Days = 0;
-let MAX_POSTS_15_DAYS = 0;
+let userPostsLast24Hours = 2;
 
 async function loadPostLimit() {
     try {
@@ -582,13 +581,13 @@ function createMarketplaceCardHTML(post) {
            data-condition="${post.condition}"
            data-seller="${post.user?.name || 'Usuario'}"
        >
-           <div class="card h-100 shadow-sm rounded-4 overflow-hidden item-card border-0 marketplace-card-shell">
+           <div class="card h-100 rounded-4 overflow-hidden item-card border-dark border-3 marketplace-card-shell">
 
                <img
                    src="${post.photo_1_url ? '/storage/' + post.photo_1_url : '/images/marketplace_images/picture-not-available.png'}"
                    class="card-img-top"
                    alt="${post.title}"
-                   style="height: 220px; object-fit: contain;"
+                   style="height: 300px; object-fit: contain;"
                    onerror="this.onerror=null;this.src='/images/marketplace_images/picture-not-available.png';"
                >
 
@@ -2471,7 +2470,7 @@ if (publishBtn && createPostForm) {
             },
             body: formData
         });
-        
+
 
         currentMarketplacePage = 1;
         await fetchPosts();

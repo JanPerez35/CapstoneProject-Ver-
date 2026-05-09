@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Concerns\LogsActivity;
 
 /**
  * Class PostController
@@ -24,6 +25,8 @@ use Illuminate\Support\Facades\DB;
  */
 class PostController extends Controller
 {
+    use LogsActivity;
+
     /**
      * Stores a new marketplace post.
      *
@@ -88,6 +91,11 @@ class PostController extends Controller
             ]);
         });
 
+        $this->logActivity(
+            'Crear publicación',
+            "Se creó la publicación: {$post->title} (ID: {$post->id})"
+        );
+
         return response()->json(['success' => true]);
     }
     /**
@@ -119,7 +127,15 @@ class PostController extends Controller
             }
         }
 
+        $postTitle = $post->title;
+        $postId = $post->id;
+
         $post->delete();
+
+        $this->logActivity(
+            'Eliminar publicación',
+            "Se eliminó la publicación: {$postTitle} (ID: {$postId})"
+        );
 
         return response()->json([
             'success' => true,
@@ -177,6 +193,10 @@ class PostController extends Controller
                     'user' => [
                         'id' => $post->user->id,
                         'name' => $sellerName,
+                        'first_name' => $post->user->first_name ?? '',
+                        'last_name' => $post->user->last_name ?? '',
+                        'average_rating' => round($averageRating ?? 0, 1),
+                        'reviews_count' => $reviewsCount,
                     ],
                 ];
             });
@@ -223,6 +243,10 @@ class PostController extends Controller
             'user' => [
                 'id' => $post->user->id,
                 'name' => $sellerName,
+                'first_name' => $post->user->first_name ?? '',
+                'last_name' => $post->user->last_name ?? '',
+                'average_rating' => $averageRating,
+                'reviews_count' => $reviewsCount,
             ]
         ]);
     }

@@ -3,7 +3,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     {{--Main navigation header used across all system modules--}}
-    <header class="p-3 bg-white border shadow-sm">
+    <header class="p-3 app-navbar border">
         <div class="container-fluid">
 
             {{--Navigation menu containing links to all major system sections--}}

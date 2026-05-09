@@ -38,10 +38,11 @@
             </button>
         </div>
 
-        {{--Maximum post per day notice--}}
-        <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-3">
-            <strong><i class="bi bi-info-circle me-2"></i>Límite diario:</strong>
-            Puedes crear un máximo de <strong>15 publicaciones cada 24 horas</strong>.
+        {{--Maximum post per day notice--}}<div class="d-inline-flex align-items-center alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-3">
+            <strong><i class="bi bi-info-circle me-2"></i>Límite de Publicaciones:</strong>
+            <span class="ms-1">
+        Puedes crear un máximo de <strong>15 publicaciones</strong> dentro de un período de <strong>15 días</strong>.
+            </span>
         </div>
 
 
