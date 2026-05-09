@@ -112,7 +112,8 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
     Route::get('/search_user', [UserController::class, 'index'])
         ->name('search_user')->middleware('role:Admin Super');
 
-    Route::put('/users/{user}/role', [UserController::class, 'updateRole']);
+    Route::put('/users/{user}/role', [UserController::class, 'updateRole'])
+        ->middleware('role:Admin Super');
 
     Route::put('/users/{user}/status', [UserController::class, 'updateStatus'])
         ->name('users.updateStatus');
@@ -196,11 +197,14 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
         ->name('marketplace_management')
         ->middleware('role:Admin Super,Admin Mercado');
 
-    Route::get('/reports', [UserReportController::class, 'index']);
+    Route::get('/reports', [UserReportController::class, 'index'])
+        ->middleware('role:Admin Super,Admin Mercado');
+
     Route::post('/reports', [UserReportController::class, 'store']);
     Route::get('/reports/data', [UserReportController::class, 'getReports']);
     Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
     Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
+    Route::get('/user/post-limit', [PostController::class, 'getUserPostLimit']);
 
 
     /**
@@ -328,6 +332,25 @@ Route::get('/test-email/request-approved', [EmailController::class, 'requestAppr
 Route::get('/test-email/request-denied', [EmailController::class, 'requestDenied']);
 Route::get('/test-email/user-banned', [EmailController::class, 'userBanned']);
 Route::get('/test-email/user-unbanned', [EmailController::class, 'userUnbanned']);
+
+/**
+ * Temporary concurrency testing route.
+ *
+ * Used for load testing post creation with tools like k6.
+ */
+Route::post('/test-concurrency', function () {
+    \App\Models\Post::create([
+        'user_id' => 1,
+        'title' => 'k6 test',
+        'description' => 'concurrency',
+        'cost' => 10,
+        'category' => 'test',
+        'condition' => 'nuevo',
+        'status' => 'Disponible',
+    ]);
+
+    return response()->json(['ok' => true]);
+});
 
 
 /**

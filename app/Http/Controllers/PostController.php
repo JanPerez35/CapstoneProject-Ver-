@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Models\Review;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class PostController
@@ -19,15 +20,19 @@ use App\Models\User;
  * - deleting posts
  * - listing posts
  * - retrieving post details
+ * - enforcing daily post limits
  */
 class PostController extends Controller
-{  
+{
     /**
      * Stores a new marketplace post.
      *
      * Validates:
      * - title, cost, category, condition
      * - optional images (max 3)
+     *
+     * Enforces:
+     * - daily post limit per user
      *
      * Handles:
      * - image upload to storage
@@ -45,26 +50,43 @@ class PostController extends Controller
             'images.*' => 'image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $paths = [];
+        $userId = auth()->id();
 
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $image) {
-                $paths[] = $image->store('posts', 'public');
+        DB::transaction(function () use ($request, $userId) {
+
+            $count = DB::table('posts')
+                ->where('user_id', $userId)
+                ->where('created_at', '>=', now()->subDays(15))
+                ->lockForUpdate()
+                ->count();
+
+            if ($count >= 15) {
+                abort(403, 'Límite alcanzado');
             }
-        }
 
-        Post::create([
-            'user_id' => auth()->id(),
-            'title' => $request->title,
-            'description' => $request->description,
-            'cost' => $request->cost,
-            'category' => $request->category,
-            'condition' => $request->condition,
-            'status' => 'Disponible',
-            'photo_1_url' => $paths[0] ?? null,
-            'photo_2_url' => $paths[1] ?? null,
-            'photo_3_url' => $paths[2] ?? null,
-        ]);
+            $paths = [];
+
+            if ($request->hasFile('images')) {
+                foreach ($request->file('images') as $image) {
+                    $paths[] = $image->store('posts', 'public');
+                }
+            }
+
+            DB::table('posts')->insert([
+                'user_id' => $userId,
+                'title' => $request->title,
+                'description' => $request->description,
+                'cost' => $request->cost,
+                'category' => $request->category,
+                'condition' => $request->condition,
+                'status' => 'Disponible',
+                'photo_1_url' => $paths[0] ?? null,
+                'photo_2_url' => $paths[1] ?? null,
+                'photo_3_url' => $paths[2] ?? null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        });
 
         return response()->json(['success' => true]);
     }
@@ -86,9 +108,9 @@ class PostController extends Controller
             abort(403);
         }
         $images = [
-                $post->photo_1_url,
-                $post->photo_2_url,
-                $post->photo_3_url
+            $post->photo_1_url,
+            $post->photo_2_url,
+            $post->photo_3_url
         ];
 
         foreach ($images as $image) {
@@ -102,9 +124,9 @@ class PostController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Post eliminado exitosamente'
-            ]);
+        ]);
     }
-    /**
+   /**
      * Displays all posts (view).
      *
      * Returns:
@@ -161,7 +183,7 @@ class PostController extends Controller
 
         return response()->json($posts);
     }
-    /**
+     /**
      * Retrieves a single post by ID.
      *
      * Includes:
@@ -205,4 +227,38 @@ class PostController extends Controller
         ]);
     }
 
+    /**
+     * Returns post limit info for frontend.
+     */
+    public function getUserPostLimit()
+    {
+        return response()->json(
+            $this->getPostLimitData(auth()->id())
+        );
+    }
+
+    /**
+     * CENTRALIZED LOGIC
+     *
+     * Calculates:
+     * - posts in last 24h
+     * - max allowed
+     * - remaining posts
+     * - if limit reached
+     */
+    private function getPostLimitData($userId)
+    {
+        $postsLast15Days = Post::where('user_id', $userId)
+            ->where('created_at', '>=', now()->subDays(15))
+            ->count();
+
+        $maxPosts = 15;
+
+        return [
+            'posts_last_15_days' => $postsLast15Days,
+            'max_posts' => $maxPosts,
+            'remaining_posts' => max(0, $maxPosts - $postsLast15Days),
+            'limit_reached' => $postsLast15Days >= $maxPosts,
+        ];
+    }
 }

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schedule;
 Schedule::command('logs:prune-activity')->daily();
 Schedule::command('data:prune-tri-yearly-records')->daily();
 Schedule::command('data:prune-old-reviews')->daily();
+Schedule::command('data:prune-old-posts')->daily();
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());

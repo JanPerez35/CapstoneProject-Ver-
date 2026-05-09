@@ -285,18 +285,35 @@ const maxPostLimitModal = document.getElementById('maxPostLimitModal');
 const nextPostAvailableTime = document.getElementById('nextPostAvailableTime');
 
 /**
- * Maximum number of marketplace posts a user may create within 24 hours.
- */
-const MAX_DAILY_POSTS = 15;
-
-/**
  * Temporary mock count until backend support is added.
  *
  * Change this value to 15 to test the disabled create button
  * and the max-post-limit modal.
  */
-let userPostsLast24Hours = 15;
+let userPostsLast15Days = 0;
+let MAX_POSTS_15_DAYS = 0;
 
+async function loadPostLimit() {
+    try {
+        const res = await fetch('/user/post-limit');
+
+        if (!res.ok) throw new Error('Error en endpoint');
+
+        const data = await res.json();
+
+        userPostsLast15Days = data.posts_last_15_days ?? 0;
+        MAX_POSTS_15_DAYS = data.max_posts ?? 15;
+
+    } catch (error) {
+        console.error('Error cargando límite:', error);
+
+        // fallback seguro
+        userPostsLast15Days = 0;
+        MAX_POSTS_15_DAYS = 15;
+    }
+
+    applyPostLimitState();
+}
 
 /**
  * Builds the next available posting time shown in the max-post-limit modal.
@@ -331,7 +348,7 @@ function formatNextPostAvailableTime() {
 function applyPostLimitState() {
     if (!openCreatePostBtn) return;
 
-    const hasReachedLimit = userPostsLast24Hours >= MAX_DAILY_POSTS;
+    const hasReachedLimit = MAX_POSTS_15_DAYS > 0 && userPostsLast15Days >= MAX_POSTS_15_DAYS;
 
     openCreatePostBtn.disabled = hasReachedLimit;
     openCreatePostBtn.classList.toggle('disabled', hasReachedLimit);
@@ -344,7 +361,7 @@ function applyPostLimitState() {
 /**
  * Initializes the daily post limit state when the marketplace page loads.
  */
-applyPostLimitState();
+loadPostLimit();
 
 
 /**
@@ -354,7 +371,7 @@ applyPostLimitState();
  * posting time, and opens the max-post-limit modal instead.
  */
 openCreatePostBtn?.addEventListener('click', (event) => {
-    if (userPostsLast24Hours < MAX_DAILY_POSTS) return;
+    if (MAX_POSTS_15_DAYS === 0 || userPostsLast15Days < MAX_POSTS_15_DAYS) return;
 
     event.preventDefault();
     event.stopPropagation();
@@ -2454,7 +2471,7 @@ if (publishBtn && createPostForm) {
             },
             body: formData
         });
-
+        
 
         currentMarketplacePage = 1;
         await fetchPosts();
