@@ -323,7 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             /**
              * This is the real value submitted to Laravel.
-             * Keep this as YYYY-MM-DD so backend validation continues working.
+             * Keep this as Day Month Year so backend validation continues working.
              */
             dateFormat: 'Y-m-d',
 
@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', function () {
              * This is what the user sees.
              */
             altInput: true,
-            altFormat: 'd-F-Y',
+            altFormat: 'j F Y',
 
             allowInput: false,
             disableMobile: true,

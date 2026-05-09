@@ -213,6 +213,8 @@
                             data-description="{{ strtolower($post->description ?? '') }}"
                             data-sport="{{ strtolower($post->category ?? '') }}"
                             data-price="{{ $post->cost ?? 0 }}"
+                            data-created-at="{{ $post->created_at?->toISOString() }}"
+                            data-time-ago="{{ $post->created_at?->diffForHumans() }}"
                         >
                             <div class="card h-100 border-dark border-3 rounded-4 overflow-hidden item-card marketplace-card-shell">
                                 <img
@@ -275,7 +277,9 @@
                                         </div>
                                         <div>
                                             <i class="bi bi-clock me-2"></i>
-                                           Publicado {{ $post->created_at?->diffForHumans() }}
+                                            <span class="profile-post-published-date">
+                                                Publicado {{ $post->created_at?->diffForHumans() }}
+                                            </span>
                                         </div>
                                     </div> {{-- marketplace-card-meta --}}
                                     </div>

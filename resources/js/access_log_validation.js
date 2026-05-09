@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * - Replaces the native HTML date input with the shared borrows-style calendar component
      * - Displays the calendar in Spanish
      * - Keeps Laravel-compatible values in YYYY-MM-DD format
-     * - Displays user-friendly dates using day-month-year format
+     * - Displays user-friendly dates using  dd-MMM-yyyy format
      * - Automatically submits the filter form when a date is selected
      * - Opens the calendar when the custom calendar icon is clicked
      */
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             locale: Spanish,
             dateFormat: 'Y-m-d',
             altInput: true,
-            altFormat: 'j-F-Y',
+            altFormat: 'j F Y',
             allowInput: false,
             disableMobile: true,
             onChange: function () {
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (dateFilter._flatpickr?.altInput) {
-            dateFilter._flatpickr.altInput.placeholder = 'dd-mm-aaaa';
+            dateFilter._flatpickr.altInput.placeholder = 'Día Mes Año';
             dateFilter._flatpickr.altInput.classList.add('date-picker-input');
         }
 

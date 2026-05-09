@@ -503,12 +503,14 @@ function clearImageError() {
 }
 
 /**
- * Formats the post publication text shown on each marketplace card.
+ * Formats the publication text shown on each marketplace card.
  *
- * If the post was created less than 24 hours ago, it keeps the relative
- * time text from the backend, such as "hace 2 horas".
- * If 24 hours or more have passed, it shows the exact publication date
- * using Spanish month names.
+ * If the post is less than 7 days old, it keeps the relative
+ * time text returned by the backend, such as "hace 38 segundos",
+ * "hace 2 horas", or "hace 4 días".
+ *
+ * If the post is 7 days old or older, it displays the exact
+ * publication date using the format dd-MMM-yyyy in Spanish.
  *
  * @param {Object} post - Marketplace post object.
  * @returns {string} Formatted publication text.
@@ -520,17 +522,34 @@ function formatPostPublishedDate(post) {
 
     const createdAt = new Date(post.created_at);
     const now = new Date();
-    const hoursPassed = (now - createdAt) / (1000 * 60 * 60);
 
-    if (hoursPassed < 24) {
+    const daysPassed = (now - createdAt) / (1000 * 60 * 60 * 24);
+
+    if (daysPassed < 7) {
         return `Publicado ${post.time_ago}`;
     }
 
-    return `Publicado el ${createdAt.toLocaleDateString('es-PR', {
+    const formattedDate = createdAt.toLocaleDateString('es-PR', {
         day: 'numeric',
         month: 'long',
         year: 'numeric'
-    })}`;
+    });
+
+    const cleanedDate = formattedDate
+        .replaceAll(' de ', ' ')
+        .split(' ')
+        .map((part, index) => {
+            if (index === 1) {
+                return part.charAt(0).toUpperCase() + part.slice(1);
+            }
+
+            return part;
+        })
+        .join(' ');
+
+    return `Publicado el ${cleanedDate}`;
+
+
 }
 
 /**

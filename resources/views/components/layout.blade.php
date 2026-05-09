@@ -335,7 +335,7 @@
                                            class="form-control form-control-lg date-picker-input"
                                            id="pickup_date"
                                            name="pickup_date"
-                                           placeholder="dd-mm-aaaa"
+                                           placeholder="Día Mes Año"
                                            autocomplete="off"
                                            inputmode="none"
                                            required>
@@ -408,7 +408,7 @@
                                                class="form-control form-control-lg date-picker-input"
                                                id="return_date"
                                                name="return_date"
-                                               placeholder="dd-mm-aaaa"
+                                               placeholder="Día Mes Año"
                                                autocomplete="off"
                                                inputmode="none">
 

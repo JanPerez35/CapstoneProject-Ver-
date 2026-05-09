@@ -186,7 +186,7 @@
             - IP address
             - optional comment/details
         --}}
-        <div class="card border rounded-4 shadow-sm overflow-hidden">
+        <div class="card border border-dark border-2 rounded-4 shadow-sm overflow-hidden">
             <div class="card-body p-4 border-bottom">
                 <h3 class="fw-bold mb-2">Registros de Acceso</h3>
                 <p class="text-muted mb-0 fs-5"> Historial de actividades y acciones realizadas dentro del sistema.</p>
@@ -194,30 +194,30 @@
 
             <div class="table-responsive">
                 <table class="table align-middle mb-0" id="accessLogsTable">
-                    <thead class="bg-light">
+                    <thead class="table-light">
                         <tr>
                             {{-- Timestamp column --}}
-                            <th class="px-4 py-3 fw-bold text-nowrap" style="min-width: 220px;">
+                            <th class="table-light px-4 py-3 fw-bold text-nowrap" style="min-width: 220px;">
                                 Marca de Tiempo
                                 <div class="small mt-1">
-                                    (mm/dd/yyyy) (hh:mm AM/PM)
+                                    (Día Mes Año), (hh:mm AM/PM)
                                 </div>
                             </th>
 
                             {{-- User full name column --}}
-                            <th class="px-4 py-3 fw-bold">Usuario</th>
+                            <th class="table-light px-4 py-3 fw-bold ">Usuario</th>
 
                             {{-- Role badge column --}}
-                            <th class="px-4 py-3 fw-bold">Rol</th>
+                            <th class="table-light px-4 py-3 fw-bold">Rol</th>
 
                             {{-- Logged action/event column --}}
-                            <th class="px-4 py-3 fw-bold">Evento</th>
+                            <th class="table-light px-4 py-3 fw-bold">Evento</th>
 
                             {{-- IP address column --}}
-                            <th class="px-4 py-3 fw-bold">Dirección IP</th>
+                            <th class="table-light px-4 py-3 fw-bold">Dirección IP</th>
 
                             {{-- Additional details/comment column --}}
-                            <th class="px-4 py-3 fw-bold">Comentario</th>
+                            <th class="table-light px-4 py-3 fw-bold">Comentario</th>
                         </tr>
                     </thead>
 
@@ -227,7 +227,27 @@
                         <tr>
                             {{-- Timestamp converted to Puerto Rico timezone --}}
                             <td class="px-4 py-3">
-                                {{ \Carbon\Carbon::parse($log->created_at)->timezone('America/Puerto_Rico')->format('m/d/Y h:i A') }}
+                                @php
+                                    $formattedDate = \Carbon\Carbon::parse($log->created_at)
+                                        ->timezone('America/Puerto_Rico')
+                                        ->locale('es')
+                                        ->translatedFormat('j F Y, h:i A');
+                                    $formattedDate = str_replace(
+                                        ['A. M.', 'P. M.', 'A.M.', 'P.M.', 'a. m.', 'p. m.', 'a.m.', 'p.m.'],
+                                         ['AM', 'PM', 'AM', 'PM', 'AM', 'PM', 'AM', 'PM'],
+                                        $formattedDate
+                                    );
+
+                                    $formattedDate = preg_replace_callback(
+                                        '/\b([a-záéíóúñ]+)\b/u',
+                                        function ($matches) {
+                                            return ucfirst($matches[1]);
+                                        },
+                                        $formattedDate
+                                    );
+                                @endphp
+
+                                {{ $formattedDate }}
                             </td>
 
                             {{-- User full name fallback --}}

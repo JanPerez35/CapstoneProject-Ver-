@@ -229,7 +229,7 @@
                                                             {{ mb_convert_case(
                                                                 \Carbon\Carbon::parse($lending->start_time)
                                                                     ->locale('es')
-                                                                    ->translatedFormat('j-F-Y h:i a'),
+                                                                    ->translatedFormat('j F Y h:i a'),
                                                                 MB_CASE_TITLE,
                                                                 "UTF-8"
                                                             ) }}
@@ -244,7 +244,7 @@
                                                                 {{ mb_convert_case(
                                                                     \Carbon\Carbon::parse($lending->end_time)
                                                                         ->locale('es')
-                                                                        ->translatedFormat('j-F-Y h:i a'),
+                                                                        ->translatedFormat('j F Y h:i a'),
                                                                     MB_CASE_TITLE,
                                                                     "UTF-8"
                                                                 ) }}
@@ -416,7 +416,7 @@
                                                         {{ mb_convert_case(
                                                             \Carbon\Carbon::parse($lending->start_time)
                                                                 ->locale('es')
-                                                                ->translatedFormat('j-F-Y h:i a'),
+                                                                ->translatedFormat('j F Y h:i a'),
                                                             MB_CASE_TITLE,
                                                             "UTF-8"
                                                         ) }}
@@ -427,7 +427,7 @@
                                                         {{ mb_convert_case(
                                                             \Carbon\Carbon::parse($lending->end_time)
                                                                 ->locale('es')
-                                                                ->translatedFormat('j-F-Y h:i a'),
+                                                                ->translatedFormat('j F Y h:i a'),
                                                             MB_CASE_TITLE,
                                                             "UTF-8"
                                                         ) }}

@@ -184,11 +184,11 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])
         ->name('posts.destroy');
 
-    Route::get('/posts/{id}', [PostController::class, 'show'])
-        ->name('posts.show');
-
     Route::get('/posts', [PostController::class, 'getPosts'])
         ->name('posts.list');
+
+    Route::get('/posts/{id}', [PostController::class, 'show'])
+        ->name('posts.show');
 
     Route::post('/marketplace/{post}/review', [ReviewController::class, 'store'])
         ->name('marketplace.review.store');
