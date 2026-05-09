@@ -80,6 +80,10 @@ class ChatController extends Controller
         $postId = $request->post_id;
         $sellerId = $request->seller_id;
 
+        if (auth()->id() === $request->seller_id) {
+            abort(403, 'No puedes crear un chat contigo mismo');
+        }
+
         $chat = Chat::firstOrCreate(
             [
                 'post_id' => $postId,

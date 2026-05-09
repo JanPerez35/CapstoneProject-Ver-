@@ -55,6 +55,10 @@ class UserReportController extends Controller
             'description' => 'required|string|min:10|max:1000',
         ]);
 
+        if (auth()->id() == $request->reported_user_id) {
+            abort(403, 'No puedes reportarte a ti mismo');
+        }
+
         $report = UserReport::create([
             'user_id' => auth()->id(),
             'reported_user_id' => $request->reported_user_id,
@@ -125,6 +129,10 @@ class UserReportController extends Controller
     {
         $report->load('reportedUser');
 
+        if (!in_array(auth()->user()->role, ['Admin Super', 'Admin Mercado'])) {
+            abort(403);
+        }
+
         $report->update([
             'status' => 'resolved',
             'resolved_at' => now()
@@ -153,6 +161,10 @@ class UserReportController extends Controller
         $report->load('reportedUser');
 
         $previousStatus = $report->reportedUser->status;
+
+        if (!in_array(auth()->user()->role, ['Admin Super', 'Admin Mercado'])) {
+            abort(403);
+        }
 
         $report->reportedUser->update([
             'status' => 'Bloqueado'

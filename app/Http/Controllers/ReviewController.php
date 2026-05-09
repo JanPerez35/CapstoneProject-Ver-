@@ -39,21 +39,21 @@ class ReviewController extends Controller
      */
     public function store(Request $request, Post $post)
     {
-        // Validate the incoming rating
-        $request->validate([
-            'rating' => 'required|integer|min:1|max:5',
-        ]);
-
         // Get the authenticated user and the seller of the post
         $reviewer = Auth::user();
         $seller = $post->user;
 
         // Prevent users from rating themselves
-        // if ($reviewer->id === $seller->id) {
-        //     return response()->json([
-        //         'message' => 'No puedes calificarte a ti mismo.'
-        //     ], 422);
-        // }
+        if ($reviewer->id === $seller->id) {
+            return response()->json([
+                'message' => 'No puedes calificarte a ti mismo.'
+            ], 422);
+        }
+
+        // Validate the incoming rating
+        $request->validate([
+            'rating' => 'required|integer|min:1|max:5',
+        ]);
 
         // Determine the review status based on the rating
         $status = $request->rating < 2 ? 'negative' : 'confident';
