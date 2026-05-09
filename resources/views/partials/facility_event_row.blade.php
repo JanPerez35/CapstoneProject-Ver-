@@ -45,12 +45,12 @@
             @endif
         @else
             <div>
-                <span class="badge bg-success-subtle text-success-emphasis me-1 position-relative" style="top: -18px;">
+                <span class="badge bg-success-subtle text-success-emphasis me-1 position-relative" style="top: -12px;">
                     Principal
                 </span>
             </div>
         @endif
-        <div style="margin-top: -12px;">
+        <div style="margin-top: 4px;">
             {{ \Illuminate\Support\Str::title(
         \Carbon\Carbon::parse($item->event_date)
         ->locale('es')
