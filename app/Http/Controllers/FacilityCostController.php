@@ -386,40 +386,120 @@ class FacilityCostController extends Controller
 
 public function updateEvent(Request $request, FacilityCostReportItem $item)
 {
-    $validated = $request->validate([
-        'responsible' => ['required', 'string', 'min:5', 'max:60'],
-        'description' => ['required', 'string', 'min:10', 'max:1000'],
-    ]);
-
-    if (!$item->event_group_id) {
-        $item->update([
-            'responsible' => $validated['responsible'],
-            'event_description' => $validated['description'],
-        ]);
-
-        $this->logActivity(
-            'Editar evento de facilidad',
-            "Se editó el evento individual {$item->id}."
-        );
-
+    if (!$item->is_group_parent) {
         return response()->json([
-            'message' => 'Evento actualizado correctamente.',
-        ]);
+            'message' => 'Solo el evento principal puede editarse con esta acción.',
+        ], 422);
     }
 
-    FacilityCostReportItem::where('event_group_id', $item->event_group_id)
-        ->update([
-            'responsible' => $validated['responsible'],
-            'event_description' => $validated['description'],
-        ]);
+    $validated = $request->validate([
+        'classroom' => ['required', 'string'],
+        'event_date' => ['required', 'date'],
+        'event_end_date' => ['required', 'date', 'after_or_equal:event_date'],
+        'start_time' => ['required'],
+        'end_time' => ['required'],
+        'description' => ['required', 'string', 'min:10', 'max:1000'],
+        'responsible' => ['required', 'string', 'min:5', 'max:60'],
+        'period_type' => ['required', 'string'],
+        'rate_mode' => ['required', 'in:daily,weekly,monthly'],
+        'services' => ['required', 'array', 'min:1'],
+
+        'delete_out_of_range_custom_days' => ['nullable', 'boolean'],
+        'delete_custom_days_on_area_change' => ['nullable', 'boolean'],
+    ]);
+
+    $oldClassroom = $item->facilityCost?->classroom_name;
+    $newClassroom = $validated['classroom'];
+    $areaChanged = $oldClassroom !== $newClassroom;
+
+    $newStart = Carbon::parse($validated['event_date'])->startOfDay();
+    $newEnd = Carbon::parse($validated['event_end_date'])->startOfDay();
+
+    /*
+     * 1. Delete custom-day modifications outside the new parent date range.
+     */
+    if ($item->event_group_id) {
+        $outOfRangeCustomDays = FacilityCostReportItem::where('event_group_id', $item->event_group_id)
+            ->where('sub_event_type', 'custom_day')
+            ->where('id', '!=', $item->id)
+            ->where(function ($query) use ($newStart, $newEnd) {
+                $query->whereDate('event_date', '<', $newStart)
+                    ->orWhereDate('event_date', '>', $newEnd);
+            })
+            ->get();
+
+        if ($outOfRangeCustomDays->isNotEmpty() && !$request->boolean('delete_out_of_range_custom_days')) {
+            return response()->json([
+                'message' => 'Hay modificaciones fuera del nuevo rango del evento principal.',
+                'out_of_range_custom_days' => $outOfRangeCustomDays->count(),
+            ], 422);
+        }
+
+        if ($outOfRangeCustomDays->isNotEmpty()) {
+            foreach ($outOfRangeCustomDays as $customDay) {
+                $this->restoreSubEventCostToParent($item, $customDay);
+                $customDay->delete();
+            }
+
+            $item->refresh();
+        }
+    }
+
+    /*
+     * 2. Delete custom-day modifications when the parent area changes.
+     */
+    if ($areaChanged && $item->event_group_id) {
+        $customDays = FacilityCostReportItem::where('event_group_id', $item->event_group_id)
+            ->where('sub_event_type', 'custom_day')
+            ->where('id', '!=', $item->id)
+            ->get();
+
+        if ($customDays->isNotEmpty() && !$request->boolean('delete_custom_days_on_area_change')) {
+            return response()->json([
+                'message' => 'Cambiar el área del evento principal eliminará las modificaciones existentes.',
+                'area_change_custom_days' => $customDays->count(),
+            ], 422);
+        }
+
+        if ($customDays->isNotEmpty()) {
+            foreach ($customDays as $customDay) {
+                $this->restoreSubEventCostToParent($item, $customDay);
+                $customDay->delete();
+            }
+
+            $item->refresh();
+        }
+    }
+
+    /*
+     * 3. Recalculate parent cost with the new parent values.
+     */
+    $costData = $this->calculateFacilityCostFromPayload($validated);
+
+    $item->update([
+        'facility_cost_id' => $costData['facility_cost_id'],
+        'responsible' => $validated['responsible'],
+        'event_description' => $validated['description'],
+        'period_type' => $validated['period_type'],
+        'services' => $validated['services'],
+        'rate_mode' => $validated['rate_mode'],
+        'start_time' => $costData['start_time'],
+        'end_time' => $costData['end_time'],
+        'event_date' => $validated['event_date'],
+        'end_date' => $validated['event_end_date'],
+        'hours_used' => $costData['hours_used'],
+        'calculated_cost' => $costData['calculated_cost'],
+    ]);
 
     $this->logActivity(
         'Editar evento de facilidad',
-        "Se editó el grupo de evento {$item->event_group_id}."
+        "Se editó el evento principal {$item->id}."
     );
 
     return response()->json([
         'message' => 'Evento actualizado correctamente.',
+        'item_id' => $item->id,
+        'calculated_cost' => $costData['calculated_cost'],
     ]);
 }
 
@@ -627,13 +707,15 @@ public function updateSubEvent(Request $request, FacilityCostReportItem $item)
     $subStart = Carbon::parse($validated['event_date'])->startOfDay();
     $subEnd = Carbon::parse($validated['event_end_date'])->startOfDay();
 
-    $parentStart = Carbon::parse($parent->event_date)->startOfDay();
-    $parentEnd = Carbon::parse($parent->end_date ?? $parent->event_date)->startOfDay();
+    if ($item->sub_event_type === 'custom_day') {
+        $parentStart = Carbon::parse($parent->event_date)->startOfDay();
+        $parentEnd = Carbon::parse($parent->end_date ?? $parent->event_date)->startOfDay();
 
-    if ($subStart->lt($parentStart) || $subEnd->gt($parentEnd)) {
-        return response()->json([
-            'message' => 'El sub-evento debe estar dentro del rango de fechas del evento principal.',
-        ], 422);
+        if ($subStart->lt($parentStart) || $subEnd->gt($parentEnd)) {
+            return response()->json([
+                'message' => 'La modificación debe estar dentro del rango de fechas del evento principal.',
+            ], 422);
+        }
     }
 
     $oldParentDeduction = (float) ($item->parent_deducted_cost ?? 0);
@@ -957,18 +1039,6 @@ private function calculateFacilityCostFromPayload(array $data): array
     ]);
 
     $parent = $this->getGroupParent($item);
-
-    $relatedStart = Carbon::parse($validated['event_date'])->startOfDay();
-    $relatedEnd = Carbon::parse($validated['event_end_date'])->startOfDay();
-
-    $parentStart = Carbon::parse($parent->event_date)->startOfDay();
-    $parentEnd = Carbon::parse($parent->end_date ?? $parent->event_date)->startOfDay();
-
-    if ($relatedStart->lt($parentStart) || $relatedEnd->gt($parentEnd)) {
-        return response()->json([
-            'message' => 'El evento relacionado debe estar dentro del rango de fechas del evento principal.',
-        ], 422);
-    }
 
     $groupId = $parent->event_group_id ?? (string) Str::uuid();
 

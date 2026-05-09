@@ -892,83 +892,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
-    if (saveCustomizeDaysBtn) {
-        saveCustomizeDaysBtn.addEventListener('click', async () => {
-            const payload = validateCustomizeDaysForm(true);
-
-            if (!payload) {
-                updateCustomizeSaveState();
-                return;
-            }
-
-            const body = {
-                scope: payload.scope,
-                date: payload.date,
-                start_time: payload.start_time,
-                end_time: payload.end_time,
-            };
-
-            const url = `/facility/events/${payload.event_id}/customize-days`;
-            const method = 'POST';
-        try {
-            await sendJson(url, method, body);
-
-            bootstrap.Modal.getOrCreateInstance($('customizeDaysModal')).hide();
-            toasts.customizeSaved?.show();
-
-            setTimeout(() => {
-                window.location.reload();
-            }, 900);
-        } catch (error) {
-            alert(error.message);
-        }
-    });
-}
-
-if (saveRelatedEventBtn) {
-    saveRelatedEventBtn.addEventListener('click', async () => {
-        const payload = validateRelatedEventForm(true);
-
-        if (!payload) {
-            updateRelatedSaveState();
-            return;
-        }
-
-        const body = {
-            classroom: payload.classroom,
-            responsible: payload.responsible,
-            description: payload.description,
-            services: payload.services,
-            period_type: payload.period_type,
-            rate_mode: payload.rate_mode,
-            event_date: payload.event_date,
-            event_end_date: payload.end_date,
-            start_time: payload.start_time,
-            end_time: payload.end_time,
-        };
-
-        const url = relatedModalMode === 'edit'
-            ? `/facility/events/${editingSubEventId}/sub-event`
-            : `/facility/events/${payload.parent_event_id}/related`;
-
-        const method = relatedModalMode === 'edit' ? 'PUT' : 'POST';
-
-        try {
-            await sendJson(url, method, body);
-
-            bootstrap.Modal.getOrCreateInstance($('createRelatedModal')).hide();
-            toasts.relatedSaved?.show();
-
-            setTimeout(() => {
-                window.location.reload();
-            }, 900);
-        } catch (error) {
-            alert(error.message);
-        }
-    });
-}
-
 function setRelatedModalTitle(text) {
     const title = $('createRelatedModalLabel');
     if (title) title.textContent = text;
@@ -1000,14 +923,17 @@ function getParentRowForGroup(row) {
 function setRelatedModalDateRangeFromParent(parentRow) {
     if (!parentRow) return;
 
-    const startDate = parentRow.dataset.date || '';
-    const endDate = parentRow.dataset.endDate || startDate;
+    relatedStartDate.min = '';
+    relatedStartDate.max = '';
+    relatedEndDate.min = '';
+    relatedEndDate.max = '';
 
-    relatedStartDate.min = startDate;
-    relatedStartDate.max = endDate;
+    relatedStartDate.value = '';
+    relatedEndDate.value = '';
 
-    relatedEndDate.min = startDate;
-    relatedEndDate.max = endDate;
+    updateRelatedAutomaticRateMode();
+    updateRelatedSummary();
+    updateRelatedSaveState();
 }
 
 function fillRelatedModalFromRow(row) {
@@ -1050,9 +976,15 @@ function fillRelatedModalFromRow(row) {
 }
 
     let pendingEditPayload = null;
+    let pendingDeleteOutOfRangeCustomDays = false;
+    let pendingDeleteCustomDaysOnAreaChange = false;
     let editingIsCustomDay = false;
 
-    async function submitEditEvent(payload, deleteOutOfRangeCustomDays = false) {
+    async function submitEditEvent(
+        payload,
+        deleteOutOfRangeCustomDays = false,
+        deleteCustomDaysOnAreaChange = false
+    ) {
         try {
             await sendJson(`/facility/events/${payload.event_id}`, 'PUT', {
                 classroom: payload.classroom,
@@ -1066,6 +998,7 @@ function fillRelatedModalFromRow(row) {
                 start_time: payload.start_time,
                 end_time: payload.end_time,
                 delete_out_of_range_custom_days: deleteOutOfRangeCustomDays,
+                delete_custom_days_on_area_change: deleteCustomDaysOnAreaChange,
             });
 
             bootstrap.Modal.getOrCreateInstance($('editEventModal')).hide();
@@ -1097,11 +1030,30 @@ function fillRelatedModalFromRow(row) {
             });
     }
 
-    function showParentRangeWarning(count) {
+    function getCustomDaysForParent(parentId) {
+        const parentRow = document.querySelector(`tr.parent-event-row[data-entry-id="${parentId}"]`);
+        const groupKey = parentRow?.dataset.groupKey;
+
+        if (!groupKey) return [];
+
+        return [...document.querySelectorAll(
+            `tr.sub-event-row[data-group-key="${groupKey}"][data-sub-event-type="custom_day"]`
+        )];
+    }
+
+    function parentAreaChanged(parentId, newClassroom) {
+        const parentRow = document.querySelector(`tr.parent-event-row[data-entry-id="${parentId}"]`);
+
+        if (!parentRow) return false;
+
+        return parentRow.dataset.classroom !== newClassroom;
+    }
+
+    function showParentEditWarning(message) {
         const text = $('parentRangeWarningText');
 
         if (text) {
-            text.textContent = `Esta edición deja ${count} modificación(es) fuera del rango del evento padre. Si continúas, esas modificaciones serán eliminadas.`;
+            text.textContent = message;
         }
 
         bootstrap.Modal.getOrCreateInstance($('parentRangeWarningModal')).show();
@@ -1112,9 +1064,15 @@ function fillRelatedModalFromRow(row) {
 
         bootstrap.Modal.getOrCreateInstance($('parentRangeWarningModal')).hide();
 
-        await submitEditEvent(pendingEditPayload, true);
+        await submitEditEvent(
+            pendingEditPayload,
+            pendingDeleteOutOfRangeCustomDays,
+            pendingDeleteCustomDaysOnAreaChange
+        );
 
         pendingEditPayload = null;
+        pendingDeleteOutOfRangeCustomDays = false;
+        pendingDeleteCustomDaysOnAreaChange = false;
     });
 
     function isAllowedDateForSelectedPeriod(dateString) {
@@ -3229,20 +3187,43 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             }
 
             if (!editingIsCustomDay) {
-                const affectedCustomDays = getCustomDaysOutsideEditedParentRange(
+                const outOfRangeCustomDays = getCustomDaysOutsideEditedParentRange(
                     payload.event_id,
                     payload.event_date,
                     payload.event_end_date
                 );
 
-                if (affectedCustomDays.length > 0) {
+                const areaWasChanged = parentAreaChanged(
+                    payload.event_id,
+                    payload.classroom
+                );
+
+                const customDaysForParent = getCustomDaysForParent(payload.event_id);
+
+                if (
+                    outOfRangeCustomDays.length > 0 ||
+                    (areaWasChanged && customDaysForParent.length > 0)
+                ) {
                     pendingEditPayload = payload;
-                    showParentRangeWarning(affectedCustomDays.length);
+                    pendingDeleteOutOfRangeCustomDays = outOfRangeCustomDays.length > 0;
+                    pendingDeleteCustomDaysOnAreaChange = areaWasChanged && customDaysForParent.length > 0;
+
+                    let message = '';
+
+                    if (pendingDeleteOutOfRangeCustomDays && pendingDeleteCustomDaysOnAreaChange) {
+                        message = `Esta edición eliminará ${customDaysForParent.length} modificación(es), porque cambiaste el área del evento principal y/o algunas modificaciones quedan fuera del nuevo rango.`;
+                    } else if (pendingDeleteCustomDaysOnAreaChange) {
+                        message = `Cambiar el área del evento principal eliminará ${customDaysForParent.length} modificación(es), porque esas modificaciones fueron calculadas usando el área anterior.`;
+                    } else {
+                        message = `Esta edición deja ${outOfRangeCustomDays.length} modificación(es) fuera del rango del evento principal. Si continúas, esas modificaciones serán eliminadas.`;
+                    }
+
+                    showParentEditWarning(message);
                     return;
                 }
             }
 
-            await submitEditEvent(payload, false);
+            await submitEditEvent(payload, false, false);
         });
     }
 

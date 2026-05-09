@@ -981,7 +981,7 @@
                                     <input
                                         type="text"
                                         id="rentalStartDate"
-                                        name="event_start_date"
+                                        name="event_date"
                                         class="form-control date-picker-input"
                                         placeholder="dd-mm-aaaa"
                                         autocomplete="off"
