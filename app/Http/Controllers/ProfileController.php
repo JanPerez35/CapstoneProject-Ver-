@@ -59,7 +59,7 @@ class ProfileController extends Controller
 
         // Apply pagination to lending requests (5 requests per page)
         $requests = $requestsQuery
-            ->latest('created_at')
+            ->orderByDesc('created_at')
             ->paginate(5)
             ->withQueryString();
 

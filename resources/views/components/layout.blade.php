@@ -300,6 +300,11 @@
                         <div class="mb-4">
                             {{-- Loan request details section --}}
                             <h3 class="fw-bold mb-2">Detalles del Préstamo</h3>
+                            <div class="fw-bold text-success mb-4 d-flex align-items-center gap-2">
+                                <span>Por favor, desplácese hacia abajo para ver más</span>
+                                <i class="bi bi-arrow-down-circle"></i>
+                            </div>
+
 
                             {{-- Service rules and operating hours --}}
                             <div class="border rounded-4 p-4 mb-4 bg-light-subtle">

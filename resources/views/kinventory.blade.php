@@ -31,7 +31,7 @@
                             name="search"
                             id="kinventorySearchInput"
                             class="form-control border-0"
-                            placeholder="Buscar equipo deportivo..."
+                            placeholder="Buscar equipo deportivo por nombre..."
                             value="{{ request('search') }}"
                         >
                     </div>
