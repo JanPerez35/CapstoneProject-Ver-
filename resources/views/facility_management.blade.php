@@ -1694,8 +1694,7 @@
                         <div class="row g-3 mb-3">
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-2 px-3 py-2">
-                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
-                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso importante:</strong>
                                     Si el evento combina días u horarios laborables con días u horarios no laborables,
                                     seleccione el período no laborable correspondiente:
                                     <strong>No laborable sábado</strong> o <strong>No laborable domingo o festivo</strong>.

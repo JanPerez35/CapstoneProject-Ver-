@@ -55,7 +55,9 @@ class PostController extends Controller
 
         $userId = auth()->id();
 
-        DB::transaction(function () use ($request, $userId) {
+        $post = null;
+
+        DB::transaction(function () use ($request, $userId, &$post) {
 
             $count = DB::table('posts')
                 ->where('user_id', $userId)
@@ -75,7 +77,7 @@ class PostController extends Controller
                 }
             }
 
-            DB::table('posts')->insert([
+            $post = Post::create([
                 'user_id' => $userId,
                 'title' => $request->title,
                 'description' => $request->description,
@@ -86,8 +88,6 @@ class PostController extends Controller
                 'photo_1_url' => $paths[0] ?? null,
                 'photo_2_url' => $paths[1] ?? null,
                 'photo_3_url' => $paths[2] ?? null,
-                'created_at' => now(),
-                'updated_at' => now(),
             ]);
         });
 

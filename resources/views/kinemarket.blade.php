@@ -5,7 +5,8 @@
     @vite('resources/js/pages/marketplace_profanity.js')
     @vite('resources/js/marketplace_validation.js')
 
-    {{--Container element that stores configuration values and routes used by the marketplace JS logic--}}
+    {{--Main marketplace container used to expose configuration values,
+    authenticated user information, and backend routes to marketplace JS--}}
     <div
         id="marketplaceHome"
         class="container py-4"
@@ -25,7 +26,9 @@
         </div>
 
 
-        {{--Button to open modal for creating a new post--}}
+        {{--Button used to open the create-post modal.
+        Marketplace JS dynamically blocks this action and opens the
+        post-limit modal instead when the user reaches the 15-post limit.--}}
         <div class="mb-3">
             <button
                 type="button"
@@ -38,7 +41,8 @@
             </button>
         </div>
 
-        {{--Maximum post per day notice--}}<div class="d-inline-flex align-items-center alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-3">
+        {{--Marketplace publication limit notice for the 15-day posting period--}}
+        <div class="d-inline-flex align-items-center alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-3">
             <strong><i class="bi bi-info-circle me-2"></i>Límite de Publicaciones:</strong>
             <span class="ms-1">
         Puedes crear un máximo de <strong>15 publicaciones</strong> dentro de un período de <strong>15 días</strong>.
@@ -73,7 +77,9 @@
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mt-3 mb-3 px-4 py-3" id="postExpirationNotice">
                                     <div class="d-flex align-items-start gap-3">
                                         <div>
-                                            {{--Post lifecycle notification--}}
+
+                                            {{--Notification explaining that marketplace posts automatically expire
+                                            and are permanently removed after 15 days--}}
                                             <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
                                             Las publicaciones en Kinemercado solo permanecen activas por un máximo de
                                             <strong>15 días</strong>. Luego de ese período, la publicación será
@@ -216,7 +222,7 @@
                                 Solo JPEG/JPG.
                                 Máximo 2MB por imagen.
                             </small>
-                            {{--Displays error if there is invalid inputs on the picutre upload format, size, and quatntiy--}}
+                            {{--Displays image upload validation errors related to format, size, or quantity restrictions--}}
                             <div id="imageError" class="invalid-feedback d-block d-none"></div>
                             {{--Image preview container for picture that are uploaded--}}
                             <div id="imagePreviewContainer" class="row g-3 mt-1"></div>
@@ -400,7 +406,8 @@
 
                             <div class="carousel-inner rounded-4 overflow-hidden post-carousel-inner" id="postImagesCarouselInner"></div>
 
-                           {{--Hidden carousel control buttons for moving through the different pictures. Dissapear if only one image was uploaded--}}
+                            {{--Carousel navigation controls used to move between uploaded post images.
+                             They remain hidden when the post only contains one image.--}}
                             <button class="carousel-control-prev" type="button" data-bs-target="#postImagesCarousel" data-bs-slide="prev" id="postImagesCarouselPrev">
                                 <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                 <span class="visually-hidden">Anterior</span>
@@ -525,7 +532,7 @@
             </div>
         </div>
 
-        {{--Modal to inform the user they have reached the maximum amount of post for the day--}}
+        {{--Modal shown when the user reaches the maximum amount of marketplace posts allowed within a 15-day period--}}
         <div class="modal fade" id="maxPostLimitModal" tabindex="-1" aria-labelledby="maxPostLimitModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0 shadow">
@@ -542,14 +549,14 @@
                         ></button>
                     </div>
 
+                    {{--Modal Body--}}
                     <div class="modal-body">
                         <p class="mb-2">
-                            Has alcanzado el máximo de <strong>15 publicaciones</strong> permitidas en 24 horas.
+                            Has alcanzado el máximo de <strong>15 publicaciones</strong> permitidas dentro de un período de <strong>15 días</strong>.
                         </p>
 
                         <p class="mb-0">
-                            Podrás crear una nueva publicación nuevamente el
-                            <strong id="nextPostAvailableTime">--</strong>.
+                            Para volver a publicar, elimina una publicación existente o espera a que una de tus publicaciones cumpla 15 días.
                         </p>
                     </div>
 
@@ -627,7 +634,7 @@
                                 <div class="invalid-feedback" id="reportReasonError">Selecciona una razón.</div>
                             </div>
 
-                            {{--Report/querella description input field with connection to marketplace JS validation--}}
+                            {{--Report/querella description input field with connection to marketplace JS validation and formatting rules--}}
                             <div class="mb-3">
                                 <label for="reportDescription" class="form-label fw-semibold">
                                     Descripción <span class="text-danger">*</span>
