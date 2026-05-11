@@ -84,7 +84,7 @@
     <p class="footer-text fw-bold">
         *El portal del Departamento de Kinesiología llamado MAIKINE <br>
         es de uso exclusivo para usuarios registrados de la Universidad <br>
-        de Puerto Rico Recinto de Mayagüez (UPRM)
+        de Puerto Rico Recinto de Mayagüez (UPRM) THIS IS A TEST
     </p>
 
     {{-- Short system description --}}
