@@ -88,10 +88,10 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     function getRoleBadgeClass(role) {
         if (role === 'Usuario') return 'label-badge badge-user';
-        if (role === 'Admin Super') return 'label-badge badge-super-admin';
-        if (role === 'Admin Inventario') return 'label-badge badge-inventory-admin';
-        if (role === 'Admin Facilidades') return 'label-badge badge-facility-admin';
-        if (role === 'Admin Mercado') return 'label-badge badge-market-admin';
+        if (role === 'Super Administrador') return 'label-badge badge-super-admin';
+        if (role === 'Administrador de Inventario') return 'label-badge badge-inventory-admin';
+        if (role === 'Administrador de Instalaciones') return 'label-badge badge-facility-admin';
+        if (role === 'Administrador de Mercado') return 'label-badge badge-market-admin';
         return 'label-badge badge-user';
     }
 

@@ -110,10 +110,10 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
      * and account status changes.
      */
     Route::get('/search_user', [UserController::class, 'index'])
-        ->name('search_user')->middleware('role:Admin Super');
+        ->name('search_user')->middleware('role:Super Administrador');
 
     Route::put('/users/{user}/role', [UserController::class, 'updateRole'])
-        ->middleware('role:Admin Super');
+        ->middleware('role:Super Administrador');
 
     Route::put('/users/{user}/status', [UserController::class, 'updateStatus'])
         ->name('users.updateStatus');
@@ -129,43 +129,43 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
 
     Route::get('/inventory_management', [EquipmentController::class, 'index'])
         ->name('inventory_management')
-        ->middleware('role:Admin Super,Admin Inventario');
+        ->middleware('role:Super Administrador,Administrador de Inventario');
 
     Route::post('/inventory_management', [EquipmentController::class, 'store'])
         ->name('inventory.store')
-        ->middleware('role:Admin Super,Admin Inventario');
+        ->middleware('role:Super Administrador,Administrador de Inventario');
 
     Route::put('/equipment/{id}', [EquipmentController::class, 'update'])
         ->name('equipment.update')
-        ->middleware('role:Admin Super,Admin Inventario');
+        ->middleware('role:Super Administrador,Administrador de Inventario');
 
     Route::delete('/equipment/{id}', [EquipmentController::class, 'destroy'])
         ->name('equipment.destroy')
-        ->middleware('role:Admin Super,Admin Inventario');
+        ->middleware('role:Super Administrador,Administrador de Inventario');
 
     Route::get('/inventory_management/borrows', [LendingController::class, 'borrows'])
         ->name('inventory_management.borrows')
-        ->middleware('role:Admin Super,Admin Inventario');
+        ->middleware('role:Super Administrador,Administrador de Inventario');
 
     Route::post('/inventory_management/requests/{id}/approve', [LendingController::class, 'approveRequest'])
         ->name('inventory_management.requests.approve')
-        ->middleware('role:Admin Super,Admin Inventario');
+        ->middleware('role:Super Administrador,Administrador de Inventario');
 
     Route::post('/inventory_management/requests/{id}/reject', [LendingController::class, 'rejectRequest'])
         ->name('inventory_management.requests.reject')
-        ->middleware('role:Admin Super,Admin Inventario');
+        ->middleware('role:Super Administrador,Administrador de Inventario');
 
     Route::post('/inventory_management/requests/{id}/return', [LendingController::class, 'markReturned'])
         ->name('inventory_management.requests.return')
-        ->middleware('role:Admin Super,Admin Inventario');
+        ->middleware('role:Super Administrador,Administrador de Inventario');
 
     Route::get('/inventory_management/inventory_statistics', [InventoryStatisticsController::class, 'statistics'])
         ->name('inventory_management.inventory_statistics')
-        ->middleware('role:Admin Super,Admin Inventario');
+        ->middleware('role:Super Administrador,Administrador de Inventario');
 
     Route::get('/inventory_management/inventory_statistics/export', [InventoryStatisticsController::class, 'exportStatistics'])
         ->name('inventory_management.inventory_statistics.export')
-        ->middleware('role:Admin Super,Admin Inventario');
+        ->middleware('role:Super Administrador,Administrador de Inventario');
 
 
     /**
@@ -195,10 +195,10 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
 
     Route::get('/marketplace_management', [UserReportController::class, 'index'])
         ->name('marketplace_management')
-        ->middleware('role:Admin Super,Admin Mercado');
+        ->middleware('role:Super Administrador,Administrador de Mercado');
 
     Route::get('/reports', [UserReportController::class, 'index'])
-        ->middleware('role:Admin Super,Admin Mercado');
+        ->middleware('role:Super Administrador,Administrador de Mercado');
 
     Route::post('/reports', [UserReportController::class, 'store']);
     Route::get('/reports/data', [UserReportController::class, 'getReports']);
@@ -239,7 +239,7 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
 
     Route::get('/facility_management', [FacilityCostController::class, 'index'])
         ->name('facility_management')
-        ->middleware('role:Admin Super,Admin Facilidades');
+        ->middleware('role:Super Administrador,Administrador de Instalaciones');
 
     Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])
         ->name('facility.rates.save');
@@ -298,7 +298,7 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
      */
     Route::get('/access_logs', [AccessLogController::class, 'index'])
         ->name('access_logs')
-        ->middleware('role:Admin Super');
+        ->middleware('role:Super Administrador');
 
     /**
      * Terms and Conditions
@@ -311,7 +311,7 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
     Route::post('/terms-and-conditions/accept', [TermsController::class, 'accept'])->name('terms.accept');
     Route::post('/admin/terms-and-conditions/update', [TermsController::class, 'update'])
     ->name('terms.update')
-    ->middleware('role:Admin Super');
+    ->middleware('role:Super Administrador');
 });
 
     /**
@@ -325,7 +325,7 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
     Route::get('/test-log-ipv6', function () {
         \App\Models\ActivityLog::create([
             'user_id' => 3,
-            'role' => 'Admin Super',
+            'role' => 'Super Administrador',
             'action' => 'IPv4 test',
             'ip_address' => '2345:0425:2CA1:0000:0000:0567:5673:23b5',
             'comment' => 'IPv4 test My IPv4',

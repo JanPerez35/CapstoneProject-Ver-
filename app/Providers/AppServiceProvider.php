@@ -41,9 +41,9 @@ class AppServiceProvider extends ServiceProvider
                 ->whereNull('read_at')
                 ->count();
             }
-            $superAdminuser = User::where('role', 'Admin Super')->get();
-            $marketAdminuser = User::where('role', 'Admin Mercado')->get();
-            $inventoryAdminuser = User::where('role', 'Admin Inventario')->get();
+            $superAdminuser = User::where('role', 'Super Administrador')->get();
+            $marketAdminuser = User::where('role', 'Administrador de Mercado')->get();
+            $inventoryAdminuser = User::where('role', 'Administrador de Inventario')->get();
 
             $view->with('totalUnread', $totalUnread);
             $view->with('cart', session('cart', []));

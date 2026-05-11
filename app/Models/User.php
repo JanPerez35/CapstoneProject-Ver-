@@ -56,10 +56,10 @@ class User extends Authenticatable
     {
         return match (strtolower(trim($this->role))) {
             'usuario' => 'Usuario',
-            'super administrador', 'admin super' => 'Admin Super',
-            'administrador de inventario', 'admin inventario' => 'Admin Inventario',
-            'administrador de facilidad', 'admin facilidades' => 'Admin Facilidades',
-            'administrador de mercado', 'admin mercado' => 'Admin Mercado',
+            'super administrador' => 'Super Administrador',
+            'administrador de inventario' => 'Administrador de Inventario',
+            'administrador de facilidad', 'administrador de instalaciones' => 'Administrador de Instalaciones',
+            'administrador de mercado' => 'Administrador de Mercado',
             default => 'Usuario',
         };
     }
@@ -68,10 +68,10 @@ class User extends Authenticatable
     {
         return match ($this->role_label) {
             'Usuario' => 'badge-user',
-            'Admin Super' => 'badge-super-admin',
-            'Admin Inventario' => 'badge-inventory-admin',
-            'Admin Facilidades' => 'badge-facility-admin',
-            'Admin Mercado' => 'badge-market-admin',
+            'Super Administrador' => 'badge-super-admin',
+            'Administrador de Inventario' => 'badge-inventory-admin',
+            'Administrador de Instalaciones' => 'badge-facility-admin',
+            'Administrador de Mercado' => 'badge-market-admin',
             default => 'badge-user',
         };
     }

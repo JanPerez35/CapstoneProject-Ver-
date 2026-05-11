@@ -103,8 +103,8 @@ class PostController extends Controller
      *
      * Authorization:
      * - owner of the post
-     * - Admin Super
-     * - Admin Mercado
+     * - Super Administrador
+     * - Administrador de Mercado
      *
      * Actions:
      * - deletes associated images
@@ -112,7 +112,7 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        if ($post->user_id !== auth()->id() && !in_array(auth()->user()->role, ['Admin Super', 'Admin Mercado'])) {
+        if ($post->user_id !== auth()->id() && !in_array(auth()->user()->role, ['Super Administrador', 'Administrador de Mercado'])) {
             abort(403);
         }
         $images = [

@@ -129,7 +129,7 @@ class UserReportController extends Controller
     {
         $report->load('reportedUser');
 
-        if (!in_array(auth()->user()->role, ['Admin Super', 'Admin Mercado'])) {
+        if (!in_array(auth()->user()->role, ['Super Administrador', 'Administrador de Mercado'])) {
             abort(403);
         }
 
@@ -162,7 +162,7 @@ class UserReportController extends Controller
 
         $previousStatus = $report->reportedUser->status;
 
-        if (!in_array(auth()->user()->role, ['Admin Super', 'Admin Mercado'])) {
+        if (!in_array(auth()->user()->role, ['Super Administrador', 'Administrador de Mercado'])) {
             abort(403);
         }
 
@@ -177,7 +177,7 @@ class UserReportController extends Controller
             'resolved_at' => now()
         ]);
 
-        $superAdmin = User::where('role', 'Admin Super')
+        $superAdmin = User::where('role', 'Super Administrador')
             ->where('status', 'Activo')
             ->first();
 

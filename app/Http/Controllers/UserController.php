@@ -20,7 +20,7 @@ class UserController extends Controller
     public function show()
     {
         $user = User::all()
-            ->where('role', 'Admin Inventario, Admin Mercado, Admin Super')
+            ->where('role', 'Administrador de Inventario, Administrador de Mercado, Super Administrador')
             ->where('status', 'Activo')
             ->get();
         return view('layout', compact('user'));
@@ -35,7 +35,7 @@ class UserController extends Controller
         }
 
         $request->validate([
-            'role' => 'required|string|in:Usuario,Admin Inventario,Admin Mercado,Admin Facilidades,Admin Super',
+            'role' => 'required|string|in:Usuario,Administrador de Inventario,Administrador de Mercado,Administrador de Instalaciones,Super Administrador',
         ]);
 
         $previousRole = $user->role;
@@ -90,7 +90,7 @@ class UserController extends Controller
             "Se cambió el estado del usuario {$user->email} (ID: {$user->id}) de '{$previousStatus}' a '{$user->status}'"
         );
 
-        $superAdmin = User::where('role', 'Admin Super')
+        $superAdmin = User::where('role', 'Super Administrador')
             ->where('status', 'Activo')
             ->first();
 

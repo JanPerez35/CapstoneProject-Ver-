@@ -13,7 +13,7 @@ class AccessLogTest extends TestCase
     public function test_inventory_store_route_redirects(): void
     {
         $admin = User::factory()->create([
-            'role' => 'Admin Inventario',
+            'role' => 'Administrador de Inventario',
         ]);
 
         $response = $this->actingAs($admin)->post(route('inventory.store'), [

@@ -28,8 +28,8 @@
                 {{--Gestión de Mercado navigation button:
                     - Redirects to kinemarketplace management page
                     - Highlights when user is in the kinemarketplace management view
-                    - Only Admin Mercado and Admin Super has access to see this navbar--}}
-                @if(auth()->check() && in_array(auth()->user()->role, ['Admin Mercado', 'Admin Super']))
+                    - Only Administrador de Mercado and Super Administrador has access to see this navbar--}}
+                @if(auth()->check() && in_array(auth()->user()->role, ['Administrador de Mercado', 'Super Administrador']))
                     <li class="nav-item flex-fill text-center">
                         <a href="{{ route('marketplace_management') }}"
                         class="btn w-100
@@ -63,8 +63,8 @@
                 {{--Gestión de Inventario navigation button:
                    - Covers multiple subroutes (borrows, statistics,and management)
                    - Highlights when user is in the kinventory management view or any of its subviews
-                   - Only Admin Inventario and Admin Super has access to see this navbar--}}
-                @if(auth()->check() && in_array(auth()->user()->role, ['Admin Inventario', 'Admin Super']))
+                   - Only Administrador de Inventario and Super Administrador has access to see this navbar--}}
+                @if(auth()->check() && in_array(auth()->user()->role, ['Administrador de Inventario', 'Super Administrador']))
                     <li class="nav-item flex-fill text-center">
                         <a href="{{ route('inventory_management') }}"
                         class="btn w-100
@@ -82,8 +82,8 @@
                 {{--Buscar Usuarios navigation button:
                     - Redirects to user search page
                     - Highlights when the super admin is in the search users view
-                    - Only Admin Super has access to see this navbar--}}
-                @if(auth()->check() && in_array(auth()->user()->role, ['Admin Super']))
+                    - Only Super Administrador has access to see this navbar--}}
+                @if(auth()->check() && in_array(auth()->user()->role, ['Super Administrador']))
                     <li class="nav-item flex-fill text-center">
                         <a href="{{ route('search_user') }}"
                         class="btn w-100
@@ -103,8 +103,8 @@
                 {{--Registros de Acceso navigation button:
                    - Redirects to access logs page
                    - Highlights when the super admin is in the access log view
-                   - Only Admin Super has access to see this navbar--}}
-                @if(auth()->check() && in_array(auth()->user()->role, ['Admin Super']))
+                   - Only Super Administrador has access to see this navbar--}}
+                @if(auth()->check() && in_array(auth()->user()->role, ['Super Administrador']))
                     <li class="nav-item flex-fill text-center">
                         <a href="{{ route('access_logs') }}"
                         class="btn w-100
@@ -123,8 +123,8 @@
                 {{--Gestión de Costos navigation button:
                    - Redirects to facility cost management (Mangual)
                    - Highlights when the super admin or facility admin are in the facility cost management view
-                   - Only Admin Facilidades and Admin Super has access to see this navbar--}}
-                @if(auth()->check() && in_array(auth()->user()->role, ['Admin Facilidades', 'Admin Super']))
+                   - Only Administrador de Instalaciones and Super Administrador has access to see this navbar--}}
+                @if(auth()->check() && in_array(auth()->user()->role, ['Administrador de Instalaciones', 'Super Administrador']))
                     <li class="nav-item flex-fill text-center">
                         <a href="{{ route('facility_management') }}"
                         class="btn w-100

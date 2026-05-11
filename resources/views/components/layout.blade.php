@@ -830,7 +830,7 @@
                 </div>
 
                 @auth
-                    @if(trim(auth()->user()->role) === 'Admin Super')
+                    @if(trim(auth()->user()->role) === 'Super Administrador')
                         <form id="updateTermsForm"
                             method="POST"
                             action="{{ route('terms.update') }}"

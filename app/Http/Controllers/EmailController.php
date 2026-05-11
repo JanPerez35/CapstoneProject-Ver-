@@ -113,8 +113,8 @@ class EmailController extends Controller
     public function requestDenied()
     {
         //Attempt to get inventory admin or fallback admin
-        $inventoryAdmin = User::where('role', 'Admin Inventario')->first();
-        $superAdmin = User::where('role', 'Admin Super')->first();
+        $inventoryAdmin = User::where('role', 'Administrador de Inventario')->first();
+        $superAdmin = User::where('role', 'Super Administrador')->first();
 
         $adminEmail = $inventoryAdmin?->email
             ?? $superAdmin?->email

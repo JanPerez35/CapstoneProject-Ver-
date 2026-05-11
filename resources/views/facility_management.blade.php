@@ -47,7 +47,7 @@
         <!--Buttons-->
         <div class="d-flex flex-wrap gap-3 mb-4">
 
-            @if(auth()->user()->role === 'Admin Super')
+            @if(auth()->user()->role === 'Super Administrador')
             <span
                 data-bs-toggle="tooltip"
                 data-bs-placement="left"
