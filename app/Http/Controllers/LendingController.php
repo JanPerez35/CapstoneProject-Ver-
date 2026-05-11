@@ -471,11 +471,11 @@ class LendingController extends Controller
          * Email or phone extension.
          */
         if ($lending->user && !empty($lending->user->email)) {
-            $inventoryAdmin = \App\Models\User::where('role', 'Admin Inventario')
+            $inventoryAdmin = \App\Models\User::where('role', 'Administrador de Inventario')
                 ->where('status', 'Activo')
                 ->first();
 
-            $superAdmin = \App\Models\User::where('role', 'Admin Super')
+            $superAdmin = \App\Models\User::where('role', 'Super Administrador')
                 ->where('status', 'Activo')
                 ->first();
 

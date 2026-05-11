@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
  * Responsibilities:
  * - displaying the Terms and Conditions page
  * - recording when an authenticated user accepts the terms
- * - allowing an Admin Super to upload and replace the official PDF document
+ * - allowing an Super Administrador to upload and replace the official PDF document
  */
 class TermsController extends Controller
 {
@@ -46,13 +46,13 @@ class TermsController extends Controller
     /**
      * Displays the Terms page from the footer.
      *
-     * This version allows the Admin Super to update the PDF document.
+     * This version allows the Super Administrador to update the PDF document.
      *
      * @return \Illuminate\View\View
      */
     public function showFromFooter()
     {
-        $allowUpdate = auth()->check() && auth()->user()->role === 'Admin Super';
+        $allowUpdate = auth()->check() && auth()->user()->role === 'Super Administrador';
 
         return view('terms_and_conditions', [
             'allowUpdate' => $allowUpdate,
@@ -88,7 +88,7 @@ class TermsController extends Controller
     /**
      * Updates the Terms and Conditions PDF file.
      *
-     * This action is restricted to users with the role "Admin Super".
+     * This action is restricted to users with the role "Super Administrador".
      * It validates that the uploaded file is a PDF with a maximum size
      * of 10 MB, ensures the destination directory exists, and then
      * replaces the current Terms and Conditions document with the new file.
@@ -101,8 +101,8 @@ class TermsController extends Controller
      */
     public function update(Request $request)
     {
-        // Only Admin Super users are authorized to update the terms document
-        if (!auth()->check() || auth()->user()->role !== 'Admin Super') {
+        // Only Super Administrador users are authorized to update the terms document
+        if (!auth()->check() || auth()->user()->role !== 'Super Administrador') {
             abort(403, 'No autorizado');
         }
 

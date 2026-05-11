@@ -82,10 +82,10 @@
                     <select id="accessLogsRoleFilter" name="role" class="form-select border-2 border-dark" onchange="this.form.submit()">
                         <option value="">Todos los Roles</option>
                         <option value="Usuario" {{ request('role') == 'Usuario' ? 'selected' : '' }}>Usuario</option>
-                        <option value="Admin Mercado" {{ request('role') == 'Admin Mercado' ? 'selected' : '' }}>Administrador de Mercado</option>
-                        <option value="Admin Inventario" {{ request('role') == 'Admin Inventario' ? 'selected' : '' }}>Administrador de Inventario</option>
-                        <option value="Admin Facilidades" {{ request('role') == 'Admin Facilidades' ? 'selected' : '' }}>Administrador de Facilidad</option>
-                        <option value="Admin Super" {{ request('role') == 'Admin Super' ? 'selected' : '' }}>Super Administrador</option>
+                        <option value="Administrador de Mercado" {{ request('role') == 'Administrador de Mercado' ? 'selected' : '' }}>Administrador de Mercado</option>
+                        <option value="Administrador de Inventario" {{ request('role') == 'Administrador de Inventario' ? 'selected' : '' }}>Administrador de Inventario</option>
+                        <option value="Administrador de Instalaciones" {{ request('role') == 'Administrador de Instalaciones' ? 'selected' : '' }}>Administrador de Facilidad</option>
+                        <option value="Super Administrador" {{ request('role') == 'Super Administrador' ? 'selected' : '' }}>Super Administrador</option>
                     </select>
                 </div>
 
@@ -260,10 +260,10 @@
                                 @php
                                     $roleClass = match(trim($log->role)) {
                                         'Usuario' => 'badge-user',
-                                        'Admin Super' => 'badge-super-admin',
-                                        'Admin Inventario' => 'badge-inventory-admin',
-                                        'Admin Facilidades' => 'badge-facility-admin',
-                                        'Admin Mercado' => 'badge-market-admin',
+                                        'Super Administrador' => 'badge-super-admin',
+                                        'Administrador de Inventario' => 'badge-inventory-admin',
+                                        'Administrador de Instalaciones' => 'badge-facility-admin',
+                                        'Administrador de Mercado' => 'badge-market-admin',
                                         default => 'badge-user',
                                     };
                                 @endphp

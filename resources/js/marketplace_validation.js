@@ -571,7 +571,7 @@ function createMarketplaceCardHTML(post) {
     const currentUserId = Number(container.dataset.currentUserId);
     const currentUserRole = container.dataset.currentUserRole;
 
-    const isAdmin = ['Admin Super', 'Admin Mercado'].includes(currentUserRole);
+    const isAdmin = ['Super Administrador', 'Administrador de Mercado'].includes(currentUserRole);
     const isOwner = currentUserId === post.user?.id;
 
     let deleteButton = '';

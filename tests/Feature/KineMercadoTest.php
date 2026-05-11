@@ -142,7 +142,7 @@ class KineMercadoTest extends TestCase
 
     public function test_admin_can_delete_any_post()
     {
-        $admin = User::factory()->create(['role' => 'Admin Mercado']);
+        $admin = User::factory()->create(['role' => 'Administrador de Mercado']);
         $user = User::factory()->create();
 
         $post = Post::create([
@@ -162,7 +162,7 @@ class KineMercadoTest extends TestCase
 
     public function test_admin_can_resolve_reports()
     {
-        $admin = User::factory()->create(['role' => 'Admin Mercado']);
+        $admin = User::factory()->create(['role' => 'Administrador de Mercado']);
         $user = User::factory()->create();
 
         $post = Post::create([
@@ -191,7 +191,7 @@ class KineMercadoTest extends TestCase
 
     public function test_admin_can_block_user()
     {
-        $admin = User::factory()->create(['role' => 'Admin Mercado']);
+        $admin = User::factory()->create(['role' => 'Administrador de Mercado']);
         $user = User::factory()->create();
 
         $post = Post::create([
@@ -421,7 +421,7 @@ class KineMercadoTest extends TestCase
 
     public function test_report_status_changes_on_resolve()
     {
-        $admin = User::factory()->create(['role' => 'Admin Mercado']);
+        $admin = User::factory()->create(['role' => 'Administrador de Mercado']);
         $user = User::factory()->create();
 
         $post = Post::create([
@@ -463,7 +463,7 @@ class KineMercadoTest extends TestCase
 
     public function test_admin_can_view_reports()
     {
-        $admin = User::factory()->create(['role' => 'Admin Mercado']);
+        $admin = User::factory()->create(['role' => 'Administrador de Mercado']);
 
         $this->actingAs($admin)
             ->get('/reports')
@@ -472,48 +472,48 @@ class KineMercadoTest extends TestCase
 
     public function test_only_super_admin_can_change_roles()
     {
-        $super = User::factory()->create(['role' => 'Admin Super']);
+        $super = User::factory()->create(['role' => 'Super Administrador']);
         $user = User::factory()->create();
 
         $this->actingAs($super)
             ->put("/users/{$user->id}/role", [
-                'role' => 'Admin Mercado'
+                'role' => 'Administrador de Mercado'
             ])
             ->assertStatus(200);
     }
 
     public function test_market_admin_cannot_change_roles()
     {
-        $admin = User::factory()->create(['role' => 'Admin Mercado']);
+        $admin = User::factory()->create(['role' => 'Administrador de Mercado']);
         $user = User::factory()->create();
 
         $this->actingAs($admin)
             ->put("/users/{$user->id}/role", [
-                'role' => 'Admin Super'
+                'role' => 'Super Administrador'
             ])
             ->assertStatus(403);
     }
 
     public function test_facility_admin_cannot_change_roles()
     {
-        $admin = User::factory()->create(['role' => 'Admin Facilidades']);
+        $admin = User::factory()->create(['role' => 'Administrador de Instalaciones']);
         $user = User::factory()->create();
 
         $this->actingAs($admin)
             ->put("/users/{$user->id}/role", [
-                'role' => 'Admin Super'
+                'role' => 'Super Administrador'
             ])
             ->assertStatus(403);
     }
 
     public function test_inventory_admin_cannot_change_roles()
     {
-        $admin = User::factory()->create(['role' => 'Admin Inventario']);
+        $admin = User::factory()->create(['role' => 'Administrador de Inventario']);
         $user = User::factory()->create();
 
         $this->actingAs($admin)
             ->put("/users/{$user->id}/role", [
-                'role' => 'Admin Super'
+                'role' => 'Super Administrador'
             ])
             ->assertStatus(403);
     }

@@ -83,10 +83,10 @@
                     <select id="roleFilterSelect" class="form-select border-2 border-dark">
                         <option value="all" selected>Todos los Roles</option>
                         <option value="Usuario">Usuario</option>
-                        <option value="Admin Super">Admin Super</option>
-                        <option value="Admin Inventario">Admin Inventario</option>
-                        <option value="Admin Facilidades">Admin Facilidades</option>
-                        <option value="Admin Mercado">Admin Mercado</option>
+                        <option value="Super Administrador">Super Administrador</option>
+                        <option value="Administrador de Inventario">Administrador de Inventario</option>
+                        <option value="Administrador de Instalaciones">Administrador de Instalaciones</option>
+                        <option value="Administrador de Mercado">Administrador de Mercado</option>
                     </select>
                 </div>
 
@@ -175,10 +175,10 @@
 
                                     <select class="form-select rounded-0 role-select">
                                         <option {{ ($user->role_label ?? '') == 'Usuario' ? 'selected' : '' }}>Usuario</option>
-                                        <option {{ ($user->role_label ?? '') == 'Admin Super' ? 'selected' : '' }}>Admin Super</option>
-                                        <option {{ ($user->role_label ?? '') == 'Admin Inventario' ? 'selected' : '' }}>Admin Inventario</option>
-                                        <option {{ ($user->role_label ?? '') == 'Admin Facilidades' ? 'selected' : '' }}>Admin Facilidades</option>
-                                        <option {{ ($user->role_label ?? '') == 'Admin Mercado' ? 'selected' : '' }}>Admin Mercado</option>
+                                        <option {{ ($user->role_label ?? '') == 'Super Administrador' ? 'selected' : '' }}>Super Administrador</option>
+                                        <option {{ ($user->role_label ?? '') == 'Administrador de Inventario' ? 'selected' : '' }}>Administrador de Inventario</option>
+                                        <option {{ ($user->role_label ?? '') == 'Administrador de Instalaciones' ? 'selected' : '' }}>Administrador de Instalaciones</option>
+                                        <option {{ ($user->role_label ?? '') == 'Administrador de Mercado' ? 'selected' : '' }}>Administrador de Mercado</option>
                                     </select>
                                 </div>
                             @endif
