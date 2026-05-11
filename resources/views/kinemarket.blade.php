@@ -403,8 +403,7 @@
                         <div id="postImagesCarousel" class="carousel slide mb-4">
                             <div class="carousel-indicators" id="postImagesCarouselIndicators"></div>
 
-
-                            <div class="carousel-inner rounded-4 overflow-hidden post-carousel-inner" id="postImagesCarouselInner"></div>
+                            <div class="carousel-inner rounded-4 overflow-hidden border border-dark border-2 post-carousel-inner" id="postImagesCarouselInner"></div>
 
                             {{--Carousel navigation controls used to move between uploaded post images.
                              They remain hidden when the post only contains one image.--}}

@@ -1152,19 +1152,45 @@ function fillRelatedModalFromRow(row) {
         updateRelatedSaveState();
     });
 
-    attachResponsibleBehavior(
-        editResponsible,
-        editResponsibleError,
-        (showError) => validateResponsible(showError, editResponsible, editResponsibleError),
-        updateEditSaveState
-    );
+    [
+        {
+            input: editResponsible,
+            error: editResponsibleError,
+            validate: validateEditEventForm,
+            save: updateEditSaveState,
+            type: 'responsible'
+        },
+        {
+            input: relatedResponsible,
+            error: relatedResponsibleError,
+            validate: (showError) =>
+                validateResponsible(showError, relatedResponsible, relatedResponsibleError),
+            save: updateRelatedSaveState,
+            type: 'responsible'
+        },
+        {
+            input: editDescription,
+            error: editDescriptionError,
+            validate: validateEditEventForm,
+            save: updateEditSaveState,
+            type: 'description'
+        },
+        {
+            input: relatedDescription,
+            error: relatedDescriptionError,
+            validate: (showError) =>
+                validateDescription(showError, relatedDescription, relatedDescriptionError),
+            save: updateRelatedSaveState,
+            type: 'description'
+        }
+    ].forEach(({ input, error, validate, save, type }) => {
+        if (type === 'responsible') {
+            attachResponsibleBehavior(input, error, validate, save);
+        } else {
+            attachDescriptionBehavior(input, error, validate, save);
+        }
+    });
 
-    attachDescriptionBehavior(
-        editDescription,
-        editDescriptionError,
-        (showError) => validateDescription(showError, editDescription, editDescriptionError),
-        updateEditSaveState
-    );
 
     relatedPeriodType?.addEventListener('change', () => {
         relatedStartTime.value = '';
@@ -1549,7 +1575,7 @@ function fillRelatedModalFromRow(row) {
             locale: Spanish,
             dateFormat: 'Y-m-d',
             altInput: true,
-            altFormat: 'd-F-Y',
+            altFormat: 'j F Y',
             allowInput: false,
             disableMobile: true,
             minDate: 'today'
@@ -2457,7 +2483,10 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         const row = btn.closest('tr');
         if (!row) return;
 
-        editingIsCustomDay = row.dataset.subEventType === 'custom_day';
+        const editingSubEventType = row.dataset.subEventType || '';
+        const editingIsParent = row.classList.contains('parent-event-row');
+        editingIsCustomDay = editingSubEventType === 'custom_day';
+        const editingIsRelatedArea = editingSubEventType === 'related_area';
 
         editEventId.value = btn.dataset.entryId;
         editClassroom.value = row.dataset.classroom || '';
@@ -2490,15 +2519,27 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         if (editElectricity) editElectricity.checked = services.includes('electricity');
         if (editWater) editWater.checked = services.includes('water');
 
-        const disableFullFields = editingIsCustomDay;
+        const canEditBasicInfo = editingIsParent || editingIsRelatedArea;
+        const canEditScheduleInfo = editingIsCustomDay;
 
-        if (editClassroom) editClassroom.disabled = disableFullFields;
-        if (editResponsible) editResponsible.disabled = disableFullFields;
-        if (editDescription) editDescription.disabled = disableFullFields;
+        if (editClassroom) editClassroom.disabled = !canEditBasicInfo;
+        if (editResponsible) editResponsible.disabled = !canEditBasicInfo;
+        if (editDescription) editDescription.disabled = !canEditBasicInfo;
 
-        if (editUtilities) editUtilities.disabled = disableFullFields;
-        if (editElectricity) editElectricity.disabled = disableFullFields;
-        if (editWater) editWater.disabled = disableFullFields;
+        if (editUtilities) editUtilities.disabled = false;
+        if (editElectricity) editElectricity.disabled = false;
+        if (editWater) editWater.disabled = false;
+
+        [
+            editStartDate,
+            editEndDate,
+            editStartTime,
+            editEndTime,
+            editPeriodType,
+            editRateModeDisplay
+        ].forEach((field) => {
+            if (field) field.disabled = !canEditScheduleInfo;
+        });
 
         clearEditErrors();
         updateEditSummary();

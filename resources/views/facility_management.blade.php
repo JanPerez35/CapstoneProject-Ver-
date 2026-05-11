@@ -246,16 +246,16 @@
         </div>
 
         <!--Data Table-->
-        <div class="card border-dark border-2 shadow-sm rounded-4 overflow-hidden">
+            <div class="card border-dark border-2 shadow-sm rounded-2 overflow-hidden">
             <div class="card-body p-4 border-bottom">
-                <div class="d-flex justify-content-between align-items-start gap-3">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
                     <div>
                         <h2 class="fw-bold mb-1">Uso de Áreas y Costos Estimados</h2>
                         <p class="text-muted mb-0">Organización de eventos y estimaciones de costos operacionales</p>
                         <p class="text-muted mb-0">Desliza para ver más información <i class="bi bi-arrow-right"></i></p>
                     </div>
 
-                    <div class="d-flex align-items-start gap-3 me-3">
+                    <div class="d-flex align-items-start gap-3 me-3 ms-lg-0 ms-auto">
                         <span class="fw-semibold">Leyenda:</span>
 
                         <div class="d-flex flex-column align-items-start">
@@ -279,18 +279,18 @@
                 </div>
             </div>
 
-            <div class="table-responsive">
+                <div class="table-fit-wrapper mt-0" style="max-height: 620px; overflow: auto;">
                 <table class="table align-middle mb-0" id="facilityCostTable">
-                    <thead class="table-light">
+                    <thead class="table-light position-sticky top-0" style="z-index: 20;">
                     <tr>
                         <th class="fw-bold">
                             Fecha inicial del evento <br>
-                            <small>(dd-mm-aaaa)</small>
+                            <small>(Día Mes Año)</small>
                         </th>
 
                         <th class="fw-bold">
                             Fecha final del evento <br>
-                            <small>(dd-mm-aaaa)</small>
+                            <small>(Día Mes Año)</small>
                         </th>
                         <th class="fw-bold">Responsable</th>
                         <th class="fw-bold area-col">Área</th>
@@ -348,16 +348,16 @@
                                             </span>
 
                                             <span class="text-muted ms-2">
-                                                {{ \Illuminate\Support\Str::title(
+                                               {{ \Illuminate\Support\Str::title(
                                                     \Carbon\Carbon::parse($parent->event_date)
                                                         ->locale('es')
-                                                        ->isoFormat('DD-MMMM-YYYY')
+                                                        ->translatedFormat('j F Y')
                                                 ) }}
                                                 <i class="bi bi-arrow-right"></i>
                                                {{ \Illuminate\Support\Str::title(
-                                                    \Carbon\Carbon::parse($parent->end_date ?? $parent->event_date)
+                                                    \Carbon\Carbon::parse($parent->event_date)
                                                         ->locale('es')
-                                                        ->isoFormat('DD-MMMM-YYYY')
+                                                        ->translatedFormat('j F Y')
                                                 ) }}
                                             </span>
 
@@ -637,7 +637,7 @@
                                             ],
                                             [
                                                 'titulo' => 'No laborable domingo o festivo',
-                                                'texto' => 'Domingo o festivo, 8:00 a.m. a 9:30 p.m.',
+                                                'texto' => 'Lunes a viernes, 4:30 p.m. a 9:30 p.m.; y domingo o festivo, 8:00 a.m. a 9:30 p.m.',
                                                 'sufijo' => '3',
                                                 'diario' => '0.31',
                                                 'semanal' => '0.00',
@@ -855,7 +855,7 @@
 
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input
                                                 class="form-check-input rental-service-check"
@@ -875,7 +875,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input
                                                 class="form-check-input rental-service-check"
@@ -895,7 +895,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input
                                                 class="form-check-input rental-service-check"
@@ -983,7 +983,7 @@
                                         id="rentalStartDate"
                                         name="event_date"
                                         class="form-control date-picker-input"
-                                        placeholder="dd-mm-aaaa"
+                                        placeholder="Día Mes Año"
                                         autocomplete="off"
                                         inputmode="none"
                                         required
@@ -1011,7 +1011,7 @@
                                         id="rentalEndDate"
                                         name="event_end_date"
                                         class="form-control date-picker-input"
-                                        placeholder="dd-mm-aaaa"
+                                        placeholder="Día Mes Año"
                                         autocomplete="off"
                                         inputmode="none"
                                         required
@@ -1245,7 +1245,7 @@
 
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="relatedUtilities" value="utilities">
                                             <label class="form-check-label fw-semibold" for="relatedUtilities">
@@ -1259,7 +1259,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="relatedElectricity" value="electricity">
                                             <label class="form-check-label fw-semibold" for="relatedElectricity">
@@ -1273,7 +1273,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="relatedWater" value="water">
                                             <label class="form-check-label fw-semibold" for="relatedWater">
@@ -1339,7 +1339,7 @@
                                             id="relatedStartDate"
                                             name="related_event_start_date"
                                             class="form-control date-picker-input"
-                                            placeholder="dd-mm-aaaa"
+                                            placeholder="Día Mes Año"
                                             autocomplete="off"
                                             inputmode="none"
                                             required
@@ -1463,7 +1463,7 @@
 
                         <div class="row g-3">
                             <div class="col-12">
-                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
+                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-3 px-4 py-3">
                                     <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
                                     Esta opción permite preparar modificaciones puntuales de días u horarios.
                                 </div>
@@ -1480,7 +1480,7 @@
                                     id="customizeDate"
                                     name="event_start_date"
                                     class="form-control date-picker-input"
-                                    placeholder="dd-mm-aaaa"
+                                    placeholder="Día Mes Año"
                                     autocomplete="off"
                                     inputmode="none"
                                     required
@@ -1644,7 +1644,7 @@
 
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="editUtilities" value="utilities">
                                             <label class="form-check-label fw-semibold" for="editUtilities">
@@ -1658,7 +1658,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="editElectricity" value="electricity">
                                             <label class="form-check-label fw-semibold" for="editElectricity">
@@ -1672,7 +1672,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="editWater" value="water">
                                             <label class="form-check-label fw-semibold" for="editWater">
@@ -1747,7 +1747,7 @@
                                     type="text"
                                     id="editStartDate"
                                     class="form-control date-picker-input"
-                                    placeholder="dd-mm-aaaa"
+                                    placeholder="Día Mes Año"
                                     autocomplete="off"
                                     inputmode="none"
                                     required
@@ -1765,7 +1765,7 @@
                                     type="text"
                                     id="editEndDate"
                                     class="form-control date-picker-input"
-                                    placeholder="dd-mm-aaaa"
+                                    placeholder="Día Mes Año"
                                     autocomplete="off"
                                     inputmode="none"
                                     required

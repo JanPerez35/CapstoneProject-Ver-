@@ -827,7 +827,31 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!messages.length) {
                 if (emptyState) {
                     emptyState.classList.remove('d-none');
+
+                    const emptyTitle = emptyState.querySelector('h4');
+                    const emptyText = emptyState.querySelector('p');
+
+                    if (chatId) {
+                        if (emptyTitle) {
+                            emptyTitle.textContent = 'Aquí aparecerán tus mensajes.';
+                        }
+
+                        if (emptyText) {
+                            emptyText.textContent =
+                                'Para comenzar la conversación, escribe un mensaje abajo.';
+                        }
+                    } else {
+                        if (emptyTitle) {
+                            emptyTitle.textContent = 'No hay mensajes aún.';
+                        }
+
+                        if (emptyText) {
+                            emptyText.textContent =
+                                'Selecciona un chat para comenzar la conversación.';
+                        }
+                    }
                 }
+
                 return;
             }
 
