@@ -128,7 +128,7 @@
 
             </div>
 
-        <div class="table-fit-wrapper border border-2 border-dark rounded-2 mt-3">
+        <div class="table-fit-wrapper border border-2 border-dark rounded-2 mt-3" style="min-height: 0; height: auto;">
                 <table class="table align-middle mb-0 reports-table" id="reportsTable">
                     <thead class="table-light">
                     <tr>
@@ -188,7 +188,7 @@
                     </tbody>
                 </table>
 
-                <div id="reportsEmptyState" class="reports-empty-state d-none">
+            <div id="reportsEmptyState" class="reports-empty-state d-none">
                     <div class="card border-0 shadow-sm rounded-0">
                         <div class="card-body py-5 text-center">
                             <i class="bi bi-flag fs-1 text-muted"></i>

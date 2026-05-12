@@ -253,7 +253,7 @@ const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
  * Examples of rejected values:
  * 01,001, 12.345, .99 ,1., 2.E4, +2.5, -5.78
  */
-const priceRegex = /^(0|[1-9]\d*)(\.\d{1,2})?$/
+const priceRegex = /^(\d+)(\.\d{1,2})?$/
 
 /**
  * Maximum allowed post price.
@@ -1402,7 +1402,7 @@ function validatePrice(showError = true) {
             setFieldError(
                 postPrice,
                 postPriceError,
-                'Ingresa un precio válido usando solo números, sin ceros a la izquierda y con hasta 2 dígitos después del punto decimal.'
+                'Ingresa un precio válido usando solo números y con hasta 2 dígitos después del punto decimal.'
             );
             postPriceGroup?.classList.add('is-invalid');
         }

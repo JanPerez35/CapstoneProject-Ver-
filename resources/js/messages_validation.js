@@ -822,6 +822,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`/messages/${chatId}`);
             const messages = await response.json();
             messagesContainer.innerHTML = '';
+
+            if (emptyState) {
+                messagesContainer.appendChild(emptyState);
+            }
+
             delete messagesContainer.dataset.lastMessageDate;
 
             if (!messages.length) {

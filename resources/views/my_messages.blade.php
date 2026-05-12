@@ -16,26 +16,27 @@
     <div
         class="container-fluid py-4"
         id="messagesView"
+        style="min-height: calc(100vh - 90px);"
         data-chat-id="{{ request('chat_id', '') }}"
         data-current-user-id="{{ auth()->id() }}"
         data-post-id="{{ $selectedChat?->post_id ?? '' }}"
     >
-        <div class="card border border-dark border-2 shadow-sm rounded-4 overflow-hidden messages-card">
+        <div class="card border border-dark border-2 shadow-sm rounded-4 overflow-hidden messages-card flex-grow-1">
             <div class="row g-0 h-100">
 
                 <div class="col-md-4 border-end border-dark border-2 messages-sidebar">
-                    <div class="p-4">
+                    <div class="px-4 pt-4 pb-2">
                         <a href="{{ request('return_to', route('kinemarket')) }}" class="btn btn-outline-secondary rounded-3 px-4"  id="messagesVolverBtn"
                            data-return-post-id="{{ request('post_id', '') }}">
 
                             <i class="bi bi-arrow-left me-2"></i>Volver
                         </a>
 
-                        <h1 class="fw-bold mt-3 mb-1">Mensajes</h1>
+                        <h1 class="fw-bold mt-5 mb-1">Mensajes</h1>
                         <p class="text-muted mb-0">Chats relacionados con tus publicaciones</p>
                     </div>
 
-                    <div class="p-3 border-bottom border-dark border-2">
+                    <div class="px-4 pt-2 pb-3">
                         <div class="row g-2">
                             <div class="col-12">
                                 <div class="input-group messages-search-group">
@@ -196,9 +197,9 @@
                     </div>
 
                     <!--Input-->
-                    <div class="p-3 p-md-4 border-top border-dark border-2 chat-input-area">
+                    <div class="p-3 p-md-4 border-top border-dark border-2 chat-input-area d-flex flex-column justify-content-center" style="min-height: 150px;">
 
-                                <div class="input-group chat-message-group">
+                             <div class="input-group chat-message-group border border-dark border-2 rounded-3 overflow-hidden">
                                     <input
                                         id="chatMessageInput"
                                         type="text"
