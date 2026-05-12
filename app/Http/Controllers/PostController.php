@@ -53,50 +53,40 @@ class PostController extends Controller
             'images.*' => 'image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $userId = auth()->id();
+        $postLimitData = $this->getPostLimitData(auth()->id());
 
-        DB::transaction(function () use ($request, $userId) {
+        if ($postLimitData['limit_reached']) {
+            return response()->json([
+                'message' => 'Límite alcanzado'
+            ], 403);
+        }
 
-            $count = DB::table('posts')
-                ->where('user_id', $userId)
-                ->where('created_at', '>=', now()->subDays(15))
-                ->lockForUpdate()
-                ->count();
+        $imageUrls = [];
 
-            if ($count >= 15) {
-                abort(403, 'Límite alcanzado');
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('posts', 'public');
+                $imageUrls[] = Storage::url($path);
             }
+        }
 
-            $paths = [];
+        $post = Post::create([
+            'user_id' => auth()->id(),
+            'title' => $request->title,
+            'description' => $request->description,
+            'cost' => $request->cost,
+            'category' => $request->category,
+            'condition' => $request->condition,
+            'status' => 'Disponible', // 👈 FIX
+            'photo_1_url' => $imageUrls[0] ?? null,
+            'photo_2_url' => $imageUrls[1] ?? null,
+            'photo_3_url' => $imageUrls[2] ?? null,
+        ]);
 
-            if ($request->hasFile('images')) {
-                foreach ($request->file('images') as $image) {
-                    $paths[] = $image->store('posts', 'public');
-                }
-            }
-
-            DB::table('posts')->insert([
-                'user_id' => $userId,
-                'title' => $request->title,
-                'description' => $request->description,
-                'cost' => $request->cost,
-                'category' => $request->category,
-                'condition' => $request->condition,
-                'status' => 'Disponible',
-                'photo_1_url' => $paths[0] ?? null,
-                'photo_2_url' => $paths[1] ?? null,
-                'photo_3_url' => $paths[2] ?? null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        });
-
-        $this->logActivity(
-            'Crear publicación',
-            "Se creó la publicación: {$post->title} (ID: {$post->id})"
-        );
-
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'post' => $post
+        ], 200);
     }
     /**
      * Deletes a post.

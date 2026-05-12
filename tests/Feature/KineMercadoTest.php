@@ -43,7 +43,7 @@ class KineMercadoTest extends TestCase
     {
         $user = User::factory()->create();
 
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 0; $i < 15; $i++) {
             Post::create([
                 'user_id' => $user->id,
                 'title' => 'Test',
