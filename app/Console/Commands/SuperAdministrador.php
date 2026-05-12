@@ -35,10 +35,19 @@ class SuperAdministrador extends Command
             return Command::FAILURE;
         }
 
-        $user = User::create([
-            'email' => $email,
-            'role' => 'Super Administrador', 
-        ]);
+        $user = User::firstOrCreate(
+            ['email' => $email],
+            [
+                'name' => 'Super Administrador',
+                'first_name' => 'Super',
+                'last_name' => 'Administrador',
+                'password' => bcrypt(str()->random(32)),
+                'role' => 'Super Administrador',
+            ]
+        );
+
+        $user->role = 'Super Administrador';
+        $user->save();
 
         $this->info("Usuario creado correctamente:");
         $this->line("Email: {$user->email}");
