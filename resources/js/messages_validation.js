@@ -1270,7 +1270,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (currentLength === MAX_REPORT_LENGTH) {
                 reportDescription.classList.add('is-invalid');
                 reportDescriptionError.textContent =
-                    `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres, puedes aún someter esa cantidad.`;
+                    `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres. Puedes someter el texto tal como está.`;
             } else {
                 validateReportDescription(true);
             }

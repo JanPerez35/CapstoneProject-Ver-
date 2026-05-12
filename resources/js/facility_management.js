@@ -153,6 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const servicesRequiredMessage = $('servicesRequiredMessage');
     const rentalResponsibleError = $('rentalResponsibleError');
     const rentalDescriptionError = $('rentalDescriptionError');
+    const rentalClassroomError = $('rentalClassroomError');
+    const rentalPeriodTypeError = $('rentalPeriodTypeError');
+    const rentalStartTimeError = $('rentalStartTimeError');
+    const rentalEndTimeError = $('rentalEndTimeError');
 
     const confirmDeleteCostEntryBtn = $('confirmDeleteCostEntryBtn');
     const deleteButtons = () => [...document.querySelectorAll('.delete-cost-row-btn')];
@@ -443,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setFieldError(
                     newClassroomName,
                     newClassroomNameError,
-                    'Has alcanzado el máximo de 40 caracteres, puedes aún someter esa cantidad.'
+                    'Has alcanzado el máximo de 40 caracteres. Puedes someter el texto tal como está.'
                 );
             } else {
                 validateNewClassroomName(true);
@@ -1498,6 +1502,23 @@ function fillRelatedModalFromRow(row) {
         if (errorElement) errorElement.textContent = '';
     }
 
+    function validateRequiredSelect(select, errorElement, message, showError = true) {
+        if (!select) return true;
+
+        if (showError) {
+            clearFieldError(select, errorElement);
+        }
+
+        if (!select.value) {
+            if (showError) {
+                setFieldError(select, errorElement, message);
+            }
+            return false;
+        }
+
+        return true;
+    }
+
     function attachResponsibleBehavior(input, errorElement, validateFn, saveStateFn) {
         input?.addEventListener('input', () => {
             const value = input.value;
@@ -1506,7 +1527,7 @@ function fillRelatedModalFromRow(row) {
                 input.value = value.slice(0, 40);
                 setFieldError(input, errorElement, 'Has alcanzado el máximo de 40 caracteres. No puedes escribir más.');
             } else if (value.length === 40) {
-                setFieldError(input, errorElement, 'Has alcanzado el máximo de 40 caracteres, puedes aún someter esa cantidad.');
+                setFieldError(input, errorElement, 'Has alcanzado el máximo de 40 caracteres. Puedes someter el texto tal como está.');
             } else {
                 validateFn(true);
             }
@@ -1535,7 +1556,7 @@ function fillRelatedModalFromRow(row) {
                 input.value = value.slice(0, 250);
                 setFieldError(input, errorElement, 'Has alcanzado el máximo de 250 caracteres. No puedes escribir más.');
             } else if (value.length === 250) {
-                setFieldError(input, errorElement, 'Has alcanzado el máximo de 250 caracteres, puedes aún someter esa cantidad.');
+                setFieldError(input, errorElement, 'Has alcanzado el máximo de 250 caracteres. Puedes someter el texto tal como está.');
             } else {
                 validateFn(true);
             }
@@ -3378,6 +3399,10 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         clearFieldError(rentalDescription, rentalDescriptionError);
         clearFieldError(rentalStartDate, $('rentalStartDateError'));
         clearFieldError(rentalEndDate, $('rentalEndDateError'));
+        clearFieldError(rentalClassroom, rentalClassroomError);
+        clearFieldError(rentalPeriodType, rentalPeriodTypeError);
+        clearFieldError(rentalStartTime, rentalStartTimeError);
+        clearFieldError(rentalEndTime, rentalEndTimeError);
         toggleRentalDateRangeUI();
 
         rentalEstimatedTotal.textContent = formatMoney(0);
@@ -3527,6 +3552,22 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         el.addEventListener('change', () => {
             rentalDirty = true;
 
+            if (el === rentalClassroom) {
+                validateRequiredSelect(rentalClassroom, rentalClassroomError, 'Selecciona un área válida.');
+            }
+
+            if (el === rentalPeriodType) {
+                validateRequiredSelect(rentalPeriodType, rentalPeriodTypeError, 'Selecciona un tipo de período válido.');
+            }
+
+            if (el === rentalStartTime) {
+                validateRequiredSelect(rentalStartTime, rentalStartTimeError, 'Selecciona un horario inicial válido.');
+            }
+
+            if (el === rentalEndTime) {
+                validateRequiredSelect(rentalEndTime, rentalEndTimeError, 'Selecciona un horario final válido.');
+            }
+
 
             if (el === rentalPeriodType) {
                 rentalStartTime.value = '';
@@ -3561,7 +3602,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             setFieldError(
                 rentalDescription,
                 rentalDescriptionError,
-                'Has alcanzado el máximo de 250 caracteres, puedes aún someter esa cantidad.'
+                'Has alcanzado el máximo de 250 caracteres. Puedes someter el texto tal como está.'
             );
         } else {
             validateDescription(true);
@@ -3583,6 +3624,13 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             updateRentalSaveState();
         });
     });
+
+    attachResponsibleBehavior(
+        rentalResponsible,
+        rentalResponsibleError,
+        validateResponsible,
+        updateRentalSaveState
+    );
 
     attachResponsibleBehavior(
         relatedResponsible,
@@ -3674,11 +3722,38 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         const descriptionOk = validateDescription(true);
         const servicesOk = hasSelectedServices();
         const datesOk = validateRentalDates(true, true);
+        const classroomOk = validateRequiredSelect(
+            rentalClassroom,
+            rentalClassroomError,
+            'Selecciona un área válida.'
+        );
+
+        const periodTypeOk = validateRequiredSelect(
+            rentalPeriodType,
+            rentalPeriodTypeError,
+            'Selecciona un tipo de período válido.'
+        );
+
+        const startTimeOk = validateRequiredSelect(
+            rentalStartTime,
+            rentalStartTimeError,
+            'Selecciona un horario inicial válido.'
+        );
+
+        const endTimeOk = validateRequiredSelect(
+            rentalEndTime,
+            rentalEndTimeError,
+            'Selecciona un horario final válido.'
+        );
+
         const formOk = isRentalFormValid();
 
         toggleServicesError(!servicesOk);
 
-        if (!(formOk && datesOk && responsibleOk && descriptionOk && servicesOk)) {
+        if (!responsibleOk || !descriptionOk || !servicesOk ||
+            !datesOk || !classroomOk || !periodTypeOk || !startTimeOk ||
+            !endTimeOk || !formOk
+        ) {
             updateRentalSaveState();
             return;
         }

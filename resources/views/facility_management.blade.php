@@ -479,7 +479,7 @@
                                 <label class="form-label fw-semibold fs-5 mb-3">
                                     Áreas a configurar <span class="text-danger">*</span>
                                 </label>
-                                <div class="d-flex flex-wrap align-items-center gap-2 mb-3 justify-content-start">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-3 justify-content-start ps-3">
                                     <button type="button" class="btn btn-outline-success btn-sm" id="selectAllClassroomsBtn">
                                         <i class="bi bi-check2-square me-1"></i>Seleccionar Todos
                                     </button>
@@ -798,13 +798,14 @@
                                 <label for="rentalClassroom" class="form-label fw-semibold">
                                     Área <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalClassroom" name="classroom" class="form-select form-select-sm" required>
+                                <select id="rentalClassroom" name="classroom" class="form-select form-select-lg" required>
                                     <option value="" selected disabled>Seleccionar área</option>
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
                                         <option value="{{ $salon }}">{{ $salon }}</option>
                                     @endforeach
                                 </select>
+                                <div class="invalid-feedback" id="rentalClassroomError"></div>
                             </div>
 
                             <div class="col-md-6">
@@ -815,7 +816,7 @@
                                     type="text"
                                     id="rentalResponsible"
                                     name="responsible"
-                                    class="form-control form-control-sm"
+                                    class="form-control form-control-lg"
                                     placeholder="Nombre del responsable"
                                     minlength="8"
                                     required
@@ -869,7 +870,7 @@
                                             </label>
                                         </div>
                                         <small class="text-muted d-block mt-2">
-                                            Incluye costos generales de utilidades asociados al uso del área.
+                                            Seleccione si el evento incluye costos generales de utilidades asociados al uso del área.
                                         </small>
                                     </div>
                                 </div>
@@ -923,33 +924,41 @@
                         <div class="row g-3 mb-3">
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-2 px-3 py-2">
-                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso importante:</strong>
                                     Si el evento combina días u horarios laborables con días u horarios no laborables,
                                     seleccione el período no laborable correspondiente:
-                                    <strong>No laborable sábado</strong> o <strong>No laborable domingo o festivo</strong>.
+                                    <strong>No laborable sábado</strong> o
+                                    <strong>No laborable domingo o festivo</strong>.
+
+                                    Las horas seleccionadas aplican para todos los días dentro del rango del evento.
                                 </div>
                             </div>
-
                             <div class="col-md-6">
                                 <label for="rentalPeriodType" class="form-label fw-semibold">
                                     Tipo de período <span class="text-danger">*</span>
                                 </label>
 
-                                <select id="rentalPeriodType" name="period_type" class="form-select" required>
+                                <select id="rentalPeriodType" name="period_type" class="form-select  form-select-lg" required>
                                     <option value="" selected disabled>Seleccionar tipo de período</option>
 
                                     <option value="workday">
-                                        Laborable: lunes a viernes, 7:30 a.m. a 4:30 p.m.
+                                        Laborable
                                     </option>
 
                                     <option value="non_workday_saturday">
-                                        No laborable sábado: lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m.
+                                        No laborable sábado
                                     </option>
 
                                     <option value="non_workday_sunday_holiday">
-                                        No laborable domingo o festivo: lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                        No laborable domingo o festivo
                                     </option>
                                 </select>
+                                <small class="text-muted d-block fst-italic mt-1">
+                                    Laborable: lunes a viernes, 7:30 a.m. a 4:30 p.m.
+                                    No laborable sábado: lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m.
+                                    No laborable domingo o festivo: lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                </small>
+                                <div class="invalid-feedback" id="rentalPeriodTypeError"></div>
                             </div>
 
                             <div class="col-md-6">
@@ -960,7 +969,7 @@
                                 <input
                                     type="text"
                                     id="rentalRateModeDisplay"
-                                    class="form-control"
+                                    class="form-control form-control-lg"
                                     value="Se calculará automáticamente"
                                     readonly
                                 >
@@ -982,7 +991,7 @@
                                         type="text"
                                         id="rentalStartDate"
                                         name="event_date"
-                                        class="form-control date-picker-input"
+                                        class="form-control form-control-lg date-picker-input"
                                         placeholder="Día Mes Año"
                                         autocomplete="off"
                                         inputmode="none"
@@ -1010,7 +1019,7 @@
                                         type="text"
                                         id="rentalEndDate"
                                         name="event_end_date"
-                                        class="form-control date-picker-input"
+                                        class="form-control form-control-lg date-picker-input"
                                         placeholder="Día Mes Año"
                                         autocomplete="off"
                                         inputmode="none"
@@ -1027,16 +1036,6 @@
 
                                 <div class="invalid-feedback d-block" id="rentalEndDateError"></div>
                             </div>
-                            <div class="col-12 d-none" id="rentalRangeWarningRow">
-                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-0 px-4 py-3">
-                                    <div>
-                                        <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
-                                        Si seleccionas semana o mes, debes indicar una fecha de inicio y una fecha de fin válidas.
-                                        El horario seleccionado (hora de inicio y fin) se aplicará a cada día dentro del rango de fechas indicado,
-                                        por lo que el evento representará la misma cantidad de horas en cada uno de esos días.
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
 
@@ -1045,16 +1044,20 @@
                                 <label for="rentalStartTime" class="form-label fw-semibold">
                                     Horario inicial del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalStartTime" name="start_time" class="form-select"
-                                        required></select>
+                                <select id="rentalStartTime" name="start_time" class="form-select form-select-lg" required>
+                                    <option value="" selected disabled>Seleccionar horario inicial</option>
+                                </select>
+                                <div class="invalid-feedback" id="rentalStartTimeError"></div>
                             </div>
 
                             <div class="col-md-6">
                                 <label for="rentalEndTime" class="form-label fw-semibold">
                                     Horario final del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalEndTime" name="end_time" class="form-select"
-                                        required></select>
+                                <select id="rentalEndTime" name="end_time" class="form-select form-select-lg" required>
+                                    <option value="" selected disabled>Seleccionar horario final</option>
+                                </select>
+                                <div class="invalid-feedback" id="rentalEndTimeError"></div>
                                 <div class="invalid-feedback d-block" id="rentalTimeError"></div>
                             </div>
                         </div>
@@ -1294,10 +1297,13 @@
 
                         <div class="mb-3">
                             <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-3 px-3 py-2">
-                                <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso importante:</strong>
                                 Si el evento combina días u horarios laborables con días u horarios no laborables,
                                 seleccione el período no laborable correspondiente:
-                                <strong>No laborable sábado</strong> o <strong>No laborable domingo o festivo</strong>.
+                                <strong>No laborable sábado</strong> o
+                                <strong>No laborable domingo o festivo</strong>.
+
+                                Las horas seleccionadas aplican para todos los días dentro del rango del evento.
                             </div>
 
                             <div class="row g-3">
@@ -1697,7 +1703,10 @@
                                     <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso importante:</strong>
                                     Si el evento combina días u horarios laborables con días u horarios no laborables,
                                     seleccione el período no laborable correspondiente:
-                                    <strong>No laborable sábado</strong> o <strong>No laborable domingo o festivo</strong>.
+                                    <strong>No laborable sábado</strong> o
+                                    <strong>No laborable domingo o festivo</strong>.
+
+                                    Las horas seleccionadas aplican para todos los días dentro del rango del evento.
                                 </div>
                             </div>
 
@@ -1709,15 +1718,21 @@
                                 <select id="editPeriodType" class="form-select" required>
                                     <option value="" selected disabled>Seleccionar tipo de período</option>
                                     <option value="workday">
-                                        Laborable: lunes a viernes, 7:30 a.m. a 4:30 p.m.
+                                        Laborable
                                     </option>
                                     <option value="non_workday_saturday">
-                                        No laborable sábado: lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m.
+                                        No laborable sábado
                                     </option>
                                     <option value="non_workday_sunday_holiday">
-                                        No laborable domingo o festivo: lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                        No laborable domingo o festivo
                                     </option>
                                 </select>
+                                <small class="text-muted d-block fst-italic mt-1">
+                                    Laborable: lunes a viernes, 7:30 a.m. a 4:30 p.m.
+                                    No laborable sábado: lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m.
+                                    No laborable domingo o festivo: lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                </small>
+                                <div class="invalid-feedback" id="rentalPeriodTypeError"></div>
                             </div>
 
                             <div class="col-md-6">
