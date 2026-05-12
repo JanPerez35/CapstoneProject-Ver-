@@ -181,7 +181,7 @@
                             id="borrowModalImage"
                             src=""
                             alt="Equipo"
-                            class="img-fluid rounded-4 mb-3"
+                            class="img-fluid rounded-4 mb-3 border border-2 border-dark"
                             style="height: 280px; width: 100%; object-fit: contain; object-position: center; background-color:#f8f9fa;"
                         >
 

@@ -246,16 +246,16 @@
         </div>
 
         <!--Data Table-->
-        <div class="card border-dark border-2 shadow-sm rounded-4 overflow-hidden">
+            <div class="card border-dark border-2 shadow-sm rounded-2 overflow-hidden">
             <div class="card-body p-4 border-bottom">
-                <div class="d-flex justify-content-between align-items-start gap-3">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
                     <div>
                         <h2 class="fw-bold mb-1">Uso de Áreas y Costos Estimados</h2>
                         <p class="text-muted mb-0">Organización de eventos y estimaciones de costos operacionales</p>
                         <p class="text-muted mb-0">Desliza para ver más información <i class="bi bi-arrow-right"></i></p>
                     </div>
 
-                    <div class="d-flex align-items-start gap-3 me-3">
+                    <div class="d-flex align-items-start gap-3 me-3 ms-lg-0 ms-auto">
                         <span class="fw-semibold">Leyenda:</span>
 
                         <div class="d-flex flex-column align-items-start">
@@ -279,18 +279,18 @@
                 </div>
             </div>
 
-            <div class="table-responsive">
+                <div class="table-fit-wrapper mt-0" style="max-height: 620px; overflow: auto;">
                 <table class="table align-middle mb-0" id="facilityCostTable">
-                    <thead class="table-light">
+                    <thead class="table-light position-sticky top-0" style="z-index: 20;">
                     <tr>
                         <th class="fw-bold">
                             Fecha inicial del evento <br>
-                            <small>(dd-mm-aaaa)</small>
+                            <small>(Día Mes Año)</small>
                         </th>
 
                         <th class="fw-bold">
                             Fecha final del evento <br>
-                            <small>(dd-mm-aaaa)</small>
+                            <small>(Día Mes Año)</small>
                         </th>
                         <th class="fw-bold">Responsable</th>
                         <th class="fw-bold area-col">Área</th>
@@ -348,16 +348,16 @@
                                             </span>
 
                                             <span class="text-muted ms-2">
-                                                {{ \Illuminate\Support\Str::title(
+                                               {{ \Illuminate\Support\Str::title(
                                                     \Carbon\Carbon::parse($parent->event_date)
                                                         ->locale('es')
-                                                        ->isoFormat('DD-MMMM-YYYY')
+                                                        ->translatedFormat('j F Y')
                                                 ) }}
                                                 <i class="bi bi-arrow-right"></i>
                                                {{ \Illuminate\Support\Str::title(
-                                                    \Carbon\Carbon::parse($parent->end_date ?? $parent->event_date)
+                                                    \Carbon\Carbon::parse($parent->event_date)
                                                         ->locale('es')
-                                                        ->isoFormat('DD-MMMM-YYYY')
+                                                        ->translatedFormat('j F Y')
                                                 ) }}
                                             </span>
 
@@ -479,7 +479,7 @@
                                 <label class="form-label fw-semibold fs-5 mb-3">
                                     Áreas a configurar <span class="text-danger">*</span>
                                 </label>
-                                <div class="d-flex flex-wrap align-items-center gap-2 mb-3 justify-content-start">
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-3 justify-content-start ps-3">
                                     <button type="button" class="btn btn-outline-success btn-sm" id="selectAllClassroomsBtn">
                                         <i class="bi bi-check2-square me-1"></i>Seleccionar Todos
                                     </button>
@@ -637,7 +637,7 @@
                                             ],
                                             [
                                                 'titulo' => 'No laborable domingo o festivo',
-                                                'texto' => 'Domingo o festivo, 8:00 a.m. a 9:30 p.m.',
+                                                'texto' => 'Lunes a viernes, 4:30 p.m. a 9:30 p.m.; y domingo o festivo, 8:00 a.m. a 9:30 p.m.',
                                                 'sufijo' => '3',
                                                 'diario' => '0.31',
                                                 'semanal' => '0.00',
@@ -798,13 +798,14 @@
                                 <label for="rentalClassroom" class="form-label fw-semibold">
                                     Área <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalClassroom" name="classroom" class="form-select form-select-sm" required>
+                                <select id="rentalClassroom" name="classroom" class="form-select form-select-lg" required>
                                     <option value="" selected disabled>Seleccionar área</option>
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
                                         <option value="{{ $salon }}">{{ $salon }}</option>
                                     @endforeach
                                 </select>
+                                <div class="invalid-feedback" id="rentalClassroomError"></div>
                             </div>
 
                             <div class="col-md-6">
@@ -815,7 +816,7 @@
                                     type="text"
                                     id="rentalResponsible"
                                     name="responsible"
-                                    class="form-control form-control-sm"
+                                    class="form-control form-control-lg"
                                     placeholder="Nombre del responsable"
                                     minlength="8"
                                     required
@@ -855,7 +856,7 @@
 
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input
                                                 class="form-check-input rental-service-check"
@@ -869,13 +870,13 @@
                                             </label>
                                         </div>
                                         <small class="text-muted d-block mt-2">
-                                            Incluye costos generales de utilidades asociados al uso del área.
+                                            Seleccione si el evento incluye costos generales de utilidades asociados al uso del área.
                                         </small>
                                     </div>
                                 </div>
 
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input
                                                 class="form-check-input rental-service-check"
@@ -895,7 +896,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input
                                                 class="form-check-input rental-service-check"
@@ -923,33 +924,41 @@
                         <div class="row g-3 mb-3">
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-2 px-3 py-2">
-                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso importante:</strong>
                                     Si el evento combina días u horarios laborables con días u horarios no laborables,
                                     seleccione el período no laborable correspondiente:
-                                    <strong>No laborable sábado</strong> o <strong>No laborable domingo o festivo</strong>.
+                                    <strong>No laborable sábado</strong> o
+                                    <strong>No laborable domingo o festivo</strong>.
+
+                                    Las horas seleccionadas aplican para todos los días dentro del rango del evento.
                                 </div>
                             </div>
-
                             <div class="col-md-6">
                                 <label for="rentalPeriodType" class="form-label fw-semibold">
                                     Tipo de período <span class="text-danger">*</span>
                                 </label>
 
-                                <select id="rentalPeriodType" name="period_type" class="form-select" required>
+                                <select id="rentalPeriodType" name="period_type" class="form-select  form-select-lg" required>
                                     <option value="" selected disabled>Seleccionar tipo de período</option>
 
                                     <option value="workday">
-                                        Laborable: lunes a viernes, 7:30 a.m. a 4:30 p.m.
+                                        Laborable
                                     </option>
 
                                     <option value="non_workday_saturday">
-                                        No laborable sábado: lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m.
+                                        No laborable sábado
                                     </option>
 
                                     <option value="non_workday_sunday_holiday">
-                                        No laborable domingo o festivo: lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                        No laborable domingo o festivo
                                     </option>
                                 </select>
+                                <small class="text-muted d-block fst-italic mt-1">
+                                    Laborable: lunes a viernes, 7:30 a.m. a 4:30 p.m.
+                                    No laborable sábado: lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m.
+                                    No laborable domingo o festivo: lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                </small>
+                                <div class="invalid-feedback" id="rentalPeriodTypeError"></div>
                             </div>
 
                             <div class="col-md-6">
@@ -960,7 +969,7 @@
                                 <input
                                     type="text"
                                     id="rentalRateModeDisplay"
-                                    class="form-control"
+                                    class="form-control form-control-lg"
                                     value="Se calculará automáticamente"
                                     readonly
                                 >
@@ -982,8 +991,8 @@
                                         type="text"
                                         id="rentalStartDate"
                                         name="event_date"
-                                        class="form-control date-picker-input"
-                                        placeholder="dd-mm-aaaa"
+                                        class="form-control form-control-lg date-picker-input"
+                                        placeholder="Día Mes Año"
                                         autocomplete="off"
                                         inputmode="none"
                                         required
@@ -1010,8 +1019,8 @@
                                         type="text"
                                         id="rentalEndDate"
                                         name="event_end_date"
-                                        class="form-control date-picker-input"
-                                        placeholder="dd-mm-aaaa"
+                                        class="form-control form-control-lg date-picker-input"
+                                        placeholder="Día Mes Año"
                                         autocomplete="off"
                                         inputmode="none"
                                         required
@@ -1027,16 +1036,6 @@
 
                                 <div class="invalid-feedback d-block" id="rentalEndDateError"></div>
                             </div>
-                            <div class="col-12 d-none" id="rentalRangeWarningRow">
-                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-0 px-4 py-3">
-                                    <div>
-                                        <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
-                                        Si seleccionas semana o mes, debes indicar una fecha de inicio y una fecha de fin válidas.
-                                        El horario seleccionado (hora de inicio y fin) se aplicará a cada día dentro del rango de fechas indicado,
-                                        por lo que el evento representará la misma cantidad de horas en cada uno de esos días.
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
 
@@ -1045,16 +1044,20 @@
                                 <label for="rentalStartTime" class="form-label fw-semibold">
                                     Horario inicial del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalStartTime" name="start_time" class="form-select"
-                                        required></select>
+                                <select id="rentalStartTime" name="start_time" class="form-select form-select-lg" required>
+                                    <option value="" selected disabled>Seleccionar horario inicial</option>
+                                </select>
+                                <div class="invalid-feedback" id="rentalStartTimeError"></div>
                             </div>
 
                             <div class="col-md-6">
                                 <label for="rentalEndTime" class="form-label fw-semibold">
                                     Horario final del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalEndTime" name="end_time" class="form-select"
-                                        required></select>
+                                <select id="rentalEndTime" name="end_time" class="form-select form-select-lg" required>
+                                    <option value="" selected disabled>Seleccionar horario final</option>
+                                </select>
+                                <div class="invalid-feedback" id="rentalEndTimeError"></div>
                                 <div class="invalid-feedback d-block" id="rentalTimeError"></div>
                             </div>
                         </div>
@@ -1245,7 +1248,7 @@
 
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="relatedUtilities" value="utilities">
                                             <label class="form-check-label fw-semibold" for="relatedUtilities">
@@ -1259,7 +1262,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="relatedElectricity" value="electricity">
                                             <label class="form-check-label fw-semibold" for="relatedElectricity">
@@ -1273,7 +1276,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="relatedWater" value="water">
                                             <label class="form-check-label fw-semibold" for="relatedWater">
@@ -1294,10 +1297,13 @@
 
                         <div class="mb-3">
                             <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-3 px-3 py-2">
-                                <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso importante:</strong>
                                 Si el evento combina días u horarios laborables con días u horarios no laborables,
                                 seleccione el período no laborable correspondiente:
-                                <strong>No laborable sábado</strong> o <strong>No laborable domingo o festivo</strong>.
+                                <strong>No laborable sábado</strong> o
+                                <strong>No laborable domingo o festivo</strong>.
+
+                                Las horas seleccionadas aplican para todos los días dentro del rango del evento.
                             </div>
 
                             <div class="row g-3">
@@ -1339,7 +1345,7 @@
                                             id="relatedStartDate"
                                             name="related_event_start_date"
                                             class="form-control date-picker-input"
-                                            placeholder="dd-mm-aaaa"
+                                            placeholder="Día Mes Año"
                                             autocomplete="off"
                                             inputmode="none"
                                             required
@@ -1463,7 +1469,7 @@
 
                         <div class="row g-3">
                             <div class="col-12">
-                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
+                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-3 px-4 py-3">
                                     <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
                                     Esta opción permite preparar modificaciones puntuales de días u horarios.
                                 </div>
@@ -1480,7 +1486,7 @@
                                     id="customizeDate"
                                     name="event_start_date"
                                     class="form-control date-picker-input"
-                                    placeholder="dd-mm-aaaa"
+                                    placeholder="Día Mes Año"
                                     autocomplete="off"
                                     inputmode="none"
                                     required
@@ -1644,7 +1650,7 @@
 
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="editUtilities" value="utilities">
                                             <label class="form-check-label fw-semibold" for="editUtilities">
@@ -1658,7 +1664,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="editElectricity" value="electricity">
                                             <label class="form-check-label fw-semibold" for="editElectricity">
@@ -1672,7 +1678,7 @@
                                 </div>
 
                                 <div class="col-md-4">
-                                    <div class="service-option-card h-100">
+                                    <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="editWater" value="water">
                                             <label class="form-check-label fw-semibold" for="editWater">
@@ -1694,11 +1700,13 @@
                         <div class="row g-3 mb-3">
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-2 px-3 py-2">
-                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
-                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso importante:</strong>
                                     Si el evento combina días u horarios laborables con días u horarios no laborables,
                                     seleccione el período no laborable correspondiente:
-                                    <strong>No laborable sábado</strong> o <strong>No laborable domingo o festivo</strong>.
+                                    <strong>No laborable sábado</strong> o
+                                    <strong>No laborable domingo o festivo</strong>.
+
+                                    Las horas seleccionadas aplican para todos los días dentro del rango del evento.
                                 </div>
                             </div>
 
@@ -1710,15 +1718,21 @@
                                 <select id="editPeriodType" class="form-select" required>
                                     <option value="" selected disabled>Seleccionar tipo de período</option>
                                     <option value="workday">
-                                        Laborable: lunes a viernes, 7:30 a.m. a 4:30 p.m.
+                                        Laborable
                                     </option>
                                     <option value="non_workday_saturday">
-                                        No laborable sábado: lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m.
+                                        No laborable sábado
                                     </option>
                                     <option value="non_workday_sunday_holiday">
-                                        No laborable domingo o festivo: lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                        No laborable domingo o festivo
                                     </option>
                                 </select>
+                                <small class="text-muted d-block fst-italic mt-1">
+                                    Laborable: lunes a viernes, 7:30 a.m. a 4:30 p.m.
+                                    No laborable sábado: lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m.
+                                    No laborable domingo o festivo: lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                </small>
+                                <div class="invalid-feedback" id="rentalPeriodTypeError"></div>
                             </div>
 
                             <div class="col-md-6">
@@ -1748,7 +1762,7 @@
                                     type="text"
                                     id="editStartDate"
                                     class="form-control date-picker-input"
-                                    placeholder="dd-mm-aaaa"
+                                    placeholder="Día Mes Año"
                                     autocomplete="off"
                                     inputmode="none"
                                     required
@@ -1766,7 +1780,7 @@
                                     type="text"
                                     id="editEndDate"
                                     class="form-control date-picker-input"
-                                    placeholder="dd-mm-aaaa"
+                                    placeholder="Día Mes Año"
                                     autocomplete="off"
                                     inputmode="none"
                                     required

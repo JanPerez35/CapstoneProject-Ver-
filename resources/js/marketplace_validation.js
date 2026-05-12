@@ -173,6 +173,7 @@ const cancelConfirmModal = document.getElementById('cancelConfirmModal');
 const confirmCancelCreatePost = document.getElementById('confirmCancelCreatePost');
 
 const publishBtn = document.getElementById('publishBtn');
+let isPublishingPost = false;
 const postTitle = document.getElementById('postTitle');
 const postTitleError = document.getElementById('postTitleError');
 const postDescription = document.getElementById('postDescription');
@@ -252,7 +253,7 @@ const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
  * Examples of rejected values:
  * 01,001, 12.345, .99 ,1., 2.E4, +2.5, -5.78
  */
-const priceRegex = /^(0|[1-9]\d*)(\.\d{1,2})?$/
+const priceRegex = /^(\d+)(\.\d{1,2})?$/
 
 /**
  * Maximum allowed post price.
@@ -273,25 +274,39 @@ const MIN_IMAGES = 1;
 
 
 /**
- * Daily post limit modal references.
+ * Post limit modal references.
  *
  * These elements are used to:
- * - disable the create-post button when the user reaches the daily limit
- * - open the max-post-limit modal
- * - display the next time the user can create another post
+ * - detect when the user reaches the 15-post limit within 15 days
+ * - prevent the create-post modal from opening when the limit is reached
+ * - open the max-post-limit modal instead
  */
 const openCreatePostBtn = document.querySelector('.open-create-post');
 const maxPostLimitModal = document.getElementById('maxPostLimitModal');
 const nextPostAvailableTime = document.getElementById('nextPostAvailableTime');
 
 /**
- * Temporary mock count until backend support is added.
+ * Post limit state.
  *
- * Change this value to 15 to test the disabled create button
- * and the max-post-limit modal.
+ * Stores the number of posts created by the current user within the last 15 days,
+ * the maximum number of posts allowed in that period, and whether the limit
+ * has already been reached.
+ *
+ * These values are loaded from the backend through /user/post-limit.
  */
-let userPostsLast24Hours = 2;
+let userPostsLast15Days = 0;
+let MAX_POSTS_15_DAYS = 15;
+let userHasReachedPostLimit = false;
 
+/**
+ * Loads the current user's marketplace post limit information from the backend.
+ *
+ * The backend returns how many posts the user has created within the last 15 days,
+ * the maximum allowed posts, and whether the limit has been reached.
+ *
+ * If the request fails, the function falls back to safe default values
+ * and still applies the post-limit state to the create-post button.
+ */
 async function loadPostLimit() {
     try {
         const res = await fetch('/user/post-limit');
@@ -306,7 +321,7 @@ async function loadPostLimit() {
     } catch (error) {
         console.error('Error cargando límite:', error);
 
-        // fallback seguro
+        // Safety fallback
         userPostsLast15Days = 0;
         MAX_POSTS_15_DAYS = 15;
     }
@@ -314,72 +329,59 @@ async function loadPostLimit() {
     applyPostLimitState();
 }
 
-/**
- * Builds the next available posting time shown in the max-post-limit modal.
- *
- * This temporary frontend version calculates the time as 24 hours from
- * the current moment. When backend support is added, this should use the
- * timestamp returned by the server instead.
- *
- * @returns {string} Formatted date and time when the user can post again.
- */
-function formatNextPostAvailableTime() {
-    const nextTime = new Date();
-    nextTime.setHours(nextTime.getHours() + 24);
 
-    return nextTime.toLocaleString('es-PR', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit'
-    });
-}
 
 /**
- * Applies the current daily post limit state to the create-post button.
+ * Applies the 15-day post limit state to the create-post button.
  *
- * If the mock post count is equal to or greater than MAX_DAILY_POSTS,
- * the create-post button is disabled and the modal timestamp is prepared.
+ * If the user has reached the maximum number of allowed posts, the button keeps
+ * its visual disabled styling, but it is not truly disabled so the click listener
+ * can still open the max-post-limit modal.
  *
- * If the user is below the limit, the button remains enabled.
+ * When the user is below the limit, the button is restored so it can open
+ * the create-post modal normally.
  */
 function applyPostLimitState() {
     if (!openCreatePostBtn) return;
 
-    const hasReachedLimit = MAX_POSTS_15_DAYS > 0 && userPostsLast15Days >= MAX_POSTS_15_DAYS;
+    userHasReachedPostLimit =
+        MAX_POSTS_15_DAYS > 0 &&
+        userPostsLast15Days >= MAX_POSTS_15_DAYS;
 
-    openCreatePostBtn.disabled = hasReachedLimit;
-    openCreatePostBtn.classList.toggle('disabled', hasReachedLimit);
+    openCreatePostBtn.classList.toggle('disabled', userHasReachedPostLimit);
+    openCreatePostBtn.setAttribute('aria-disabled', userHasReachedPostLimit ? 'true' : 'false');
 
-    if (hasReachedLimit && nextPostAvailableTime) {
-        nextPostAvailableTime.textContent = formatNextPostAvailableTime();
+    if (userHasReachedPostLimit) {
+        openCreatePostBtn.removeAttribute('data-bs-toggle');
+        openCreatePostBtn.removeAttribute('data-bs-target');
+    } else {
+        openCreatePostBtn.setAttribute('data-bs-toggle', 'modal');
+        openCreatePostBtn.setAttribute('data-bs-target', '#createPostModal');
     }
 }
 
 /**
- * Initializes the daily post limit state when the marketplace page loads.
+ * Initializes the 15-day post limit state when the marketplace page loads.
  */
 loadPostLimit();
 
 
 /**
- * Handles clicks on the create-post button when the daily limit is reached.
+ * Handles clicks on the create-post button when the 15-day post limit is reached.
  *
- * Prevents the create-post modal from opening, refreshes the next available
- * posting time, and opens the max-post-limit modal instead.
+ * Prevents the create-post modal from opening and shows the max-post-limit modal
+ * explaining that the user must delete a post or wait until an existing post
+ * falls outside the 15-day period.
  */
 openCreatePostBtn?.addEventListener('click', (event) => {
-    if (MAX_POSTS_15_DAYS === 0 || userPostsLast15Days < MAX_POSTS_15_DAYS) return;
+    if (!userHasReachedPostLimit) return;
 
     event.preventDefault();
     event.stopPropagation();
 
-    if (nextPostAvailableTime) {
-        nextPostAvailableTime.textContent = formatNextPostAvailableTime();
+    if (maxPostLimitModal) {
+        bootstrap.Modal.getOrCreateInstance(maxPostLimitModal).show();
     }
-
-    bootstrap.Modal.getOrCreateInstance(maxPostLimitModal).show();
 });
 
 /**
@@ -1035,12 +1037,12 @@ function attachMarketplaceDeleteEvents() {
 }
 
 /**
- * Confirms deletion listeners.
+ * Confirms post deletion.
  *
- * It sends a DELETE request to /posts/{id}, refreshes all post
- * from the backend, closes the delete modal and opens the post deleted toast.
- * Clears the deletion ID. If there was not post selected then it does nothing.
- * */
+ * Sends a DELETE request for the selected post, refreshes the marketplace list,
+ * reloads the user's 15-day post limit state, closes the delete modal, shows
+ * the deletion success toast, and clears the selected post ID.
+ */
 if (deletePostModal && confirmDeletePost) {
     confirmDeletePost.addEventListener('click', async () => {
         if (postIdToDelete === null) return;
@@ -1053,6 +1055,7 @@ if (deletePostModal && confirmDeletePost) {
         });
 
         await fetchPosts();
+        await loadPostLimit();
 
         const modalInstance = bootstrap.Modal.getOrCreateInstance(deletePostModal);
         modalInstance.hide();
@@ -1399,7 +1402,7 @@ function validatePrice(showError = true) {
             setFieldError(
                 postPrice,
                 postPriceError,
-                'Ingresa un precio válido usando solo números, sin ceros a la izquierda y con hasta 2 dígitos después del punto decimal.'
+                'Ingresa un precio válido usando solo números y con hasta 2 dígitos después del punto decimal.'
             );
             postPriceGroup?.classList.add('is-invalid');
         }
@@ -2451,58 +2454,77 @@ if (postImage) {
  */
 if (publishBtn && createPostForm) {
     publishBtn.addEventListener('click', async () => {
-        const isTitleValid = validateTitle(true);
-        const isDescriptionValid = validateDescription(true);
-        const isPriceValid = validatePrice(true);
-        const isCategoryValid = validateSelect(postCategory, true);
-        const isConditionValid = validateSelect(postCondition, true);
-        const areImagesValid = validateImages(true);
+        if (isPublishingPost) return;
 
-        if (
-            !isTitleValid ||
-            !isDescriptionValid ||
-            !isPriceValid ||
-            !isCategoryValid ||
-            !isConditionValid ||
-            !areImagesValid
-        ) {
-            updatePublishButtonState();
-            return;
-        }
+        isPublishingPost = true;
+        publishBtn.disabled = true;
 
-        const formData = new FormData();
+        try {
+            const isTitleValid = validateTitle(true);
+            const isDescriptionValid = validateDescription(true);
+            const isPriceValid = validatePrice(true);
+            const isCategoryValid = validateSelect(postCategory, true);
+            const isConditionValid = validateSelect(postCondition, true);
+            const areImagesValid = validateImages(true);
 
-        formData.append('title', postTitle.value);
-        formData.append('description', postDescription.value);
-        formData.append('cost', postPrice.value);
-        formData.append('category', postCategory.value);
-        formData.append('condition', postCondition.value);
+            if (
+                !isTitleValid ||
+                !isDescriptionValid ||
+                !isPriceValid ||
+                !isCategoryValid ||
+                !isConditionValid ||
+                !areImagesValid
+            ) {
+                return;
+            }
 
-        selectedPostImages.forEach(file => {
-            formData.append('images[]', file);
-        });
+            const formData = new FormData();
 
-        await fetch('/posts', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: formData
-        });
+            formData.append('title', postTitle.value);
+            formData.append('description', postDescription.value);
+            formData.append('cost', postPrice.value);
+            formData.append('category', postCategory.value);
+            formData.append('condition', postCondition.value);
 
+            selectedPostImages.forEach(file => {
+                formData.append('images[]', file);
+            });
 
-        currentMarketplacePage = 1;
-        await fetchPosts();
+            const response = await fetch('/posts', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: formData
+            });
 
-        const createModalInstance = bootstrap.Modal.getOrCreateInstance(createPostModal);
-        allowCreatePostClose = true;
-        createModalInstance.hide();
+            if (!response.ok) {
+                return;
+            }
 
-        resetCreatePostLocalState();
+            currentMarketplacePage = 1;
 
-        setTimeout(() => {
+            await fetchPosts();
+            await loadPostLimit();
+
+            const createModalInstance = bootstrap.Modal.getOrCreateInstance(createPostModal);
+            allowCreatePostClose = true;
+            createModalInstance.hide();
+
+            resetCreatePostLocalState();
+
             postCreatedToast?.show();
-        }, 250);
+
+            if (userHasReachedPostLimit && maxPostLimitModal) {
+                setTimeout(() => {
+                    bootstrap.Modal.getOrCreateInstance(maxPostLimitModal).show();
+                }, 400);
+            }
+
+        } finally {
+            isPublishingPost = false;
+            updatePublishButtonState();
+        }
     });
 }
 
@@ -2637,66 +2659,84 @@ if (submitReportBtn) {
     submitReportBtn.addEventListener('click', async (e) => {
         e.preventDefault();
 
+        console.log('CLICK EN ENVIAR QUERELLA');
+
         const isReasonValid = validateReportReason(true);
         const isDescriptionValid = validateReportDescription(true);
 
         if (!isReasonValid || !isDescriptionValid) {
+            console.log('Formulario inválido');
             updateReportButtonState();
             return;
         }
+
+        const postId = document.getElementById('postDetailsModal')?.dataset.postId;
+
+        const payload = {
+            reported_user_id: reportedUserId,
+            report_reason: reportReason.value,
+            description: reportDescription.value,
+            post_id: postId
+        };
+
+        console.log('Payload querella:', payload);
+
         try {
-                const postId = document.getElementById('postDetailsModal')?.dataset.postId;
-                const response = await fetch('/reports', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({
-                        reported_user_id: reportedUserId,
-                        report_reason: reportReason.value,
-                        description: reportDescription.value,
-                        post_id: postId
-                    })
-                });
+            const response = await fetch('/reports', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify(payload)
+            });
 
-                let data;
+            const rawText = await response.text();
 
-                try {
-                    data = await response.json();
-                } catch (e) {
-                    const text = await response.text();
-                    console.error('Respuesta NO JSON:', text);
-                    return;
-                }
-                if (!response.ok) {
-                    console.error('ERROR BACKEND:', data);
-                    return;
-                }
+            console.log('Status:', response.status);
+            console.log('Respuesta cruda:', rawText);
 
-                allowReportClose = true;
+            let data = null;
 
-                const reportModalInstance = bootstrap.Modal.getOrCreateInstance(reportUserModal);
-                reportModalInstance.hide();
+            try {
+                data = rawText ? JSON.parse(rawText) : null;
+            } catch (jsonError) {
+                console.error('La respuesta no es JSON válido:', rawText);
+                alert('Error: el servidor no devolvió JSON. Revisa la consola.');
+                return;
+            }
 
+            if (!response.ok) {
+                console.error('Error backend:', data);
+                alert(data?.message || 'No se pudo enviar la querella. Revisa la consola.');
+                return;
+            }
+
+            allowReportClose = true;
+
+            const reportModalInstance = bootstrap.Modal.getOrCreateInstance(reportUserModal);
+            reportModalInstance.hide();
+
+            setTimeout(() => {
+                reportSentToast?.show();
+            }, 250);
+
+            if (postDetailsModal) {
                 setTimeout(() => {
-                    reportSentToast?.show();
-                }, 250);
-
-                if (postDetailsModal) {
-                    setTimeout(() => {
-                        const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
-                        postModalInstance.show();
-                    }, 300);
-                }
-
+                    const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
+                    postModalInstance.show();
+                }, 300);
             }
-            catch (error) {
-                console.error('Error enviando reporte:', error);
-            }
-        });
-    }
+
+            resetReportForm();
+
+        } catch (error) {
+            console.error('Error enviando reporte:', error);
+            alert('Error enviando la querella. Revisa la consola.');
+        }
+    });
+}
 
 /**
  * Report modal lifecycle behavior.

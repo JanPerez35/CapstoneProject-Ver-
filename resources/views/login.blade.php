@@ -89,7 +89,7 @@
 
     {{-- Short system description --}}
     <p class="footer-text">
-        Sistema de Marketplace e Inventario de Kinesiología
+        Sistema de Mercado e Inventario de Kinesiología
     </p>
 
 </div>

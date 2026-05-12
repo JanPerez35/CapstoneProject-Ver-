@@ -822,12 +822,41 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`/messages/${chatId}`);
             const messages = await response.json();
             messagesContainer.innerHTML = '';
+
+            if (emptyState) {
+                messagesContainer.appendChild(emptyState);
+            }
+
             delete messagesContainer.dataset.lastMessageDate;
 
             if (!messages.length) {
                 if (emptyState) {
                     emptyState.classList.remove('d-none');
+
+                    const emptyTitle = emptyState.querySelector('h4');
+                    const emptyText = emptyState.querySelector('p');
+
+                    if (chatId) {
+                        if (emptyTitle) {
+                            emptyTitle.textContent = 'Aquí aparecerán tus mensajes.';
+                        }
+
+                        if (emptyText) {
+                            emptyText.textContent =
+                                'Para comenzar la conversación, escribe un mensaje abajo.';
+                        }
+                    } else {
+                        if (emptyTitle) {
+                            emptyTitle.textContent = 'No hay mensajes aún.';
+                        }
+
+                        if (emptyText) {
+                            emptyText.textContent =
+                                'Selecciona un chat para comenzar la conversación.';
+                        }
+                    }
                 }
+
                 return;
             }
 
@@ -1241,7 +1270,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (currentLength === MAX_REPORT_LENGTH) {
                 reportDescription.classList.add('is-invalid');
                 reportDescriptionError.textContent =
-                    `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres, puedes aún someter esa cantidad.`;
+                    `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres. Puedes someter el texto tal como está.`;
             } else {
                 validateReportDescription(true);
             }

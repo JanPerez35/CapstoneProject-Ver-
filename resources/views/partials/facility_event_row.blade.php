@@ -26,45 +26,48 @@
     data-month="{{ \Carbon\Carbon::parse($item->event_date)->format('n') }}"
     data-year="{{ \Carbon\Carbon::parse($item->event_date)->format('Y') }}"
 >
-    <td>
-        @if($isChild)
-            <span class="sub-event-arrow">↳</span>
+    <td class="align-middle">
+        <div class="position-relative d-inline-block">
+            @if($isChild)
+                <span class="sub-event-arrow position-absolute" style="top: -33px; left: 2px;">
+                ↳
+            </span>
 
-            @if($item->sub_event_type === 'related_area')
-                <span class="badge bg-info-subtle text-info-emphasis me-1">
+                @if($item->sub_event_type === 'related_area')
+                    <span class="badge bg-info-subtle text-info-emphasis position-absolute text-nowrap" style="top: -26px; left: 28px;">
                     Área relacionada
                 </span>
-            @elseif($item->sub_event_type === 'custom_day')
-                <span class="badge bg-warning-subtle text-warning-emphasis me-1">
+                @elseif($item->sub_event_type === 'custom_day')
+                    <span class="badge bg-warning-subtle text-warning-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
                     Modificación
                 </span>
-            @else
-                <span class="badge bg-secondary-subtle text-secondary-emphasis me-1">
+                @else
+                    <span class="badge bg-secondary-subtle text-secondary-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
                     Sub-evento
                 </span>
+                @endif
+            @else
+                <span class="badge bg-success-subtle text-success-emphasis position-absolute text-nowrap" style="top: -26px; left: 0;">
+                Principal
+            </span>
             @endif
-        @else
-            <div>
-                <span class="badge bg-success-subtle text-success-emphasis me-1 position-relative" style="top: -4px;">
-                    Principal
-                </span>
-            </div>
-        @endif
-        <div style="margin-top: 4px;">
+
+            <span>
             {{ \Illuminate\Support\Str::title(
-        \Carbon\Carbon::parse($item->event_date)
-        ->locale('es')
-        ->isoFormat('DD-MMMM-YYYY')
-        ) }}
+               \Carbon\Carbon::parse($item->event_date)
+                   ->locale('es')
+                   ->translatedFormat('j F Y')
+            ) }}
+        </span>
         </div>
     </td>
 
    <td>
        {{ \Illuminate\Support\Str::title(
-        \Carbon\Carbon::parse($item->end_date ?? $item->event_date)
+         \Carbon\Carbon::parse($item->end_date ?? $item->event_date)
         ->locale('es')
-        ->isoFormat('DD-MMMM-YYYY')
-    ) }}
+        ->translatedFormat('j F Y')
+       ) }}
    </td>
 
     <td>{{ $item->responsible }}</td>
