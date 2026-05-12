@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use App\Models\Review;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Concerns\LogsActivity;
 
 /**
@@ -33,7 +32,7 @@ class PostController extends Controller
      * Validates:
      * - title, cost, category, condition
      * - optional images (max 3)
-     *
+     * 
      * Enforces:
      * - daily post limit per user
      *
@@ -61,12 +60,11 @@ class PostController extends Controller
             ], 403);
         }
 
-        $imageUrls = [];
+        $paths = [];
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
-                $path = $image->store('posts', 'public');
-                $imageUrls[] = Storage::url($path);
+                $paths[] = $image->store('posts', 'public');
             }
         }
 
@@ -77,16 +75,21 @@ class PostController extends Controller
             'cost' => $request->cost,
             'category' => $request->category,
             'condition' => $request->condition,
-            'status' => 'Disponible', // 👈 FIX
-            'photo_1_url' => $imageUrls[0] ?? null,
-            'photo_2_url' => $imageUrls[1] ?? null,
-            'photo_3_url' => $imageUrls[2] ?? null,
+            'status' => 'Disponible',
+            'photo_1_url' => $paths[0] ?? null,
+            'photo_2_url' => $paths[1] ?? null,
+            'photo_3_url' => $paths[2] ?? null,
         ]);
+
+        $this->logActivity(
+            'Crear publicación',
+            "Se creó la publicación: {$post->title} (ID: {$post->id})"
+        );
 
         return response()->json([
             'success' => true,
             'post' => $post
-        ], 200);
+            ], 200);
     }
     /**
      * Deletes a post.
@@ -106,9 +109,9 @@ class PostController extends Controller
             abort(403);
         }
         $images = [
-            $post->photo_1_url,
-            $post->photo_2_url,
-            $post->photo_3_url
+                $post->photo_1_url,
+                $post->photo_2_url,
+                $post->photo_3_url
         ];
 
         foreach ($images as $image) {
@@ -130,9 +133,9 @@ class PostController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Post eliminado exitosamente'
-        ]);
+            ]);
     }
-   /**
+    /**
      * Displays all posts (view).
      *
      * Returns:
@@ -155,6 +158,9 @@ class PostController extends Controller
     public function getPosts()
     {
         $posts = Post::with('user')
+            ->whereHas('user', function ($query) {
+                    $query->where('status', 'Activo');
+                })
             ->latest()
             ->get()
             ->map(function ($post) {
@@ -194,7 +200,7 @@ class PostController extends Controller
 
         return response()->json($posts);
     }
-     /**
+    /**
      * Retrieves a single post by ID.
      *
      * Includes:
