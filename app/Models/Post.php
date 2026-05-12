@@ -22,13 +22,11 @@ class Post extends Model
     
     protected $appends = ['time_ago'];
 
-    // Seller (owner)
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Chats related to this post
     public function chats()
     {
         return $this->hasMany(Chat::class);

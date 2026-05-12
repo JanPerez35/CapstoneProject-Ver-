@@ -10,7 +10,7 @@ use App\Http\Controllers\Concerns\LogsActivity;
 class UserController extends Controller
 {
     use LogsActivity;
-    // Mostrar todos los usuarios (solo admin)
+
     public function index()
     {
         $users = User::all();
@@ -25,7 +25,7 @@ class UserController extends Controller
             ->get();
         return view('layout', compact('user'));
     }
-    // Actualizar el rol de un usuario
+
     public function updateRole(Request $request, User $user)
     {
         if ((int) auth()->id() === (int) $user->id) {

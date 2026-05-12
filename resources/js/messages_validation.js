@@ -1061,7 +1061,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const sidebar = document.querySelector('.messages-sidebar');
             const chatColumn = document.querySelector('.messages-chat-column');
 
-            // SHows the sidebar once more
+            // Shows the sidebar once more
             if (sidebar) {
                 sidebar.classList.remove('d-none');
             }

@@ -31,7 +31,6 @@ new class extends Component
             $this->chatId
         ))->toOthers();
 
-        // agregar al frontend
         $this->messages[] = [
             'name' => auth()->user()->name,
             'message' => $message->content

@@ -58,7 +58,6 @@ class LendingController extends Controller
 
         $redirectBack = $validated['redirect_back'] ?? route('kinventory');
 
-        // Seguridad básica: solo permitir redirects internos del mismo sitio
         if (!str_starts_with($redirectBack, url('/'))) {
             $redirectBack = route('kinventory');
         }

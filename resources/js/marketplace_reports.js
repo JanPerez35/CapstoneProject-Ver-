@@ -411,7 +411,6 @@ import "flatpickr/dist/flatpickr.min.css";
                         headers: { 'X-CSRF-TOKEN': csrf }
                     });
 
-                    // también marcar reporte como resuelto
                     await fetch(`/reports/${reportId}/resolve`, {
                         method: 'POST',
                         headers: { 'X-CSRF-TOKEN': csrf }

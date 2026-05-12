@@ -2,8 +2,8 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 export const options = {
-    vus: 208, // Número de usuarios virtuales concurrentes
-    duration: '1s', // Duración total de la prueba
+    vus: 208, 
+    duration: '1s', 
     insecureSkipTLSVerify: true,
 };
 
