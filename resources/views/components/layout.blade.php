@@ -239,7 +239,7 @@
                                                 <img
                                                     src="{{ !empty($item['equipment_photo_url']) ? asset('storage/' . $item['equipment_photo_url']) : asset('images/kinventory_images/default.jpg') }}"
                                                     style="width: 60px; height: 60px; object-fit: contain;"
-                                                    class="rounded"
+                                                    class="rounded border border-2 border-dark"
                                                     alt="{{ $item['description'] ?? 'Equipo' }}"
                                                 >
                                                 <span class="fw-semibold">{{ $item['description'] ?? 'Sin descripción' }}</span>

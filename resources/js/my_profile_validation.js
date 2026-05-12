@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         container.innerHTML = '';
 
-        if (totalPages <= 1) return;
+
 
         const createItem = (label, page, disabled = false, active = false) => {
             const li = document.createElement('li');

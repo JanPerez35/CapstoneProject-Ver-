@@ -2659,66 +2659,84 @@ if (submitReportBtn) {
     submitReportBtn.addEventListener('click', async (e) => {
         e.preventDefault();
 
+        console.log('CLICK EN ENVIAR QUERELLA');
+
         const isReasonValid = validateReportReason(true);
         const isDescriptionValid = validateReportDescription(true);
 
         if (!isReasonValid || !isDescriptionValid) {
+            console.log('Formulario inválido');
             updateReportButtonState();
             return;
         }
+
+        const postId = document.getElementById('postDetailsModal')?.dataset.postId;
+
+        const payload = {
+            reported_user_id: reportedUserId,
+            report_reason: reportReason.value,
+            description: reportDescription.value,
+            post_id: postId
+        };
+
+        console.log('Payload querella:', payload);
+
         try {
-                const postId = document.getElementById('postDetailsModal')?.dataset.postId;
-                const response = await fetch('/reports', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: JSON.stringify({
-                        reported_user_id: reportedUserId,
-                        report_reason: reportReason.value,
-                        description: reportDescription.value,
-                        post_id: postId
-                    })
-                });
+            const response = await fetch('/reports', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify(payload)
+            });
 
-                let data;
+            const rawText = await response.text();
 
-                try {
-                    data = await response.json();
-                } catch (e) {
-                    const text = await response.text();
-                    console.error('Respuesta NO JSON:', text);
-                    return;
-                }
-                if (!response.ok) {
-                    console.error('ERROR BACKEND:', data);
-                    return;
-                }
+            console.log('Status:', response.status);
+            console.log('Respuesta cruda:', rawText);
 
-                allowReportClose = true;
+            let data = null;
 
-                const reportModalInstance = bootstrap.Modal.getOrCreateInstance(reportUserModal);
-                reportModalInstance.hide();
+            try {
+                data = rawText ? JSON.parse(rawText) : null;
+            } catch (jsonError) {
+                console.error('La respuesta no es JSON válido:', rawText);
+                alert('Error: el servidor no devolvió JSON. Revisa la consola.');
+                return;
+            }
 
+            if (!response.ok) {
+                console.error('Error backend:', data);
+                alert(data?.message || 'No se pudo enviar la querella. Revisa la consola.');
+                return;
+            }
+
+            allowReportClose = true;
+
+            const reportModalInstance = bootstrap.Modal.getOrCreateInstance(reportUserModal);
+            reportModalInstance.hide();
+
+            setTimeout(() => {
+                reportSentToast?.show();
+            }, 250);
+
+            if (postDetailsModal) {
                 setTimeout(() => {
-                    reportSentToast?.show();
-                }, 250);
-
-                if (postDetailsModal) {
-                    setTimeout(() => {
-                        const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
-                        postModalInstance.show();
-                    }, 300);
-                }
-
+                    const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
+                    postModalInstance.show();
+                }, 300);
             }
-            catch (error) {
-                console.error('Error enviando reporte:', error);
-            }
-        });
-    }
+
+            resetReportForm();
+
+        } catch (error) {
+            console.error('Error enviando reporte:', error);
+            alert('Error enviando la querella. Revisa la consola.');
+        }
+    });
+}
 
 /**
  * Report modal lifecycle behavior.

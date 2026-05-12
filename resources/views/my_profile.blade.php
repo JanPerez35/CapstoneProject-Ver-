@@ -40,8 +40,139 @@
             opacity: 0.65;
         }
 
+        .profile-tabs-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+            width: 100%;
+            max-width: none;
+            padding-left: 0;
+        }
+
+        .profile-tab-item {
+            width: 100%;
+        }
+
+        .profile-tab-btn {
+            width: 100%;
+            min-height: 48px;
+            font-size: 1.00rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-tab-btn i {
+            font-size: 1.15rem;
+        }
+
+        @media (max-width: 767.98px) {
+            .profile-tabs-grid {
+                grid-template-columns: 1fr;
+                max-width: 100%;
+            }
+        }
+
         .profile-pagination .page-link:focus {
             box-shadow: none;
+        }
+
+        .requests-profile-card {
+            background-color: #fff;
+        }
+
+        .requests-legend-strip {
+            border: 2px solid #212529;
+            border-radius: 1rem;
+            background-color: #fff;
+            padding: 1rem;
+        }
+
+        .requests-legend-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .requests-legend-grid .label-badge {
+            width: fit-content;
+            margin-bottom: 0.35rem;
+        }
+
+        .requests-table-wrapper {
+            height: 390px;
+            overflow-y: auto;
+            overflow-x: auto;
+            border: 2px solid #212529;
+            border-radius: 1rem;
+        }
+
+        .requests-table {
+            min-width: 1050px;
+        }
+
+        .requests-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            font-weight: 700;
+            vertical-align: middle;
+        }
+
+        .requests-table td {
+            vertical-align: middle;
+        }
+
+        .requests-items-cell {
+            min-width: 260px;
+        }
+
+        .requests-date-cell {
+            min-width: 170px;
+        }
+
+        .requests-returned-cell {
+            min-width: 120px;
+        }
+
+        @media (max-width: 991.98px) {
+            .requests-legend-grid {
+                grid-template-columns: repeat(2, minmax(180px, 1fr));
+            }
+
+            .requests-table-wrapper {
+                max-height: 70vh;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .requests-legend-grid {
+                grid-template-columns: 1fr;
+            }
+
+
+            .requests-list-scroll {
+                max-height: 70vh;
+            }
+        }
+
+        .requests-status-legend .label-badge {
+            min-width: 92px;
+            justify-content: center;
+            text-align: center;
+        }
+
+        @media (max-width: 991.98px) {
+            .requests-card-header {
+                position: static;
+            }
+
+            .requests-status-legend {
+                max-width: 100%;
+            }
         }
     </style>
 
@@ -96,9 +227,10 @@
         </div>
 
         {{-- Navigation tabs for switching between posts and requests --}}
-        <ul class="nav w-100 flex-wrap gap-3 mb-4 ps-3" id="profileTabs" role="tablist">            <li class="nav-item" role="presentation">
+        <ul class="nav profile-tabs-grid w-100 mb-4" id="profileTabs" role="tablist">
+            <li class="nav-item profile-tab-item" role="presentation">
                 <button
-                    class="btn {{ request('tab') === 'requests' ? 'btn-outline-success' : 'btn-success' }} rounded-3 px-4 py-2"
+                    class="btn profile-tab-btn {{ request('tab') === 'requests' ? 'btn-outline-success' : 'btn-success' }} rounded-3 px-4 py-2"
                     id="posts-tab"
                     data-bs-toggle="tab"
                     data-bs-target="#posts-pane"
@@ -111,9 +243,9 @@
                 </button>
             </li>
 
-            <li class="nav-item" role="presentation">
+            <li class="nav-item profile-tab-item" role="presentation">
                 <button
-                    class="btn {{ request('tab') === 'requests' ? 'btn-success' : 'btn-outline-success' }} rounded-3 px-4 py-2"
+                    class="btn profile-tab-btn {{ request('tab') === 'requests' ? 'btn-success' : 'btn-outline-success' }} rounded-3 px-4 py-2"
                     id="requests-tab"
                     data-bs-toggle="tab"
                     data-bs-target="#requests-pane"
@@ -340,24 +472,25 @@
             <div class="tab-pane fade {{ request('tab') === 'requests' ? 'show active' : '' }}" id="requests-pane" role="tabpanel" aria-labelledby="requests-tab">
 
                 {{-- Requests filtering and listing --}}
-                <div class="card border-2 border-dark rounded-4">
-                    <div class="card-body p-4">
+                <div class="card border-2 border-dark rounded-4 requests-profile-card">
+                    <div class="card-body p-4 border-bottom">
                         <h2 class="fw-bold mb-1">Solicitudes de Artículos</h2>
-                        <p class="text-muted mb-4">
+                        <p class="text-muted mb-0">
                             Busca tus solicitudes y filtra por estado.
                         </p>
+                    </div>
 
+                    <div class="card-body p-4">
                         <form method="GET" action="{{ route('my_profile') }}" id="requestsFilterForm" class="mb-4">
                             <input type="hidden" name="tab" value="requests">
 
                             <div class="row g-3 align-items-stretch mb-3">
                                 <div class="col-lg-10">
                                     <div class="input-group search-group h-100">
-                                        <span class="input-group-text bg-white border-0">
-                                            <i class="bi bi-search"></i>
-                                        </span>
+                        <span class="input-group-text bg-white border-0">
+                            <i class="bi bi-search"></i>
+                        </span>
 
-                                        {{-- Filter request by search bar --}}
                                         <input
                                             type="text"
                                             id="requestSearch"
@@ -369,7 +502,6 @@
                                     </div>
                                 </div>
 
-                                {{-- Search filter button --}}
                                 <div class="col-lg-2 d-grid">
                                     <button type="submit" id="requestsSearchBtn" class="btn btn-success h-100 fw-semibold" disabled>
                                         Buscar
@@ -377,7 +509,6 @@
                                 </div>
                             </div>
 
-                            {{-- Filter requests using the request status dropdown --}}
                             <div class="row g-3 align-items-end">
                                 <div class="col-md-6 col-lg-4">
                                     <select id="statusFilter" name="request_status" class="form-select border-2 border-dark">
@@ -390,8 +521,6 @@
                                 </div>
 
                                 <div class="col-auto">
-                                    {{-- Clean filters --}}
-
                                     <a
                                         href="{{ route('my_profile', ['tab' => 'requests']) }}"
                                         class="btn btn-outline-secondary"
@@ -404,149 +533,75 @@
                         </form>
 
                         {{-- Status legend for request badges --}}
-                        <div class="border rounded-4 border-dark border-2 bg-light-subtle p-3 mb-4">
+                        <div class="requests-legend-strip mb-4">
                             <div class="d-flex align-items-center mb-3">
                                 <i class="bi bi-info-circle text-success me-2"></i>
                                 <h6 class="fw-bold mb-0">Leyenda de estados</h6>
                             </div>
 
-                            <div class="row g-3">
-                                <div class="col-md-6 col-lg-3">
-                                    <div class="d-flex flex-column gap-1">
-                                        <span class="label-badge badge-request-pending align-self-start">
-                                            Solicitud Pendiente
-                                        </span>
-                                        <small class="text-muted">
-                                            En espera de revisión o aprobación.
-                                        </small>
-                                    </div>
+                            <div class="requests-legend-grid">
+                                <div>
+                    <span class="label-badge badge-request-pending">
+                        Solicitud Pendiente
+                    </span>
+                                    <small class="text-muted d-block">
+                                        En espera de revisión o aprobación.
+                                    </small>
                                 </div>
 
-                                <div class="col-md-6 col-lg-3">
-                                    <div class="d-flex flex-column gap-1">
-                                        <span class="label-badge badge-request-approved align-self-start">
-                                            Solicitud Aprobada
-                                        </span>
-                                        <small class="text-muted">
-                                            Puedes recoger el equipo en la fecha indicada.
-                                        </small>
-                                    </div>
+                                <div>
+                    <span class="label-badge badge-request-approved">
+                        Solicitud Aprobada
+                    </span>
+                                    <small class="text-muted d-block">
+                                        Puedes recoger el equipo en la fecha indicada.
+                                    </small>
                                 </div>
 
-                                <div class="col-md-6 col-lg-3">
-                                    <div class="d-flex flex-column gap-1">
-                                        <span class="label-badge badge-request-rejected align-self-start">
-                                            Solicitud Rechazada
-                                        </span>
-                                        <small class="text-muted">
-                                            La solicitud no fue aprobada.
-                                        </small>
-                                    </div>
+                                <div>
+                    <span class="label-badge badge-request-rejected">
+                        Solicitud Rechazada
+                    </span>
+                                    <small class="text-muted d-block">
+                                        La solicitud no fue aprobada.
+                                    </small>
                                 </div>
 
-                                <div class="col-md-6 col-lg-3">
-                                    <div class="d-flex flex-column gap-1">
-                                        <span class="label-badge badge-request-finished align-self-start">
-                                            Solicitud Finalizada
-                                        </span>
-                                        <small class="text-muted">
-                                            El préstamo ya fue completado o devuelto.
-                                        </small>
-                                    </div>
+                                <div>
+                    <span class="label-badge badge-request-finished">
+                        Solicitud Finalizada
+                    </span>
+                                    <small class="text-muted d-block">
+                                        El préstamo ya fue completado o devuelto.
+                                    </small>
                                 </div>
                             </div>
                         </div>
 
-                        @forelse($requests as $request)
-                            @php
+                        <div class="requests-table-wrapper">
+                            <table class="table align-middle mb-0 requests-table">
+                                <thead>
+                                <tr>
+                                    <th class="requests-items-cell">Artículo(s)</th>
+                                    <th class="requests-date-cell">Fecha de Creación</th>
+                                    <th class="requests-date-cell">Fecha de Recogida</th>
+                                    <th class="requests-date-cell">Fecha de Devolución</th>
+                                    <th class="requests-returned-cell text-center">¿Devuelto?</th>
+                                    <th class="text-center">Estado</th>
+                                </tr>
+                                </thead>
 
-                                /**
-                                 * Prepares a readable string of items in the request.
-                                 * Used for filtering and display purposes.
-                                 */
-                                $itemsText = $request->items->count()
-                                    ? $request->items->map(fn($item) => $item->equipment->description . ' x' . $item->quantity)->implode(' ')
-                                    : 'sin articulos';
-
-                                /**
-                                 * Normalizes request status for consistent filtering.
-                                 */
-                                $normalizedStatus = in_array($request->status, ['returned', 'finished'])
-                                    ? 'finished'
-                                    : strtolower($request->status);
-                            @endphp
-
-
-                            <div
-                                class="border border-2 border-dark rounded-4 p-4 mb-3 request-card"                                data-title="{{ strtolower($itemsText) }}"
-                                data-status="{{ $normalizedStatus }}"
-                            >
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                    <div>
-                                        {{-- Show requests quantity and display the current requests --}}
-                                        <h5 class="fw-bold mb-1">
-                                            @if($request->items->count())
-                                                @foreach($request->items as $item)
-                                                    <div>{{ $item->equipment->description }} (x{{ $item->quantity }})</div>
-                                                @endforeach
-                                            @else
-                                                Sin artículos
-                                            @endif
-                                        </h5>
-
-                                        {{-- Request dates --}}
-                                        <div class="text-muted small">
-                                            <p class="mb-1">
-                                                Fecha de Creación Solicitud:
-
-                                                <strong>
-                                                    {{ mb_convert_case(
-                                                        \Carbon\Carbon::parse($request->created_at)
-                                                            ->locale('es')
-                                                            ->translatedFormat('j F Y'),
-                                                        MB_CASE_TITLE,
-                                                        "UTF-8"
-                                                    ) }}
-                                                </strong>
-                                            </p>
-
-                                            @if($request->start_time)
-                                                <p class="mb-1">
-                                                    Fecha de Recogida:
-                                                    <strong>
-                                                        {{ mb_convert_case(
-                                                            \Carbon\Carbon::parse($request->start_time)
-                                                                ->locale('es')
-                                                                ->translatedFormat('j F Y'),
-                                                            MB_CASE_TITLE,
-                                                            "UTF-8"
-                                                        ) }}
-                                                    </strong>
-                                                </p>
-                                            @endif
-
-                                            @if($request->end_time)
-                                                <p class="mb-0">
-                                                    {{ in_array($request->status, ['returned', 'finished']) ? 'Fecha Devuelta:' : 'Fecha de Devolución:' }}
-                                                    <strong>
-                                                        {{ mb_convert_case(
-                                                            \Carbon\Carbon::parse($request->end_time)
-                                                                ->locale('es')
-                                                                ->translatedFormat('j F Y'),
-                                                            MB_CASE_TITLE,
-                                                            "UTF-8"
-                                                        ) }}
-                                                    </strong>
-                                                </p>
-                                            @endif
-                                        </div>
-                                    </div>
-
+                                <tbody>
+                                @forelse($requests as $request)
                                     @php
-                                        /**
-                                         * Maps request status to a visual badge class.
-                                         * Ensures consistent UI representation across states.
-                                         */
+                                        $itemsText = $request->items->count()
+                                            ? $request->items->map(fn($item) => $item->equipment->description . ' x' . $item->quantity)->implode(' ')
+                                            : 'sin articulos';
+
+                                        $normalizedStatus = in_array($request->status, ['returned', 'finished'])
+                                            ? 'finished'
+                                            : strtolower($request->status);
+
                                         $statusClass = match($request->status) {
                                             'pending' => 'badge-request-pending',
                                             'approved', 'active' => 'badge-request-approved',
@@ -554,51 +609,131 @@
                                             'returned', 'finished' => 'badge-request-finished',
                                             default => 'badge-request-default',
                                         };
+
+                                        $statusLabel = match(strtolower($request->status)) {
+                                            'pending' => 'Solicitud Pendiente',
+                                            'approved' => 'Solicitud Aprobada',
+                                            'active' => 'Solicitud Aprobada',
+                                            'rejected' => 'Solicitud Rechazada',
+                                            'returned' => 'Solicitud Finalizada',
+                                            'finished' => 'Solicitud Finalizada',
+                                            default => ucfirst($request->status),
+                                        };
+
+                                        $wasReturned = in_array(strtolower($request->status), ['returned', 'finished']);
                                     @endphp
 
+                                    <tr data-title="{{ strtolower($itemsText) }}" data-status="{{ $normalizedStatus }}">
+                                        <td class="requests-items-cell fw-bold">
+                                            @if($request->items->count())
+                                                @foreach($request->items as $item)
+                                                    <div>{{ $item->equipment->description }} (x{{ $item->quantity }})</div>
+                                                @endforeach
+                                            @else
+                                                Sin artículos
+                                            @endif
+                                        </td>
 
-                                    <span class="label-badge {{ $statusClass }}">
-    {{
-        match(strtolower($request->status)) {
-            'pending' => 'Solicitud Pendiente',
-            'approved' => 'Solicitud Aprobada',
-            'active' => 'Solicitud Aprobada',
-            'rejected' => 'Solicitud Rechazada',
-            'returned' => 'Solicitud Finalizada',
-            'finished' => 'Solicitud Finalizada',
-            default => ucfirst($request->status),
-        }
-    }}
-</span>
+                                        <td>
+                                            {{ mb_convert_case(
+                                                \Carbon\Carbon::parse($request->created_at)
+                                                    ->locale('es')
+                                                    ->translatedFormat('j F Y'),
+                                                MB_CASE_TITLE,
+                                                "UTF-8"
+                                            ) }}
+                                        </td>
 
-                                </div>
-                            </div>
+                                        <td>
+                                            @if($request->start_time)
+                                                {{ mb_convert_case(
+                                                    \Carbon\Carbon::parse($request->start_time)
+                                                        ->locale('es')
+                                                        ->translatedFormat('j F Y'),
+                                                    MB_CASE_TITLE,
+                                                    "UTF-8"
+                                                ) }}
+                                            @else
+                                                —
+                                            @endif
+                                        </td>
 
-                        {{-- Empty state for lack of requests--}}
-                        @empty
-                            <div class="card border-0 shadow-sm rounded-4">
-                                <div class="card-body py-5 text-center">
-                                    <i class="bi bi-search fs-1 text-muted"></i>
-                                    <h4 class="fw-bold mt-3">No se encontraron solicitudes</h4>
-                                    <p class="text-muted mb-0">Intenta cambiar los filtros o buscar otro artículo.</p>
-                                </div>
-                            </div>
-                        @endforelse
+                                        <td>
+                                            @if($request->end_time)
+                                                {{ mb_convert_case(
+                                                    \Carbon\Carbon::parse($request->end_time)
+                                                        ->locale('es')
+                                                        ->translatedFormat('j F Y'),
+                                                    MB_CASE_TITLE,
+                                                    "UTF-8"
+                                                ) }}
+                                            @else
+                                                —
+                                            @endif
+                                        </td>
 
+                                        <td class="text-center">
+                                            @if($wasReturned)
+                                                <span class="badge bg-success-subtle text-success-emphasis rounded-0 px-3 py-2">
+                                        Sí
+                                    </span>
+                                            @else
+                                                <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-0 px-3 py-2">
+                                        No
+                                    </span>
+                                            @endif
+                                        </td>
+
+                                        <td class="text-center">
+                                <span class="label-badge {{ $statusClass }}">
+                                    {{ $statusLabel }}
+                                </span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6">
+                                            <div class="py-5 text-center">
+                                                <i class="bi bi-search fs-1 text-muted"></i>
+                                                <h4 class="fw-bold mt-3">No se encontraron solicitudes</h4>
+                                                <p class="text-muted mb-0">Intenta cambiar los filtros o buscar otro artículo.</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                                </tbody>
+                            </table>
+                        </div>
 
                         {{-- Connection for pagination --}}
-                        @if($requests->hasPages())
-                            <div class="mt-4 d-flex justify-content-center">
-
+                        <div class="mt-4 d-flex justify-content-center">
+                            @if($requests->hasPages())
                                 {{ $requests->appends([
-     'tab' => 'requests',
-     'request_search' => request('request_search'),
-     'request_status' => request('request_status'),
- ])->links() }}
-                            </div>
-                        @endif
+                                    'tab' => 'requests',
+                                    'request_search' => request('request_search'),
+                                    'request_status' => request('request_status'),
+                                ])->links() }}
+                            @else
+                                <nav aria-label="Paginación de solicitudes">
+                                    <ul class="pagination justify-content-center mb-0 profile-pagination">
+                                        <li class="page-item disabled">
+                                            <span class="page-link">«</span>
+                                        </li>
+
+                                        <li class="page-item active">
+                                            <span class="page-link">1</span>
+                                        </li>
+
+                                        <li class="page-item disabled">
+                                            <span class="page-link">»</span>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            @endif
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -626,8 +761,10 @@
                     <div id="profilePostImagesCarousel" class="carousel slide mb-4">
                         <div class="carousel-indicators" id="profilePostImagesCarouselIndicators"></div>
 
-                        <div class="carousel-inner rounded-4 overflow-hidden post-carousel-inner" id="profilePostImagesCarouselInner"></div>
-
+                        <div
+                            class="carousel-inner rounded-4 overflow-hidden post-carousel-inner border border-2 border-dark"
+                            id="profilePostImagesCarouselInner"
+                        ></div>
                         <button
                             class="carousel-control-prev"
                             type="button"
