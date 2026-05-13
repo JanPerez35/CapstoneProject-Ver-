@@ -95,6 +95,7 @@ class UserReportController extends Controller
             'post:id,user_id,title'
         ])
         ->where('status', 'pending')
+        ->orderByRaw('report_reason = "Contenido inapropiado" DESC')
         ->latest()
         ->get();
 
