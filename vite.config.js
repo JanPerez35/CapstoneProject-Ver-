@@ -24,25 +24,20 @@ function getJsFiles(dir) {
 
     fs.readdirSync(dir).forEach((file) => {
         const fullPath = path.join(dir, file);
+        const normalizedPath = fullPath.replace(/\\/g, '/');
+        const stat = fs.statSync(fullPath);
 
-        if (fs.statSync(fullPath).isDirectory()) {
+        if (stat.isDirectory()) {
             results = results.concat(getJsFiles(fullPath));
-            function getJsFiles(dir) {
-                let results = [];
+            return;
+        }
 
-                fs.readdirSync(dir).forEach((file) => {
-                    const fullPath = path.join(dir, file);
-
-                    if (fs.statSync(fullPath).isDirectory()) {
-                        results = results.concat(getJsFiles(fullPath));
-                    } else if (file.endsWith('.js') && file !== 'test-posts.js') {
-                        results.push(fullPath.replace(/\\/g, '/'));
-                    }
-                });
-
-                return results;
-            }
-            results.push(fullPath.replace(/\\/g, '/'));
+        if (
+            stat.isFile() &&
+            file.endsWith('.js') &&
+            file !== 'test-posts.js'
+        ) {
+            results.push(normalizedPath);
         }
     });
 
