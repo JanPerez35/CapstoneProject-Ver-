@@ -68,8 +68,8 @@ class MessageController extends Controller
          * when messages are ignored for some time.
          */
         SendUnreadMessageReminder::dispatch($message->id)
-//            ->delay(now()->addMinutes(15));
-            ->delay(now()->addSeconds(15));
+            ->delay(now()->addMinutes(15));
+//            ->delay(now()->addSeconds(15));
 
         return response()->json($message);
     }
