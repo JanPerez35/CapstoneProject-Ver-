@@ -10,7 +10,36 @@
 
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
+import fs from 'fs';
+import path from 'path';
 
+/**
+ * Gets all JavaScript files inside a directory recursively.
+ *
+ * This prevents having to manually add every JS file
+ * from resources/js to the Vite input list.
+ */
+function getJsFiles(dir) {
+    let results = [];
+
+    fs.readdirSync(dir).forEach((file) => {
+        const fullPath = path.join(dir, file);
+
+        if (fs.statSync(fullPath).isDirectory()) {
+            results = results.concat(getJsFiles(fullPath));
+        } else if (file.endsWith('.js')) {
+            results.push(fullPath.replace(/\\/g, '/'));
+        }
+    });
+
+    return results;
+}
+
+/**
+ * JavaScript entry assets.
+ * Includes every .js file inside resources/js.
+ */
+const jsFiles = getJsFiles('resources/js');
 
 export default defineConfig({
     /**
@@ -26,23 +55,20 @@ export default defineConfig({
              */
             input: [
                 'resources/css/app.css',
-                'resources/js/app.js',
-                'resources/js/marketplace_validation.js',
-                'resources/js/pages/marketplace_profanity.js',
-                'resources/js/pages/messages_profanity.js'
+                ...jsFiles,
             ],
+
             /**
              * Enables auto refresh
              */
             refresh: true,
-        })
+        }),
     ],
 
     /**
      * Development server configuration
      */
     server: {
-
         /**
          * Watch settings
          * Prevents unnecessary reloads from compiled Blade view files.
