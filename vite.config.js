@@ -24,8 +24,13 @@ export default defineConfig({
              * Files compiled and served by Vite.
              * Defines the root files used for bundling.
              */
-            input: ['resources/css/app.css', 'resources/js/app.js',
-                    'resources/js/pages/marketplace_profanity.js', 'resources/js/pages/messages_profanity.js'],
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js',
+                'resources/js/marketplace_validation.js',
+                'resources/js/pages/marketplace_profanity.js',
+                'resources/js/pages/messages_profanity.js'
+            ],
             /**
              * Enables auto refresh
              */
