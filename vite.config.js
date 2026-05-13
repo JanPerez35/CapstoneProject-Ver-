@@ -27,7 +27,21 @@ function getJsFiles(dir) {
 
         if (fs.statSync(fullPath).isDirectory()) {
             results = results.concat(getJsFiles(fullPath));
-        } else if (file.endsWith('.js')) {
+            function getJsFiles(dir) {
+                let results = [];
+
+                fs.readdirSync(dir).forEach((file) => {
+                    const fullPath = path.join(dir, file);
+
+                    if (fs.statSync(fullPath).isDirectory()) {
+                        results = results.concat(getJsFiles(fullPath));
+                    } else if (file.endsWith('.js') && file !== 'test-posts.js') {
+                        results.push(fullPath.replace(/\\/g, '/'));
+                    }
+                });
+
+                return results;
+            }
             results.push(fullPath.replace(/\\/g, '/'));
         }
     });
