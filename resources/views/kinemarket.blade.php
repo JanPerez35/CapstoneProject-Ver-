@@ -21,7 +21,7 @@
         <div class="mb-4">
             <h1 class="fw-bold">Bienvenido al Kinemercado</h1>
             <p>
-                Aquí puedes crear y buscar equipamiento deportivo. También puedes comunicarte con vendedores.
+                Aquí puedes crear y buscar equipo deportivo. También puedes comunicarte con vendedores.
             </p>
         </div>
 

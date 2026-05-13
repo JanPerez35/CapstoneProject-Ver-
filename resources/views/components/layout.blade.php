@@ -461,7 +461,7 @@
                                 </h5>
 
                                 <p class="text-muted mb-3">
-                                    Antes de enviar la solicitud, debes aceptar las siguientes condiciones del préstamo:
+                                    Antes de enviar la solicitud debes aceptar las siguientes condiciones del préstamo:
                                 </p>
 
 
@@ -474,15 +474,15 @@
                                 </p>
 
                                 <p class="text-muted mb-2 mt-3">
-                                    En el caso de una solicitud normal recibiras un email de confirmación automaticamente si no se alcanzo el limite de pedidos por dia.
+                                    En el caso de una solicitud normal, recibirás un email de confirmación automaticamente si no se alcanzo el limite de pedidos por dia.
                                 </p>
 
                                 <p class="text-muted mb-2 mt-3">
-                                    En el caso de una solicitud especial recibiras un email de confirmación o negación una vez el administrador de inventario maneje la solicitud.
+                                    En el caso de una solicitud especial, recibirás un email de confirmación o negación una vez el administrador de inventario maneje la solicitud.
                                 </p>
 
                                 <p class="text-muted mb-2 mt-3">
-                                    De tener algún inconveniente, contacta al administrador del inventario
+                                    De tener algún inconveniente, contacta al administrador del inventario.
 
                                     @foreach($inventoryAdmin as $admin)
                                         <a href="mailto:{{ $admin->email }}" class="text-success text-decoration-none d-block">
