@@ -18,6 +18,7 @@ class Message extends Model
     protected $casts = [
         'sent_at' => 'datetime',
         'read_at' => 'datetime',
+        'content' => 'encrypted',
     ];
 
     public function chat()

@@ -317,11 +317,15 @@
                                 </p>
 
                                 <p class="mb-2 fw-bold text-danger">
-                                    El equipo debe ser devuelto el mismo día antes de las 3 PM.
+                                    El equipo debe ser devuelto el mismo día, antes de las 3 PM.
                                 </p>
 
                                 <p class="mb-0 fw-bold text-warning-emphasis">
-                                    Viernes solo se pueden devolver equipos. Sábados y Domingos no hay servicio.
+                                    Viernes solo se pueden devolver equipos.
+                                </p>
+                                
+                                <p class="mb-0 fw-bold text-warning-emphasis">
+                                    Sábados y Domingos no hay servicio.
                                 </p>
                             </div>
 
