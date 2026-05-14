@@ -242,6 +242,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const relatedStartDateIcon = $('relatedStartDateIcon');
     const relatedEndDateIcon = $('relatedEndDateIcon');
     const customizeDateIcon = $('customizeDateIcon');
+    const editStartDateIcon = $('editStartDateIcon');
+    const editEndDateIcon = $('editEndDateIcon');
 
 
     const createToastInstance = (id) => {
@@ -556,18 +558,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function toggleRentalDateRangeUI() {
         const showEndDate = requiresEndDate();
 
-        rentalEndDateRow.classList.toggle('d-none', !showEndDate);
-        rentalRangeWarningRow.classList.toggle('d-none', !showEndDate);
+        rentalEndDateRow?.classList.toggle('d-none', !showEndDate);
+        rentalRangeWarningRow?.classList.toggle('d-none', !showEndDate);
 
-        rentalStartDateLabel.innerHTML = showEndDate
-            ? 'Fecha inicial del evento <span class="text-danger">*</span>'
-            : 'Fecha del evento <span class="text-danger">*</span>';
+        if (rentalStartDateLabel) {
+            rentalStartDateLabel.innerHTML = showEndDate
+                ? 'Fecha inicial del evento <span class="text-danger">*</span>'
+                : 'Fecha del evento <span class="text-danger">*</span>';
+        }
 
-        if (!showEndDate) {
+        if (!showEndDate && rentalEndDate) {
             rentalEndDate.value = '';
             clearFieldError(rentalEndDate, $('rentalEndDateError'));
         }
-
     }
 
     function validateRentalDates(showError = true, forceRequired = false) {
@@ -673,6 +676,97 @@ document.addEventListener('DOMContentLoaded', () => {
         return diff > 0 ? diff / 60 : 0;
     }
 
+    function validateEventTimes({
+                                    startTime,
+                                    endTime,
+                                    periodType,
+                                    startDate,
+                                    timeError,
+                                    startErrorField,
+                                    endErrorField,
+                                    showError = true
+                                }) {
+        let valid = true;
+
+        startTime?.classList.remove('is-invalid');
+        endTime?.classList.remove('is-invalid');
+
+        if (timeError) timeError.textContent = '';
+
+        if (!startTime?.value || !endTime?.value) {
+            valid = false;
+
+            if (showError) {
+                startTime?.classList.add('is-invalid');
+                endTime?.classList.add('is-invalid');
+                if (timeError) timeError.textContent = 'Selecciona hora de inicio y hora de fin.';
+            }
+
+            return false;
+        }
+
+        const startMinutes = timeToMinutes(startTime.value);
+        const endMinutes = timeToMinutes(endTime.value);
+
+        if (endMinutes <= startMinutes) {
+            valid = false;
+
+            if (showError) {
+                startTime.classList.add('is-invalid');
+                endTime.classList.add('is-invalid');
+                if (timeError) timeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
+            }
+
+            return false;
+        }
+
+        const selectedDay = startDate?.value
+            ? new Date(`${startDate.value}T00:00:00`).getDay()
+            : null;
+
+        if (periodType?.value === 'workday') {
+            if (startMinutes < 450 || endMinutes > 990) {
+                valid = false;
+
+                if (showError) {
+                    startTime.classList.add('is-invalid');
+                    endTime.classList.add('is-invalid');
+                    if (timeError) {
+                        timeError.textContent = 'Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.';
+                    }
+                }
+            }
+        }
+
+        if (['non_workday_saturday', 'non_workday_sunday_holiday'].includes(periodType?.value)) {
+            let minMinutes = 990;
+            let maxMinutes = 1290;
+            let message = 'Para días lunes a viernes en período no laborable solo se permiten horarios de 4:30 p.m. a 9:30 p.m.';
+
+            if (periodType.value === 'non_workday_saturday' && selectedDay === 6) {
+                minMinutes = 480;
+                message = 'Para sábado solo se permiten horarios de 8:00 a.m. a 9:30 p.m.';
+            }
+
+            if (periodType.value === 'non_workday_sunday_holiday' && selectedDay === 0) {
+                minMinutes = 480;
+                message = 'Para domingo o festivo solo se permiten horarios de 8:00 a.m. a 9:30 p.m.';
+            }
+
+            if (startMinutes < minMinutes || endMinutes > maxMinutes) {
+                valid = false;
+
+                if (showError) {
+                    startTime.classList.add('is-invalid');
+                    endTime.classList.add('is-invalid');
+                    if (timeError) timeError.textContent = message;
+                }
+            }
+        }
+
+        return valid;
+    }
+
     function isWorkdayPeriod() {
         return rentalPeriodType?.value === 'workday';
     }
@@ -691,7 +785,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function buildTimeOptions(select, startHour, startMinute, endHour, endMinute, placeholder) {
         if (!select) return;
 
-        select.innerHTML = `<option value="" selected disabled>${placeholder}</option>`;
+        select.innerHTML = `<option value="" selected>${placeholder}</option>`;
 
         const current = new Date();
         current.setHours(startHour, startMinute, 0, 0);
@@ -771,8 +865,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 buildTimeOptions(rentalEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
             }
         } else {
-            rentalStartTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
-            rentalEndTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
+            rentalStartTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
+            rentalEndTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
             return;
         }
 
@@ -810,8 +904,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 buildTimeOptions(relatedEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
             }
         } else {
-            relatedStartTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
-            relatedEndTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
+            relatedStartTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
+            relatedEndTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
             return;
         }
 
@@ -866,8 +960,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 buildTimeOptions(editEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
             }
         } else {
-            editStartTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
-            editEndTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
+            editStartTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
+            editEndTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
             return;
         }
 
@@ -1105,11 +1199,43 @@ function fillRelatedModalFromRow(row) {
     }
 
     function updateRentalDateRestrictions() {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        const todayString = formatDateLocal(today);
         toggleRentalDateRangeUI();
+
+        const isWorkday = rentalPeriodType?.value === 'workday';
+
+        const disableRules = isWorkday
+            ? [
+                function (date) {
+                    const day = date.getDay();
+                    return day === 0 || day === 6; // domingo o sábado
+                }
+            ]
+            : [];
+
+        if (rentalStartDate?._flatpickr) {
+            rentalStartDate._flatpickr.set('disable', disableRules);
+        }
+
+        if (rentalEndDate?._flatpickr) {
+            rentalEndDate._flatpickr.set('disable', disableRules);
+
+            if (rentalStartDate.value) {
+                rentalEndDate._flatpickr.set('minDate', rentalStartDate.value);
+            } else {
+                rentalEndDate._flatpickr.set('minDate', 'today');
+            }
+        }
+
+        if (rentalStartDate.value && !isAllowedDateForSelectedPeriod(rentalStartDate.value)) {
+            rentalStartDate._flatpickr?.clear();
+        }
+
+        if (rentalEndDate.value && !isAllowedDateForSelectedPeriod(rentalEndDate.value)) {
+            rentalEndDate._flatpickr?.clear();
+        }
+
+        updateAutomaticRateMode();
+        updateRentalTimeOptions();
     }
 
 
@@ -1125,24 +1251,45 @@ function fillRelatedModalFromRow(row) {
 
     [customizeStartTime, customizeEndTime].forEach(input => {
         input?.addEventListener('change', () => {
-            customizeStartTime.classList.remove('is-invalid');
-            customizeEndTime.classList.remove('is-invalid');
-            customizeTimeError.textContent = '';
+            customizeStartTime?.classList.remove('is-invalid');
+            customizeEndTime?.classList.remove('is-invalid');
 
-            if (!customizeStartTime.value && !customizeEndTime.value) {
+            if (customizeTimeError) {
                 customizeTimeError.textContent = '';
-            } else if (customizeStartTime.value && !customizeEndTime.value) {
-                clearFieldError(customizeEndTime, customizeTimeError);
-            } else if (!customizeStartTime.value && customizeEndTime.value) {
-                clearFieldError(customizeStartTime, customizeTimeError);
-            }else if (timeToMinutes(customizeEndTime.value) <= timeToMinutes(customizeStartTime.value)) {
-                customizeStartTime.classList.add('is-invalid');
-                customizeEndTime.classList.add('is-invalid');
-                customizeTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
+            }
+
+            if (!customizeStartTime?.value && !customizeEndTime?.value) {
+                customizeStartTime?.classList.add('is-invalid');
+                customizeEndTime?.classList.add('is-invalid');
+
+                if (customizeTimeError) {
+                    customizeTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
+                }
+            } else if (
+                customizeStartTime?.value &&
+                customizeEndTime?.value &&
+                timeToMinutes(customizeEndTime.value) <= timeToMinutes(customizeStartTime.value)
+            ) {
+                customizeStartTime?.classList.add('is-invalid');
+                customizeEndTime?.classList.add('is-invalid');
+
+                if (customizeTimeError) {
+                    customizeTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
+                }
             }
 
             updateCustomizeSaveState();
         });
+    });
+
+    customizeDate?.addEventListener('change', () => {
+        clearFieldError(customizeDate, customizeDateError);
+
+        if (!customizeDate.value) {
+            setFieldError(customizeDate, customizeDateError, 'La fecha es requerida.');
+        }
+
+        updateCustomizeSaveState();
     });
 
     relatedArea?.addEventListener('change', () => {
@@ -1210,16 +1357,32 @@ function fillRelatedModalFromRow(row) {
             relatedEndTime.classList.remove('is-invalid');
             relatedTimeError.textContent = '';
 
-            if (!relatedStartTime.value || !relatedEndTime.value) {
+            if (!relatedStartTime.value && !relatedEndTime.value) {
                 relatedStartTime.classList.add('is-invalid');
                 relatedEndTime.classList.add('is-invalid');
                 relatedTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
-            } else if (timeToMinutes(relatedEndTime.value) <= timeToMinutes(relatedStartTime.value)) {
+            } else if (
+                relatedStartTime.value &&
+                relatedEndTime.value &&
+                timeToMinutes(relatedEndTime.value) <= timeToMinutes(relatedStartTime.value)
+            ) {
                 relatedStartTime.classList.add('is-invalid');
                 relatedEndTime.classList.add('is-invalid');
                 relatedTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
             }
 
+            updateRelatedSummary();
+            updateRelatedSaveState();
+        });
+    });
+
+    [relatedStartDate, relatedEndDate].forEach(input => {
+        input?.addEventListener('change', () => {
+            clearFieldError(relatedStartDate, relatedStartDateError);
+            clearFieldError(relatedEndDate, relatedEndDateError);
+
+            updateRelatedAutomaticRateMode();
+            updateRelatedTimeOptions();
             updateRelatedSummary();
             updateRelatedSaveState();
         });
@@ -1592,108 +1755,52 @@ function fillRelatedModalFromRow(row) {
     );
 
     function initializeFacilityDatePickers() {
-        const options = {
+        const sharedOptions = {
             locale: Spanish,
             dateFormat: 'Y-m-d',
             altInput: true,
             altFormat: 'j F Y',
             allowInput: false,
             disableMobile: true,
-            minDate: 'today'
+            minDate: 'today',
+            clickOpens: true,
         };
 
-        const setupPicker = (input, icon, onChangeCallback) => {
+        const setupPicker = (input, icon) => {
             if (!input) return;
 
-            flatpickr(input, {
-                ...options,
-                onChange: () => {
-                    if (typeof onChangeCallback === 'function') {
-                        onChangeCallback();
-                    }
-                }
+            const picker = flatpickr(input, {
+                ...sharedOptions
             });
 
+            input.setAttribute('readonly', 'readonly');
+            input.setAttribute('inputmode', 'none');
+
+            if (picker.altInput) {
+                picker.altInput.setAttribute('readonly', 'readonly');
+                picker.altInput.setAttribute('inputmode', 'none');
+
+                picker.altInput.addEventListener('click', () => {
+                    picker.open();
+                });
+            }
+
             icon?.addEventListener('click', () => {
-                input._flatpickr?.open();
+                picker.open();
             });
         };
 
-        setupPicker(rentalStartDate, rentalStartDateIcon, () => {
-            updateAutomaticRateMode();
+        setupPicker(rentalStartDate, rentalStartDateIcon);
+        setupPicker(rentalEndDate, rentalEndDateIcon);
 
-            if (rentalEndDate?._flatpickr && rentalStartDate.value) {
-                rentalEndDate._flatpickr.set('minDate', rentalStartDate.value);
-            }
+        setupPicker(relatedStartDate, relatedStartDateIcon);
+        setupPicker(relatedEndDate, relatedEndDateIcon);
 
-            validateRentalDates(true, false);
-            updateRentalDateRestrictions();
-            updateRentalTimeOptions();
-            calculateRentalEstimate();
-            updateRentalSaveState();
-        });
+        setupPicker(editStartDate, editStartDateIcon);
+        setupPicker(editEndDate, editEndDateIcon);
 
-        setupPicker(rentalEndDate, rentalEndDateIcon, () => {
-            updateAutomaticRateMode();
-            validateRentalDates(true, false);
-            updateRentalDateRestrictions();
-            calculateRentalEstimate();
-            updateRentalSaveState();
-        });
-
-        setupPicker(customizeDate, customizeDateIcon, () => {
-            clearFieldError(customizeDate, customizeDateError);
-
-            if (!customizeDate.value) {
-                setFieldError(customizeDate, customizeDateError, 'La fecha es requerida.');
-            }
-
-            updateCustomizeSaveState();
-        });
-
-        setupPicker(relatedStartDate, relatedStartDateIcon, () => {
-            updateRelatedAutomaticRateMode();
-
-            if (relatedEndDate?._flatpickr && relatedStartDate.value) {
-                relatedEndDate._flatpickr.set('minDate', relatedStartDate.value);
-            }
-
-            validateRelatedEventForm(true);
-            updateRelatedTimeOptions();
-            updateRelatedSummary();
-            updateRelatedSaveState();
-        });
-
-        setupPicker(relatedEndDate, relatedEndDateIcon, () => {
-            updateRelatedAutomaticRateMode();
-            validateRelatedEventForm(true);
-            updateRelatedSummary();
-            updateRelatedSaveState();
-        });
-
-        setupPicker(editStartDate, null, () => {
-            updateEditAutomaticRateMode();
-
-            if (editEndDate?._flatpickr && editStartDate.value) {
-                editEndDate._flatpickr.set('minDate', editStartDate.value);
-            }
-
-            clearFieldError(editStartDate, editStartDateError);
-            validateEditEventForm(true);
-            updateEditTimeOptions();
-            updateEditSummary();
-            updateEditSaveState();
-        });
-
-        setupPicker(editEndDate, null, () => {
-            updateEditAutomaticRateMode();
-            clearFieldError(editEndDate, editEndDateError);
-            validateEditEventForm(true);
-            updateEditSummary();
-            updateEditSaveState();
-        });
+        setupPicker(customizeDate, customizeDateIcon);
     }
-
 
     function validateMoneyField(input, showError = true) {
         if (!input) return true;
@@ -2058,78 +2165,15 @@ function fillRelatedModalFromRow(row) {
     }
 
     function isRentalFormValid() {
-        const timeError = document.getElementById('rentalTimeError');
+        const validTimes = validateEventTimes({
+            startTime: rentalStartTime,
+            endTime: rentalEndTime,
+            periodType: rentalPeriodType,
+            startDate: rentalStartDate,
+            timeError: document.getElementById('rentalTimeError'),
+            showError: false
+        });
 
-        let validTimes = true;
-
-        rentalStartTime.classList.remove('is-invalid');
-        rentalEndTime.classList.remove('is-invalid');
-
-        if (timeError) {
-            timeError.textContent = '';
-        }
-
-        if (!rentalStartTime.value || !rentalEndTime.value) {
-            validTimes = false;
-        } else {
-            const startMinutes = timeToMinutes(rentalStartTime.value);
-            const endMinutes = timeToMinutes(rentalEndTime.value);
-
-            if (endMinutes <= startMinutes) {
-                validTimes = false;
-                rentalStartTime.classList.add('is-invalid');
-                rentalEndTime.classList.add('is-invalid');
-
-                if (timeError) {
-                    timeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
-                }
-            } else if (isWorkdayPeriod() && (startMinutes < 450 || endMinutes > 990)) {
-                validTimes = false;
-                rentalStartTime.classList.add('is-invalid');
-                rentalEndTime.classList.add('is-invalid');
-
-                if (timeError) {
-                    timeError.textContent = 'Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.';
-                }
-            } else if (isNonWorkdayPeriod()) {
-                const selectedDay = getSelectedStartDateDay();
-
-                // 4:30 PM
-                let minMinutes = 990;
-                // 9:30 PM
-                let maxMinutes = 1290;
-                let message = 'Para días lunes a viernes en período no laborable solo se permiten horarios de 4:30 p.m. a 9:30 p.m.';
-
-                if (
-                    rentalPeriodType.value === 'non_workday_saturday' &&
-                    selectedDay === 6
-                ) {
-                    // 8:00 AM
-                    minMinutes = 480;
-                    message = 'Para sábado solo se permiten horarios de 8:00 a.m. a 9:30 p.m.';
-                }
-
-                if (
-                    rentalPeriodType.value === 'non_workday_sunday_holiday' &&
-                    selectedDay === 0
-                ) {
-                    // 8:00 AM
-                    minMinutes = 480;
-                    message = 'Para domingo o festivo solo se permiten horarios de 8:00 a.m. a 9:30 p.m.';
-                }
-
-                if (startMinutes < minMinutes || endMinutes > maxMinutes) {
-                    validTimes = false;
-                    rentalStartTime.classList.add('is-invalid');
-                    rentalEndTime.classList.add('is-invalid');
-
-                    if (timeError) {
-                        timeError.textContent = message;
-                    }
-                }
-            }
-
-        }
         const validResponsible = validateResponsible(false);
         const validDescription = validateDescription(false);
         const validServices = hasSelectedServices();
@@ -2540,27 +2584,26 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         if (editElectricity) editElectricity.checked = services.includes('electricity');
         if (editWater) editWater.checked = services.includes('water');
 
-        const canEditBasicInfo = editingIsParent || editingIsRelatedArea;
-        const canEditScheduleInfo = editingIsCustomDay;
-
-        if (editClassroom) editClassroom.disabled = !canEditBasicInfo;
-        if (editResponsible) editResponsible.disabled = !canEditBasicInfo;
-        if (editDescription) editDescription.disabled = !canEditBasicInfo;
-
-        if (editUtilities) editUtilities.disabled = false;
-        if (editElectricity) editElectricity.disabled = false;
-        if (editWater) editWater.disabled = false;
-
         [
+            editClassroom,
+            editResponsible,
+            editDescription,
+            editUtilities,
+            editElectricity,
+            editWater,
             editStartDate,
             editEndDate,
             editStartTime,
             editEndTime,
-            editPeriodType,
-            editRateModeDisplay
+            editPeriodType
         ].forEach((field) => {
-            if (field) field.disabled = !canEditScheduleInfo;
+            if (field) field.disabled = false;
         });
+
+        if (editRateModeDisplay) {
+            editRateModeDisplay.disabled = false;
+            editRateModeDisplay.readOnly = true;
+        }
 
         clearEditErrors();
         updateEditSummary();
@@ -2969,20 +3012,17 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             valid = false;
         }
 
-        if (!editStartTime?.value || !editEndTime?.value) {
+        const validTimes = validateEventTimes({
+            startTime: editStartTime,
+            endTime: editEndTime,
+            periodType: editPeriodType,
+            startDate: editStartDate,
+            timeError: editTimeError,
+            showError
+        });
+
+        if (!validTimes) {
             valid = false;
-            if (showError) {
-                editStartTime?.classList.add('is-invalid');
-                editEndTime?.classList.add('is-invalid');
-                if (editTimeError) editTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
-            }
-        } else if (timeToMinutes(editEndTime.value) <= timeToMinutes(editStartTime.value)) {
-            valid = false;
-            if (showError) {
-                editStartTime?.classList.add('is-invalid');
-                editEndTime?.classList.add('is-invalid');
-                if (editTimeError) editTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
-            }
         }
 
         if (!editingIsCustomDay && !services.length) {
@@ -3483,11 +3523,11 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         if (relatedEndDate) relatedEndDate.value = '';
 
         if (relatedStartTime) {
-            relatedStartTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
+            relatedStartTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
         }
 
         if (relatedEndTime) {
-            relatedEndTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
+            relatedEndTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
         }
 
         if (relatedEstimatedTotal) relatedEstimatedTotal.textContent = '$0.00';
@@ -3546,7 +3586,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         });
     });
 
-    [rentalClassroom,rentalStartTime, rentalEndTime, rentalPeriodType].forEach((el) => {
+    [rentalClassroom,rentalStartDate,rentalEndDate,rentalStartTime, rentalEndTime, rentalPeriodType].forEach((el) => {
         if (!el) return;
 
         el.addEventListener('change', () => {
@@ -3663,19 +3703,14 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
     [editStartTime, editEndTime].forEach(input => {
         input?.addEventListener('change', () => {
-            editStartTime?.classList.remove('is-invalid');
-            editEndTime?.classList.remove('is-invalid');
-            if (editTimeError) editTimeError.textContent = '';
-
-            if (!editStartTime?.value || !editEndTime?.value) {
-                editStartTime?.classList.add('is-invalid');
-                editEndTime?.classList.add('is-invalid');
-                if (editTimeError) editTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
-            } else if (timeToMinutes(editEndTime.value) <= timeToMinutes(editStartTime.value)) {
-                editStartTime.classList.add('is-invalid');
-                editEndTime.classList.add('is-invalid');
-                if (editTimeError) editTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
-            }
+            validateEventTimes({
+                startTime: editStartTime,
+                endTime: editEndTime,
+                periodType: editPeriodType,
+                startDate: editStartDate,
+                timeError: editTimeError,
+                showError: true
+            });
 
             updateEditSummary();
             updateEditSaveState();
@@ -3789,6 +3824,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             if (rentalHasChanges()) {
                 bootstrap.Modal.getOrCreateInstance($('confirmCancelRentalModal')).show();
             } else {
+                allowRentalModalClose = true;
                 bootstrap.Modal.getOrCreateInstance(addRentalModal).hide();
             }
         });
@@ -3829,6 +3865,18 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         });
     }
 
+    document.querySelectorAll('.rental-cancel-btn, .rental-close-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            if (rentalHasChanges()) {
+                bootstrap.Modal.getOrCreateInstance(confirmCancelRentalModal).show();
+                return;
+            }
+
+            allowRentalModalClose = true;
+            bootstrap.Modal.getOrCreateInstance(addRentalModal).hide();
+        });
+    });
+
     const confirmCancelConfigureBtn = $('confirmCancelConfigureBtn');
     const confirmCancelRentalBtn = $('confirmCancelRentalBtn');
     const confirmCancelConfigureModal = $('confirmCancelConfigureModal');
@@ -3848,9 +3896,11 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         confirmCancelRentalBtn.addEventListener('click', () => {
             rentalDirty = false;
             allowRentalModalClose = true;
-            resetRentalFormState();
+
             bootstrap.Modal.getOrCreateInstance(confirmCancelRentalModal).hide();
             bootstrap.Modal.getOrCreateInstance(addRentalModal).hide();
+
+            resetRentalFormState();
         });
     }
 
