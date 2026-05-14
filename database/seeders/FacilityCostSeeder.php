@@ -75,7 +75,7 @@ class FacilityCostSeeder extends Seeder
                 'monthly_cost_3' => 3.29,
             ],
             [
-                'classroom_name' => 'Lateral 2 Área del parking',
+                'classroom_name' => 'Lateral 2 Deportes Recreativos',
                 'supply_cost' => 30.00,
                 'electricity_cost' => 75.00,
                 'water_cost' => 37.50,

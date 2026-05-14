@@ -34,7 +34,7 @@
             </span>
 
                 @if($item->sub_event_type === 'related_area')
-                    <span class="badge bg-info-subtle text-info-emphasis position-absolute text-nowrap" style="top: -26px; left: 28px;">
+                    <span class="badge bg-info-subtle text-info-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
                     Área relacionada
                 </span>
                 @elseif($item->sub_event_type === 'custom_day')

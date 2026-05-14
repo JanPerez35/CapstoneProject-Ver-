@@ -1179,7 +1179,7 @@
                             <span class="text-danger">*</span> Campos requeridos
                         </small>
                     </div>
-                    <button type="button" class="btn-close related-close-btn" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <button type="button" class="btn-close related-close-btn" aria-label="Cerrar"></button>
                 </div>
 
                 <div class="modal-body pt-3">
@@ -1221,7 +1221,6 @@
                                     class="form-control form-control-lg"
                                     placeholder="Nombre del responsable"
                                     minlength="8"
-                                    maxlength="40"
                                     required
                                 >
                                 <small class="text-muted d-block fst-italic">
@@ -1241,7 +1240,6 @@
                                 rows="3"
                                 placeholder="Descripción del evento relacionado"
                                 minlength="10"
-                                maxlength="250"
                                 required
                             ></textarea>
                             <small class="text-muted d-block fst-italic">
@@ -1265,7 +1263,7 @@
                                             </label>
                                         </div>
                                         <small class="text-muted d-block mt-2">
-                                            Incluye costos generales de utilidades asociados al uso del área.
+                                            Seleccione si el evento incluye costos generales de utilidades asociados al uso del área.
                                         </small>
                                     </div>
                                 </div>
@@ -1321,11 +1319,12 @@
                                         Tipo de período <span class="text-danger">*</span>
                                     </label>
                                     <select id="relatedPeriodType" class="form-select form-select-lg" required>
-                                        <option value="" selected>Seleccionar período</option>
+                                        <option value="" selected>Seleccionar tipo de período</option>
                                         <option value="workday">Laborable</option>
                                         <option value="non_workday_saturday">No laborable sábado</option>
                                         <option value="non_workday_sunday_holiday">No laborable domingo o festivo</option>
                                     </select>
+                                    <div class="invalid-feedback" id="relatedPeriodTypeError"></div>
                                 </div>
 
                                 <div class="col-md-6">
@@ -1405,6 +1404,7 @@
                                     <select id="relatedStartTime" class="form-select form-select-lg" required>
                                         <option value="" selected>Primero selecciona el tipo de período</option>
                                     </select>
+                                    <div class="invalid-feedback" id="relatedStartTimeError"></div>
                                 </div>
 
                                 <div class="col-md-6">
@@ -1414,6 +1414,7 @@
                                     <select id="relatedEndTime" class="form-select form-select-lg" required>
                                         <option value="" selected>Primero selecciona el tipo de período</option>
                                     </select>
+                                    <div class="invalid-feedback" id="relatedEndTimeError"></div>
                                 </div>
 
                                 <div class="col-12">
@@ -1446,12 +1447,30 @@
                 </div>
 
                 <div class="modal-footer border-0 pt-0 px-4 modal-footer-safe">
-                    <button type="button" class="btn btn-outline-secondary px-4 related-cancel-btn" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-outline-secondary px-4 related-cancel-btn">
                         Cancelar
                     </button>
                     <button type="button" class="btn btn-success px-4" id="saveRelatedEventBtn" disabled>
                         Guardar Evento Relacionado
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmCancelRelatedModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">¿Seguro que deseas cancelar?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    Tienes información escrita. Si cancelas, perderás los cambios no guardados.
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelRelatedBtn">Cancelar</button>
                 </div>
             </div>
         </div>
@@ -1471,7 +1490,7 @@
                             <span class="text-danger">*</span> Campos requeridos
                         </small>
                     </div>
-                    <button type="button" class="btn-close customize-close-btn" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <button type="button" class="btn-close customize-close-btn" aria-label="Cerrar"></button>
                 </div>
 
                 <div class="modal-body pt-3">
@@ -1524,8 +1543,9 @@
                                     Horario inicial del evento <span class="text-danger">*</span>
                                 </label>
                                 <select id="customizeStartTime" class="form-select form-select-lg" required>
-                                    <option value="" selected>Seleccionar hora de inicio</option>
+                                    <option value="" selected>Seleccionar horario inicial</option>
                                 </select>
+                                <div class="invalid-feedback" id="customizeStartTimeError"></div>
                             </div>
 
                             <div class="col-md-6">
@@ -1533,8 +1553,9 @@
                                     Horario final del evento <span class="text-danger">*</span>
                                 </label>
                                 <select id="customizeEndTime" class="form-select form-select-lg" required>
-                                    <option value="" selected>Seleccionar hora de fin</option>
+                                    <option value="" selected>Seleccionar horario final</option>
                                 </select>
+                                <div class="invalid-feedback" id="customizeEndTimeError"></div>
                             </div>
 
                             <div class="col-12">
@@ -1560,12 +1581,30 @@
                 </div>
 
                 <div class="modal-footer border-0 pt-0 px-4 modal-footer-safe">
-                    <button type="button" class="btn btn-outline-secondary px-4 customize-cancel-btn" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-outline-secondary px-4 customize-cancel-btn">
                         Cancelar
                     </button>
                     <button type="button" class="btn btn-success px-4" id="saveCustomizeDaysBtn" disabled>
                         Guardar Modificación
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmCancelCustomizeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">¿Seguro que deseas cancelar?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    Tienes información escrita. Si cancelas, perderás los cambios no guardados.
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelCustomizeBtn">Cancelar</button>
                 </div>
             </div>
         </div>
@@ -1585,7 +1624,7 @@
                             <span class="text-danger">*</span> Campos requeridos
                         </small>
                     </div>
-                    <button type="button" class="btn-close edit-close-btn" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    <button type="button" class="btn-close edit-close-btn" aria-label="Cerrar"></button>
                 </div>
 
                 <div class="modal-body pt-3">
@@ -1669,7 +1708,7 @@
                                             </label>
                                         </div>
                                         <small class="text-muted d-block mt-2">
-                                            Incluye costos generales de utilidades asociados al uso del área.
+                                            Seleccione si el evento incluye costos generales de utilidades asociados al uso del área.
                                         </small>
                                     </div>
                                 </div>
@@ -1743,7 +1782,7 @@
                                     <strong>No laborable sábado: </strong> lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m. <br>
                                     <strong> No laborable domingo o festivo: </strong> lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
                                 </small>
-                                <div class="invalid-feedback" id="rentalPeriodTypeError"></div>
+                                <div class="invalid-feedback" id="editPeriodTypeError"></div>
                             </div>
 
                             <div class="col-md-6">
@@ -1771,33 +1810,56 @@
                                     Fecha inicial del evento <span class="text-danger">*</span>
                                 </label>
 
-                                <input
-                                    type="text"
-                                    id="editStartDate"
-                                    class="form-control form-control-lg date-picker-input"
-                                    placeholder="Día Mes Año"
-                                    autocomplete="off"
-                                    inputmode="none"
-                                    required
-                                >
+                                <div class="date-picker-wrapper">
+                                    <input
+                                        type="text"
+                                        id="editStartDate"
+                                        class="form-control form-control-lg date-picker-input"
+                                        placeholder="Día Mes Año"
+                                        autocomplete="off"
+                                        inputmode="none"
+                                        readonly
+                                        required
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="date-picker-icon"
+                                        id="editStartDateIcon"
+                                        aria-label="Abrir calendario de fecha inicial"
+                                    >
+                                        <i class="bi bi-calendar3"></i>
+                                    </button>
+                                </div>
 
                                 <div class="invalid-feedback d-block" id="editStartDateError"></div>
                             </div>
-
                             <div class="col-md-6">
                                 <label for="editEndDate" class="form-label fw-semibold">
                                     Fecha final del evento <span class="text-danger">*</span>
                                 </label>
 
-                                <input
-                                    type="text"
-                                    id="editEndDate"
-                                    class="form-control form-control-lg date-picker-input"
-                                    placeholder="Día Mes Año"
-                                    autocomplete="off"
-                                    inputmode="none"
-                                    required
-                                >
+                                <div class="date-picker-wrapper">
+                                    <input
+                                        type="text"
+                                        id="editEndDate"
+                                        class="form-control form-control-lg date-picker-input"
+                                        placeholder="Día Mes Año"
+                                        autocomplete="off"
+                                        inputmode="none"
+                                        readonly
+                                        required
+                                    >
+
+                                    <button
+                                        type="button"
+                                        class="date-picker-icon"
+                                        id="editEndDateIcon"
+                                        aria-label="Abrir calendario de fecha final"
+                                    >
+                                        <i class="bi bi-calendar3"></i>
+                                    </button>
+                                </div>
 
                                 <div class="invalid-feedback d-block" id="editEndDateError"></div>
                             </div>
@@ -1811,6 +1873,7 @@
                                 <select id="editStartTime" class="form-select form-select-lg" required>
                                     <option value="" selected>Primero selecciona el tipo de período</option>
                                 </select>
+                                <div class="invalid-feedback" id="editStartTimeError"></div>
                             </div>
 
                             <div class="col-md-6">
@@ -1820,6 +1883,7 @@
                                 <select id="editEndTime" class="form-select form-select-lg" required>
                                     <option value="" selected>Primero selecciona el tipo de período</option>
                                 </select>
+                                <div class="invalid-feedback" id="editEndTimeError"></div>
                                 <div class="invalid-feedback d-block" id="editTimeError"></div>
                             </div>
                         </div>
@@ -1850,12 +1914,30 @@
                 </div>
 
                 <div class="modal-footer border-0 pt-0 px-4 modal-footer-safe">
-                    <button type="button" class="btn btn-outline-secondary px-4 edit-cancel-btn" data-bs-dismiss="modal">
+                    <button type="button" class="btn btn-outline-secondary px-4 edit-cancel-btn">
                         Cancelar
                     </button>
                     <button type="button" class="btn btn-success px-4" id="saveEditEventBtn" disabled>
                         Guardar Cambios
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="confirmCancelEditModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">¿Seguro que deseas cancelar?</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body pt-0">
+                    Tienes información editada. Si cancelas, perderás los cambios no guardados.
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelEditBtn">Cancelar</button>
                 </div>
             </div>
         </div>

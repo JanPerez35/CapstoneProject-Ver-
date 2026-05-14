@@ -42,12 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
     const $ = (id) => document.getElementById(id);
-    function clearActionRadios() {
-        document.querySelectorAll('.action-radio').forEach((radio) => {
-            radio.checked = false;
-        });
-    }
-
     const downloadCsvBtn = $('downloadCsvBtn');
     const downloadPdfBtn = $('downloadPdfBtn');
 
@@ -66,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const FACILITY_COSTS_PER_PAGE = 10;
     let currentFacilityCostsPage = 1;
+    let customizeBasePeriodType = '';
     const facilityCostPagination = $('facilityCostPagination');
 
     const reportType = $('reportType');
@@ -160,11 +155,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const confirmDeleteCostEntryBtn = $('confirmDeleteCostEntryBtn');
     const deleteButtons = () => [...document.querySelectorAll('.delete-cost-row-btn')];
-    const editButtons = () => [...document.querySelectorAll('.edit-cost-row-btn')];
     const customizeDaysButtons = () => [...document.querySelectorAll('.customize-days-btn')];
+    const customizeStartTimeError = $('customizeStartTimeError');
+    const customizeEndTimeError = $('customizeEndTimeError');
     const createRelatedButtons = () => [...document.querySelectorAll('.create-related-btn')];
 
     const editSubEventButtons = () => [...document.querySelectorAll('.edit-sub-event-btn')];
+
+    const editPeriodTypeError = $('editPeriodTypeError');
+    const editStartTimeError = $('editStartTimeError');
+    const editEndTimeError = $('editEndTimeError');
 
     let relatedModalMode = 'create';
     let editingSubEventId = null;
@@ -175,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const editEventId = $('editEventId');
     const saveEditEventBtn = $('saveEditEventBtn');
 
+    const relatedPeriodTypeError = $('relatedPeriodTypeError');
     const relatedParentEventId = $('relatedParentEventId');
     const saveRelatedEventBtn = $('saveRelatedEventBtn');
     const relatedArea = $('relatedArea');
@@ -200,6 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const relatedStartDateError = $('relatedStartDateError');
     const relatedEndDateError = $('relatedEndDateError');
     const relatedTimeError = $('relatedTimeError');
+    const relatedStartTimeError = $('relatedStartTimeError');
+    const relatedEndTimeError = $('relatedEndTimeError');
 
     const editResponsible = $('editResponsible');
     const editDescription = $('editDescription');
@@ -295,6 +298,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedClassroomsToDelete = [];
     let configureDirty = false;
     let rentalDirty = false;
+    let editDirty = false;
+    let relatedDirty = false;
+    let customizeDirty = false;
+
+    let allowEditModalClose = false;
+    let allowRelatedModalClose = false;
+    let allowCustomizeModalClose = false;
     let servicesTouched = false;
     let allowConfigureModalClose = false;
     let allowRentalModalClose = false;
@@ -688,20 +698,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }) {
         let valid = true;
 
-        startTime?.classList.remove('is-invalid');
-        endTime?.classList.remove('is-invalid');
+        if (showError) {
+            startTime?.classList.remove('is-invalid');
+            endTime?.classList.remove('is-invalid');
 
-        if (timeError) timeError.textContent = '';
+            if (timeError) timeError.textContent = '';
+        }
 
         if (!startTime?.value || !endTime?.value) {
-            valid = false;
-
-            if (showError) {
-                startTime?.classList.add('is-invalid');
-                endTime?.classList.add('is-invalid');
-                if (timeError) timeError.textContent = 'Selecciona hora de inicio y hora de fin.';
-            }
-
             return false;
         }
 
@@ -714,7 +718,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (showError) {
                 startTime.classList.add('is-invalid');
                 endTime.classList.add('is-invalid');
-                if (timeError) timeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
+                if (timeError) timeError.textContent = 'El horario final del evento debe ser mayor que la hora inicial del evento.';
             }
 
             return false;
@@ -846,23 +850,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedDay = getSelectedStartDateDay();
 
         if (isWorkdayPeriod()) {
-            buildTimeOptions(rentalStartTime, 7, 30, 16, 30, 'Seleccionar hora de inicio');
-            buildTimeOptions(rentalEndTime, 7, 45, 16, 30, 'Seleccionar hora de fin');
+            buildTimeOptions(rentalStartTime, 7, 30, 16, 30, 'Seleccionar el horario inicial del evento');
+            buildTimeOptions(rentalEndTime, 7, 45, 16, 30, 'Seleccionar el horario final del evento');
         } else if (rentalPeriodType?.value === 'non_workday_saturday') {
         if (selectedDay === 6) {
-            buildTimeOptions(rentalStartTime, 8, 0, 21, 30, 'Seleccionar hora de inicio');
-            buildTimeOptions(rentalEndTime, 8, 15, 21, 30, 'Seleccionar hora de fin');
+            buildTimeOptions(rentalStartTime, 8, 0, 21, 30, 'Seleccionar el horario inicial del evento');
+            buildTimeOptions(rentalEndTime, 8, 15, 21, 30, 'Seleccionar el horario final del evento');
         } else {
-            buildTimeOptions(rentalStartTime, 16, 30, 21, 30, 'Seleccionar hora de inicio');
-            buildTimeOptions(rentalEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
+            buildTimeOptions(rentalStartTime, 16, 30, 21, 30, 'Seleccionar el horario inicial del evento');
+            buildTimeOptions(rentalEndTime, 16, 45, 21, 30, 'Seleccionar el horario final del evento');
         }
     } else if (rentalPeriodType?.value === 'non_workday_sunday_holiday') {
             if (selectedDay === 0) {
-                buildTimeOptions(rentalStartTime, 8, 0, 21, 30, 'Seleccionar hora de inicio');
-                buildTimeOptions(rentalEndTime, 8, 15, 21, 30, 'Seleccionar hora de fin');
+                buildTimeOptions(rentalStartTime, 8, 0, 21, 30, 'Seleccionar el horario inicial del evento');
+                buildTimeOptions(rentalEndTime, 8, 15, 21, 30, 'Seleccionar el horario final del evento');
             } else {
-                buildTimeOptions(rentalStartTime, 16, 30, 21, 30, 'Seleccionar hora de inicio');
-                buildTimeOptions(rentalEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
+                buildTimeOptions(rentalStartTime, 16, 30, 21, 30, 'Seleccionar el horario inicial del evento');
+                buildTimeOptions(rentalEndTime, 16, 45, 21, 30, 'Seleccionar el horario final del evento');
             }
         } else {
             rentalStartTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
@@ -885,23 +889,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedDay = getSelectedRelatedStartDateDay();
 
         if (isRelatedWorkdayPeriod()) {
-            buildTimeOptions(relatedStartTime, 7, 30, 16, 30, 'Seleccionar hora de inicio');
-            buildTimeOptions(relatedEndTime, 7, 45, 16, 30, 'Seleccionar hora de fin');
+            buildTimeOptions(relatedStartTime, 7, 30, 16, 30, 'Seleccionar el horario inicial del evento');
+            buildTimeOptions(relatedEndTime, 7, 45, 16, 30, 'Seleccionar el horario final del evento');
         } else if (relatedPeriodType?.value === 'non_workday_saturday') {
             if (selectedDay === 6) {
-                buildTimeOptions(relatedStartTime, 8, 0, 21, 30, 'Seleccionar hora de inicio');
-                buildTimeOptions(relatedEndTime, 8, 15, 21, 30, 'Seleccionar hora de fin');
+                buildTimeOptions(relatedStartTime, 8, 0, 21, 30, 'Seleccionar el horario inicial del evento');
+                buildTimeOptions(relatedEndTime, 8, 15, 21, 30, 'Seleccionar el horario final del evento');
             } else {
-                buildTimeOptions(relatedStartTime, 16, 30, 21, 30, 'Seleccionar hora de inicio');
-                buildTimeOptions(relatedEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
+                buildTimeOptions(relatedStartTime, 16, 30, 21, 30, 'Seleccionar el horario inicial del evento');
+                buildTimeOptions(relatedEndTime, 16, 45, 21, 30, 'Seleccionar el horario final del evento');
             }
         } else if (relatedPeriodType?.value === 'non_workday_sunday_holiday') {
             if (selectedDay === 0) {
-                buildTimeOptions(relatedStartTime, 8, 0, 21, 30, 'Seleccionar hora de inicio');
-                buildTimeOptions(relatedEndTime, 8, 15, 21, 30, 'Seleccionar hora de fin');
+                buildTimeOptions(relatedStartTime, 8, 0, 21, 30, 'Seleccionar el horario inicial del evento');
+                buildTimeOptions(relatedEndTime, 8, 15, 21, 30, 'Seleccionar el horario final del evento');
             } else {
-                buildTimeOptions(relatedStartTime, 16, 30, 21, 30, 'Seleccionar hora de inicio');
-                buildTimeOptions(relatedEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
+                buildTimeOptions(relatedStartTime, 16, 30, 21, 30, 'Seleccionar el horario inicial del evento');
+                buildTimeOptions(relatedEndTime, 16, 45, 21, 30, 'Seleccionar el horario final del evento');
             }
         } else {
             relatedStartTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
@@ -941,23 +945,23 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!editStartTime || !editEndTime) return;
 
         if (isEditWorkdayPeriod()) {
-            buildTimeOptions(editStartTime, 7, 30, 16, 30, 'Seleccionar hora de inicio');
-            buildTimeOptions(editEndTime, 7, 45, 16, 30, 'Seleccionar hora de fin');
+            buildTimeOptions(editStartTime, 7, 30, 16, 30, 'Seleccionar el horario inicial del evento');
+            buildTimeOptions(editEndTime, 7, 45, 16, 30, 'Seleccionar el horario final del evento');
         } else if (editPeriodType?.value === 'non_workday_saturday') {
             if (selectedDay === 6) {
-                buildTimeOptions(editStartTime, 8, 0, 21, 30, 'Seleccionar hora de inicio');
-                buildTimeOptions(editEndTime, 8, 15, 21, 30, 'Seleccionar hora de fin');
+                buildTimeOptions(editStartTime, 8, 0, 21, 30, 'Seleccionar el horario inicial del evento');
+                buildTimeOptions(editEndTime, 8, 15, 21, 30, 'Seleccionar el horario final del evento');
             } else {
-                buildTimeOptions(editStartTime, 16, 30, 21, 30, 'Seleccionar hora de inicio');
-                buildTimeOptions(editEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
+                buildTimeOptions(editStartTime, 16, 30, 21, 30, 'Seleccionar el horario inicial del evento');
+                buildTimeOptions(editEndTime, 16, 45, 21, 30, 'Seleccionar el horario final del evento');
             }
         } else if (editPeriodType?.value === 'non_workday_sunday_holiday') {
             if (selectedDay === 0) {
-                buildTimeOptions(editStartTime, 8, 0, 21, 30, 'Seleccionar hora de inicio');
-                buildTimeOptions(editEndTime, 8, 15, 21, 30, 'Seleccionar hora de fin');
+                buildTimeOptions(editStartTime, 8, 0, 21, 30, 'Seleccionar el horario inicial del evento');
+                buildTimeOptions(editEndTime, 8, 15, 21, 30, 'Seleccionar el horario final del evento');
             } else {
-                buildTimeOptions(editStartTime, 16, 30, 21, 30, 'Seleccionar hora de inicio');
-                buildTimeOptions(editEndTime, 16, 45, 21, 30, 'Seleccionar hora de fin');
+                buildTimeOptions(editStartTime, 16, 30, 21, 30, 'Seleccionar el horario inicial del evento');
+                buildTimeOptions(editEndTime, 16, 45, 21, 30, 'Seleccionar el horario final del evento');
             }
         } else {
             editStartTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
@@ -978,8 +982,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const previousStart = customizeStartTime.value;
         const previousEnd = customizeEndTime.value;
 
-        buildTimeOptions(customizeStartTime, 7, 30, 21, 30, 'Seleccionar hora de inicio');
-        buildTimeOptions(customizeEndTime, 7, 45, 21, 30, 'Seleccionar hora de fin');
+        buildTimeOptions(customizeStartTime, 7, 30, 21, 30, 'Seleccionar el horario inicial');
+        buildTimeOptions(customizeEndTime, 7, 45, 21, 30, 'Seleccionar el horario final');
 
         if ([...customizeStartTime.options].some(option => option.value === previousStart)) {
             customizeStartTime.value = previousStart;
@@ -1104,7 +1108,7 @@ function fillRelatedModalFromRow(row) {
 
             setTimeout(() => {
                 window.location.reload();
-            }, 900);
+            }, 2000);
         } catch (error) {
             alert(error.message);
         }
@@ -1198,44 +1202,56 @@ function fillRelatedModalFromRow(row) {
         return '';
     }
 
-    function updateRentalDateRestrictions() {
-        toggleRentalDateRangeUI();
-
-        const isWorkday = rentalPeriodType?.value === 'workday';
+    function updateDateRestrictions({
+                                        periodType,
+                                        startDate,
+                                        endDate,
+                                        updateTimeOptions,
+                                        updateSummary
+                                    }) {
+        const isWorkday = periodType?.value === 'workday';
 
         const disableRules = isWorkday
             ? [
                 function (date) {
                     const day = date.getDay();
-                    return day === 0 || day === 6; // domingo o sábado
+                    return day === 0 || day === 6;
                 }
             ]
             : [];
 
-        if (rentalStartDate?._flatpickr) {
-            rentalStartDate._flatpickr.set('disable', disableRules);
+        if (startDate?._flatpickr) {
+            startDate._flatpickr.set('disable', disableRules);
         }
 
-        if (rentalEndDate?._flatpickr) {
-            rentalEndDate._flatpickr.set('disable', disableRules);
+        if (endDate?._flatpickr) {
+            endDate._flatpickr.set('disable', disableRules);
 
-            if (rentalStartDate.value) {
-                rentalEndDate._flatpickr.set('minDate', rentalStartDate.value);
+            if (startDate.value) {
+                endDate._flatpickr.set('minDate', startDate.value);
             } else {
-                rentalEndDate._flatpickr.set('minDate', 'today');
+                endDate._flatpickr.set('minDate', 'today');
             }
         }
 
-        if (rentalStartDate.value && !isAllowedDateForSelectedPeriod(rentalStartDate.value)) {
-            rentalStartDate._flatpickr?.clear();
+        if (startDate.value && isWorkday) {
+            const day = new Date(`${startDate.value}T00:00:00`).getDay();
+
+            if (day === 0 || day === 6) {
+                startDate._flatpickr?.clear();
+            }
         }
 
-        if (rentalEndDate.value && !isAllowedDateForSelectedPeriod(rentalEndDate.value)) {
-            rentalEndDate._flatpickr?.clear();
+        if (endDate.value && isWorkday) {
+            const day = new Date(`${endDate.value}T00:00:00`).getDay();
+
+            if (day === 0 || day === 6) {
+                endDate._flatpickr?.clear();
+            }
         }
 
-        updateAutomaticRateMode();
-        updateRentalTimeOptions();
+        updateTimeOptions?.();
+        updateSummary?.();
     }
 
 
@@ -1251,37 +1267,24 @@ function fillRelatedModalFromRow(row) {
 
     [customizeStartTime, customizeEndTime].forEach(input => {
         input?.addEventListener('change', () => {
-            customizeStartTime?.classList.remove('is-invalid');
-            customizeEndTime?.classList.remove('is-invalid');
-
-            if (customizeTimeError) {
-                customizeTimeError.textContent = '';
-            }
-
-            if (!customizeStartTime?.value && !customizeEndTime?.value) {
-                customizeStartTime?.classList.add('is-invalid');
-                customizeEndTime?.classList.add('is-invalid');
-
-                if (customizeTimeError) {
-                    customizeTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
-                }
-            } else if (
-                customizeStartTime?.value &&
-                customizeEndTime?.value &&
-                timeToMinutes(customizeEndTime.value) <= timeToMinutes(customizeStartTime.value)
-            ) {
-                customizeStartTime?.classList.add('is-invalid');
-                customizeEndTime?.classList.add('is-invalid');
-
-                if (customizeTimeError) {
-                    customizeTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
-                }
-            }
+            validateTimeSelectorChange({
+                changedSelect: input,
+                changedError: input === customizeStartTime
+                    ? customizeStartTimeError
+                    : customizeEndTimeError,
+                changedMessage: input === customizeStartTime
+                    ? 'Selecciona un horario inicial válido.'
+                    : 'Selecciona un horario final válido.',
+                startTime: customizeStartTime,
+                endTime: customizeEndTime,
+                periodType: null,
+                startDate: customizeDate,
+                timeError: customizeTimeError
+            });
 
             updateCustomizeSaveState();
         });
     });
-
     customizeDate?.addEventListener('change', () => {
         clearFieldError(customizeDate, customizeDateError);
 
@@ -1293,11 +1296,11 @@ function fillRelatedModalFromRow(row) {
     });
 
     relatedArea?.addEventListener('change', () => {
-        clearFieldError(relatedArea, relatedAreaError);
-
-        if (!relatedArea.value) {
-            setFieldError(relatedArea, relatedAreaError, 'El área es requerida.');
-        }
+        validateRequiredSelect(
+            relatedArea,
+            relatedAreaError,
+            'Selecciona un área válida.'
+        );
 
         updateRelatedSummary();
         updateRelatedSaveState();
@@ -1312,28 +1315,12 @@ function fillRelatedModalFromRow(row) {
             type: 'responsible'
         },
         {
-            input: relatedResponsible,
-            error: relatedResponsibleError,
-            validate: (showError) =>
-                validateResponsible(showError, relatedResponsible, relatedResponsibleError),
-            save: updateRelatedSaveState,
-            type: 'responsible'
-        },
-        {
             input: editDescription,
             error: editDescriptionError,
             validate: validateEditEventForm,
             save: updateEditSaveState,
             type: 'description'
         },
-        {
-            input: relatedDescription,
-            error: relatedDescriptionError,
-            validate: (showError) =>
-                validateDescription(showError, relatedDescription, relatedDescriptionError),
-            save: updateRelatedSaveState,
-            type: 'description'
-        }
     ].forEach(({ input, error, validate, save, type }) => {
         if (type === 'responsible') {
             attachResponsibleBehavior(input, error, validate, save);
@@ -1344,32 +1331,44 @@ function fillRelatedModalFromRow(row) {
 
 
     relatedPeriodType?.addEventListener('change', () => {
+        validateRequiredSelect(
+            relatedPeriodType,
+            relatedPeriodTypeError,
+            'Selecciona un tipo de período válido.'
+        );
+
         relatedStartTime.value = '';
         relatedEndTime.value = '';
-        updateRelatedTimeOptions();
+
+        updateDateRestrictions({
+            periodType: relatedPeriodType,
+            startDate: relatedStartDate,
+            endDate: relatedEndDate,
+            updateTimeOptions: updateRelatedTimeOptions,
+            updateSummary: updateRelatedSummary
+        });
+
         updateRelatedSummary();
         updateRelatedSaveState();
     });
 
+
     [relatedStartTime, relatedEndTime].forEach(input => {
         input?.addEventListener('change', () => {
-            relatedStartTime.classList.remove('is-invalid');
-            relatedEndTime.classList.remove('is-invalid');
-            relatedTimeError.textContent = '';
-
-            if (!relatedStartTime.value && !relatedEndTime.value) {
-                relatedStartTime.classList.add('is-invalid');
-                relatedEndTime.classList.add('is-invalid');
-                relatedTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
-            } else if (
-                relatedStartTime.value &&
-                relatedEndTime.value &&
-                timeToMinutes(relatedEndTime.value) <= timeToMinutes(relatedStartTime.value)
-            ) {
-                relatedStartTime.classList.add('is-invalid');
-                relatedEndTime.classList.add('is-invalid');
-                relatedTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
-            }
+            validateTimeSelectorChange({
+                changedSelect: input,
+                changedError: input === relatedStartTime
+                    ? relatedStartTimeError
+                    : relatedEndTimeError,
+                changedMessage: input === relatedStartTime
+                    ? 'Selecciona un horario inicial válido.'
+                    : 'Selecciona un horario final válido.',
+                startTime: relatedStartTime,
+                endTime: relatedEndTime,
+                periodType: relatedPeriodType,
+                startDate: relatedStartDate,
+                timeError: relatedStartTimeError
+            });
 
             updateRelatedSummary();
             updateRelatedSaveState();
@@ -1381,8 +1380,15 @@ function fillRelatedModalFromRow(row) {
             clearFieldError(relatedStartDate, relatedStartDateError);
             clearFieldError(relatedEndDate, relatedEndDateError);
 
+            updateDateRestrictions({
+                periodType: relatedPeriodType,
+                startDate: relatedStartDate,
+                endDate: relatedEndDate,
+                updateTimeOptions: updateRelatedTimeOptions,
+                updateSummary: updateRelatedSummary
+            });
+
             updateRelatedAutomaticRateMode();
-            updateRelatedTimeOptions();
             updateRelatedSummary();
             updateRelatedSaveState();
         });
@@ -1396,6 +1402,53 @@ function fillRelatedModalFromRow(row) {
         });
     });
 
+    function markDirtyOnChange(inputs, setDirty) {
+        inputs.forEach(input => {
+            input?.addEventListener('input', setDirty);
+            input?.addEventListener('change', setDirty);
+        });
+    }
+
+    markDirtyOnChange([
+        editClassroom,
+        editResponsible,
+        editDescription,
+        editUtilities,
+        editElectricity,
+        editWater,
+        editStartDate,
+        editEndDate,
+        editStartTime,
+        editEndTime,
+        editPeriodType
+    ], () => {
+        editDirty = true;
+    });
+
+    markDirtyOnChange([
+        relatedArea,
+        relatedResponsible,
+        relatedDescription,
+        relatedUtilities,
+        relatedElectricity,
+        relatedWater,
+        relatedPeriodType,
+        relatedStartDate,
+        relatedEndDate,
+        relatedStartTime,
+        relatedEndTime
+    ], () => {
+        relatedDirty = true;
+    });
+
+    markDirtyOnChange([
+        customizeScope,
+        customizeDate,
+        customizeStartTime,
+        customizeEndTime
+    ], () => {
+        customizeDirty = true;
+    });
     function getSelectedClassrooms() {
         return getConfigClassroomChecks()
             .filter(check => check.checked)
@@ -1597,6 +1650,32 @@ function fillRelatedModalFromRow(row) {
         return '—';
     }
 
+    function detectPeriodTypeFromDateAndTime(dateValue, startTime, endTime, basePeriodType = '') {
+        if (!dateValue || !startTime || !endTime) {
+            return basePeriodType;
+        }
+
+        const day = new Date(`${dateValue}T00:00:00`).getDay();
+        const start = timeToMinutes(startTime);
+        const end = timeToMinutes(endTime);
+
+        if (day >= 1 && day <= 5 && start >= 450 && end <= 990) {
+            return 'workday';
+        }
+
+        if (day === 6) {
+            return 'non_workday_saturday';
+        }
+
+        if (day === 0) {
+            return 'non_workday_sunday_holiday';
+        }
+
+        return basePeriodType === 'non_workday_sunday_holiday'
+            ? 'non_workday_sunday_holiday'
+            : 'non_workday_saturday';
+    }
+
     function getPeriodRateData(classroomId, periodType) {
         const data = ratesByClassroom[classroomId];
         if (!data) return {daily: 0, weekly: 0, monthly: 0};
@@ -1682,15 +1761,58 @@ function fillRelatedModalFromRow(row) {
         return true;
     }
 
+    function validateTimeSelectorChange({
+                                            changedSelect,
+                                            changedError,
+                                            changedMessage,
+                                            startTime,
+                                            endTime,
+                                            periodType,
+                                            startDate,
+                                            timeError
+                                        }) {
+        const selectorOk = validateRequiredSelect(
+            changedSelect,
+            changedError,
+            changedMessage,
+            true
+        );
+
+        if (selectorOk && startTime?.value && endTime?.value) {
+            validateEventTimes({
+                startTime,
+                endTime,
+                periodType,
+                startDate,
+                timeError,
+                showError: true
+            });
+        }
+
+        return selectorOk;
+    }
+
     function attachResponsibleBehavior(input, errorElement, validateFn, saveStateFn) {
         input?.addEventListener('input', () => {
             const value = input.value;
 
             if (value.length > 40) {
                 input.value = value.slice(0, 40);
-                setFieldError(input, errorElement, 'Has alcanzado el máximo de 40 caracteres. No puedes escribir más.');
+
+                setFieldError(
+                    input,
+                    errorElement,
+                    'Has alcanzado el máximo de 40 caracteres. No puedes escribir más.'
+                );
+
             } else if (value.length === 40) {
-                setFieldError(input, errorElement, 'Has alcanzado el máximo de 40 caracteres. Puedes someter el texto tal como está.');
+
+                setFieldError(
+                    input,
+                    errorElement,
+                    'Has alcanzado el máximo de 40 caracteres. Puedes someter el texto tal como está.'
+                );
+
             } else {
                 validateFn(true);
             }
@@ -1702,7 +1824,13 @@ function fillRelatedModalFromRow(row) {
             input.value = input.value.trim();
 
             if (input.value.length === 40) {
-                clearFieldError(input, errorElement);
+
+                setFieldError(
+                    input,
+                    errorElement,
+                    'Has alcanzado el máximo de 40 caracteres. Puedes someter el texto tal como está.'
+                );
+
             } else {
                 validateFn(true);
             }
@@ -1717,9 +1845,21 @@ function fillRelatedModalFromRow(row) {
 
             if (value.length > 250) {
                 input.value = value.slice(0, 250);
-                setFieldError(input, errorElement, 'Has alcanzado el máximo de 250 caracteres. No puedes escribir más.');
+
+                setFieldError(
+                    input,
+                    errorElement,
+                    'Has alcanzado el máximo de 250 caracteres. No puedes escribir más.'
+                );
+
             } else if (value.length === 250) {
-                setFieldError(input, errorElement, 'Has alcanzado el máximo de 250 caracteres. Puedes someter el texto tal como está.');
+
+                setFieldError(
+                    input,
+                    errorElement,
+                    'Has alcanzado el máximo de 250 caracteres. Puedes someter el texto tal como está.'
+                );
+
             } else {
                 validateFn(true);
             }
@@ -1730,29 +1870,10 @@ function fillRelatedModalFromRow(row) {
         input?.addEventListener('blur', () => {
             input.value = input.value.trim();
 
-            if (input.value.length === 250) {
-                clearFieldError(input, errorElement);
-            } else {
-                validateFn(true);
-            }
-
+            validateFn(true);
             saveStateFn();
         });
     }
-
-    attachResponsibleBehavior(
-        editResponsible,
-        editResponsibleError,
-        validateEditEventForm,
-        updateEditSaveState
-    );
-
-    attachDescriptionBehavior(
-        editDescription,
-        editDescriptionError,
-        validateEditEventForm,
-        updateEditSaveState
-    );
 
     function initializeFacilityDatePickers() {
         const sharedOptions = {
@@ -2557,8 +2678,20 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         editClassroom.value = row.dataset.classroom || '';
         editResponsible.value = row.dataset.responsible || '';
         editDescription.value = row.dataset.description || '';
-        editStartDate.value = row.dataset.date || '';
-        editEndDate.value = row.dataset.endDate || row.dataset.date || '';
+        const originalStartDate = row.dataset.date || '';
+        const originalEndDate = row.dataset.endDate || originalStartDate;
+
+        editStartDate.value = originalStartDate;
+        editEndDate.value = originalEndDate;
+
+        if (editStartDate?._flatpickr) {
+            editStartDate._flatpickr.setDate(originalStartDate, false);
+        }
+
+        if (editEndDate?._flatpickr) {
+            editEndDate._flatpickr.setDate(originalEndDate, false);
+        }
+
         editPeriodType.value = row.dataset.periodType || '';
         editRateMode.value = row.dataset.rateMode || '';
         editRateModeDisplay.value = rateModeLabel(row.dataset.rateMode || '');
@@ -2610,6 +2743,8 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         updateEditSaveState();
 
         openModalById('editEventModal');
+        editDirty = false;
+        allowEditModalClose = false;
     });
 
     function bindOptionThreeButtons() {
@@ -2622,9 +2757,10 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                     customizeEventId.value = btn.dataset.entryId;
                 }
 
+                customizeBasePeriodType = row?.dataset.periodType || '';
+
                 const startDate = row?.dataset.date || '';
                 const endDate = row?.dataset.endDate || startDate;
-
                 customizeScope.value = '';
 
                 customizeDate.value = '';
@@ -2654,6 +2790,8 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
                 console.log('Personalizar días para evento:', btn.dataset.entryId);
                 openModalById('customizeDaysModal');
+                customizeDirty = false;
+                allowCustomizeModalClose = false;
             };
         });
 
@@ -2718,6 +2856,8 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
                 console.log('Crear evento relacionado desde:', btn.dataset.entryId);
                 openModalById('createRelatedModal');
+                relatedDirty = false;
+                allowRelatedModalClose = false;
             };
         });
 
@@ -2799,7 +2939,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             if (showError) {
                 customizeStartTime?.classList.add('is-invalid');
                 customizeEndTime?.classList.add('is-invalid');
-                if (customizeTimeError) customizeTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
+                if (customizeTimeError) customizeTimeError.textContent = 'El horario final del evento debe ser mayor que la hora inicial del evento.';
             }
         }
 
@@ -2810,7 +2950,13 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             scope: customizeScope.value,
             date: customizeDate.value,
             start_time: customizeStartTime.value,
-            end_time: customizeEndTime.value
+            end_time: customizeEndTime.value,
+            period_type: detectPeriodTypeFromDateAndTime(
+                customizeDate.value,
+                customizeStartTime.value,
+                customizeEndTime.value,
+                customizeBasePeriodType
+            )
         };
     }
 
@@ -3100,7 +3246,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             if (showError) setFieldError(relatedResponsible, relatedResponsibleError, 'El responsable debe tener al menos 8 caracteres.');
         } else if (responsible.length > 40) {
             valid = false;
-            if (showError) setFieldError(relatedResponsible, relatedResponsibleError, 'El responsable no puede exceder 40 caracteres.');
+            if (showError) setFieldError(relatedResponsible, relatedResponsibleError, 'Has alcanzado el máximo de 40 caracteres. No puedes escribir más.');
         }
 
         if (!description) {
@@ -3114,10 +3260,17 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             if (showError) setFieldError(relatedDescription, relatedDescriptionError, 'La descripción debe tener al menos 10 caracteres.');
         } else if (description.length > 250) {
             valid = false;
-            if (showError) setFieldError(relatedDescription, relatedDescriptionError, 'La descripción no puede exceder 250 caracteres.');
+            if (showError) setFieldError(relatedDescription, relatedDescriptionError, 'Has alcanzado el máximo de 250 caracteres. No puedes escribir más.');
         }
 
-        if (!relatedPeriodType?.value) {
+        const periodTypeOk = validateRequiredSelect(
+            relatedPeriodType,
+            relatedPeriodTypeError,
+            'Selecciona un tipo de período válido.',
+            showError
+        );
+
+        if (!periodTypeOk) {
             valid = false;
         }
 
@@ -3161,56 +3314,17 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             }
         }
 
-        if (!relatedStartTime?.value || !relatedEndTime?.value) {
+        const validTimes = validateEventTimes({
+            startTime: relatedStartTime,
+            endTime: relatedEndTime,
+            periodType: relatedPeriodType,
+            startDate: relatedStartDate,
+            timeError: relatedTimeError,
+            showError
+        });
+
+        if (!validTimes) {
             valid = false;
-            if (showError) {
-                relatedStartTime?.classList.add('is-invalid');
-                relatedEndTime?.classList.add('is-invalid');
-                if (relatedTimeError) relatedTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
-            }
-        } else {
-            const startMinutes = timeToMinutes(relatedStartTime.value);
-            const endMinutes = timeToMinutes(relatedEndTime.value);
-            const selectedDay = getSelectedRelatedStartDateDay();
-
-            if (endMinutes <= startMinutes) {
-                valid = false;
-                if (showError) {
-                    relatedStartTime.classList.add('is-invalid');
-                    relatedEndTime.classList.add('is-invalid');
-                    if (relatedTimeError) relatedTimeError.textContent = 'La hora de fin debe ser mayor que la hora de inicio.';
-                }
-            } else if (isRelatedWorkdayPeriod() && (startMinutes < 450 || endMinutes > 990)) {
-                valid = false;
-                if (showError) {
-                    relatedStartTime.classList.add('is-invalid');
-                    relatedEndTime.classList.add('is-invalid');
-                    if (relatedTimeError) relatedTimeError.textContent = 'Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.';
-                }
-            } else if (isRelatedNonWorkdayPeriod()) {
-                let minMinutes = 990;
-                let maxMinutes = 1290;
-                let message = 'Para días lunes a viernes en período no laborable solo se permiten horarios de 4:30 p.m. a 9:30 p.m.';
-
-                if (relatedPeriodType.value === 'non_workday_saturday' && selectedDay === 6) {
-                    minMinutes = 480;
-                    message = 'Para sábado solo se permiten horarios de 8:00 a.m. a 9:30 p.m.';
-                }
-
-                if (relatedPeriodType.value === 'non_workday_sunday_holiday' && selectedDay === 0) {
-                    minMinutes = 480;
-                    message = 'Para domingo o festivo solo se permiten horarios de 8:00 a.m. a 9:30 p.m.';
-                }
-
-                if (startMinutes < minMinutes || endMinutes > maxMinutes) {
-                    valid = false;
-                    if (showError) {
-                        relatedStartTime.classList.add('is-invalid');
-                        relatedEndTime.classList.add('is-invalid');
-                        if (relatedTimeError) relatedTimeError.textContent = message;
-                    }
-                }
-            }
         }
 
         if (services.length === 0) {
@@ -3254,6 +3368,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 date: payload.date,
                 start_time: payload.start_time,
                 end_time: payload.end_time,
+                period_type: payload.period_type,
             };
 
             const isEntireEvent = payload.scope === 'entire_event';
@@ -3272,7 +3387,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
                 setTimeout(() => {
                     window.location.reload();
-                }, 900);
+                }, 2000);
             } catch (error) {
                 alert(error.message);
             }
@@ -3365,7 +3480,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
                 setTimeout(() => {
                     window.location.reload();
-                }, 900);
+                }, 2000);
             } catch (error) {
                 alert(error.message);
             }
@@ -3600,12 +3715,19 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 validateRequiredSelect(rentalPeriodType, rentalPeriodTypeError, 'Selecciona un tipo de período válido.');
             }
 
-            if (el === rentalStartTime) {
-                validateRequiredSelect(rentalStartTime, rentalStartTimeError, 'Selecciona un horario inicial válido.');
-            }
-
-            if (el === rentalEndTime) {
-                validateRequiredSelect(rentalEndTime, rentalEndTimeError, 'Selecciona un horario final válido.');
+            if (el === rentalStartTime || el === rentalEndTime) {
+                validateTimeSelectorChange({
+                    changedSelect: el,
+                    changedError: el === rentalStartTime ? rentalStartTimeError : rentalEndTimeError,
+                    changedMessage: el === rentalStartTime
+                        ? 'Selecciona un horario inicial válido.'
+                        : 'Selecciona un horario final válido.',
+                    startTime: rentalStartTime,
+                    endTime: rentalEndTime,
+                    periodType: rentalPeriodType,
+                    startDate: rentalStartDate,
+                    timeError: rentalStartTimeError
+                });
             }
 
 
@@ -3613,12 +3735,25 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 rentalStartTime.value = '';
                 rentalEndTime.value = '';
                 updateRentalTimeOptions();
-                updateRentalDateRestrictions();
+                updateDateRestrictions({
+                    periodType: rentalPeriodType,
+                    startDate: rentalStartDate,
+                    endDate: rentalEndDate,
+                    updateTimeOptions: updateRentalTimeOptions,
+                    updateSummary: calculateRentalEstimate
+                });
             }
 
             if (el === rentalStartDate || el === rentalEndDate) {
-                updateRentalDateRestrictions();
+                updateDateRestrictions({
+                    periodType: rentalPeriodType,
+                    startDate: rentalStartDate,
+                    endDate: rentalEndDate,
+                    updateTimeOptions: updateRentalTimeOptions,
+                    updateSummary: calculateRentalEstimate
+                });
             }
+            updateAutomaticRateMode();
             calculateRentalEstimate();
             updateRentalSaveState();
             toggleRentalDateRangeUI();
@@ -3687,29 +3822,69 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
     );
 
     editClassroom?.addEventListener('change', () => {
-        clearFieldError(editClassroom, editClassroomError);
+        validateRequiredSelect(
+            editClassroom,
+            editClassroomError,
+            'Selecciona un área válida.'
+        );
+
         updateEditSummary();
         updateEditSaveState();
     });
 
     editPeriodType?.addEventListener('change', () => {
+        validateRequiredSelect(
+            editPeriodType,
+            editPeriodTypeError,
+            'Selecciona un tipo de período válido.'
+        );
+
         if (editStartTime) editStartTime.value = '';
         if (editEndTime) editEndTime.value = '';
 
-        updateEditTimeOptions();
+        updateDateRestrictions({
+            periodType: editPeriodType,
+            startDate: editStartDate,
+            endDate: editEndDate,
+            updateTimeOptions: updateEditTimeOptions,
+            updateSummary: updateEditSummary
+        });
+
         updateEditSummary();
         updateEditSaveState();
     });
 
     [editStartTime, editEndTime].forEach(input => {
         input?.addEventListener('change', () => {
-            validateEventTimes({
+            validateTimeSelectorChange({
+                changedSelect: input,
+                changedError: input === editStartTime ? editStartTimeError : editEndTimeError,
+                changedMessage: input === editStartTime
+                    ? 'Selecciona un horario inicial válido.'
+                    : 'Selecciona un horario final válido.',
                 startTime: editStartTime,
                 endTime: editEndTime,
                 periodType: editPeriodType,
                 startDate: editStartDate,
-                timeError: editTimeError,
-                showError: true
+                timeError: editStartTimeError
+            });
+
+            updateEditSummary();
+            updateEditSaveState();
+        });
+    });
+
+    [editStartDate, editEndDate].forEach(input => {
+        input?.addEventListener('change', () => {
+            clearFieldError(editStartDate, editStartDateError);
+            clearFieldError(editEndDate, editEndDateError);
+
+            updateDateRestrictions({
+                periodType: editPeriodType,
+                startDate: editStartDate,
+                endDate: editEndDate,
+                updateTimeOptions: updateEditTimeOptions,
+                updateSummary: updateEditSummary
             });
 
             updateEditSummary();
@@ -3865,6 +4040,74 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         });
     }
 
+    if ($('editEventModal')) {
+        $('editEventModal').addEventListener('hide.bs.modal', (e) => {
+
+            if (allowEditModalClose) {
+                allowEditModalClose = false;
+                return;
+            }
+
+            const confirmModalOpen =
+                $('confirmCancelEditModal')?.classList.contains('show');
+
+            if (confirmModalOpen) return;
+
+            if (editDirty) {
+                e.preventDefault();
+
+                bootstrap.Modal
+                    .getOrCreateInstance($('confirmCancelEditModal'))
+                    .show();
+            }
+        });
+    }
+    if ($('createRelatedModal')) {
+        $('createRelatedModal').addEventListener('hide.bs.modal', (e) => {
+
+            if (allowRelatedModalClose) {
+                allowRelatedModalClose = false;
+                return;
+            }
+
+            const confirmModalOpen =
+                $('confirmCancelRelatedModal')?.classList.contains('show');
+
+            if (confirmModalOpen) return;
+
+            if (relatedDirty) {
+                e.preventDefault();
+
+                bootstrap.Modal
+                    .getOrCreateInstance($('confirmCancelRelatedModal'))
+                    .show();
+            }
+        });
+    }
+
+    if ($('customizeDaysModal')) {
+        $('customizeDaysModal').addEventListener('hide.bs.modal', (e) => {
+
+            if (allowCustomizeModalClose) {
+                allowCustomizeModalClose = false;
+                return;
+            }
+
+            const confirmModalOpen =
+                $('confirmCancelCustomizeModal')?.classList.contains('show');
+
+            if (confirmModalOpen) return;
+
+            if (customizeDirty) {
+                e.preventDefault();
+
+                bootstrap.Modal
+                    .getOrCreateInstance($('confirmCancelCustomizeModal'))
+                    .show();
+            }
+        });
+    }
+
     document.querySelectorAll('.rental-cancel-btn, .rental-close-btn').forEach((btn) => {
         btn.addEventListener('click', () => {
             if (rentalHasChanges()) {
@@ -3904,6 +4147,63 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         });
     }
 
+    const confirmCancelEditBtn = $('confirmCancelEditBtn');
+    const confirmCancelRelatedBtn = $('confirmCancelRelatedBtn');
+    const confirmCancelCustomizeBtn = $('confirmCancelCustomizeBtn');
+
+    const confirmCancelEditModal = $('confirmCancelEditModal');
+    const confirmCancelRelatedModal = $('confirmCancelRelatedModal');
+    const confirmCancelCustomizeModal = $('confirmCancelCustomizeModal');
+
+
+    document.querySelectorAll('.edit-close-btn, .edit-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            bootstrap.Modal.getOrCreateInstance($('editEventModal')).hide();
+        });
+    });
+
+    document.querySelectorAll('.related-close-btn, .related-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            bootstrap.Modal.getOrCreateInstance($('createRelatedModal')).hide();
+        });
+    });
+
+    document.querySelectorAll('.customize-close-btn, .customize-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            bootstrap.Modal.getOrCreateInstance($('customizeDaysModal')).hide();
+        });
+    });
+
+    confirmCancelEditBtn?.addEventListener('click', () => {
+        editDirty = false;
+        allowEditModalClose = true;
+
+        bootstrap.Modal.getOrCreateInstance(confirmCancelEditModal).hide();
+        bootstrap.Modal.getOrCreateInstance($('editEventModal')).hide();
+
+        resetEditEventState();
+    });
+
+    confirmCancelRelatedBtn?.addEventListener('click', () => {
+        relatedDirty = false;
+        allowRelatedModalClose = true;
+
+        bootstrap.Modal.getOrCreateInstance(confirmCancelRelatedModal).hide();
+        bootstrap.Modal.getOrCreateInstance($('createRelatedModal')).hide();
+
+        resetRelatedEventState();
+    });
+
+    confirmCancelCustomizeBtn?.addEventListener('click', () => {
+        customizeDirty = false;
+        allowCustomizeModalClose = true;
+
+        bootstrap.Modal.getOrCreateInstance(confirmCancelCustomizeModal).hide();
+        bootstrap.Modal.getOrCreateInstance($('customizeDaysModal')).hide();
+
+        resetCustomizeDaysState();
+    });
+
     if (configureRatesModal) {
         configureRatesModal.addEventListener('show.bs.modal', resetConfigureFormState);
     }
@@ -3917,7 +4217,13 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
             toggleServicesError(false);
             updateRentalTimeOptions();
-            updateRentalDateRestrictions();
+            updateDateRestrictions({
+                periodType: rentalPeriodType,
+                startDate: rentalStartDate,
+                endDate: rentalEndDate,
+                updateTimeOptions: updateRentalTimeOptions,
+                updateSummary: calculateRentalEstimate
+            });
             updateRentalSaveState();
 
             setTimeout(() => {
