@@ -799,7 +799,7 @@
                                     Área <span class="text-danger">*</span>
                                 </label>
                                 <select id="rentalClassroom" name="classroom" class="form-select form-select-lg" required>
-                                    <option value="" selected disabled>Seleccionar área</option>
+                                    <option value="" selected>Seleccionar área</option>
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
                                         <option value="{{ $salon }}">{{ $salon }}</option>
@@ -939,7 +939,7 @@
                                 </label>
 
                                 <select id="rentalPeriodType" name="period_type" class="form-select  form-select-lg" required>
-                                    <option value="" selected disabled>Seleccionar tipo de período</option>
+                                    <option value="" selected>Seleccionar tipo de período</option>
 
                                     <option value="workday">
                                         Laborable
@@ -954,9 +954,9 @@
                                     </option>
                                 </select>
                                 <small class="text-muted d-block fst-italic mt-1">
-                                    Laborable: lunes a viernes, 7:30 a.m. a 4:30 p.m.
-                                    No laborable sábado: lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m.
-                                    No laborable domingo o festivo: lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                    <strong>Laborable: </strong> lunes a viernes, 7:30 a.m. a 4:30 p.m. <br>
+                                    <strong>No laborable sábado: </strong> lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m. <br>
+                                    <strong>No laborable domingo o festivo: </strong> lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
                                 </small>
                                 <div class="invalid-feedback" id="rentalPeriodTypeError"></div>
                             </div>
@@ -972,6 +972,8 @@
                                     class="form-control form-control-lg"
                                     value="Se calculará automáticamente"
                                     readonly
+                                    tabindex="-1"
+                                    onfocus="this.blur()"
                                 >
 
                                 <input type="hidden" id="rentalRangeType" name="rate_mode">
@@ -995,13 +997,17 @@
                                         placeholder="Día Mes Año"
                                         autocomplete="off"
                                         inputmode="none"
+                                        readonly
                                         required
+
                                     >
 
-                                    <button type="button"
-                                            class="date-picker-icon"
-                                            id="rentalStartDateIcon"
-                                            aria-label="Abrir calendario de fecha inicial del evento">
+                                    <button
+                                        type="button"
+                                        class="date-picker-icon"
+                                        id="rentalStartDateIcon"
+                                        aria-label="Abrir calendario de fecha inicial del evento"
+                                    >
                                         <i class="bi bi-calendar3"></i>
                                     </button>
                                 </div>
@@ -1024,12 +1030,15 @@
                                         autocomplete="off"
                                         inputmode="none"
                                         required
+                                        readonly
                                     >
 
-                                    <button type="button"
-                                            class="date-picker-icon"
-                                            id="rentalEndDateIcon"
-                                            aria-label="Abrir calendario de fecha final del evento">
+                                    <button
+                                        type="button"
+                                        class="date-picker-icon"
+                                        id="rentalEndDateIcon"
+                                        aria-label="Abrir calendario de fecha final del evento"
+                                    >
                                         <i class="bi bi-calendar3"></i>
                                     </button>
                                 </div>
@@ -1045,7 +1054,7 @@
                                     Horario inicial del evento <span class="text-danger">*</span>
                                 </label>
                                 <select id="rentalStartTime" name="start_time" class="form-select form-select-lg" required>
-                                    <option value="" selected disabled>Seleccionar horario inicial</option>
+                                    <option value="" selected>Seleccionar horario inicial</option>
                                 </select>
                                 <div class="invalid-feedback" id="rentalStartTimeError"></div>
                             </div>
@@ -1055,7 +1064,7 @@
                                     Horario final del evento <span class="text-danger">*</span>
                                 </label>
                                 <select id="rentalEndTime" name="end_time" class="form-select form-select-lg" required>
-                                    <option value="" selected disabled>Seleccionar horario final</option>
+                                    <option value="" selected>Seleccionar horario final</option>
                                 </select>
                                 <div class="invalid-feedback" id="rentalEndTimeError"></div>
                                 <div class="invalid-feedback d-block" id="rentalTimeError"></div>
@@ -1192,8 +1201,8 @@
                                 <label for="relatedArea" class="form-label fw-semibold">
                                     Área <span class="text-danger">*</span>
                                 </label>
-                                <select id="relatedArea" class="form-select" required>
-                                    <option value="" selected disabled>Seleccionar área</option>
+                                <select id="relatedArea" class="form-select form-select-lg" required>
+                                    <option value="" selected>Seleccionar área</option>
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
                                         <option value="{{ $salon }}">{{ $salon }}</option>
@@ -1209,7 +1218,7 @@
                                 <input
                                     type="text"
                                     id="relatedResponsible"
-                                    class="form-control"
+                                    class="form-control form-control-lg"
                                     placeholder="Nombre del responsable"
                                     minlength="8"
                                     maxlength="40"
@@ -1228,7 +1237,7 @@
                             </label>
                             <textarea
                                 id="relatedDescription"
-                                class="form-control"
+                                class="form-control form-control-lg"
                                 rows="3"
                                 placeholder="Descripción del evento relacionado"
                                 minlength="10"
@@ -1311,8 +1320,8 @@
                                     <label for="relatedPeriodType" class="form-label fw-semibold">
                                         Tipo de período <span class="text-danger">*</span>
                                     </label>
-                                    <select id="relatedPeriodType" class="form-select" required>
-                                        <option value="" selected disabled>Seleccionar período</option>
+                                    <select id="relatedPeriodType" class="form-select form-select-lg" required>
+                                        <option value="" selected>Seleccionar período</option>
                                         <option value="workday">Laborable</option>
                                         <option value="non_workday_saturday">No laborable sábado</option>
                                         <option value="non_workday_sunday_holiday">No laborable domingo o festivo</option>
@@ -1326,9 +1335,11 @@
                                     <input
                                         type="text"
                                         id="relatedRateModeDisplay"
-                                        class="form-control"
+                                        class="form-control form-control-lg"
                                         value="Se calculará automáticamente"
                                         readonly
+                                        tabindex="-1"
+                                        onfocus="this.blur()"
                                     >
                                     <small class="text-muted d-block fst-italic">
                                         El tipo se calcula automáticamente según la duración del evento.
@@ -1344,7 +1355,7 @@
                                             type="text"
                                             id="relatedStartDate"
                                             name="related_event_start_date"
-                                            class="form-control date-picker-input"
+                                            class="form-control form-control-lg date-picker-input"
                                             placeholder="Día Mes Año"
                                             autocomplete="off"
                                             inputmode="none"
@@ -1370,8 +1381,8 @@
                                             type="text"
                                             id="relatedEndDate"
                                             name="related_event_end_date"
-                                            class="form-control date-picker-input"
-                                            placeholder="dd-mm-aaaa"
+                                            class="form-control form-control-lg date-picker-input"
+                                            placeholder="Día Mes Año"
                                             autocomplete="off"
                                             inputmode="none"
                                             required
@@ -1391,8 +1402,8 @@
                                     <label for="relatedStartTime" class="form-label fw-semibold">
                                         Horario inicial del evento <span class="text-danger">*</span>
                                     </label>
-                                    <select id="relatedStartTime" class="form-select" required>
-                                        <option value="" selected disabled>Primero selecciona el tipo de período</option>
+                                    <select id="relatedStartTime" class="form-select form-select-lg" required>
+                                        <option value="" selected>Primero selecciona el tipo de período</option>
                                     </select>
                                 </div>
 
@@ -1400,8 +1411,8 @@
                                     <label for="relatedEndTime" class="form-label fw-semibold">
                                         Horario final del evento <span class="text-danger">*</span>
                                     </label>
-                                    <select id="relatedEndTime" class="form-select" required>
-                                        <option value="" selected disabled>Primero selecciona el tipo de período</option>
+                                    <select id="relatedEndTime" class="form-select form-select-lg" required>
+                                        <option value="" selected>Primero selecciona el tipo de período</option>
                                     </select>
                                 </div>
 
@@ -1485,7 +1496,7 @@
                                     type="text"
                                     id="customizeDate"
                                     name="event_start_date"
-                                    class="form-control date-picker-input"
+                                    class="form-control form-control-lg date-picker-input"
                                     placeholder="Día Mes Año"
                                     autocomplete="off"
                                     inputmode="none"
@@ -1512,8 +1523,8 @@
                                 <label for="customizeStartTime" class="form-label fw-semibold">
                                     Horario inicial del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="customizeStartTime" class="form-select" required>
-                                    <option value="" selected disabled>Seleccionar hora de inicio</option>
+                                <select id="customizeStartTime" class="form-select form-select-lg" required>
+                                    <option value="" selected>Seleccionar hora de inicio</option>
                                 </select>
                             </div>
 
@@ -1521,8 +1532,8 @@
                                 <label for="customizeEndTime" class="form-label fw-semibold">
                                     Horario final del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="customizeEndTime" class="form-select" required>
-                                    <option value="" selected disabled>Seleccionar hora de fin</option>
+                                <select id="customizeEndTime" class="form-select form-select-lg" required>
+                                    <option value="" selected>Seleccionar hora de fin</option>
                                 </select>
                             </div>
 
@@ -1534,8 +1545,8 @@
                                 <label for="customizeScope" class="form-label fw-semibold">
                                     Alcance <span class="text-danger">*</span>
                                 </label>
-                                <select id="customizeScope" class="form-select" required>
-                                    <option value="" selected disabled>Seleccionar alcance</option>
+                                <select id="customizeScope" class="form-select form-select-lg" required>
+                                    <option value="" selected>Seleccionar alcance</option>
                                     <option value="single_day">Solo este día</option>
                                     <option value="this_and_following">Este día y siguientes</option>
                                 </select>
@@ -1594,8 +1605,8 @@
                                 <label for="editClassroom" class="form-label fw-semibold">
                                     Área <span class="text-danger">*</span>
                                 </label>
-                                <select id="editClassroom" class="form-select" required>
-                                    <option value="" selected disabled>Seleccionar área</option>
+                                <select id="editClassroom" class="form-select form-select-lg" required>
+                                    <option value="" selected>Seleccionar área</option>
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
                                         <option value="{{ $salon }}">{{ $salon }}</option>
@@ -1611,7 +1622,7 @@
                                 <input
                                     type="text"
                                     id="editResponsible"
-                                    class="form-control"
+                                    class="form-control form-control-lg"
                                     placeholder="Nombre del responsable"
                                     minlength="8"
                                     maxlength="40"
@@ -1630,7 +1641,7 @@
                             </label>
                             <textarea
                                 id="editDescription"
-                                class="form-control"
+                                class="form-control form-control-lg"
                                 rows="4"
                                 placeholder="Descripción del evento"
                                 minlength="10"
@@ -1715,8 +1726,8 @@
                                     Tipo de período <span class="text-danger">*</span>
                                 </label>
 
-                                <select id="editPeriodType" class="form-select" required>
-                                    <option value="" selected disabled>Seleccionar tipo de período</option>
+                                <select id="editPeriodType" class="form-select form-select-lg" required>
+                                    <option value="" selected>Seleccionar tipo de período</option>
                                     <option value="workday">
                                         Laborable
                                     </option>
@@ -1728,9 +1739,9 @@
                                     </option>
                                 </select>
                                 <small class="text-muted d-block fst-italic mt-1">
-                                    Laborable: lunes a viernes, 7:30 a.m. a 4:30 p.m.
-                                    No laborable sábado: lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m.
-                                    No laborable domingo o festivo: lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                    <strong>Laborable: </strong> lunes a viernes, 7:30 a.m. a 4:30 p.m. <br>
+                                    <strong>No laborable sábado: </strong> lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m. <br>
+                                    <strong> No laborable domingo o festivo: </strong> lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
                                 </small>
                                 <div class="invalid-feedback" id="rentalPeriodTypeError"></div>
                             </div>
@@ -1743,13 +1754,15 @@
                                 <input
                                     type="text"
                                     id="editRateModeDisplay"
-                                    class="form-control"
+                                    class="form-control form-control-lg"
                                     value="Se calculará automáticamente"
                                     readonly
+                                    tabindex="-1"
+                                    onfocus="this.blur()"
                                 >
 
                                 <small class="text-muted d-block mt-1">
-                                    El tipo de tarifa se calcula automáticamente según la duración del evento.
+                                    El tipo de tarifa se calcula automáticamente según las fechas inicial y final seleccionadas.
                                 </small>
                             </div>
 
@@ -1761,7 +1774,7 @@
                                 <input
                                     type="text"
                                     id="editStartDate"
-                                    class="form-control date-picker-input"
+                                    class="form-control form-control-lg date-picker-input"
                                     placeholder="Día Mes Año"
                                     autocomplete="off"
                                     inputmode="none"
@@ -1779,7 +1792,7 @@
                                 <input
                                     type="text"
                                     id="editEndDate"
-                                    class="form-control date-picker-input"
+                                    class="form-control form-control-lg date-picker-input"
                                     placeholder="Día Mes Año"
                                     autocomplete="off"
                                     inputmode="none"
@@ -1795,8 +1808,8 @@
                                 <label for="editStartTime" class="form-label fw-semibold">
                                     Horario inicial del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="editStartTime" class="form-select" required>
-                                    <option value="" selected disabled>Primero selecciona el tipo de período</option>
+                                <select id="editStartTime" class="form-select form-select-lg" required>
+                                    <option value="" selected>Primero selecciona el tipo de período</option>
                                 </select>
                             </div>
 
@@ -1804,8 +1817,8 @@
                                 <label for="editEndTime" class="form-label fw-semibold">
                                     Horario final del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="editEndTime" class="form-select" required>
-                                    <option value="" selected disabled>Primero selecciona el tipo de período</option>
+                                <select id="editEndTime" class="form-select form-select-lg" required>
+                                    <option value="" selected>Primero selecciona el tipo de período</option>
                                 </select>
                                 <div class="invalid-feedback d-block" id="editTimeError"></div>
                             </div>
@@ -1872,7 +1885,7 @@
                         Tipo de área <span class="text-danger">*</span>
                     </label>
                     <select id="newClassroomType" class="form-select border-2 border-dark mb-3">
-                        <option value="" selected disabled>Seleccionar tipo de área</option>
+                        <option value="" selected>Seleccionar tipo de área</option>
                         <option value="classroom">Salón</option>
                         <option value="lateral">Lateral</option>
                     </select>

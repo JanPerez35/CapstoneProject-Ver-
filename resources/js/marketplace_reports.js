@@ -40,29 +40,55 @@ import "flatpickr/dist/flatpickr.min.css";
             tbody.innerHTML = '';
 
             reports.forEach(report => {
+                const isUrgentReport = normalize(report.report_reason) === 'contenido inapropiado';
 
-                console.log('REPORT COMPLETO:', report);
-                console.log('POST ID:', report.post_id);
+                const urgentCellStyle = isUrgentReport
+                    ? 'background-color: rgba(220,53,69,.15); border-top: 2px solid #dc3545; border-bottom: 2px solid #dc3545;'
+                    : '';
+
+                const urgentFirstCellStyle = isUrgentReport
+                    ? `${urgentCellStyle} border-left: 2px solid #dc3545;`
+                    : '';
+
+                const urgentLastCellStyle = isUrgentReport
+                    ? `${urgentCellStyle} border-right: 2px solid #dc3545;`
+                    : '';
+
+                const reasonDisplay = isUrgentReport
+                    ? `<span class="badge bg-danger mb-1">Urgente</span><br>${report.report_reason}`
+                    : report.report_reason;
 
                 const row = `
-                <tr data-report-id="${report.id}"
-                    data-report-date="${formatReportDateForFilter(report.created_at)}"
-                    data-post="${encodeURIComponent(JSON.stringify(report.post || {}))}"
-                    data-seller-id="${report.reported_user_id}"
-                    data-post-id="${report.post_id}"
-                    >
-                    <td>${report.reporter?.name || ''}</td>
-                    <td>${report.reported_user?.name || ''}</td>
-                    <td>${report.report_reason}</td>
-                    <td>${formatReportDisplayDate(report.created_at)}</td>
-                    <td>${report.description}</td>
+            <tr
+                data-report-id="${report.id}"
+                data-report-date="${formatReportDateForFilter(report.created_at)}"
+                data-report-reason="${report.report_reason || ''}"
+                data-post="${encodeURIComponent(JSON.stringify(report.post || {}))}"
+                data-seller-id="${report.reported_user_id}"
+                data-post-id="${report.post_id}"
+            >
+                <td style="${urgentFirstCellStyle}">${report.reporter?.name || ''}</td>
+                <td style="${urgentCellStyle}">${report.reported_user?.name || ''}</td>
+                <td style="${urgentCellStyle}" class="${isUrgentReport ? 'fw-bold text-danger' : ''}">
+                    ${reasonDisplay}
+                </td>
+                <td style="${urgentCellStyle}">${formatReportDisplayDate(report.created_at)}</td>
+                <td style="${urgentCellStyle}">${report.description}</td>
 
-                    <td class="text-center"><input class="form-check-input action-radio action-view" type="radio" name="action_${report.id}"></td>
-                    <td class="text-center"><input class="form-check-input action-radio action-resolve" type="radio" name="action_${report.id}"></td>
-                    <td class="text-center"><input class="form-check-input action-radio action-delete-post" type="radio" name="action_${report.id}"></td>
-                    <td class="text-center"><input class="form-check-input action-radio action-block-user" type="radio" name="action_${report.id}"></td>
-                </tr>
-            `;
+                <td class="text-center" style="${urgentCellStyle}">
+                    <input class="form-check-input action-radio action-view" type="radio" name="action_${report.id}">
+                </td>
+                <td class="text-center" style="${urgentCellStyle}">
+                    <input class="form-check-input action-radio action-resolve" type="radio" name="action_${report.id}">
+                </td>
+                <td class="text-center" style="${urgentCellStyle}">
+                    <input class="form-check-input action-radio action-delete-post" type="radio" name="action_${report.id}">
+                </td>
+                <td class="text-center" style="${urgentLastCellStyle}">
+                    <input class="form-check-input action-radio action-block-user" type="radio" name="action_${report.id}">
+                </td>
+            </tr>
+        `;
 
                 tbody.insertAdjacentHTML('beforeend', row);
             });
@@ -251,7 +277,7 @@ import "flatpickr/dist/flatpickr.min.css";
 
                     const reportedBy = normalize(row.cells[0].textContent);
                     const seller = normalize(row.cells[1].textContent);
-                    const reason = normalize(row.cells[2].textContent);
+                    const reason = normalize(row.dataset.reportReason || row.cells[2].textContent);
                     const date = row.dataset.reportDate || '';
 
                     return (
@@ -588,7 +614,7 @@ import "flatpickr/dist/flatpickr.min.css";
         els.filterReason.value = '';
         els.filterDate.value = '';
 
-        renderReports();
+
         fetchReports();
         initializeReportsDatePicker();
     });

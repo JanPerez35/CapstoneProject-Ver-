@@ -69,7 +69,7 @@
                     <div class="px-4 pt-3 pb-2">
                         <h5 class="fw-bold mb-0">Conversaciones:</h5>
                     </div>
-                   <div id="chatListContainer" class="flex-grow-1">
+                   <div id="chatListContainer">
 
                        @foreach($chats as $chat)
                         <a
@@ -120,7 +120,7 @@
 
                     <div
                         id="chatSearchEmptyState"
-                        class="d-none p-4 text-center text-muted"
+                        class="d-none px-4 pb-4 text-center text-muted"
                     >
                         <i class="bi bi-search fs-3 d-block mb-2"></i>
                         <p class="mb-0">No se encontraron chats que coincidan con la busqueda.</p>
@@ -183,7 +183,7 @@
                         <div id="chatEmptyState" class="d-none">
                             <div class="row g-4">
                                 <div class="col-12 mb-2">
-                                    <div class="card border-0 shadow-sm rounded-0">
+                                    <div class="card border-0 rounded-0">
                                         <div class="card-body py-5 text-center">
                                             <i class="bi bi-chat-dots fs-1 text-muted"></i>
                                             <h4 class="fw-bold mt-3">No hay mensajes aún.</h4>
@@ -275,7 +275,7 @@
                         <div class="carousel-indicators" id="postImagesCarouselIndicators"></div>
 
                         <div
-                            class="carousel-inner rounded-4 overflow-hidden post-carousel-inner"
+                            class="carousel-inner rounded-4 overflow-hidden border border-dark border-2 post-carousel-inner"
                             id="postImagesCarouselInner"
                         ></div>
 
