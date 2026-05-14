@@ -19,7 +19,7 @@ use App\Http\Controllers\UserReportController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReviewController;
-
+use App\Http\Controllers\DatabaseBackupController;
 
 /**
  *Authentication and main public routes
@@ -51,7 +51,12 @@ Route::post('/logout', function () {
     request()->session()->invalidate();
     request()->session()->regenerateToken();
 
-    return redirect('/');
+    return redirect('/')
+        ->withHeaders([
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => 'Sat, 01 Jan 2000 00:00:00 GMT',
+        ]);
 })->name('logout');
 
 /**
@@ -306,13 +311,17 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
      * Terms and conditions view for updates (ONLY for Super Admin)
      */
     Route::middleware('auth')->group(function () {
-    Route::get('/terms-and-conditions', [TermsController::class, 'show'])->name('terms.show');
-    Route::get('/terms-and-conditions/footer', [TermsController::class, 'showFromFooter'])->name('terms.footer');
-    Route::post('/terms-and-conditions/accept', [TermsController::class, 'accept'])->name('terms.accept');
-    Route::post('/admin/terms-and-conditions/update', [TermsController::class, 'update'])
-    ->name('terms.update')
-    ->middleware('role:Super Administrador');
-});
+        Route::get('/terms-and-conditions', [TermsController::class, 'show'])->name('terms.show');
+        Route::get('/terms-and-conditions/footer', [TermsController::class, 'showFromFooter'])->name('terms.footer');
+        Route::post('/terms-and-conditions/accept', [TermsController::class, 'accept'])->name('terms.accept');
+        Route::post('/admin/terms-and-conditions/update', [TermsController::class, 'update'])
+        ->name('terms.update')
+        ->middleware('role:Super Administrador');
+    });
+
+    Route::get('/admin/database-backup/download', [DatabaseBackupController::class, 'download'])
+        ->name('database.backup.download')
+        ->middleware('role:Super Administrador');
 
     /**
      * Email and temporary testing routes.
@@ -364,6 +373,8 @@ Route::post('/test-concurrency', function () {
 
     return response()->json(['ok' => true]);
 });
+
+
 
 
 /**

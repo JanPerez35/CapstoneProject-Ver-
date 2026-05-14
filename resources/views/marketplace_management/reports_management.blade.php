@@ -44,6 +44,7 @@
                             <option value="Información falsa">Información falsa</option>
                             <option value="Lenguaje ofensivo">Lenguaje ofensivo</option>
                             <option value="Contenido inapropiado">Contenido inapropiado</option>
+                            <option value="Calificación baja">Calificación baja</option>
                             <option value="Otros">Otros</option>
                         </select>
                     </div>

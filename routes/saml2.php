@@ -14,7 +14,9 @@ use App\Models\ActivityLog;
 * This starts the SAML authentication flow.
 */
 Route::get('/auth/saml/login', function () {
-    return Socialite::driver('saml2')->redirect();
+    return Socialite::driver('saml2')
+        ->with(['ForceAuthn' => true])
+        ->redirect();
 })->name("saml.login");
 
 

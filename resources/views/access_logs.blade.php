@@ -140,6 +140,11 @@
                             <option value="Inicio de sesión" {{ request('event') == 'Inicio de sesión' ? 'selected' : '' }}>Inicio de sesión</option>
                             <option value="Cierre de sesión" {{ request('event') == 'Cierre de sesión' ? 'selected' : '' }}>Cierre de sesión</option>
                         </optgroup>
+
+                        {{-- Backup downloads events --}}
+                        <optgroup label="Respaldo">
+                            <option value="Respaldo de la base de datos" {{ request('event') == 'Respaldo de la base de datos' ? 'selected' : '' }}>Respaldo de la base de datos</option>
+                        </optgroup>
                     </select>
                 </div>
 

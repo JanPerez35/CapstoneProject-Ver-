@@ -76,6 +76,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const clearRequestsFilters = document.getElementById('clearRequestsFilters');
 
     /*
+    * Modal and toast elements for database backup confirmation.
+    */
+    const databaseBackupModalEl = document.getElementById('databaseBackupWarningModal');
+    const confirmDatabaseBackupBtn = document.getElementById('confirmDatabaseBackup');
+    const databaseBackupToastEl = document.getElementById('databaseBackupToast');
+
+    /*
      * Tracks the current post selected for deletion and
      * the active page in the client-side posts pagination.
      */
@@ -850,6 +857,21 @@ document.addEventListener('DOMContentLoaded', function () {
         clearRequestsFilters.addEventListener('click', function () {
             saveActiveTab('requests');
             saveScrollPosition();
+        });
+    }
+
+    /*
+    * Shows a warning confirmation flow before creating a database backup.
+    * The actual download starts after the Super Administrator confirms.
+    */
+    if (confirmDatabaseBackupBtn) {
+        confirmDatabaseBackupBtn.addEventListener('click', function () {
+            if (databaseBackupModalEl && window.bootstrap) {
+                const modal = window.bootstrap.Modal.getOrCreateInstance(databaseBackupModalEl);
+                modal.hide();
+            }
+
+            showToast(databaseBackupToastEl);
         });
     }
 
