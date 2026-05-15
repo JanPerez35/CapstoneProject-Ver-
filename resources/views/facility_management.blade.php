@@ -91,11 +91,13 @@
                     data-bs-custom-class="custom-tooltip"
                     data-bs-title="Solo incluye la información según los filtros aplicados."
                 >
-                    <a href="{{ route('facility.export.csv') }}" id="downloadCsvBtn"
-                       class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
-                        <i class="bi bi-download"></i>
-                        Exportar a CSV
-                    </a>
+                    <a href="{{ route('facility.export.csv') }}"
+                        data-base-url="{{ route('facility.export.csv') }}"
+                        id="downloadCsvBtn"
+                        class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
+                            <i class="bi bi-download"></i>
+                            Exportar a CSV
+                        </a>
                 </span>
 
                 <span
@@ -104,11 +106,13 @@
                     data-bs-custom-class="custom-tooltip"
                     data-bs-title="Solo incluye la información según los filtros aplicados."
                 >
-                    <a href="{{ route('facility.export.pdf') }}" id="downloadPdfBtn"
-                       class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
-                        <i class="bi bi-download"></i>
-                        Exportar a PDF
-                    </a>
+                    <a href="{{ route('facility.export.pdf') }}"
+                        data-base-url="{{ route('facility.export.pdf') }}"
+                        id="downloadPdfBtn"
+                        class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
+                            <i class="bi bi-download"></i>
+                            Exportar a PDF
+                        </a>
                 </span>
 
             <span

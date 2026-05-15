@@ -1196,18 +1196,106 @@ private function getGroupParent(FacilityCostReportItem $item): FacilityCostRepor
      */
     public function exportCsv(Request $request)
     {
+        $reportType      = $request->input('report_type', '');
+        $reportMonth     = $request->input('report_month', '');
+        $reportYear      = $request->input('report_year', '');
+        $filterClassroom = $request->input('filter_classroom', '');
+        $filterPeriodType = $request->input('filter_period_type', '');
+        $filterRateMode  = $request->input('filter_rate_mode', '');
+        $filterServices  = $request->input('filter_services', '');
+        $search          = $request->input('search', '');
+
         $items = $this->buildFilteredQuery($request)->get();
+
+        $grandTotal = $items->sum('calculated_cost');
 
         $filename = 'facility_costs_' . now()->format('Ymd_His') . '.csv';
 
         $headers = [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename={$filename}",
         ];
 
-        $callback = function () use ($items) {
+        $months = [
+            1 => 'Enero',
+            2 => 'Febrero',
+            3 => 'Marzo',
+            4 => 'Abril',
+            5 => 'Mayo',
+            6 => 'Junio',
+            7 => 'Julio',
+            8 => 'Agosto',
+            9 => 'Septiembre',
+            10 => 'Octubre',
+            11 => 'Noviembre',
+            12 => 'Diciembre',
+        ];
+
+        $reportTypeLabel = match ($reportType) {
+            'monthly' => 'Mensual',
+            'annual' => 'Anual',
+            default => 'Todos',
+        };
+
+        $periodLabel = 'Todos';
+
+        if ($reportType === 'monthly' && $reportMonth && $reportYear) {
+            $periodLabel = ($months[(int) $reportMonth] ?? 'Mes no definido') . ' ' . $reportYear;
+        } elseif ($reportType === 'annual' && $reportYear) {
+            $periodLabel = $reportYear;
+        }
+
+        $classroomLabel = $filterClassroom ?: 'Todas las áreas';
+        $periodTypeLabel = $filterPeriodType ?: 'Todos';
+        $rateModeLabel = $filterRateMode ?: 'Todos';
+        $servicesLabel = $filterServices ?: 'Todos';
+        $searchLabel = $search ?: 'Sin búsqueda aplicada';
+
+        $callback = function () use (
+            $items,
+            $grandTotal,
+            $reportTypeLabel,
+            $periodLabel,
+            $classroomLabel,
+            $periodTypeLabel,
+            $rateModeLabel,
+            $servicesLabel,
+            $searchLabel
+        ) {
             $handle = fopen('php://output', 'w');
 
+            /*
+            * UTF-8 BOM.
+            * Helps Excel open Spanish accents correctly.
+            */
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            /*
+            * Friendly report summary.
+            */
+            fputcsv($handle, ['Reporte de Costos de Instalaciones']);
+            fputcsv($handle, ['Generado por', 'MAIKINE']);
+            fputcsv($handle, ['Fecha de descarga', now()->format('m/d/Y h:i A')]);
+            fputcsv($handle, []);
+
+            fputcsv($handle, ['Filtros aplicados']);
+            fputcsv($handle, ['Tipo de informe', $reportTypeLabel]);
+            fputcsv($handle, ['Período', $periodLabel]);
+            fputcsv($handle, ['Área', $classroomLabel]);
+            fputcsv($handle, ['Tipo de período', $periodTypeLabel]);
+            fputcsv($handle, ['Tipo de tarifa', $rateModeLabel]);
+            fputcsv($handle, ['Servicios', $servicesLabel]);
+            fputcsv($handle, ['Búsqueda', $searchLabel]);
+            fputcsv($handle, []);
+
+            fputcsv($handle, ['Resumen']);
+            fputcsv($handle, ['Cantidad de registros', $items->count()]);
+            fputcsv($handle, ['Costo total estimado', '$' . number_format($grandTotal, 2)]);
+            fputcsv($handle, []);
+
+            /*
+            * Main data table.
+            */
             fputcsv($handle, [
                 'Fecha Inicio',
                 'Fecha Fin',
@@ -1225,25 +1313,84 @@ private function getGroupParent(FacilityCostReportItem $item): FacilityCostRepor
 
             foreach ($items as $item) {
                 fputcsv($handle, [
-                    $item->event_date,
-                    $item->end_date,
+                    \Carbon\Carbon::parse($item->event_date)->format('m/d/Y'),
+                    \Carbon\Carbon::parse($item->end_date ?? $item->event_date)->format('m/d/Y'),
                     $item->responsible,
-                    $item->facilityCost->classroom_name ?? '',
+                    $item->facilityCost->classroom_name ?? 'N/A',
                     $item->event_description,
-                    \Carbon\Carbon::parse($item->start_time)->format('H:i'),
-                    \Carbon\Carbon::parse($item->end_time)->format('H:i'),
-                    $item->hours_used,
-                    $item->period_type,
-                    $item->rate_mode,
-                    implode(', ', $item->services ?? []),
-                    $item->calculated_cost,
+                    \Carbon\Carbon::parse($item->start_time)->format('h:i A'),
+                    \Carbon\Carbon::parse($item->end_time)->format('h:i A'),
+                    number_format($item->hours_used, 2),
+                    $this->translateCsvPeriodType($item->period_type),
+                    $this->translateCsvRateMode($item->rate_mode),
+                    $this->translateCsvServices($item->services),
+                    '$' . number_format($item->calculated_cost, 2),
                 ]);
             }
+
+            fputcsv($handle, []);
+            fputcsv($handle, [
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                '',
+                'Total estimado',
+                '$' . number_format($grandTotal, 2),
+            ]);
 
             fclose($handle);
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    private function translateCsvPeriodType($value): string
+    {
+        return match ($value) {
+            'workday' => 'Laborable',
+            'non_workday_saturday' => 'No laborable sábado',
+            'non_workday_sunday_holiday' => 'No laborable domingo o festivo',
+            default => $value ?? 'N/A',
+        };
+    }
+
+    private function translateCsvRateMode($value): string
+    {
+        return match ($value) {
+            'daily' => 'Diario',
+            'weekly' => 'Semanal',
+            'monthly' => 'Mensual',
+            default => $value ?? 'N/A',
+        };
+    }
+
+    private function translateCsvServices($services): string
+    {
+        if (is_string($services)) {
+            $decoded = json_decode($services, true);
+            $services = is_array($decoded) ? $decoded : [$services];
+        }
+
+        if (!$services || !is_array($services) || count($services) === 0) {
+            return 'Ninguno';
+        }
+
+        $translated = array_map(function ($service) {
+            return match ($service) {
+                'utilities' => 'Utilidades',
+                'electricity' => 'Electricidad',
+                'water' => 'Agua',
+                default => ucfirst($service),
+            };
+        }, $services);
+
+        return implode(', ', $translated);
     }
 
     /**

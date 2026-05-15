@@ -1103,6 +1103,8 @@ function fillRelatedModalFromRow(row) {
                 delete_custom_days_on_area_change: deleteCustomDaysOnAreaChange,
             });
 
+            editDirty = false;
+            allowEditModalClose = true;
             bootstrap.Modal.getOrCreateInstance($('editEventModal')).hide();
             toasts.editSaved?.show();
 
@@ -1410,7 +1412,6 @@ function fillRelatedModalFromRow(row) {
     }
 
     markDirtyOnChange([
-        editClassroom,
         editResponsible,
         editDescription,
         editUtilities,
@@ -2733,6 +2734,8 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             if (field) field.disabled = false;
         });
 
+        if (editClassroom) editClassroom.disabled = editingIsCustomDay;
+
         if (editRateModeDisplay) {
             editRateModeDisplay.disabled = false;
             editRateModeDisplay.readOnly = true;
@@ -3382,6 +3385,8 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             try {
                 await sendJson(url, method, body);
 
+                customizeDirty = false;
+                allowCustomizeModalClose = true;
                 bootstrap.Modal.getOrCreateInstance($('customizeDaysModal')).hide();
                 toasts.customizeSaved?.show();
 
@@ -3475,6 +3480,8 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             try {
                 await sendJson(url, method, body);
 
+                relatedDirty = false;
+                allowRelatedModalClose = true;
                 bootstrap.Modal.getOrCreateInstance($('createRelatedModal')).hide();
                 toasts.relatedSaved?.show();
 
@@ -4267,7 +4274,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 toasts.download.show();
             }
 
-            window.location.href = buildExportUrl(downloadCsvBtn.getAttribute('href'));
+            window.location.href = buildExportUrl(downloadCsvBtn.dataset.baseUrl);
         });
     }
 
@@ -4279,7 +4286,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 toasts.download.show();
             }
 
-            window.location.href = buildExportUrl(downloadPdfBtn.getAttribute('href'));
+            window.location.href = buildExportUrl(downloadPdfBtn.dataset.baseUrl);
         });
     }
 
