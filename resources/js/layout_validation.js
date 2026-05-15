@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const cartCount = document.getElementById('cartCount');
     const cartButton = document.querySelector('[data-bs-target="#cartModal"]');
     const cartModal = document.getElementById('cartModal');
+    const scrollToTopBtn = document.getElementById('scrollToTopBtn');
 
     /**
     * Validation message containers/variables
@@ -104,6 +105,40 @@ document.addEventListener('DOMContentLoaded', function () {
      * to the cart item selected for removal.
      */
     let removeCartFormId = null;
+
+
+    /**
+     * Attaches the floating scroll-to-top button behavior.
+     *
+     * The button stays hidden while the user is near the top of the page.
+     * Once the user scrolls down past a small threshold, the button becomes visible.
+     * When clicked, it smoothly returns the user to the top of the page.
+     */
+    function attachScrollToTopButton() {
+        if (!scrollToTopBtn) return;
+
+        /**
+         * Shows or hides the scroll-to-top button depending on the
+         * current vertical scroll position of the page.
+         */
+        function toggleScrollButton() {
+            if (window.scrollY > 300) {
+                scrollToTopBtn.classList.remove('d-none');
+            } else {
+                scrollToTopBtn.classList.add('d-none');
+            }
+        }
+
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        window.addEventListener('scroll', toggleScrollButton);
+        toggleScrollButton();
+    }
 
     /**
      * Displays a validation error by marking the field invalid
@@ -998,6 +1033,7 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleSpecialCaseFields();
     attachCartQuantityControls();
     attachCartTooltipCleanup();
+    attachScrollToTopButton();
     attachRemoveCartConfirmEvents();
     updateCartBadgeFromRows();
     updateSubmitButtonStateQuietly();

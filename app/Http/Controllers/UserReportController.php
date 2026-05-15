@@ -68,6 +68,35 @@ class UserReportController extends Controller
             'status' => 'pending',
         ]);
 
+
+        /**
+         * Send email when a report reason is inappropriate content.
+         * Send emails to all available Super and Marketplace Administrators.
+         */
+        $report->load(['reporter', 'reportedUser', 'post']);
+
+        if (strtolower(trim($request->report_reason)) === 'contenido inapropiado') {
+            $marketAdmins = User::whereIn('role', [
+                'Administrador de Mercado',
+                'Super Administrador'
+            ])
+                ->where('status', 'Activo')
+                ->whereNotNull('email')
+                ->get();
+
+            foreach ($marketAdmins as $admin) {
+                $this->emailService->send(
+                    $admin->email,
+                    'Nuevo reporte de contenido inapropiado en MAIKINE',
+                    "Se ha recibido un nuevo reporte de contenido inapropiado en Kinemercado.\n\n" .
+                    "Reportado por: " . ($report->reporter?->name ?? 'Usuario desconocido') . "\n" .
+                    "Usuario reportado: " . ($report->reportedUser?->name ?? 'Usuario desconocido') . "\n" .
+                    "Publicación titulada: " . ($report->post?->title ?? 'Publicación no disponible') . "\n" .
+                    "Por favor entra al panel de administración de mercado para revisar el reporte."
+                );
+            }
+        }
+
         $this->logActivity(
             'Crear reporte de usuario',
             "Se creó un reporte (ID: {$report->id}) contra el usuario ID: {$request->reported_user_id} por razón: '{$request->report_reason}'"

@@ -141,6 +141,20 @@
 {{-- Main page content injected by each individual view: For example for Kinventory it displays the inventory view before the footer --}}
 <main>{{ $slot }}</main>
 
+{{-- Floating button to scroll back to the top of the page --}}
+<button
+    type="button"
+    id="scrollToTopBtn"
+    class="btn btn-success scroll-to-top-btn d-none"
+    data-bs-toggle="tooltip"
+    data-bs-placement="right"
+    data-bs-custom-class="custom-tooltip"
+    data-bs-title="Subir al inicio de la página"
+    aria-label="Subir al inicio de la página"
+>
+    <i class="bi bi-arrow-up"></i>
+</button>
+
 {{-- Borrowing cart modal used to review selected items and submit a loan request --}}
 <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
@@ -192,11 +206,12 @@
                         </h4>
 
                         <div class="border rounded-4 overflow-hidden">
+
                             {{-- Cart table header --}}
                             <div class="row g-0 px-3 py-3 fw-semibold border-bottom bg-light">
                                 <div class="col-6">Equipo</div>
-                                <div class="col-3 text-center ps-1">Cantidad</div>
-                                <div class="col-3 text-center ps-3">Eliminar</div>
+                                <div class="col-3 text-center">Cantidad</div>
+                                <div class="col-3 text-center">Eliminar</div>
                             </div>
 
                             <div id="cartItemsContainer">
@@ -232,7 +247,7 @@
                                         @endphp
 
                                         {{-- Single cart item row with image, quantity controls, and remove action --}}
-                                        <div class="row align-items-center px-3 py-3 border-bottom cart-item-row"
+                                        <div class="row g-0 align-items-center px-3 py-3 border-bottom cart-item-row"
                                              data-index="{{ $index }}"
                                              data-max-quantity="{{ $itemStock }}">
                                             <div class="col-6 d-flex align-items-center gap-3">
@@ -245,7 +260,7 @@
                                                 <span class="fw-semibold">{{ $item['description'] ?? 'Sin descripción' }}</span>
                                             </div>
 
-                                            <div class="col-3">
+                                            <div class="col-3 cart-quantity-col">
                                                 {{-- Quantity controls adjusted in JS --}}
                                                 <div class="d-flex flex-column align-items-center">
                                                     <div class="d-flex justify-content-center align-items-center gap-2">
@@ -276,13 +291,16 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-3 text-center">
-                                                {{-- Opens a confirmation modal before removing the cart item --}}
+                                            <div class="col-3 cart-remove-col">                                                {{-- Opens a confirmation modal before removing the cart item --}}
                                                 <button
                                                     type="button"
                                                     class="btn btn-sm btn-danger open-remove-cart-confirm"
                                                     data-form-id="remove-cart-item-{{ $item['equipment_id'] }}"
                                                     data-item-name="{{ $item['description'] ?? 'este artículo' }}"
+                                                    data-bs-toggle="tooltip"
+                                                    data-bs-placement="top"
+                                                    data-bs-custom-class="custom-tooltip"
+                                                    data-bs-title="Eliminar item del carrito"
                                                 >
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -323,7 +341,7 @@
                                 <p class="mb-0 fw-bold text-warning-emphasis">
                                     Viernes solo se pueden devolver equipos.
                                 </p>
-                                
+
                                 <p class="mb-0 fw-bold text-warning-emphasis">
                                     Sábados y Domingos no hay servicio.
                                 </p>
