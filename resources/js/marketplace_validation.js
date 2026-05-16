@@ -1,7 +1,7 @@
 import * as bootstrap from 'bootstrap';
 
 /**
- * Initializes kinemarketplace page behavior and all client-side kinemarketplace interactions.
+ * Initializes kine marketplace page behavior and all client-side kine marketplace interactions.
  *
  * Responsibilities:
  * - retrieves all marketplace posts from the backend
@@ -248,10 +248,10 @@ const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
  * - optionally allows 1 or 2 decimal places
  *
  * Examples tof accepted values:
- * 0,5, 12, 12.5, 142.50
+ * 0,5, 12, 12.5, 142.50, 02.45
  *
  * Examples of rejected values:
- * 01,001, 12.345, .99 ,1., 2.E4, +2.5, -5.78
+ * 12.345, .99 ,1., 2.E4, +2.5, -5.78
  */
 const priceRegex = /^(\d+)(\.\d{1,2})?$/
 

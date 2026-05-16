@@ -805,8 +805,8 @@
 
     .messages-sidebar {
         overflow: hidden;
-        border-right: 0 !important;
-        border-bottom: 1px solid var(--bs-border-color);
+        border-right: 2px solid #212529 !important;
+        border-bottom: 2px solid #212529 !important;
     }
 
     .messages-chat-column {
