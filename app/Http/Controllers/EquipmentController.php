@@ -254,7 +254,9 @@ class EquipmentController extends Controller
             ->when($category, function ($query) use ($category) {
                 $query->where('category', $category);
             })
-            ->paginate(18);
+            ->paginate(18)
+            ->withQueryString();
+
 
         // Get available categories
         $categories = Equipment::select('category')

@@ -730,8 +730,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
             decreaseBtn?.addEventListener('click', () => {
                 clearItemError();
+
                 const current = Number(qtyInput?.value || 1);
-                if (current > min) syncQuantity(current - 1);
+
+                if (current > min) {
+                    syncQuantity(current - 1);
+                } else {
+                    setItemError('Debes pedir mínimo una unidad.');
+                }
             });
 
             increaseBtn?.addEventListener('click', () => {
@@ -741,7 +747,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (current < max) {
                     syncQuantity(current + 1);
                 } else {
-                    setItemError(`No puedes pedir más de la cantidad disponible (${max}).`);
+                    setItemError(`Cantidad máxima disponible (${max}).`);
                 }
             });
         });

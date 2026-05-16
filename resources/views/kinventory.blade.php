@@ -143,11 +143,28 @@
         </div>
 
         {{--Control for pagination--}}
-        @if ($items->hasPages())
-            <div class="mt-4 d-flex justify-content-center">
+        {{--Control for pagination--}}
+        <div class="mt-4 d-flex justify-content-center">
+            @if ($items->hasPages())
                 {{ $items->links('pagination::bootstrap-5') }}
-            </div>
-        @endif
+            @else
+                <nav aria-label="Pagination">
+                    <ul class="pagination mb-0">
+                        <li class="page-item disabled">
+                            <span class="page-link">&laquo;</span>
+                        </li>
+
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">1</span>
+                        </li>
+
+                        <li class="page-item disabled">
+                            <span class="page-link">&raquo;</span>
+                        </li>
+                    </ul>
+                </nav>
+            @endif
+        </div>
 
     </div>
 

@@ -201,6 +201,13 @@
                 <div class="modal-body pt-3">
                     <div class="mb-4">
                         {{-- Cart contents summary --}}
+                        @if(!empty($cart))
+                            <div class="fw-bold  fs-5 text-success mb-3 d-flex align-items-center gap-2">
+                                <span>Por favor, desplácese hacia abajo para ver más</span>
+                                <i class="bi bi-arrow-down-circle"></i>
+                            </div>
+                        @endif
+
                         <h4 class="fw-bold mb-3">
                             Equipos Seleccionados ({{ count($cart) }} ítems)
                         </h4>
@@ -211,7 +218,7 @@
                             <div class="row g-0 px-3 py-3 fw-semibold border-bottom bg-light">
                                 <div class="col-6">Equipo</div>
                                 <div class="col-3 text-center">Cantidad</div>
-                                <div class="col-3 text-center">Eliminar</div>
+                                <div class="col-3 text-center">Remover</div>
                             </div>
 
                             <div id="cartItemsContainer">
@@ -247,7 +254,7 @@
                                         @endphp
 
                                         {{-- Single cart item row with image, quantity controls, and remove action --}}
-                                        <div class="row g-0 align-items-center px-3 py-3 border-bottom cart-item-row"
+                                        <div class="row g-0 align-items-center px-3 py-2 border-bottom cart-item-row"
                                              data-index="{{ $index }}"
                                              data-max-quantity="{{ $itemStock }}">
                                             <div class="col-6 d-flex align-items-center gap-3">
@@ -263,18 +270,27 @@
                                             <div class="col-3 cart-quantity-col">
                                                 {{-- Quantity controls adjusted in JS --}}
                                                 <div class="d-flex flex-column align-items-center">
-                                                    <div class="d-flex justify-content-center align-items-center gap-2">
-
+                                                    <div class="cart-quantity-controls">
                                                         {{--Minus button--}}
                                                         <button type="button"
-                                                                class="btn btn-outline-secondary btn-sm decrease-cart-item">
+                                                                class="btn btn-outline-secondary btn-sm decrease-cart-item"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                data-bs-custom-class="custom-tooltip"
+                                                                data-bs-trigger="hover"
+                                                                data-bs-title="Disminuir cantidad">
                                                             -
                                                         </button>
 
                                                         <span class="fw-bold fs-6 cart-quantity-display">{{ $itemQuantity }}</span>
                                                         {{--Plus button--}}
                                                         <button type="button"
-                                                                class="btn btn-outline-secondary btn-sm increase-cart-item">
+                                                                class="btn btn-outline-secondary btn-sm increase-cart-item"
+                                                                data-bs-toggle="tooltip"
+                                                                data-bs-placement="top"
+                                                                data-bs-custom-class="custom-tooltip"
+                                                                data-bs-trigger="hover"
+                                                                data-bs-title="Aumentar cantidad">
                                                             +
                                                         </button>
                                                     </div>
@@ -286,8 +302,7 @@
                                                            class="cart-quantity-input">
 
                                                     {{-- Per-item validation message populated dynamically --}}
-                                                    <div class="text-danger small mt-2 cart-item-error text-center"
-                                                         style="min-height: 20px;"></div>
+                                                    <div class="text-danger small mt-2 cart-item-error text-center"></div>
                                                 </div>
                                             </div>
 
@@ -300,7 +315,7 @@
                                                     data-bs-toggle="tooltip"
                                                     data-bs-placement="top"
                                                     data-bs-custom-class="custom-tooltip"
-                                                    data-bs-title="Eliminar item del carrito"
+                                                    data-bs-title="Remover equipo del carrito"
                                                 >
                                                     <i class="bi bi-trash"></i>
                                                 </button>
@@ -318,16 +333,13 @@
                         <div class="mb-4">
                             {{-- Loan request details section --}}
                             <h3 class="fw-bold mb-2">Detalles del Préstamo</h3>
-                            <div class="fw-bold text-success mb-4 d-flex align-items-center gap-2">
-                                <span>Por favor, desplácese hacia abajo para ver más</span>
-                                <i class="bi bi-arrow-down-circle"></i>
-                            </div>
+
 
 
                             {{-- Service rules and operating hours --}}
                             <div class="border rounded-4 p-4 mb-4 bg-light-subtle">
                                 <h5 class="fw-bold text-secondary mb-3">
-                                    Horario de Servicio :
+                                    Horario de Servicio:
                                 </h5>
 
                                 <p class="mb-2 text-muted">
@@ -375,7 +387,7 @@
                                     </button>
                                 </div>
                                 <div class="form-text">
-                                    Solo días laborables permitidos. Si la solicitud se realiza luego de la 1:00 PM,
+                                    Solo días laborables permitidos. Si la solicitud se realiza después de la 1:00 PM,
                                     no se permitirá seleccionar el próximo día laborable inmediato.
                                 </div>                                <div class="invalid-feedback d-block" id="pickup_date_error"></div>
                             </div>
@@ -515,7 +527,7 @@
                                 </p>
 
                                 <p class="text-muted mb-2 mt-3">
-                                    Esta información también está disponible en el footer de la página.
+                                    Esta información también está disponible en el pie de la página.
                                 </p>
 
                                 <div class="form-check mb-2">
@@ -625,7 +637,7 @@
         <div class="d-flex align-items-center">
             <div class="toast-body fw-semibold rounded-0 pe-1"
                  id="cartToastMessage">
-                Item añadido al carrito
+                Equipo añadido al carrito
             </div>
 
             <button type="button"
@@ -687,7 +699,7 @@
         <div class="d-flex align-items-center">
             <div class="toast-body fw-semibold rounded-0 pe-1"
                  id="cartRemovedToastMessage">
-                Item removido del carrito correctamente.
+                Equipo removido del carrito correctamente.
             </div>
 
             <button type="button"

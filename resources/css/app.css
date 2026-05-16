@@ -1369,16 +1369,8 @@
         width: 100%;
     }
 }
-#cartModal .cart-item-row {
-    min-height: 150px;
-}
 
-#cartModal .cart-quantity-col,
-#cartModal .cart-remove-col {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+
 
 #cartModal .cart-quantity-col {
     position: relative;
@@ -1388,18 +1380,6 @@
     align-items: center !important;
     justify-content: center;
     width: 100%;
-}
-
-#cartModal .cart-item-error {
-    position: absolute;
-    top: calc(50% + 30px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 260px;
-    max-width: 260px;
-    text-align: center;
-    line-height: 1.25;
-    margin-top: 0 !important;
 }
 
 #cartModal .cart-quantity-display {
@@ -1430,4 +1410,75 @@
 
 .scroll-to-top-btn i {
     font-size: 1.25rem;
+}
+
+#cartModal .cart-item-row {
+    min-height: 125px;
+}
+
+#cartModal .cart-quantity-col,
+#cartModal .cart-remove-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#cartModal .cart-quantity-col {
+    position: relative;
+}
+
+#cartModal .cart-item-row {
+    min-height: 125px;
+}
+
+#cartModal .cart-quantity-col,
+#cartModal .cart-remove-col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#cartModal .cart-quantity-col {
+    position: relative;
+}
+
+#cartModal .cart-quantity-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+#cartModal .cart-quantity-controls {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transform: translateY(-1px);
+}
+
+#cartModal .cart-quantity-display {
+    min-width: 32px;
+    text-align: center;
+}
+
+#cartModal .decrease-cart-item,
+#cartModal .increase-cart-item {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+}
+
+#cartModal .cart-item-error {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 210px;
+    max-width: 210px;
+    min-height: 34px;
+    line-height: 1.15;
+    text-align: center;
+    margin: 0;
 }

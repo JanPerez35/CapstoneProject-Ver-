@@ -96,7 +96,7 @@ class LendingController extends Controller
         session()->put('cart', $cart);
 
         return redirect($redirectBack)
-            ->with('cart_success', 'Item añadido al carrito.');
+            ->with('cart_success', 'Equipo añadido al carrito.');
     }
 
     /**
@@ -157,7 +157,7 @@ class LendingController extends Controller
         $shouldReopenCart = !empty($cart);
 
         return redirect()->back()
-            ->with('cart_removed_success', 'Item removido del carrito correctamente.')
+            ->with('cart_removed_success', 'Equipo removido del carrito correctamente.')
             ->with('reopen_cart_modal', $shouldReopenCart);
     }
 
@@ -331,7 +331,7 @@ class LendingController extends Controller
         session()->forget('cart');
 
         return redirect()->route('kinventory')
-            ->with('request_success', 'Solicitud enviada correctamente. Pronto recibirás un email con el estado.');
+            ->with('request_success', 'Solicitud enviada correctamente. Pronto recibirás un email con el estado de tu solicitud.');
     }
     /**
      * Displays the admin borrows management view.
