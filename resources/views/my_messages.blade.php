@@ -27,24 +27,26 @@
     {{--Container that exposes important configuration and session data to the front-end Javascript
         system using the data-* attributes--}}
     <div
-        class="container-fluid py-4"
+        class="container-fluid py-4 px-4"
         id="messagesView"
         style="min-height: calc(100vh - 90px);"
         {{--Used to load and highlight the selected chat--}}
         data-chat-id="{{ request('chat_id', '') }}"
-        {{--Used to determines message owenership for message aligment and styling--}}
+        {{--Used to determines message ownership for message aligment and styling--}}
         data-current-user-id="{{ auth()->id() }}"
         {{--Used to connect the active conversation with a marketplace post--}}
         data-post-id="{{ $selectedChat?->post_id ?? '' }}"
     >
-        {{--Main messagin card layout
+        {{--Main messaging card layout
             Splits into left sidebar - chat list and search bar &
-            right sidebar - active chat converation--}}
-        <div class="card border border-dark border-2 shadow-sm rounded-4 overflow-hidden messages-card flex-grow-1">
-            <div class="row g-0 h-100">
+            right sidebar - active chat conversation--}}
+        <div class="messages-card flex-grow-1 d-flex flex-column"
+             style="min-height: calc(100vh - 160px); margin-bottom: 15rem;">
+            <div class="row g-3 align-items-stretch">
 
                 {{--Left sidebar--}}
-                <div class="col-md-4 border-end border-dark border-2 messages-sidebar">
+                <div class="col-12 col-md-4 border border-dark border-2 border-end border-dark messages-sidebar d-flex flex-column"
+                     style="align-self: stretch; position: relative; z-index: 2; background: white;">
                     {{--Sidebar header and return navigation.
                         Allows the user to return to the page they originally came from.
                         (Usually the marketplace post details)--}}
@@ -63,7 +65,7 @@
                     </div>
 
                     {{--Chat search section, allows the user filter conversations dynamically,
-                        searches by particiapnt's name and post title--}}
+                        searches by participant's name and post title--}}
                     <div class="px-4 pt-2 pb-3">
                         <div class="row g-2">
                             <div class="col-12">
@@ -97,15 +99,21 @@
                         </div>
                     </div>
 
+                    {{--Full-width divider line between the search controls
+                    and the conversations list section--}}
+                    <div class="border-top border-dark border-2 mt-3"
+                         style="margin-left: calc(var(--bs-gutter-x) * -0.5); margin-right: calc(var(--bs-gutter-x) * -0.5);">
+                    </div>
+
                     {{--Chat list section title--}}
-                    <div class="px-4 pt-3 pb-2">
-                        <h5 class="fw-bold mb-0">Conversaciones:</h5>
+                    <div class="px-4 pt-2 pb-2 mt-1">
+                        <h5 class="fw-bold mb-0 ">Conversaciones:</h5>
                     </div>
 
                    {{--Dynamic chat list container
-                       Each chat iteam sotres metadata in data-* attributes used
-                        by the JS filtering and chat loading logic--}}
-                   <div id="chatListContainer">
+                       Each chat item stores metadata in data-* attributes
+                        used by the JS filtering and chat loading logic--}}
+                    <div id="chatListContainer" class="flex-grow-1 d-flex flex-column" >
                        @foreach($chats as $chat)
                         <a
                             href="{{ route('my_messages', [
@@ -117,17 +125,18 @@
                         >
                             {{--Individual chat card. It is highlighted when selected using Bootstrap utility class--}}
                             <div
-                                class="p-4 border border-3 chat-list-item {{ request('chat_id') == $chat->id ? 'bg-success-subtle border-success shadow-sm' : 'bg-white border-success-subtle' }}"
+                                class="p-3 border border-3 chat-list-item {{ request('chat_id') == $chat->id ? 'bg-success-subtle border-success shadow-sm' : 'bg-white border-success-subtle' }}"
                                 data-chat-id="{{ $chat->id }}"
                                 data-post-id="{{ $chat->post_id }}"
                                 data-user-name="{{ $chat->otherUser()->name ?? 'Usuario' }}"
                                 data-post-title="{{ $chat->post->title ?? 'Sin título' }}"
                             >
                                 <div class="d-flex align-items-start">
+
                                     {{--User initial circle avatar--}}
                                     <div
                                         class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3 chat-user-initial"
-                                        style="width: 48px; height: 48px;"
+                                        style="width: 42px; height: 42px;"
                                     >
                                         {{ strtoupper(substr($chat->otherUser()->name ?? 'U', 0, 1)) }}
                                     </div>
@@ -136,7 +145,7 @@
 
                                         {{--User name & unread messages counter--}}
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <h5 class="mb-1 fw-bold">
+                                            <h5 class="mb-0 fw-bold fs-5">
                                                 {{ $chat->otherUser()->name ?? 'Usuario' }}
                                             </h5>
 
@@ -148,7 +157,7 @@
                                             @endif
                                         </div>
                                         {{--Marketplace post preview--}}
-                                        <div class="text-muted mb-2">
+                                        <div class="text-muted mb-1">
                                             {{ Str::limit($chat->post->title ?? 'Sin título', 20) }}
                                         </div>
                                     </div>
@@ -156,26 +165,34 @@
                             </div>
                         </a>
                         @endforeach
+
+                           {{--Flexible spacer that pushes the empty search state
+                           toward the vertical center when there are few chats--}}
+                           <div class="flex-grow-1"></div>
                     </div>
 
-                    {{--Empty search state
-                        Displayed when no chat/conversation matches the search query--}}
+                    {{--Empty search state, displayed when no chat/conversation matches the search query--}}
                     <div
                         id="chatSearchEmptyState"
                         class="d-none px-4 pb-4 text-center text-muted"
+
+                        {{--Negative top margin used to visually raise the empty
+                        state closer to the conversations section title--}}
+                        style="margin-top: -15rem;"
                     >
                         <i class="bi bi-search fs-3 d-block mb-2"></i>
                         <p class="mb-0">No se encontraron chats que coincidan con la busqueda.</p>
                     </div>
                 </div>
 
-                {{--Right side bar
-                    Represents the active messaging/chatting area--}}
-                <div class="col-12 col-md-8 d-flex flex-column messages-chat-column">
+                {{--Right side bar, represents the active messaging/chatting area--}}
+                <div class="col-12 col-md-8 d-flex flex-column border border-dark border-2 overflow-hidden messages-chat-column"
+                     >
 
-                    {{--Chat header--}}
-                    <div class="p-3 p-md-4 border-bottom border-dark border-2">
-                        <div class="d-flex justify-content-between align-items-center gap-3 flex-nowrap chat-header-row">
+                    {{--Top divider/header container for the active chat section--}}
+                    <div class="border-bottom border-dark border-2"
+                         style="margin-left: calc(var(--bs-gutter-x) * -0.5); margin-right: calc(var(--bs-gutter-x) * -0.5);">
+                        <div class="py-1 px-2 py-md-3 px-md-4 d-flex justify-content-between align-items-center gap-3 flex-nowrap chat-header-row">
 
                             {{--Mobile-only button to return to chat list
                                 Used when the screen is small enough--}}
@@ -227,13 +244,15 @@
                         </div>
                     </div>
 
-                    {{--Chat message container--}}
-                    <div id="chatMessagesContainer" class="flex-grow-1 p-4 overflow-auto messages-container">
+                    {{--Scrollable container that dynamically renders all messages belonging to the active conversation--}}
+                    <div id="chatMessagesContainer"
+                         class="flex-grow-1 p-4 overflow-auto messages-container border-bottom border-dark border-2 "
+                         style="min-height: 490px; margin-left: calc(var(--bs-gutter-x) * -0.5); margin-right: calc(var(--bs-gutter-x) * -0.5);">
 
-                        {{--Empty sate that is displayed when no chat is selected or selected chat has no messages--}}
-                        <div id="chatEmptyState" class="d-none">
-                            <div class="row g-4">
-                                <div class="col-12 mb-2">
+                        {{--Empty state that is displayed when no chat is selected or selected chat has no messages--}}
+                        <div id="chatEmptyState" class="d-none h-100 d-flex align-items-center justify-content-center">
+                            <div class="row g-4 w-100 justify-content-center">
+                                <div class="col-12 mb-2 text-center">
                                     <div class="card border-0 rounded-0">
                                         <div class="card-body py-5 text-center">
                                             <i class="bi bi-chat-dots fs-1 text-muted"></i>
@@ -247,35 +266,55 @@
                     </div>
 
                     {{--Chat text message input section--}}
-                    <div class="p-3 p-md-4 border-top border-dark border-2 chat-input-area d-flex flex-column justify-content-center" style="min-height: 150px;">
+                    <div class="p-3 p-md-4 chat-input-area d-flex flex-column gap-2"
+                         style="min-height: 250px;">
                         {{--Message input group that is initially disabled until a chat is selected--}}
-                        <div class="input-group chat-message-group border border-dark border-2 rounded-3 overflow-hidden">
+                        <div id="chatMessageGroup" class="input-group chat-message-group border border-dark border-2 rounded-3 overflow-hidden">
                             <input
                                 id="chatMessageInput"
                                 type="text"
-                                class="form-control form-control-lg"
+                                class="form-control form-control-lg border-0"
                                 placeholder="Selecciona un chat para escribir..."
                                 disabled
                             >
 
                             {{--Send Button that submits the message through the JS file--}}
-                            <button id="sendChatMessageBtn" class="btn btn-success" disabled>
+                            <button
+                                id="sendChatMessageBtn"
+                                class="btn btn-success px-4"
+                                type="button"
+                                disabled
+                            >
                                 <i class="bi bi-send"></i>
                             </button>
                         </div>
 
-                        {{--Validation errors that appear when the input does not comply with the correct format and
-                             character counter for chat messages--}}
-                        <div class="position-relative mt-2" style="min-height: 1.5rem;">
+                        {{--Helper text and live counter for the chat message input.
+                            The helper text explains the allowed characters, while the counter is updated by JS.
+                            Additionally acts as a container that horizontally separates the helper text from the
+                            live character counter--}}
+                        <div class="d-flex justify-content-between align-items-start gap-2 mt-2">
+                            <small class="text-muted fst-italic pe-lg-3">
+                            Máximo 255 caracteres. Solo letras, números, espacios, punto, coma,
+                                guion, signos de pregunta, signos de exclamación, signo de dólar
+                                y signo numeral.
+                            </small>
 
-                            {{--Dynamic validation error--}}
-                            <div class="invalid-feedback d-block m-0 pe-5" id="chatMessageError"></div>
-
-                            {{--Live character counter--}}
-                            <small id="chatMessageCounter" class="text-muted position-absolute end-0 top-0 text-end">
+                            {{--Live character counter updated by messages_validation.js--}}
+                            <small
+                                id="chatMessageCounter"
+                                class="text-muted fw-semibold text-nowrap pe-2"
+                            >
                                 0 / 255
                             </small>
                         </div>
+
+                        {{--Dynamic validation error shown when the message input does not comply with validation rules--}}
+                        <div
+                            id="chatMessageError"
+                            class="invalid-feedback d-block mt-2 text-wrap"
+                            style="white-space: normal;"
+                        ></div>
                     </div>
                 </div>
             </div>
@@ -283,7 +322,7 @@
     </div>
 
     {{--Post details modal.
-        Resuses the marketplace-style post preview inside the messaging page so the user can
+        Reuses the marketplace-style post preview inside the messaging page so the user can
         inspect the related post without having to leave the conversation--}}
     <div class="modal fade" id="postDetailsModal" tabindex="-1" aria-labelledby="postDetailsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
@@ -392,7 +431,7 @@
 
                     <hr>
 
-                    {{--Restricted owner section. The JS hides this section when the current user is the owner of thepost,
+                    {{--Restricted owner section. The JS hides this section when the current user is the owner of the post,
                         preventing a user from rating or reporting themselves--}}
                     <div id="postOwnerRestrictedSection">
 
@@ -479,7 +518,7 @@
                         </small>
                     </div>
 
-                    {{--Custom close buttom. JS uses this buttom to show the cancel confirmation modal
+                    {{--Custom close button. JS uses this button to show the cancel confirmation modal
                         if the form has data--}}
                     <button
                         type="button"
@@ -492,6 +531,7 @@
                 {{--Report form--}}
                 <div class="modal-body px-4 pt-2 pb-4">
                     <form id="reportUserForm" novalidate>
+                        @csrf
 
                         {{--Report reason dropdown--}}
                         <div class="mb-3">
@@ -499,7 +539,7 @@
                                 Razón <span class="text-danger">*</span>
                             </label>
                             <select class="form-select form-select-lg" id="reportReason" required>
-                                <option value="" selected disabled>Seleccionar una razón</option>
+                                <option value="" selected>Seleccionar una razón</option>
                                 <option value="Fraude o estafa">Fraude o estafa</option>
                                 <option value="Información falsa">Información falsa</option>
                                 <option value="Lenguaje ofensivo">Lenguaje ofensivo</option>
@@ -532,7 +572,7 @@
                             <div class="invalid-feedback d-block" id="reportDescriptionError"></div>
                         </div>
 
-                        {{--Administrative warning explaining what happens after a report is submitted--}}
+                        {{--Administrative warning explaining the possible consequences after a report/querella is submitted--}}
                         <div class="alert alert-warning rounded-4 mb-0">
                             <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
                             Los querellas son revisados por los administradores de mercado.
@@ -596,7 +636,7 @@
                             Seguir editando
                         </button>
 
-                        {{--Confirms report cancellation, resets its data,a dn returns to post details modal--}}
+                        {{--Confirms report cancellation, resets its data,and returns to post details modal--}}
                         <button
                             type="button"
                             class="btn btn-danger"

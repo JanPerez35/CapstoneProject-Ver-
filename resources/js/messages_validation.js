@@ -1,11 +1,51 @@
 import * as bootstrap from 'bootstrap';
 
+/**
+ * Messages page front-end page initialization behavior controller
+ *
+ * This file controls the client-side behavior for the MAIKINE messaging page.
+ * Responsible:
+ * - rendering chat messages and date separators
+ * - keeping user-generated message HTML safe through escaping
+ * - enabling/disabling the message input depending on selected chat state
+ * - validating chat message text, allowed characters, and maximum length
+ * - searching/filtering the chat list
+ * - loading messages for the selected conversation
+ * - managing mobile chat/sidebar behavior
+ * - opening and populating marketplace post details from inside a chat
+ * - managing seller rating UI and rating submission
+ * - validating and submitting user reports/querellas
+ * - preventing accidental report form loss through a confirmation modal
+ * - displaying Bootstrap success toasts for rating and report actions
+ */
+
+/**
+ * Escapes user-controlled text before inserting it into the DOM (Document Object Model).
+ *
+ * This prevents message content from being interpreted as HTML.
+ * It is especially important because chat messages are later injected using
+ * insertAdjacentHTML inside renderMessage().
+ *
+ * @param {string} text - Raw text that may contain unsafe characters.
+ * @returns {string} Safe HTML-escaped text.
+ */
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
+/**
+ * Converts a message timestamp into the label shown between message groups.
+ *
+ * Behavior is as follows:
+ *  Returns "Hoy" when the message date is today.
+ *  Returns "Ayer" when the message date is yesterday
+ *  Otherwise returns a Spanish Puerto Rico formatted date for when the message was sent
+ *
+ * @param {string|Date} dateValue - Date value from the backend or frontend message object.
+ * @returns {string} Human-readable date separator text.
+ */
 function formatDateSeparator(dateValue) {
     const date = new Date(dateValue);
     const today = new Date();
@@ -40,6 +80,15 @@ function formatDateSeparator(dateValue) {
         .join(' ');
 }
 
+/**
+ * Inserts a visual date separator before a message only when the day changes.
+ *
+ * The last inserted date label is stored in messagesContainer.dataset.lastMessageDate.
+ * This avoids repeating "Hoy", "Ayer", or the same full date above every message.
+ *
+ * @param {HTMLElement} messagesContainer - The message list container.
+ * @param {string|Date} dateValue - Date used to decide which separator should be displayed.
+ */
 function insertDateSeparatorIfNeeded(messagesContainer, dateValue) {
     const separatorText = formatDateSeparator(dateValue);
 
@@ -60,6 +109,24 @@ function insertDateSeparatorIfNeeded(messagesContainer, dateValue) {
     messagesContainer.dataset.lastMessageDate = separatorText;
 }
 
+/**
+ * Renders one chat message bubble inside the messages container.
+ *
+ * This function is exported so other scripts, such as the real-time Echo listener,
+ * can reuse the same message rendering behavior.
+ * The message object supports both backend and frontend naming styles.
+ * It expects message content, sender ownership, timestamp, and optional metadata IDs.
+ *
+ * @param {Object} messageObj - Message data to render.
+ * @param {number|string} [messageObj.id] - Message ID from the backend or temporary frontend ID.
+ * @param {string} messageObj.message - Message text shown in the bubble.
+ * @param {string|Date} [messageObj.createdAt] - Message creation date.
+ * @param {string|Date} [messageObj.created_at] - Backend-style creation date fallback.
+ * @param {string} messageObj.time - Formatted time shown below the message.
+ * @param {number|string} [messageObj.conversationId] - Related chat/conversation ID.
+ * @param {number|string} [messageObj.senderId] - User ID of the message sender.
+ * @param {boolean} messageObj.isMine - Determines whether the bubble aligns right or left.
+ */
 export function renderMessage(messageObj) {
     const messagesContainer = document.getElementById('chatMessagesContainer');
     const emptyState = document.getElementById('chatEmptyState');
@@ -104,25 +171,59 @@ export function renderMessage(messageObj) {
     });
 }
 
+
+/**
+ * Main page initializer.
+ *
+ * Runs after the DOM is ready so all Blade-rendered elements exist before
+ * references and event listeners are registered.
+ */
 document.addEventListener('DOMContentLoaded', () => {
+
+    /**
+     * Chat message input references.
+     *
+     * These elements control the write-message area: text input, validation error,
+     * send button, message display container, empty state, and live counter.
+     */
     const input = document.getElementById('chatMessageInput');
     const errorEl = document.getElementById('chatMessageError');
     const sendBtn = document.getElementById('sendChatMessageBtn');
     const messagesContainer = document.getElementById('chatMessagesContainer');
     const emptyState = document.getElementById('chatEmptyState');
     const counterEl = document.getElementById('chatMessageCounter');
+    const chatMessageGroup = document.getElementById('chatMessageGroup');
 
+    /**
+     * Chat context and header references.
+     *
+     * messagesView contains data-* attributes from Blade such as chat ID,
+     * current user ID, and related post ID. The header elements are updated
+     * whenever the user selects a different conversation.
+     */
     const messagesView = document.getElementById('messagesView');
     const chatHeaderParticipantName = document.getElementById('chatHeaderParticipantName');
     const chatHeaderPostSummary = document.getElementById('chatHeaderPostSummary');
     const chatHeaderParticipantInitial = document.getElementById('chatHeaderParticipantInitial');
 
+    /**
+     * Chat search and list references.
+     *
+     * These elements support filtering the conversation sidebar and showing
+     * an empty state when no chat matches the search query.
+     */
     const messagesSearchInput = document.getElementById('messagesSearchInput');
     const chatListContainer = document.getElementById('chatListContainer');
     const chatSearchEmptyState = document.getElementById('chatSearchEmptyState');
     const searchMessagesBtn = document.getElementById('searchMessagesBtn');
     const clearMessagesFiltersBtn = document.getElementById('clearMessagesFiltersBtn');
 
+    /**
+     * Marketplace post details modal references.
+     *
+     * These elements are populated when the user opens "Ver Publicación"
+     * from inside an active conversation. The data is fetched from /posts/{id}.
+     */
     const messagesVolverBtn = document.getElementById('messagesVolverBtn');
     const postDetailsModal = document.getElementById('postDetailsModal');
     const postDetailsModalLabel = document.getElementById('postDetailsModalLabel');
@@ -137,6 +238,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const postDetailsSellerRating = document.getElementById('postDetailsSellerRating');
     const postDetailsCategory = document.getElementById('postDetailsCategory');
 
+    /**
+     * Post image carousel references.
+     *
+     * The carousel is rebuilt dynamically for each marketplace post. Controls
+     * are hidden when the post has only one image.
+     */
     const postImagesCarouselIndicators = document.getElementById('postImagesCarouselIndicators');
     const postImagesCarouselInner = document.getElementById('postImagesCarouselInner');
     const postImagesCarouselPrev = document.getElementById('postImagesCarouselPrev');
@@ -144,16 +251,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const openChatPostDetailsBtn = document.getElementById('openChatPostDetailsBtn');
 
+    /**
+     * Seller rating references.
+     *
+     * These elements power the interactive 1-5 star rating UI inside the post
+     * details modal and submit the selected rating to the backend.
+     */
     const submitSellerRatingBtn = document.getElementById('submitSellerRatingBtn');
     const ratingContainer = document.getElementById('sellerRatingStars');
     const ratingInput = document.getElementById('sellerRatingValue');
     const ratingText = document.getElementById('sellerRatingText');
     const clearSellerRating = document.getElementById('clearSellerRating');
 
+    /**
+     * Toast references.
+     *
+     * These toasts give the user confirmation after successful seller rating
+     * and report/querella submission.
+     */
     const ratingSentToastEl = document.getElementById('ratingSentToast');
     const reportSentToastEl = document.getElementById('reportSentToast');
 
 
+    /**
+     * Bootstrap toast instances.
+     *
+     * Created only when the toast elements exist so the script can safely run
+     * even if one of the toast containers is missing from the Blade view.
+     */
     const ratingSentToast = ratingSentToastEl
         ? bootstrap.Toast.getOrCreateInstance(ratingSentToastEl)
         : null;
@@ -162,6 +287,13 @@ document.addEventListener('DOMContentLoaded', () => {
         ? bootstrap.Toast.getOrCreateInstance(reportSentToastEl)
         : null;
 
+    /**
+     * Report/querella modal references.
+     *
+     * These elements validate the report reason and description, track whether
+     * the form has unsaved data, handle cancel confirmation, and submit reports
+     * to the backend for the marketplace management page.
+     */
     const submitReportBtn = document.getElementById('submitReportBtn');
     const reportUserForm = document.getElementById('reportUserForm');
     const reportReason = document.getElementById('reportReason');
@@ -175,20 +307,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirmCancelReport = document.getElementById('confirmCancelReport');
     const reportUserText = document.getElementById('reportUserText');
 
+
+    /**
+     * Safety guard.
+     *
+     * If this script is loaded on a page without the core messaging elements,
+     * the script exits early to prevent null reference errors.
+     */
     if (!input || !errorEl || !sendBtn || !messagesContainer) return;
 
+    /**
+     * Prevents the message input from receiving focus when no chat is selected.
+     *
+     * This keeps the disabled/no-chat state consistent even if the user tries
+     * to focus the input manually.
+     */
     input.addEventListener('focus', () => {
         if (!messagesView?.dataset.chatId) {
             input.blur();
         }
     });
 
+    /**
+     * Validation constants.
+     *
+     * MAX_LENGTH controls the input chat message length.
+     * MAX_REPORT_LENGTH controls report descriptions maximum length.
+     * allowedTextRegex controls chat message characters, only allowing
+     * letters, numbers, periods, commas, hyphens, spaces, question & exclamation marks,
+     * dollar signs, and pound sign.
+     * allowedReportRegex controls report description characters, only allowing
+     * letters, numbers, commas, periods, hyphens, and spaces.
+     */
     const MAX_LENGTH = 255;
     const MAX_REPORT_LENGTH = 500;
     const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-¿?¡!#$]+$/;
     const allowedReportRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
-    const frontendMessages = [];
     const chatId = messagesView?.dataset.chatId;
+
+    /**
+     * Enables or disables the chat input depending on whether a chat is selected.
+     *
+     * Without a chat ID, the input remains disabled and the placeholder instructs
+     * the user to select a conversation first. Once a chat exists, the input is
+     * enabled and the send button is recalculated using validation state.
+     */
     function updateChatInputState() {
         const hasChat = !!messagesView?.dataset.chatId;
 
@@ -199,15 +362,27 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             input.disabled = false;
             input.placeholder = 'Escriba un mensaje...';
-            updateSendButtonState(); // reuse your existing logic
+            updateSendButtonState();
         }
     }
-    const currentUserId = messagesView?.dataset.currentUserId;
 
+    /**
+     * Report modal state flags.
+     *
+     * isReportDirty tracks whether the user typed or selected anything in the report form.
+     * allowReportClose temporarily bypasses the dirty-form warning during intentional closes.
+     * reportedUserId stores the seller/user ID currently being reported.
+     */
     let isReportDirty = false;
     let allowReportClose = false;
     let reportedUserId = null;
 
+    /**
+     * Preserves marketplace return context when the user leaves the messages page.
+     *
+     * The marketplace page can read marketplaceReturnPostId from sessionStorage
+     * and reopen or scroll back to the post the user came from.
+     */
     if (messagesVolverBtn) {
         messagesVolverBtn.addEventListener('click', () => {
             const returnPostId = messagesVolverBtn.dataset.returnPostId;
@@ -228,6 +403,16 @@ document.addEventListener('DOMContentLoaded', () => {
         openChatPostDetailsBtn.disabled = true;
     }
 
+    /**
+     * Truncates long display text and appends an (...).
+     *
+     * Used mainly for post titles in the chat header so long publication names
+     * do not break the layout.
+     *
+     * @param {string} text - Text to shorten.
+     * @param {number} maxLength - Maximum visible characters before truncation.
+     * @returns {string} Original or shortened text.
+     */
     function truncateText(text, maxLength = 40) {
         if (!text) return '';
         const trimmed = String(text).trim();
@@ -235,46 +420,69 @@ document.addEventListener('DOMContentLoaded', () => {
         return trimmed.slice(0, maxLength).trimEnd() + '...';
     }
 
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
+    /**
+     * Applies a blocking validation error to the chat input.
+     *
+     * The error type is stored in errorEl.dataset.errorType so other validation
+     * methods know whether the send button should remain disabled.
+     *
+     * @param {string} message - Message shown below the input.
+     * @param {string} type - Internal error category, such as required or characters.
+     */
     function setValidationError(message, type) {
         input.classList.add('is-invalid');
+
+        chatMessageGroup.classList.remove('border-dark');
+        chatMessageGroup.classList.add('border-danger');
+
         errorEl.textContent = message;
         errorEl.dataset.errorType = type;
+
         sendBtn.disabled = true;
     }
 
+    /**
+     * Clears a validation error only if it matches the provided error type.
+     *
+     * This prevents one validator from accidentally clearing an error created
+     * by another validator.
+     *
+     * @param {string} type - Error type that should be cleared.
+     */
     function clearValidationError(type) {
         if (errorEl.dataset.errorType === type) {
             input.classList.remove('is-invalid');
+
+            chatMessageGroup.classList.remove('border-danger');
+            chatMessageGroup.classList.add('border-dark');
+
             errorEl.textContent = '';
             delete errorEl.dataset.errorType;
         }
     }
 
+    /**
+     * Clears every chat input validation state.
+     *
+     * Used after sending a message or resetting the input so the next message
+     * starts with a clean validation state.
+     */
     function clearAllValidationErrors() {
         input.classList.remove('is-invalid');
+
+        chatMessageGroup.classList.remove('border-danger');
+        chatMessageGroup.classList.add('border-dark');
+
         errorEl.textContent = '';
         delete errorEl.dataset.errorType;
     }
 
-
-    function validateRequired() {
-        const value = input.value.trim();
-
-        if (!value) {
-            setValidationError('El mensaje no puede estar vacío.', 'required');
-            return false;
-        }
-
-        clearValidationError('required');
-        return true;
-    }
-
+    /**
+     * Validates chat message characters against allowedTextRegex.
+     *
+     * @param {boolean} showError - Whether to show the user-facing error.
+     * @returns {boolean} True when the message only contains accepted characters.
+     */
     function validateAllowedCharacters(showError = true) {
         const value = input.value;
 
@@ -286,7 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!allowedTextRegex.test(value)) {
             if (showError) {
                 setValidationError(
-                    'Solo se permiten letras, números, espacios, punto, coma y guion.',
+                    'Solo se permiten letras, números, espacios, punto, signo de exclamación e interogativo, signo de dolar, signo numeral, coma y guion.',
                     'characters'
                 );
             }
@@ -297,6 +505,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
+    /**
+     * Validates the chat message maximum length.
+     *
+     * If the value exceeds MAX_LENGTH, it is sliced/trimmed back to the limit and a
+     * blocking error is shown. If it exactly reaches the limit, a warning-style
+     * validation message is shown while still allowing submission.
+     *
+     * @param {boolean} showError - Whether to display validation feedback.
+     * @returns {boolean} False only when the message exceeds the allowed limit.
+     */
     function validateMaxLength(showError = true) {
         const value = input.value;
 
@@ -305,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (showError) {
                 input.classList.add('is-invalid');
-                errorEl.textContent = `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres. No puedes escribir más.`;
+                errorEl.textContent = `Has alcanzado el máximo de ${MAX_LENGTH} caracteres. No puedes escribir más.`;
                 errorEl.dataset.errorType = 'maxlength-over';
             }
 
@@ -324,6 +542,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
+    /**
+     * Enables or disables the send button based on current input and errors.
+     *
+     * The button stays disabled when the input is empty or when a blocking
+     * validation type is active.
+     */
     function updateSendButtonState() {
         const trimmedValue = input.value.trim();
         const hasBlockingError =
@@ -334,6 +558,10 @@ document.addEventListener('DOMContentLoaded', () => {
         sendBtn.disabled = !trimmedValue || hasBlockingError;
     }
 
+    /**
+     * Updates the live chat message character counter.
+     * The counter turns red when the user reaches the maximum message length.
+     */
     function updateCounter() {
         if (!counterEl) return;
 
@@ -349,105 +577,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function getCurrentTime() {
-        return new Date().toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-
-
-    function buildFrontendMessage(messageText) {
-        return {
-            id: Date.now(),
-            conversationId: sendBtn.dataset.conversationId || '',
-            senderId: sendBtn.dataset.senderId || '',
-            message: messageText,
-            time: getCurrentTime(),
-            createdAt: new Date().toISOString(),
-            isMine: true
-        };
-    }
-
-    function saveMessagesForBackend() {
-        const hiddenInputId = 'frontendMessagesPayload';
-        let hiddenInput = document.getElementById(hiddenInputId);
-
-        if (!hiddenInput) {
-            hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.id = hiddenInputId;
-            hiddenInput.name = 'frontend_messages_payload';
-            sendBtn.closest('.p-4')?.appendChild(hiddenInput);
-        }
-
-        hiddenInput.value = JSON.stringify(frontendMessages);
-    }
-
-    function sendFrontendMessage() {
-        const messageText = input.value.trim();
-        const messageObj = buildFrontendMessage(messageText);
-
-        frontendMessages.push(messageObj);
-        renderMessage(messageObj);
-        saveMessagesForBackend();
-
-        input.value = '';
-        clearAllValidationErrors();
-        updateSendButtonState();
-        updateCounter();
-        input.focus();
-    }
-
-    function getStoredMarketplacePosts() {
-        try {
-            const raw = localStorage.getItem('marketplacePosts');
-            return raw ? JSON.parse(raw) : [];
-        } catch {
-            return [];
-        }
-    }
-
-    async function populateChatContextFromPost() {
-        if (!messagesView) return;
-
-        const postId = Number(messagesView.dataset.postId);
-        if (!postId) return;
-
-        try {
-            const response = await fetch(`/posts/${postId}`);
-            const post = await response.json();
-
-            if (!post) return;
-
-            const sellerName = `${post.user?.first_name ?? ''} ${post.user?.last_name ?? ''}`.trim() || 'Usuario';
-            const postTitle = (post.title || 'Publicación').trim();
-            const sellerInitial = sellerName.charAt(0).toUpperCase() || 'U';
-
-            // Header
-
-            if (chatHeaderParticipantName) {
-                chatHeaderParticipantName.textContent = sellerName;
-            }
-            if (chatHeaderParticipantInitial && sellerName) {
-                chatHeaderParticipantInitial.textContent = sellerName.charAt(0).toUpperCase();
-            }
-
-
-            if (chatHeaderPostSummary) {
-                chatHeaderPostSummary.textContent = truncateText(postTitle, 60);
-                chatHeaderPostSummary.title = postTitle;
-            }
-
-            document.querySelectorAll('.chat-user-initial').forEach((el) => {
-                el.textContent = sellerInitial;
-            });
-
-        } catch (error) {
-            console.error('Error cargando post:', error);
-        }
-    }
-
+    /**
+     * Filters the chat sidebar using the current search query.
+     *
+     * The function checks each chat item's text or dataset search text and hides
+     * items that do not match. If none match, the empty search state is displayed.
+     */
     function filterChats() {
         if (!messagesSearchInput || !chatListContainer) return;
 
@@ -473,6 +608,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /**
+     * Builds Bootstrap star icon HTML from a numeric seller rating.
+     *
+     * @param {number|string} value - Rating value to convert into star icons.
+     * @returns {string} HTML containing full, half, and empty star icons.
+     */
     function buildStarsHTML(value) {
         const rating = Number(value) || 0;
         const fullStars = Math.floor(rating);
@@ -496,6 +637,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return starsHTML;
     }
 
+    /**
+     * Renders the post details image carousel.
+     *
+     * It clears any previous post images, inserts carousel indicators and slides,
+     * activates the first image, and hides navigation arrows when there is only
+     * one image.
+     *
+     * @param {string[]} images - Array of image URLs for the selected post.
+     */
     function renderPostDetailsCarousel(images = []) {
         if (!postImagesCarouselIndicators || !postImagesCarouselInner) return;
 
@@ -546,6 +696,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /**
+     * Populates the marketplace post details modal from a fetched post object.
+     *
+     * Updates the modal title, description, price, status, condition,
+     * seller name, seller rating, category, report text, and image carousel. It also
+     * hides the rating/report section when the current user owns the post.
+     *
+     * @param {Object} post - Marketplace post returned from /posts/{id}.
+     */
     function populatePostDetailsModal(post) {
         if (!post) return;
         if (post.user?.id) {
@@ -639,6 +798,12 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPostDetailsCarousel(images);
     }
 
+    /**
+     * Initializes the interactive seller rating stars.
+     *
+     * Supports mouse hover, click selection, keyboard selection with Enter/Space,
+     * clearing the rating, and restoring the selected visual state on mouse leave.
+     */
     function initializeSellerRating() {
         if (!ratingContainer || !ratingInput || !ratingText) return;
 
@@ -653,6 +818,11 @@ document.addEventListener('DOMContentLoaded', () => {
             5: 'Excelente'
         };
 
+        /**
+         * Updates star icons style and rating label for a given value.
+         *
+         * @param {number} value - Selected or hovered rating value.
+         */
         function paintStars(value) {
             stars.forEach((star) => {
                 const starValue = Number(star.dataset.value);
@@ -704,6 +874,13 @@ document.addEventListener('DOMContentLoaded', () => {
         paintStars(Number(ratingInput.value || 0));
     }
 
+    /**
+     * Validates the required report reason dropdown.
+     * The reason is required.
+     *
+     * @param {boolean} showError - Whether to apply visible validation feedback.
+     * @returns {boolean} True when a reason is selected.
+     */
     function validateReportReason(showError = true) {
         if (!reportReason || !reportReasonError) return true;
 
@@ -722,6 +899,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return isValid;
     }
 
+    /**
+     * Validates the report description field.
+     *
+     * The description is a required field that only uses allowedReportRegex characters,
+     * has a minimum of 10 characters, and a maximum MAX_REPORT_LENGTH characters.
+     *
+     * @param {boolean} showError - Whether to display validation feedback.
+     * @returns {boolean} True when the description is valid.
+     */
     function validateReportDescription(showError = true) {
         if (!reportDescription || !reportDescriptionError) return true;
 
@@ -770,6 +956,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
+    /**
+     * Enables the report submit button only when all report fields are valid.
+     *
+     * Validation is checked silently so the button state can update while typing
+     * without forcing errors before the user finishes.
+     */
     function updateReportButtonState() {
         if (!submitReportBtn) return;
 
@@ -780,6 +972,9 @@ document.addEventListener('DOMContentLoaded', () => {
         submitReportBtn.disabled = !isReady;
     }
 
+    /**
+     * Clears all report modal validation styles and messages.
+     */
     function resetReportValidation() {
         if (reportReason) {
             reportReason.classList.remove('is-invalid');
@@ -798,6 +993,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /**
+     * Resets the report form, dirty-state flags, validation messages, and submit button.
+     */
     function resetReportForm() {
         if (reportUserForm) {
             reportUserForm.reset();
@@ -810,6 +1008,12 @@ document.addEventListener('DOMContentLoaded', () => {
         updateReportButtonState();
     }
 
+    /**
+     * Updates whether the report form has unsaved user input.
+     *
+     * This is used to decide whether the confirmation modal should appear when
+     * the user attempts to cancel/close the report modal.
+     */
     function updateReportDirtyState() {
         const hasReason = !!(reportReason && reportReason.value);
         const hasDescription = !!(reportDescription && reportDescription.value.trim() !== '');
@@ -817,6 +1021,15 @@ document.addEventListener('DOMContentLoaded', () => {
         isReportDirty = hasReason || hasDescription;
     }
 
+    /**
+     * Loads all messages for a selected chat from the backend.
+     *
+     * It clears previously rendered messages, restores the empty state element,
+     * resets date-separator tracking, renders each fetched message, and customizes
+     * the empty-state text depending on whether a chat is selected but empty.
+     *
+     * @param {number|string} chatId - Conversation ID to load.
+     */
     async function loadMessages(chatId) {
         try {
             const response = await fetch(`/messages/${chatId}`);
@@ -885,6 +1098,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /**
+     * Handles attempts to close/cancel the report modal.
+     *
+     * If the form has no unsaved input, it closes immediately and returns to the
+     * post details modal. If the form has data, it opens the confirmation modal
+     * to prevent accidental loss.
+     */
     function tryCloseReportModal() {
         if (!reportUserModal) return;
 
@@ -911,6 +1131,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /**
+     * Opens the post details modal for the post connected to the active chat.
+     *
+     * The post ID comes from messagesView.dataset.postId, which is set by Blade
+     * on initial load and updated when the user selects a different conversation.
+     */
     if (openChatPostDetailsBtn) {
         openChatPostDetailsBtn.addEventListener('click', async () => {
             const postId = Number(messagesView.dataset.postId);
@@ -933,6 +1159,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Chat search and chat selection event binding.
+     *
+     * Controls:
+     * - enabling/disabling the search button
+     * - applying chat filters
+     * - clearing chat filters
+     * - selecting a chat from the sidebar
+     * - updating unread counters
+     * - updating mobile layout
+     * - loading selected chat messages
+     * - subscribing to the selected real-time chat channel
+     */
     if (messagesSearchInput) {
         messagesSearchInput.addEventListener('input', () => {
             if (searchMessagesBtn) {
@@ -952,6 +1191,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        /**
+         * Tracks the current Echo channel so the previous channel can be left
+         * before subscribing to a newly selected chat.
+         */
         let currentChannel = null;
 
         document.querySelectorAll('.chat-list-item').forEach(item => {
@@ -1054,6 +1297,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Mobile back button reference.
+     *
+     * Used to return from the active chat column back to the chat sidebar on
+     * smaller screens.
+     */
     const backBtn = document.getElementById('backToChatsBtn');
 
     if (backBtn) {
@@ -1061,7 +1310,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const sidebar = document.querySelector('.messages-sidebar');
             const chatColumn = document.querySelector('.messages-chat-column');
 
-            // Shows the sidebar once more
+            // Shows the sidebar once again
             if (sidebar) {
                 sidebar.classList.remove('d-none');
             }
@@ -1078,6 +1327,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Initial mobile state.
+     *
+     * If no chat is selected on a small screen, the chat column starts hidden
+     * so the user begins on the conversation list.
+     */
     if (!chatId && window.innerWidth < 768) {
         const chatColumn = document.querySelector('.messages-chat-column');
         if (chatColumn) {
@@ -1085,6 +1340,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /**
+     * Prevents the user from typing past the maximum chat message length.
+     *
+     * beforeinput is used because it can block the incoming character before it
+     * is inserted into the input value.
+     */
     input.addEventListener('beforeinput', (event) => {
         const selectionLength = input.selectionEnd - input.selectionStart;
         const incomingText = event.data || '';
@@ -1095,13 +1356,19 @@ document.addEventListener('DOMContentLoaded', () => {
             event.preventDefault();
 
             input.classList.add('is-invalid');
-            errorEl.textContent = `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres. No puedes escribir más.`;
+            errorEl.textContent = `Has alcanzado el máximo de ${MAX_LENGTH} caracteres. No puedes escribir más.`;
             errorEl.dataset.errorType = 'maxlength-over';
 
             updateSendButtonState();
         }
     });
 
+    /**
+     * Revalidates the chat input on every change.
+     *
+     * This keeps the error message, send button, and character counter in sync
+     * while the user types.
+     */
     input.addEventListener('input', () => {
         if (input.value.trim()) {
             clearValidationError('required');
@@ -1114,6 +1381,12 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCounter();
     });
 
+    /**
+     * Cleans up non-blocking chat validation feedback when the input loses focus.
+     *
+     * If the current text is valid, the visible invalid style is removed so the
+     * form does not look broken after the user leaves the field.
+     */
     input.addEventListener('blur', () => {
         if (
             input.value.trim() &&
@@ -1128,7 +1401,12 @@ document.addEventListener('DOMContentLoaded', () => {
         updateSendButtonState();
     });
 
-
+    /**
+     * Binds Enter-to-send only once.
+     *
+     * dataset.bound prevents duplicate keydown listeners if the script is re-run
+     * by navigation or partial reload behavior.
+     */
     if (!input.dataset.bound) {
         input.dataset.bound = 'true';
 
@@ -1140,8 +1418,21 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    /**
+     * Prevents duplicate message submissions.
+     *
+     * While a fetch('/messages') request is in progress, additional sends are ignored.
+     */
     let isSending = false;
 
+    /**
+     * Sends the active chat message to the backend.
+     *
+     * Validates that a message and chat ID exist, posts to /messages
+     * using JSON and CSRF protection, then clears the input after the request.
+     * Real-time rendering is expected to happen through the backend/broadcast flow.
+     */
     async function handleSendMessage() {
         if (isSending) return;
         isSending = true;
@@ -1180,6 +1471,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /**
+     * Binds the send button click only once.
+     * This uses the same handleSendMessage() function as the Enter key path.
+     */
     if (!sendBtn.dataset.bound) {
         sendBtn.dataset.bound = 'true';
 
@@ -1191,6 +1486,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initializeSellerRating();
 
+    /**
+     * Submits the selected seller rating.
+     *
+     * Sends the rating to the backend, reloads the updated post details,
+     * refreshes the modal content, and shows a success toast when complete.
+     */
     if (submitSellerRatingBtn) {
         submitSellerRatingBtn.addEventListener('click', async () => {
             const ratingValue = Number(ratingInput?.value || 0);
@@ -1232,6 +1533,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Revalidates the report reason whenever the dropdown changes.
+     *
+     * Also updates the dirty-form state and enables/disables the submit button.
+     */
     if (reportReason) {
         reportReason.addEventListener('change', () => {
             validateReportReason(true);
@@ -1240,6 +1546,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Report description validation listeners.
+     *
+     * These handlers prevent typing beyond the maximum length, show the correct
+     * limit message, validate allowed characters/minimum length, and keep the
+     * submit button state updated while the user types.
+     */
     if (reportDescription) {
         reportDescription.addEventListener('beforeinput', (event) => {
             const selectionLength = reportDescription.selectionEnd - reportDescription.selectionStart;
@@ -1293,6 +1606,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Submits a report/querella against the selected seller.
+     *
+     * Validates the report fields, sends the report to the backend,
+     * closes the report modal, shows the success toast, and returns the user
+     * to the post details modal.
+     */
     if (submitReportBtn) {
         submitReportBtn.addEventListener('click', async (e) => {
             e.preventDefault();
@@ -1342,6 +1662,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Report modal lifecycle handlers.
+     *
+     * These events reset validation when the modal opens, block accidental closing
+     * when the form contains unsaved data, and clean the form after intentional closes.
+     */
     if (reportUserModal) {
         reportUserModal.addEventListener('show.bs.modal', () => {
             resetReportValidation();
@@ -1376,10 +1702,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Report cancel button handler.
+     *
+     * Uses the shared close logic so cancellation respects the dirty-form
+     * confirmation behavior.
+     */
     if (cancelReportBtn) {
         cancelReportBtn.addEventListener('click', tryCloseReportModal);
     }
 
+    /**
+     * Report close icon handler.
+     *
+     * Prevents the default close behavior and routes the action through
+     * the dirty-form confirmation flow.
+     */
     if (closeReportModalBtn) {
         closeReportModalBtn.addEventListener('click', (e) => {
             e.preventDefault();
@@ -1406,6 +1744,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Initial page state setup.
+     *
+     * Shows the empty state when no chat is selected, loads the selected chat
+     * when one exists, and connects to the real-time chat channel when available.
+     */
     if (!chatId && emptyState) {
         emptyState.classList.remove('d-none');
     }
@@ -1417,6 +1761,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    /**
+     * Desktop resize recovery.
+     *
+     * When returning from mobile width to desktop width, this restores both
+     * chat columns and keeps the messages container scrolled to the bottom.
+     */
     window.addEventListener('resize', () => {
         const isMobile = window.innerWidth < 768;
         const chatColumn = document.querySelector('.messages-chat-column');
@@ -1430,6 +1780,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    /**
+     * Final UI synchronization.
+     *
+     * Runs once after all listeners are registered so filters, counters,
+     * buttons, input state, and report submit state match the initial page data.
+     */
     filterChats();
     updateSendButtonState();
     updateCounter();
