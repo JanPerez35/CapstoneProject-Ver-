@@ -1113,6 +1113,21 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
         ]);
     }
 
+    $overlappingCustomDayExists = FacilityCostReportItem::where('event_group_id', $parent->event_group_id)
+        ->where('sub_event_type', 'custom_day')
+        ->where('custom_parent_item_id', $parent->id)
+        ->where(function ($query) use ($customStartDate, $customEndDate) {
+            $query->whereDate('event_date', '<=', $customEndDate)
+                ->whereDate('end_date', '>=', $customStartDate);
+        })
+        ->exists();
+
+    if ($overlappingCustomDayExists) {
+        return response()->json([
+            'message' => 'Uno o más días seleccionados ya tienen una modificación. Elimina la modificación existente antes de modificar esos días nuevamente.',
+        ], 422);
+    }
+
     $payload = [
         'classroom' => $parent->facilityCost->classroom_name,
         'event_date' => $customStartDate->toDateString(),

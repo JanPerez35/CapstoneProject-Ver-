@@ -2750,6 +2750,73 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         allowEditModalClose = false;
     });
 
+    function getDatesBetween(startValue, endValue = startValue) {
+        const dates = [];
+
+        if (!startValue) return dates;
+
+        const start = new Date(`${startValue}T00:00:00`);
+        const end = new Date(`${endValue || startValue}T00:00:00`);
+
+        if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+            return dates;
+        }
+
+        const current = new Date(start);
+
+        while (current <= end) {
+            dates.push(formatDateLocal(current));
+            current.setDate(current.getDate() + 1);
+        }
+
+        return dates;
+    }
+
+    function getAlreadyModifiedDatesForGroup(groupKey) {
+        if (!groupKey) return [];
+
+        const customDayRows = [
+            ...document.querySelectorAll(
+                `tr.sub-event-row[data-group-key="${groupKey}"][data-sub-event-type="custom_day"]`
+            )
+        ];
+
+        const disabledDates = new Set();
+
+        customDayRows.forEach((row) => {
+            const startDate = row.dataset.date;
+            const endDate = row.dataset.endDate || startDate;
+
+            getDatesBetween(startDate, endDate).forEach((date) => {
+                disabledDates.add(date);
+            });
+        });
+
+        return [...disabledDates];
+    }
+
+    function applyCustomizeDateRestrictions(parentRow) {
+        if (!customizeDate?._flatpickr || !parentRow) return;
+
+        const startDate = parentRow.dataset.date || '';
+        const endDate = parentRow.dataset.endDate || startDate;
+        const groupKey = parentRow.dataset.groupKey || '';
+
+        const alreadyModifiedDates = getAlreadyModifiedDatesForGroup(groupKey);
+
+        customizeDate._flatpickr.set('minDate', startDate);
+        customizeDate._flatpickr.set('maxDate', endDate);
+        customizeDate._flatpickr.set('disable', alreadyModifiedDates);
+        customizeDate._flatpickr.clear();
+
+        if (startDate) {
+            customizeDate._flatpickr.jumpToDate(startDate);
+        }
+
+        customizeDate.min = startDate;
+        customizeDate.max = endDate;
+    }
+
     function bindOptionThreeButtons() {
 
         customizeDaysButtons().forEach((btn) => {
@@ -2762,20 +2829,10 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
                 customizeBasePeriodType = row?.dataset.periodType || '';
 
-                const startDate = row?.dataset.date || '';
-                const endDate = row?.dataset.endDate || startDate;
                 customizeScope.value = '';
-
                 customizeDate.value = '';
-                customizeDate.min = startDate;
-                customizeDate.max = endDate;
 
-                if (customizeDate?._flatpickr) {
-                    customizeDate._flatpickr.set('minDate', startDate);
-                    customizeDate._flatpickr.set('maxDate', endDate);
-                    customizeDate._flatpickr.clear();
-                    customizeDate._flatpickr.jumpToDate(startDate);
-                }
+                applyCustomizeDateRestrictions(row);
 
                 customizeStartTime.value = '';
                 customizeEndTime.value = '';
@@ -3608,6 +3665,13 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         if (customizeDate) customizeDate.value = '';
         if (customizeStartTime) customizeStartTime.value = '';
         if (customizeEndTime) customizeEndTime.value = '';
+
+        if (customizeDate?._flatpickr) {
+            customizeDate._flatpickr.set('disable', []);
+            customizeDate._flatpickr.set('minDate', 'today');
+            customizeDate._flatpickr.set('maxDate', null);
+            customizeDate._flatpickr.clear();
+        }
 
         clearFieldError(customizeScope, customizeScopeError);
         clearFieldError(customizeDate, customizeDateError);
