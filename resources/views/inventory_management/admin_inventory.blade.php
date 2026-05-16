@@ -67,7 +67,7 @@
                     data-bs-target="#addItemModal"
                 >
                     <i class="bi bi-plus-lg"></i>
-                    Agregar Item
+                    Agregar Equipo
                 </button>
             </div>
         </div>
@@ -189,7 +189,7 @@
                                     data-bs-toggle="modal"
                                     data-bs-target="#editItemModal{{ $item->id }}"
                                 >
-                                    Editar Item
+                                    Editar Equipo
                                 </button>
 
                                 {{-- Item delete display on the card and delete form --}}
@@ -202,7 +202,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-danger w-100">
-                                        Eliminar Item
+                                        Eliminar Equipo
                                     </button>
                                 </form>
                             </div>
@@ -216,7 +216,7 @@
                         <div class="modal-content rounded-4 border-0 shadow">
                             <div class="modal-header border-0 pb-0">
                                 <div>
-                                    <h4 class="modal-title fw-bold" id="editItemModalLabel{{ $item->id }}">Editar Item</h4>
+                                    <h4 class="modal-title fw-bold" id="editItemModalLabel{{ $item->id }}">Editar Equipo</h4>
                                     <p class="text-muted mb-0">Actualiza la información del equipo</p>
                                 </div>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -230,7 +230,7 @@
                                     {{-- Original item descripiton display on the card and the from to edit it --}}
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">
-                                            Nombre del Item <span class="text-danger">*</span>
+                                            Nombre del Equipo <span class="text-danger">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -280,7 +280,8 @@
 
                                         {{-- Validation restrictions for category --}}
                                         <div class="form-text">
-                                            Entre 3 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
+                                            Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                            Puedes seleccionar una categoría existente o escribir una nueva.
                                         </div>
                                         <div class="invalid-feedback d-block error-category"></div>
                                     </div>
@@ -317,7 +318,8 @@
 
                                         {{-- Validation restrictions for location --}}
                                         <div class="form-text">
-                                            Entre 3 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
+                                            Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                            Puedes seleccionar una ubicación existente o escribir una nueva.
                                         </div>
                                         <div class="invalid-feedback d-block error-location"></div>
                                     </div>
@@ -429,7 +431,7 @@
                         <div class="card-body py-5 text-center">
                             <i class="bi bi-boxes fs-1 text-muted"></i>
 
-                            <h4 class="fw-bold mt-3">No se encontraron items</h4>
+                            <h4 class="fw-bold mt-3">No se encontraron equipos</h4>
                             <p class="text-muted mb-0">Intenta cambiar los filtros o buscar otro equipo.</p>
                         </div>
                     </div>
@@ -457,7 +459,7 @@
                     <div class="w-100">
                         <div class="d-flex justify-content-between align-items-center">
                             <h4 class="modal-title fw-bold mb-0" id="addItemModalLabel">
-                                Agregar Nuevo Item
+                                Agregar Equipo Nuevo
                             </h4>
 
                             <button type="button" class="btn-close ms-3" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -484,7 +486,7 @@
                         {{-- New item description --}}
                         <div class="mb-3">
                             <label for="nombre_item" class="form-label fw-semibold">
-                                Nombre del Item<span class="text-danger">*</span>
+                                Nombre del Equipo<span class="text-danger">*</span>
                             </label>
                             <input
                                 type="text"
@@ -529,7 +531,8 @@
 
                             {{-- New item maximum restrictions for category --}}
                             <div class="form-text">
-                                Entre 3 y 100 caracteres. Puedes seleccionar una categoría existente o escribir una nueva.
+                                Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                Puedes seleccionar una categoría existente o escribir una nueva.
                             </div>
                             <div class="invalid-feedback d-block" id="categoriaError"></div>
                         </div>
@@ -561,7 +564,8 @@
 
                             {{-- New item maximum restrictions for location --}}
                             <div class="form-text">
-                                Entre 3 y 100 caracteres. Puedes seleccionar una ubicación existente o escribir una nueva.
+                                Entre 3 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                Puedes seleccionar una ubicación existente o escribir una nueva.
                             </div>
                             <div class="invalid-feedback d-block" id="ubicacionError"></div>
                         </div>
@@ -611,7 +615,7 @@
                         {{-- Add new item image --}}
                         <div class="mb-2">
                             <label for="imagen" class="form-label fw-semibold">
-                                Imagen del Item<span class="text-danger">*</span>
+                                Imagen del Equipo<span class="text-danger">*</span>
                             </label>
                             <input
                                 type="file"
@@ -653,7 +657,7 @@
                             </button>
                             {{-- Add new item with completed fields to the database --}}
                             <button type="submit" class="btn btn-success" id="submitAddItemBtn" disabled>
-                                <i class="bi bi-plus-lg me-1 "></i> Agregar Item
+                                <i class="bi bi-plus-lg me-1 "></i> Agregar Equipo
                             </button>
                         </div>
                     </form>
@@ -668,7 +672,7 @@
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0">
                     <div>
-                        <h4 class="modal-title fw-bold" id="confirmDeleteModalLabel">Eliminar Item</h4>
+                        <h4 class="modal-title fw-bold" id="confirmDeleteModalLabel">Eliminar Equipo</h4>
                         {{-- Warning the inventory or super admin of what there are about to do  --}}
                         <p class="text-muted mb-0" id="confirmDeleteText">
                             ¿Seguro que quieres borrar este item?
@@ -676,7 +680,7 @@
 
                         {{-- Warning that the item to be deleted have an active lending pending or active --}}
                         <p class="text-danger fw-semibold mb-0 d-none" id="confirmDeleteWarningText">
-                            *Este item tiene un pedido atado.
+                            *Este equipo tiene un pedido atado.
                         </p>
                     </div>
 
@@ -737,7 +741,7 @@
             <div class="d-flex align-items-center">
                 {{-- New Item Toast --}}
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
-                    Item añadido correctamente
+                    Equipo añadido correctamente
                 </div>
 
                 <button type="button"
@@ -758,7 +762,7 @@
             <div class="d-flex align-items-center">
                 {{-- Delete item succesfull Toast --}}
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
-                    Item borrado correctamente
+                    Equipo borrado correctamente
                 </div>
 
                 <button type="button"
@@ -779,7 +783,7 @@
             <div class="d-flex align-items-center">
                 {{-- Edited Item Toast --}}
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
-                    Item editado correctamente
+                    Equipo editado correctamente
                 </div>
 
                 <button type="button"

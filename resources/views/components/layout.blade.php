@@ -491,7 +491,7 @@
                             <div class="border rounded-4 p-4 bg-light-subtle">
                                 <h5 class="fw-bold text-secondary mb-3">
                                     <i class="bi bi-file-earmark-text me-2"></i>
-                                    Condiciones de préstamo <span class="text-danger">*</span>
+                                    Condiciones de préstamo
                                 </h5>
 
                                 <p class="text-muted mb-3">
@@ -538,7 +538,7 @@
                                            value="1"
                                            required>
                                     <label class="form-check-label fw-semibold" for="accept_terms">
-                                        He leído y acepto las condiciones del préstamo.
+                                        He leído y acepto las condiciones del préstamo<span class="text-danger">*</span>
                                     </label>
                                 </div>
                                 <div class="invalid-feedback d-block" id="accept_terms_error"></div>
