@@ -122,7 +122,7 @@
             <div class="col-sm-4">
                 <div class="card border-dark border-2 shadow-sm rounded-4 h-100">
                     <div class="card-body py-3 px-3">
-                        <p class="text-muted mb-2">Objeto con más pedidos</p>
+                        <p class="text-muted mb-2">Equipo con más pedidos</p>
                         <h4 class="fw-bold mb-1">
                             {{ $topItem ? $topItem->description : '—' }}
                         </h4>
@@ -148,7 +148,7 @@
             <div class="col-md-4">
                 <div class="card border-dark border-2 rounded-4 h-100">
                     <div class="card-body py-3 px-3">
-                        <p class="text-muted mb-2">Cantidad de artículos analizados</p>
+                        <p class="text-muted mb-2">Cantidad de equipos analizados</p>
                         <h4 class="fw-bold mb-1">{{ $totalItems }}</h4>
                         <p class="mb-0 text-muted">Resumen del inventario más solicitado</p>
                     </div>
@@ -163,7 +163,7 @@
             <div class="col-md-8">
                 <div class="card border-dark border-2 rounded-4 h-100">
                     <div class="card-body p-4">
-                        <h4 class="fw-bold mb-1">Artículos con más pedidos</h4>
+                        <h4 class="fw-bold mb-1">Equipos con más pedidos</h4>
                         <p class="text-muted mb-3">Gráfica comparativa del periodo seleccionado</p>
 
                         {{-- Show empty chart state if no data exists --}}
@@ -186,14 +186,14 @@
             <div class="col-md-4">
                 <div class="card border-2 border-dark rounded-4 h-100">
                     <div class="card-body p-4">
-                        <h4 class="fw-bold mb-3">Top 3 artículos</h4>
+                        <h4 class="fw-bold mb-3">Top 3 equipos pedidos</h4>
 
                         <div class="table-responsive">
                             <table class="table align-middle mb-0">
                                 <thead>
                                 <tr>
                                     <th>Rango</th>
-                                    <th>Objeto</th>
+                                    <th>Equipo</th>
                                     <th class="text-end">Pedidos</th>
                                 </tr>
                                 </thead>
