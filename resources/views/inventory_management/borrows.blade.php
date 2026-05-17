@@ -77,7 +77,7 @@
                                 id="borrowSearch"
                                 name="search"
                                 class="form-control border-0"
-                                placeholder="Buscar equipo deportivo por nombre o por usuario..."
+                                placeholder="Buscar equipo deportivo por nombre de equipo, nombre de usuario o razón.."
                                 value="{{ request('search') }}"
                             >
                         </div>
