@@ -314,9 +314,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         container.innerHTML = '';
 
-        if (totalPages <= 1) {
-            return;
-        }
+
 
         /**
          * Creates and appends a single pagination button.
@@ -353,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function () {
         };
 
         createPageItem({
-            label: 'Anterior',
+            label: '«',
             page: currentPage - 1,
             disabled: currentPage === 1,
             ariaLabel: 'Página anterior'
@@ -366,9 +364,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 active: page === currentPage
             });
         }
-
         createPageItem({
-            label: 'Siguiente',
+            label: '»',
             page: currentPage + 1,
             disabled: currentPage === totalPages,
             ariaLabel: 'Página siguiente'
@@ -449,7 +446,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         if (paginationWrapper) {
-            paginationWrapper.classList.toggle('d-none', totalPages <= 1);
+            paginationWrapper.classList.toggle('d-none');
         }
 
         renderPagination(paginationContainer, totalPages, currentPage, function (page) {
@@ -673,7 +670,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (borrowSearch) {
         borrowSearch.addEventListener('input', function () {
             updateBorrowSearchButtonState();
-            applyFiltersAndPagination(true);
+            // applyFiltersAndPagination(true);
         });
     }
 
