@@ -356,6 +356,35 @@ Route::get('/test-email/user-banned', [EmailController::class, 'userBanned']);
 Route::get('/test-email/user-unbanned', [EmailController::class, 'userUnbanned']);
 
 /**
+ * Temporary email performance testing route.
+ *
+ * Sends an approval-style email to the email address provided
+ * in the query string. This route is intended only for controlled
+ * performance testing in staging or during supervised testing.
+ *
+ * Example:
+ * /test-email/performance?email=maikinenoreply@gmail.com
+ */
+Route::get('/test-email/performance', function (\Illuminate\Http\Request $request, \App\Services\EmailService $emailService) {
+    $request->validate([
+        'email' => 'required|email',
+    ]);
+
+    $emailService->send(
+        $request->email,
+        'Solicitud de equipo deportivo aprobada',
+        'Tu solicitud de equipo deportivo fue aprobada satisfactoriamente. Por favor entra a tu perfíl de MAIKINE para más detalles.'
+    );
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Performance test email sent.',
+        'email' => $request->email,
+    ]);
+});
+
+
+/**
  * Temporary concurrency testing route.
  *
  * Used for load testing post creation with tools like k6.
