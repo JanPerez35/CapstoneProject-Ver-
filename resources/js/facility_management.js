@@ -1082,6 +1082,9 @@ function fillRelatedModalFromRow(row) {
     let pendingDeleteCustomDaysOnAreaChange = false;
     let editingIsCustomDay = false;
 
+    let pendingCustomizePayload = null;
+    let currentCustomizeParentRow = null;
+
     async function submitEditEvent(
         payload,
         deleteOutOfRangeCustomDays = false,
@@ -2795,6 +2798,19 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         return [...disabledDates];
     }
 
+    function getOverlappingModifiedDatesInRange(selectedDate, endDate, groupKey) {
+        const allModified = getAlreadyModifiedDatesForGroup(groupKey);
+        return allModified.filter(d => d >= selectedDate && d <= endDate);
+    }
+
+    function showCustomizeOverwriteWarning(count) {
+        const text = $('customizeOverwriteWarningText');
+        if (text) {
+            text.textContent = `El rango seleccionado incluye ${count} día(s) con modificaciones personalizadas existentes. Si continúas, esa(s) modificación(es) serán eliminadas para aplicar el nuevo período a todos los días del rango.`;
+        }
+        bootstrap.Modal.getOrCreateInstance($('customizeOverwriteWarningModal')).show();
+    }
+
     function applyCustomizeDateRestrictions(parentRow) {
         if (!customizeDate?._flatpickr || !parentRow) return;
 
@@ -2828,6 +2844,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 }
 
                 customizeBasePeriodType = row?.dataset.periodType || '';
+                currentCustomizeParentRow = row || null;
 
                 customizeScope.value = '';
                 customizeDate.value = '';
@@ -3414,6 +3431,40 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         if (!saveRelatedEventBtn) return;
         saveRelatedEventBtn.disabled = !validateRelatedEventForm(false);
     }
+    async function submitCustomizeDays(payload, forceOverwrite = false) {
+        const body = {
+            scope: payload.scope,
+            date: payload.date,
+            start_time: payload.start_time,
+            end_time: payload.end_time,
+            period_type: payload.period_type,
+            force_overwrite: forceOverwrite,
+        };
+
+        const isEntireEvent = payload.scope === 'entire_event';
+
+        const url = isEntireEvent
+            ? `/facility/events/${payload.event_id}/schedule`
+            : `/facility/events/${payload.event_id}/customize-days`;
+
+        const method = isEntireEvent ? 'PUT' : 'POST';
+
+        try {
+            await sendJson(url, method, body);
+
+            customizeDirty = false;
+            allowCustomizeModalClose = true;
+            bootstrap.Modal.getOrCreateInstance($('customizeDaysModal')).hide();
+            toasts.customizeSaved?.show();
+
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } catch (error) {
+            alert(error.message);
+        }
+    }
+
     if (saveCustomizeDaysBtn) {
         saveCustomizeDaysBtn.addEventListener('click', async () => {
             const payload = validateCustomizeDaysForm(true);
@@ -3423,38 +3474,32 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
                 return;
             }
 
-            const body = {
-                scope: payload.scope,
-                date: payload.date,
-                start_time: payload.start_time,
-                end_time: payload.end_time,
-                period_type: payload.period_type,
-            };
+            if (payload.scope === 'this_and_following' && currentCustomizeParentRow) {
+                const endDate = currentCustomizeParentRow.dataset.endDate || currentCustomizeParentRow.dataset.date || '';
+                const groupKey = currentCustomizeParentRow.dataset.groupKey || '';
+                const conflicting = getOverlappingModifiedDatesInRange(payload.date, endDate, groupKey);
 
-            const isEntireEvent = payload.scope === 'entire_event';
-
-            const url = isEntireEvent
-                ? `/facility/events/${payload.event_id}/schedule`
-                : `/facility/events/${payload.event_id}/customize-days`;
-
-            const method = isEntireEvent ? 'PUT' : 'POST';
-
-            try {
-                await sendJson(url, method, body);
-
-                customizeDirty = false;
-                allowCustomizeModalClose = true;
-                bootstrap.Modal.getOrCreateInstance($('customizeDaysModal')).hide();
-                toasts.customizeSaved?.show();
-
-                setTimeout(() => {
-                    window.location.reload();
-                }, 2000);
-            } catch (error) {
-                alert(error.message);
+                if (conflicting.length > 0) {
+                    pendingCustomizePayload = payload;
+                    showCustomizeOverwriteWarning(conflicting.length);
+                    return;
+                }
             }
+
+            await submitCustomizeDays(payload, false);
         });
     }
+
+    $('confirmCustomizeOverwriteBtn')?.addEventListener('click', async () => {
+        if (!pendingCustomizePayload) return;
+
+        bootstrap.Modal.getOrCreateInstance($('customizeOverwriteWarningModal')).hide();
+
+        const payload = pendingCustomizePayload;
+        pendingCustomizePayload = null;
+
+        await submitCustomizeDays(payload, true);
+    });
 
     if (saveEditEventBtn) {
         saveEditEventBtn.addEventListener('click', async () => {

@@ -1085,6 +1085,7 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
         'date' => ['required', 'date'],
         'start_time' => ['required'],
         'end_time' => ['required'],
+        'force_overwrite' => ['nullable', 'boolean'],
     ]);
 
     $parent = $this->getCustomizableTarget($item);
@@ -1113,19 +1114,29 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
         ]);
     }
 
-    $overlappingCustomDayExists = FacilityCostReportItem::where('event_group_id', $parent->event_group_id)
+    $overlappingCustomDays = FacilityCostReportItem::where('event_group_id', $parent->event_group_id)
         ->where('sub_event_type', 'custom_day')
         ->where('custom_parent_item_id', $parent->id)
         ->where(function ($query) use ($customStartDate, $customEndDate) {
             $query->whereDate('event_date', '<=', $customEndDate)
                 ->whereDate('end_date', '>=', $customStartDate);
         })
-        ->exists();
+        ->get();
 
-    if ($overlappingCustomDayExists) {
+    if ($overlappingCustomDays->isNotEmpty() && !$request->boolean('force_overwrite')) {
         return response()->json([
-            'message' => 'Uno o más días seleccionados ya tienen una modificación. Elimina la modificación existente antes de modificar esos días nuevamente.',
+            'message' => 'Uno o más días seleccionados ya tienen una modificación.',
+            'conflicting_count' => $overlappingCustomDays->count(),
         ], 422);
+    }
+
+    if ($overlappingCustomDays->isNotEmpty()) {
+        foreach ($overlappingCustomDays as $customDay) {
+            $this->restoreSubEventCostToParent($parent, $customDay);
+            $customDay->delete();
+        }
+
+        $parent->refresh();
     }
 
     $payload = [

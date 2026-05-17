@@ -359,7 +359,7 @@
                                                 ) }}
                                                 <i class="bi bi-arrow-right"></i>
                                                {{ \Illuminate\Support\Str::title(
-                                                    \Carbon\Carbon::parse($parent->event_date)
+                                                    \Carbon\Carbon::parse($parent->end_date ?? $parent->event_date)
                                                         ->locale('es')
                                                         ->translatedFormat('j F Y')
                                                 ) }}
@@ -2062,6 +2062,34 @@
                     </button>
 
                     <button type="button" class="btn btn-danger" id="confirmParentRangeDeleteBtn">
+                        Continuar y borrar modificaciones
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="customizeOverwriteWarningModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Advertencia: modificaciones existentes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p class="mb-0" id="customizeOverwriteWarningText">
+                        El rango seleccionado incluye días que ya tienen modificaciones. Si continúas, esas modificaciones serán eliminadas.
+                    </p>
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+
+                    <button type="button" class="btn btn-danger" id="confirmCustomizeOverwriteBtn">
                         Continuar y borrar modificaciones
                     </button>
                 </div>
