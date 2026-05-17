@@ -91,7 +91,7 @@ class UserReportController extends Controller
                     "Se ha recibido un nuevo reporte de contenido inapropiado en Kinemercado.\n\n" .
                     "Reportado por: " . ($report->reporter?->name ?? 'Usuario desconocido') . "\n" .
                     "Usuario reportado: " . ($report->reportedUser?->name ?? 'Usuario desconocido') . "\n" .
-                    "Publicación titulada: " . ($report->post?->title ?? 'Publicación no disponible') . "\n" .
+                    "Publicación titulada: " . ($report->post?->title ?? 'Publicación no disponible') . "\n\n" .
                     "Por favor entra al panel de administración de mercado para revisar el reporte."
                 );
             }

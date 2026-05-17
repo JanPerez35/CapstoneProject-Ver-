@@ -62,7 +62,7 @@
                             type="text"
                             id="userSearchInput"
                             class="form-control border-0"
-                            placeholder="Buscar por nombre o correo..."
+                            placeholder="Buscar usuarios por nombre o correo..."
                         >
                     </div>
                 </div>
@@ -193,9 +193,14 @@
                 {{ $statusLabel }}
             </span>
 
+
                                         <button
                                             type="button"
-                                            class="{{ $isBlocked ? 'btn btn-success rounded-3 ban-toggle-btn btn-sm' : 'btn btn-danger rounded-3 ban-toggle-btn btn-sm' }}">
+                                            class="{{ $isBlocked ? 'btn btn-success rounded-3 ban-toggle-btn btn-sm' : 'btn btn-danger rounded-3 ban-toggle-btn btn-sm' }}"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="top"
+                                            data-bs-custom-class="custom-tooltip"
+                                            data-bs-title="{{ $isBlocked ? 'Devolver acceso a MAIKINE a este usuario' : 'Quitar acceso a MAIKINE a este usuario' }}">
                                             @if ($isBlocked)
                                                 <i class="bi bi-arrow-counterclockwise me-1"></i>
                                                 Desbloquear
@@ -308,7 +313,7 @@
 
         {{-- User banned toast --}}
         <div id="banToast"
-             class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"

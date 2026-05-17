@@ -242,6 +242,37 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
+     * Shows a toast after the page reloads.
+     * The previous action stores the toast type in sessionStorage before refreshing.
+     */
+    function showPendingToastAfterReload() {
+        const pendingToast = sessionStorage.getItem('searchUsersPendingToast');
+
+        if (!pendingToast) return;
+
+        sessionStorage.removeItem('searchUsersPendingToast');
+
+        let toastElement = null;
+
+        if (pendingToast === 'role') {
+            toastElement = roleToastEl;
+        }
+
+        if (pendingToast === 'ban') {
+            toastElement = banToastEl;
+        }
+
+        if (pendingToast === 'unban') {
+            toastElement = unbanToastEl;
+        }
+
+        if (toastElement) {
+            const toast = window.bootstrap.Toast.getOrCreateInstance(toastElement);
+            toast.show();
+        }
+    }
+
+    /**
      * Applies current filters and current pagination state to the user list.
      *
      * Handles:
@@ -294,7 +325,11 @@ document.addEventListener('DOMContentLoaded', function () {
      * Search button manually applies filters starting from page 1.
      */
     if (searchUsersBtn) {
-        searchUsersBtn.addEventListener('click', resetToFirstPageAndFilter);
+        searchUsersBtn.addEventListener('click', function () {
+            sessionStorage.setItem('selectedUserSearch', userSearchInput.value.trim());
+            sessionStorage.setItem('selectedRoleFilter', roleFilterSelect.value);
+            window.location.reload();
+        });
     }
 
     /**
@@ -306,7 +341,9 @@ document.addEventListener('DOMContentLoaded', function () {
         userSearchInput.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                resetToFirstPageAndFilter();
+                sessionStorage.setItem('selectedUserSearch', userSearchInput.value.trim());
+                sessionStorage.setItem('selectedRoleFilter', roleFilterSelect.value);
+                window.location.reload();
             }
         });
         userSearchInput.addEventListener('input', updateSearchUsersButtonState);
@@ -317,7 +354,11 @@ document.addEventListener('DOMContentLoaded', function () {
      * Role filter dropdown reapplies filters whenever the selected role changes.
      */
     if (roleFilterSelect) {
-        roleFilterSelect.addEventListener('change', resetToFirstPageAndFilter);
+        roleFilterSelect.addEventListener('change', function () {
+            sessionStorage.setItem('selectedUserSearch', userSearchInput.value.trim());
+            sessionStorage.setItem('selectedRoleFilter', roleFilterSelect.value);
+            window.location.reload();
+        });
     }
 
     /**
@@ -328,9 +369,12 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     if (clearUserFiltersBtn) {
         clearUserFiltersBtn.addEventListener('click', function () {
+            sessionStorage.removeItem('selectedUserSearch');
+            sessionStorage.removeItem('selectedRoleFilter');
+
             if (userSearchInput) userSearchInput.value = '';
             if (roleFilterSelect) roleFilterSelect.value = 'all';
-            resetToFirstPageAndFilter();
+            window.location.reload();
         });
     }
 
@@ -415,7 +459,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            console.log('Rol actualizado correctamente');
+                console.log('Rol actualizado correctamente');
+
+                sessionStorage.setItem('searchUsersPendingToast', 'role');
+                window.location.reload();
+                return;
 
             }
             catch (error) {
@@ -513,6 +561,13 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.error('Error:', data);
                     return;
                 }
+                sessionStorage.setItem(
+                    'searchUsersPendingToast',
+                    newStatus === 'Bloqueado' ? 'ban' : 'unban'
+                );
+
+                window.location.reload();
+                return;
 
                 card.dataset.status = newStatus;
 
@@ -570,7 +625,19 @@ document.addEventListener('DOMContentLoaded', function () {
      *
      *  Applies initial filters and syncs the search button state.
      * */
-    filterUsers();
+
+    const savedUserSearch = sessionStorage.getItem('selectedUserSearch');
+    const savedRoleFilter = sessionStorage.getItem('selectedRoleFilter');
+
+    if (savedUserSearch && userSearchInput) {
+        userSearchInput.value = savedUserSearch;
+    }
+
+    if (savedRoleFilter && roleFilterSelect) {
+        roleFilterSelect.value = savedRoleFilter;
+    }
+
     filterUsers();
     updateSearchUsersButtonState();
+    showPendingToastAfterReload();
 });

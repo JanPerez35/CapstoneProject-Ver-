@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    /*
+    /**
      * Defines the number of post cards displayed per page
      * in the client-side publications section.
      */
     const ITEMS_PER_PAGE = 18;
 
-    /*
+    /**
      * Storage keys used to persist UI state between reloads.
      * - PROFILE_SCROLL_KEY stores the user's vertical scroll position
      * - PROFILE_ACTIVE_TAB_KEY stores the active profile tab
@@ -14,14 +14,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const PROFILE_SCROLL_KEY = 'myProfileScrollY';
     const PROFILE_ACTIVE_TAB_KEY = 'myProfileActiveTab';
 
-    /*
+    const POSTS_SEARCH_KEY = 'myProfilePostsSearch';
+    const POSTS_SPORT_KEY = 'myProfilePostsSport';
+    const POSTS_PRICE_KEY = 'myProfilePostsPrice';
+
+    /**
      * Profile tab buttons and shared tab UI references.
      */
     const postsTab = document.getElementById('posts-tab');
     const requestsTab = document.getElementById('requests-tab');
     const profileTabButtons = document.querySelectorAll('#profileTabs button');
 
-    /*
+    /**
      * Modal and UI elements related to post deletion.
      */
     const deletePostModalEl = document.getElementById('deletePostModal');
@@ -105,6 +109,48 @@ document.addEventListener('DOMContentLoaded', function () {
     function clearScrollPosition() {
         sessionStorage.removeItem(PROFILE_SCROLL_KEY);
     }
+
+    /**
+     * Saves the current publications filters before reloading the page.
+     */
+    function savePostsFilters() {
+        if (postSearch) {
+            sessionStorage.setItem(POSTS_SEARCH_KEY, postSearch.value.trim());
+        }
+
+        if (sportFilter) {
+            sessionStorage.setItem(POSTS_SPORT_KEY, sportFilter.value);
+        }
+
+        if (priceFilter) {
+            sessionStorage.setItem(POSTS_PRICE_KEY, priceFilter.value);
+        }
+
+        saveActiveTab('posts');
+        saveScrollPosition();
+    }
+
+    /**
+     * Restores publications filters after the page reloads.
+     */
+    function restorePostsFilters() {
+        const savedSearch = sessionStorage.getItem(POSTS_SEARCH_KEY);
+        const savedSport = sessionStorage.getItem(POSTS_SPORT_KEY);
+        const savedPrice = sessionStorage.getItem(POSTS_PRICE_KEY);
+
+        if (savedSearch !== null && postSearch) {
+            postSearch.value = savedSearch;
+        }
+
+        if (savedSport !== null && sportFilter) {
+            sportFilter.value = savedSport;
+        }
+
+        if (savedPrice !== null && priceFilter) {
+            priceFilter.value = savedPrice;
+        }
+    }
+
 
     /**
      * Restores the user's previous vertical scroll position.
@@ -777,8 +823,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (postsFilterForm) {
         postsFilterForm.addEventListener('submit', function (e) {
             e.preventDefault();
-            currentPostsPage = 1;
-            filterPosts();
+
+            savePostsFilters();
+            window.location.reload();
         });
     }
 
@@ -787,8 +834,8 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     if (sportFilter) {
         sportFilter.addEventListener('change', function () {
-            currentPostsPage = 1;
-            filterPosts();
+            savePostsFilters();
+            window.location.reload();
         });
     }
 
@@ -797,8 +844,8 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     if (priceFilter) {
         priceFilter.addEventListener('change', function () {
-            currentPostsPage = 1;
-            filterPosts();
+            savePostsFilters();
+            window.location.reload();
         });
     }
 
@@ -840,12 +887,18 @@ document.addEventListener('DOMContentLoaded', function () {
      */
     if (clearPostsFilters) {
         clearPostsFilters.addEventListener('click', function () {
+            sessionStorage.removeItem(POSTS_SEARCH_KEY);
+            sessionStorage.removeItem(POSTS_SPORT_KEY);
+            sessionStorage.removeItem(POSTS_PRICE_KEY);
+
             if (postSearch) postSearch.value = '';
             if (sportFilter) sportFilter.value = '';
             if (priceFilter) priceFilter.value = 'all';
-            currentPostsPage = 1;
-            filterPosts();
-            updatePostsSearchButtonState();
+
+            saveActiveTab('posts');
+            saveScrollPosition();
+
+            window.location.reload();
         });
     }
 
@@ -878,6 +931,9 @@ document.addEventListener('DOMContentLoaded', function () {
     /*
      * Initializes the publications section and search button states.
      */
+    restorePostsFilters();
+
+
     updatePostsTabCount();
     filterPosts(true);
     updatePostsSearchButtonState();

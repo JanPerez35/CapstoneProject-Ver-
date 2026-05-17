@@ -311,7 +311,7 @@ class LendingController extends Controller
         if (!$isSpecialCase && $lending->user && !empty($lending->user->email)) {
             $this->emailService->send(
                 $lending->user->email,
-                'Solicitud de item aprobada',
+                'Solicitud de equipo deportivo aprobada',
                 'Tu solicitud de equipo deportivo fue aprobada satisfactoriamente. Por favor entra a tu perfil de MAIKINE para más detalles.'
             );
         }
@@ -429,7 +429,7 @@ class LendingController extends Controller
         if ($lending->user && !empty($lending->user->email)) {
             $this->emailService->send(
                 $lending->user->email,
-                'Solicitud de item aprobada',
+                'Solicitud de equipo deportivo aprobada',
                 'Tu solicitud de equipo deportivo fue aprobada satisfactoriamente. Por favor entra a tu perfil de MAIKINE para más detalles.'
             );
         }
@@ -484,7 +484,7 @@ class LendingController extends Controller
 
             $this->emailService->send(
                 $lending->user->email,
-                'Solicitud de item denegada',
+                'Solicitud de equipo deportivo denegada',
                 'Tu solicitud de equipo deportivo fue denegada. Por favor entra a tu perfil de MAIKINE para más detalles. De tener alguna duda comunícate con el administrador de inventario (' . $adminEmail . ').'
             );
         }

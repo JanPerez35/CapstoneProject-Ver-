@@ -1,6 +1,7 @@
 <x-layout title="Mi Perfil">
 
     @if(auth()->user()->role_label === 'Super Administrador')
+
         {{-- Warning modal before creating database backup --}}
         <div class="modal fade" id="databaseBackupWarningModal" tabindex="-1" aria-labelledby="databaseBackupWarningModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -42,7 +43,6 @@
                         <a href="{{ route('database.backup.download') }}"
                         class="btn btn-danger px-4"
                         id="confirmDatabaseBackup">
-                            <i class="bi bi-database-down"></i>
                             Sí, crear respaldo
                         </a>
                     </div>
@@ -296,7 +296,6 @@
                         data-bs-toggle="modal"
                         data-bs-target="#databaseBackupWarningModal"
                     >
-                        <i class="bi bi-database-down"></i>
                         Crear Respaldo
                     </button>
                 </div>
@@ -383,7 +382,7 @@
                                         <option value="Tenis">Tenis</option>
                                         <option value="Fútbol">Fútbol</option>
                                         <option value="Deporte Recreativo">Deporte Recreativo</option>
-                                        <option value="Volibol">Volibol</option>
+                                        <option value="Voleibol">Voleibol</option>
                                         <option value="Levantamiento de Pesas">Levantamiento de Pesas</option>
                                         <option value="Otros">Otros</option>
                                     </select>
@@ -960,7 +959,7 @@
             <div class="d-flex align-items-center">
                 {{-- Item deleted succesfully toast --}}
                 <div class="toast-body fw-semibold rounded-0 pe-1">
-                    Item borrado correctamente.
+                    Publicación borrada correctamente.
                 </div>
                 <button
                     type="button"
