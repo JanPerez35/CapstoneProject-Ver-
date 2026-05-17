@@ -150,7 +150,7 @@
 
         {{--Report table wrapper. Keeps the table visually separated from the page and allows the JS-rendered table body
             and empty state to share the same bordered container--}}
-        <div class="table-fit-wrapper border border-2 border-dark rounded-2 mt-3" style="min-height: 0; height: auto;">
+        <div class="table-fit-wrapper border border-2 border-dark rounded-2 mt-3">
                 <table class="table align-middle mb-0 reports-table" id="reportsTable">
                     <thead class="table-light">
                     <tr>
