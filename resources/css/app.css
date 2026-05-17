@@ -1,6 +1,25 @@
+/*
+ * Global stylesheet for the MAIKINE application.
+ *
+ * Contains shared styles for:
+ * - Bootstrap imports
+ * - Search bars
+ * - Marketplace posts and reports
+ * - Ratings
+ * - Badges
+ * - Facility management tables and modals
+ * - Messaging layout
+ * - Header, navbar, date pickers, and cart modal
+ */
+
+/* Loads Bootstrap base styles and Bootstrap Icons globally. */
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
+/*
+ * Shared search input wrapper style.
+ * Used across pages to make Bootstrap input groups look like one unified bordered field.
+ */
 .search-group {
     border: 2px solid #212529;
     border-radius: 12px;
@@ -9,6 +28,10 @@
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+/*
+ * Removes inner Bootstrap borders and shadows from search input pieces.
+ * This keeps the icon and input visually connected inside the same container.
+ */
 .search-group .input-group-text,
 .search-group .form-control {
     background: white;
@@ -16,29 +39,24 @@
     box-shadow: none;
 }
 
+/* Prevents Bootstrap from adding an extra shadow directly to the input on focus. */
 .search-group .form-control:focus {
     box-shadow: none;
 }
 
+/* Adds a focus glow (blue) to the whole search group when any child input is active. */
 .search-group:focus-within {
-    border-color: #212529; /* keep it dark */
-    box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25); /* blue glow */
+    /* Keep it dark */
+    border-color: #212529;
+
+    /* Blue glow */
+    box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
 }
 
-.cart-fab {
-    position: fixed;
-    bottom: 20px;   /* distance from bottom */
-    right: 20px;    /* distance from right */
-    z-index: 1050;  /* makes sure it's above cards */
-
-    width: 70px;
-    height: 70px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
+/*
+ * Cart quantity badge.
+ * Displays the number of selected cart items on top of the cart button.
+ */
 .cart-badge {
     position: absolute;
     top: -4px;
@@ -56,16 +74,26 @@
     border: 2px solid white;
 }
 
+/* -----------------------------------------------------
+ * Section: Kinemercado report buttons and post carousel
+ *-----------------------------------------------------*/
+
+/* Turns report buttons red on hover to communicate a warning/destructive action. */
 .report-btn:hover {
     color: red !important;
     border-color: red !important;
     background-color: transparent !important;
 }
 
+/* Keeps the icon color synchronized with the report button hover state. */
 .report-btn:hover i {
     color: red !important;
 }
 
+/*
+ * Carousel control icons.
+ * Improves visibility of previous/next arrows over marketplace post images.
+ */
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
     filter: invert(1);
@@ -74,30 +102,40 @@
     padding: 12px;
 }
 
+/* Applies the MAIKINE green theme to pagination links. */
 .pagination .page-link {
-    color: #198754; /* Bootstrap green */
+    /* Bootstrap green */
+    color: #198754;
 }
 
+/* Highlights the active pagination page with the success-green theme. */
 .pagination .page-item.active .page-link {
     background-color: #198754;
     border-color: #198754;
     color: white;
 }
 
+/* Darkens pagination links on hover. */
 .pagination .page-link:hover {
     color: #145c32;
 }
 
+/*
+ * Marketplace carousel container.
+ * Sets a fixed display area for post images.
+ */
 .post-carousel-inner {
     height: 320px;
     background: #f8f9fa;
     overflow: hidden;
 }
 
+/* Matches every carousel item to the carousel container height. */
 .post-carousel-item {
     height: 320px;
 }
 
+/* Centers carousel images inside their image box. */
 .post-carousel-item .carousel-image-box {
     width: 100%;
     height: 100%;
@@ -107,40 +145,58 @@
     padding: 0;
 }
 
+/* Ensures marketplace carousel images fit without being cropped. */
 .post-carousel-img {
     width: 100% !important;
     height: 100% !important;
     object-fit: contain !important;
 }
 
+/*--------------------------------------------------
+ * Section: Rating stars for marketplace and profile
+ *---------------------------------------------------/
+
+/* Interactive rating container used when users select stars on marketplace post. */
 .rating-stars {
     display: flex;
     align-items: center;
     gap: 0.25rem;
 }
 
+/* Makes each rating star clickable and animated. */
 .rating-star {
     cursor: pointer;
     transition: transform 0.15s ease, color 0.15s ease;
 }
 
+/* Enlarges a star slightly when the user hovers over it. */
 .rating-star:hover {
     transform: scale(1.15);
 }
 
-
+/* Colors filled rating stars yellow. */
 .rating-star.bi-star-fill {
     color: #ffc107;
 }
 
+/* Colors half-filled rating stars yellow. */
 .rating-star.bi-star-half {
     color: #ffc107;
 }
 
+/*--------------------------------------------------------
+ * Section: Kinemercado create, details, and report modals
+ *---------------------------------------------------------/
+
+/* Adds extra bottom spacing inside modal bodies. */
 .modal-body {
     padding-bottom: 1.5rem;
 }
 
+/*
+ * Marketplace modal positioning.
+ * Adds vertical breathing room so modals do not touch the viewport edges.
+ */
 #createPostModal .modal-dialog,
 #postDetailsModal .modal-dialog,
 #reportUserModal .modal-dialog {
@@ -148,6 +204,10 @@
     margin-bottom: 1.25rem;
 }
 
+/*
+ * Marketplace modal height control.
+ * Keeps modal content inside the visible viewport.
+ */
 #createPostModal .modal-content,
 #postDetailsModal .modal-content,
 #reportUserModal .modal-content {
@@ -155,6 +215,7 @@
     overflow: hidden;
 }
 
+/* Standardizes modal header padding for marketplace modals. */
 #createPostModal .modal-header,
 #postDetailsModal .modal-header,
 #reportUserModal .modal-header {
@@ -164,6 +225,10 @@
     padding-bottom: 0.75rem !important;
 }
 
+/*
+ * Makes marketplace modal bodies scroll internally.
+ * This prevents long forms/details from overflowing the screen.
+ */
 #createPostModal .modal-body,
 #postDetailsModal .modal-body,
 #reportUserModal .modal-body {
@@ -176,6 +241,7 @@
     scrollbar-gutter: stable;
 }
 
+/* Standardizes footer spacing in marketplace modals. */
 #createPostModal .modal-footer,
 #postDetailsModal .modal-footer,
 #reportUserModal .modal-footer {
@@ -185,11 +251,13 @@
     padding-left: 1.5rem !important;
 }
 
+/* Prevents post detail content from receiving a second height restriction. */
 .post-details-body {
     max-height: none;
     padding-bottom: 1.5rem !important;
 }
 
+/* Sizes warning icons used inside report user modal. */
 .report-warning-icon {
     width: 28px;
     height: 28px;
@@ -197,6 +265,11 @@
     flex-shrink: 0;
 }
 
+/*--------------------------------------------------------
+ * Section: Kinemercado create-post price input validation
+ *--------------------------------------------------------*/
+
+/* Styles the dollar prefix inside the create-post price input group. */
 #createPostModal .input-group-text {
     background: white;
     border-right: 0;
@@ -204,53 +277,65 @@
     font-weight: 600;
 }
 
+/* Gives the create-post price prefix a subtle gray background. */
 #createPostModal #postPriceGroup .input-group-text {
     background-color: #f1f3f5;
     border-right: 1px solid #ced4da;
 }
 
+/* Removes the left border so the price input connects visually with the prefix ($) icon. */
 #createPostModal #postPrice {
     border-left: 0;
 }
 
-
+/* Removes the default focus shadow from the price input. */
 #createPostModal #postPrice:focus {
     box-shadow: none;
 }
 
-
+/* Makes the validation-related visual changes on the price input group cleaner. */
 #createPostModal #postPriceGroup .input-group-text,
 #createPostModal #postPriceGroup .form-control {
     transition: border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
 }
 
-
+/* Applies the Bootstrap danger border color when the price group is invalid. */
 #createPostModal #postPriceGroup.is-invalid .input-group-text,
 #createPostModal #postPriceGroup.is-invalid .form-control {
     border-color: var(--bs-danger) !important;
 }
 
-
+/* Turns the price prefix red when the price field has a validation error. */
 #createPostModal #postPriceGroup.is-invalid .input-group-text {
     color: var(--bs-danger);
     background-color: #fff;
     border-right: 0 !important;
 }
 
-
+/* Keeps the invalid price input connected to the invalid prefix. */
 #createPostModal #postPriceGroup.is-invalid .form-control {
     border-left: 0 !important;
 }
 
+/* Ensures the price error message is visible and spaced below the input. */
 #createPostModal #postPriceError {
     display: block;
     margin-top: 0.35rem;
 }
 
+/* Gives the cancel report confirmation modal a stronger shadow. */
 #cancelReportConfirmModal .modal-content {
     box-shadow: 0 20px 60px rgba(0,0,0,0.35);
 }
 
+/*-----------------------------------
+ * Section: Read-only rating display
+ *----------------------------------*/
+
+/*
+ * Read-only star rating display.
+ * Uses a base layer and a filled layer controlled by the --rating variable.
+ */
 .rating-stars {
     position: relative;
     display: inline-block;
@@ -258,16 +343,19 @@
     line-height: 1;
 }
 
+/* Aligns the base and filled star layers consistently. */
 .rating-stars-base,
 .rating-stars-fill {
     display: flex;
     gap: 2px;
 }
 
+/* Shows the empty star layer in gray. */
 .rating-stars-base {
     color: #d5d5d5;
 }
 
+/* Shows the filled star layer in yellow and clips it based on rating value. */
 .rating-stars-fill {
     color: #f4b400;
     position: absolute;
@@ -277,29 +365,40 @@
     white-space: nowrap;
     width: calc((var(--rating) / 5) * 100%);
 }
+
+
+/* Forces role badges to use squared corners. */
 .user-role-badge {
     border-radius: 0 !important;
 }
 
+/* Reapplies the green pagination color. */
 .pagination .page-link {
     color: #198754;
 }
 
-
+/* Reapplies active pagination styling. */
 .pagination .page-item.active .page-link {
     background-color: #198754;
     border-color: #198754;
     color: white;
 }
 
-
+/* Makes pagination hover states fully green with white text. */
 .pagination .page-link:hover {
     color: white;
     background-color: #198754;
     border-color: #198754;
 }
 
+/*-----------------------------------------------
+ * Section: Marketplace cards and text overflow
+ *----------------------------------------------*/
 
+/*
+ * Marketplace rating row.
+ * Resets layout so marketplace stars do not inherit the absolute overlay rating style.
+ */
 .marketplace-rating-stars {
     display: flex;
     align-items: center;
@@ -309,26 +408,31 @@
     line-height: 1;
 }
 
+/* Lets marketplace card shells stretch to match grid height. */
 .marketplace-card-shell {
     height: 100%;
 }
 
+/* Creates a vertical layout inside marketplace cards. */
 .marketplace-card-body {
     display: flex;
     flex-direction: column;
     height: 100%;
 }
 
+/* Allows the top area of marketplace cards to use natural (auto) height. */
 .marketplace-card-top {
     min-height: auto;
 }
 
+/* Aligns marketplace card title and status badge in one row. */
 .marketplace-card-header-row {
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
 }
 
+/* Truncates long marketplace card titles to one line. */
 .marketplace-card-title {
     min-width: 0;
     overflow: hidden;
@@ -342,6 +446,7 @@
     word-break: break-word;
 }
 
+/* Truncates long marketplace descriptions to one line. */
 .marketplace-card-description {
     overflow: hidden;
     display: -webkit-box;
@@ -354,15 +459,22 @@
     word-break: break-word;
 }
 
+/* Prevents marketplace status badges from shrinking or wrapping. */
 .marketplace-status-badge {
     flex-shrink: 0;
     white-space: nowrap;
 }
 
+/* Tightens line height for marketplace price text. */
 .marketplace-card-price {
     line-height: 1.1;
 }
 
+/*-------------------------------------------
+ * Section: Marketplace post details modals
+ *------------------------------------------*/
+
+/* Allows long post detail modal titles to wrap naturally into rows. */
 #postDetailsModalLabel {
     white-space: normal !important;
     overflow: visible !important;
@@ -371,14 +483,17 @@
     line-height: 1.3;
 }
 
+/* Aligns the post details modal header to the top for multi-line titles. */
 #postDetailsModal .modal-header {
     align-items: flex-start;
 }
 
+/* Creates space between long post titles and the modal close button. */
 #postDetailsModalLabel {
     padding-right: 2.5rem;
 }
 
+/* Allows long post descriptions to wrap inside the details modal. */
 #postDetailsDescription {
     white-space: normal !important;
     overflow: visible !important;
@@ -386,10 +501,12 @@
     word-break: break-word;
     line-height: 1.5;}
 
+/* Aligns the profile marketplace post details modal header for multi-line titles. */
 #profilePostDetailsModal .modal-header {
     align-items: flex-start;
 }
 
+/* Allows profile post detail titles to wrap without overflowing. */
 #profilePostDetailsModalLabel {
     white-space: normal !important;
     overflow: visible !important;
@@ -400,6 +517,8 @@
     padding-right: 2.5rem;
 }
 
+/* Allows profile post descriptions to wrap inside the details modal.
+   This creates multpiple rows.*/
 #profilePostDetailsDescription {
     white-space: normal !important;
     overflow: visible !important;
@@ -409,6 +528,7 @@
     line-height: 1.5;
 }
 
+/* Prevents long delete confirmation text title from overflowing the modal. */
 #deletePostModalText {
     white-space: normal;
     word-break: break-word;
@@ -416,6 +536,7 @@
     line-height: 1.5;
 }
 
+/* Prevents long delete modal titles from colliding with the close button. */
 #deletePostModalLabel {
     white-space: normal;
     word-break: break-word;
@@ -423,6 +544,14 @@
     padding-right: 2.5rem;
 }
 
+/*--------------------------------------------------------------
+ * Section: Badge styles and roles modification badging styles
+ *-------------------------------------------------------------*/
+
+/*
+ * Shared label badge component.
+ * Used for roles, statuses, availability, services, and request states.
+ */
 .label-badge {
     position: relative;
     font-weight: 600;
@@ -433,7 +562,7 @@
     border-radius: 0;
 }
 
-
+/* Adds the small folded-corner visual effect to label badges. */
 .label-badge::before {
     content: "";
     position: absolute;
@@ -444,108 +573,140 @@
     border-top: 10px solid white;
     border-right: 10px solid transparent;
 }
-/* STATUS */
+
+/* Active user status badge. */
 .badge-active {
     background-color: #acffd1;
     color: #005024
 }
 
+/* Blocked user status badge. */
 .badge-blocked {
     background-color: #dc3545;
     color: #ffffff;
 }
 
-/* ROLES */
+/* Standard user role badge. */
+/*This is the User role badge */
 .badge-user {
     background-color: #cfe2ff;
     color: #084298;
 }
 
+/* Super administrator role badge. */
 .badge-super-admin {
     background-color: #ffb41e;
     color: #402b00;
 }
 
+/* Inventory administrator role badge. */
 .badge-inventory-admin {
     background-color: #d9f99d;
     color: #3f6212;
 }
 
+/* Marketplace administrator role badge. */
 .badge-market-admin {
     background-color: #fff3cd;
     color: #664d03;
 }
 
+/* Facility administrator role badge. */
 .badge-facility-admin {
     background-color: #e2d9f3;
     color: #432874;
 }
-/* These are labels for availability */
+
+/* Available inventory equipment badge. */
 .badge-available {
     background-color: #acffd1;
     color: #005024;
 }
 
+/* Unavailable inventory equipment badge. */
 .badge-unavailable {
     background-color: #f8d7da;
     color: #842029;
 }
+
+/* Pending borrow/request equipment badge. */
 .badge-request-pending {
     background-color: #fff3cd;
     color: #664d03;
 }
 
+/* Approved borrow/request equipment badge. */
 .badge-request-approved {
     background-color: #d1e7dd;
     color: #0f5132;
 }
 
+/* Rejected borrow/request equipment badge. */
 .badge-request-rejected {
     background-color: #f8d7da;
     color: #842029;
 }
 
+/* Finished or returned borrow/request equipment badge. */
 .badge-request-finished {
     background-color: #e5e7eb;
     color: #374151;
 }
 
+/* Default request badge for fallback states in case of errors. */
 .badge-request-default {
     background-color: #e2e3e5;
     color: #41464b;
 }
 
+/* Special-case (more than one day) equipment request badge. */
 .badge-request-special {
     background-color: #facc15;
     color: #78350f;
 }
 
+/*--------------------------
+ *Section: Chat input field
+ *--------------------------/
+
+/* Chat message input group container. */
 .chat-message-group {
     border-radius: 0.75rem;
     transition: box-shadow 0.15s ease;
 }
 
+/* Removes Bootstrap focus shadow from the input inside the chat group. */
 .chat-message-group .form-control:focus {
     box-shadow: none !important;
 }
 
+/* Adds a focus ring around the whole chat input group. */
 .chat-message-group:focus-within {
     border-radius: 0.75rem;
     box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
 }
 
-/* Electricity */
+/*------------------------------------------------
+ *Section: Operational cost table  service badges
+ *-----------------------------------------------*/
+
+/* Electricity service badge for operational cost report table. */
 .badge-electricidad {
     background-color: #FFC107;
     color: #000;
 }
 
-/* Water */
+/* Water service badge for operational cost report table. */
 .badge-agua {
     background-color: #0d6efd;
     color: white;
 }
 
+/*-----------------------------------------
+ * Section: Operational cost event grouping
+ *----------------------------------------*/
+
+/* Header row for grouped operational events. */
 .event-group-header td {
     background: #eaf7ef !important;
     border-top: 3px solid #198754 !important;
@@ -553,36 +714,44 @@
     padding: 0.85rem 1rem !important;
 }
 
+/* Parent event row styling in the operational cost table. */
 .parent-event-row td {
     background: #ffffff !important;
     border-bottom: 1px solid #dee2e6 !important;
 }
 
+/* Related-area sub-event row styling for the operational cost table. */
 .sub-event-related_area td {
     background: #eef8ff !important;
     border-bottom: 1px dashed #9ec5fe !important;
 }
 
+/* Custom-day sub-event row styling for operational cost table. */
 .sub-event-custom_day td {
     background: #fff8e6 !important;
     border-bottom: 1px dashed #ffc107 !important;
 }
 
+/* Default sub-event row styling. */
 .sub-event-row td {
     background: #f8f9fa !important;
     border-bottom: 1px dashed #ced4da !important;
 }
 
+/* Indents the first cell of sub-event rows to show hierarchy. */
+/* This is in the operational cost report table. */
 .sub-event-row td:first-child {
     padding-left: 1.5rem !important;
 }
 
+/* Styles the arrow that visually connects sub-events to their parent event. */
 .sub-event-arrow {
     color: #6c757d;
     font-weight: 700;
     margin-right: 0.35rem;
 }
 
+/* Adds visual spacing between facility event groups. */
 .event-group-spacer td {
     height: 18px;
     background: transparent !important;
@@ -590,29 +759,38 @@
     padding: 0 !important;
 }
 
-/* Avoid overflow on description table */
+/*----------------------------
+ *Section: Facility cost table
+ *-----------------------------*/
+
+/* Main operational cost table sizing. */
 #facilityCostTable {
     width: 100%;
     min-width: 1500px;
     table-layout: auto;
 }
 
+/* Vertically centers all operational events table cells. */
 #facilityCostTable th,
 #facilityCostTable td {
     vertical-align: middle;
 }
 
+/* Allows operational cost table headers to wrap cleanly. */
 #facilityCostTable th {
     white-space: normal;
     line-height: 1.2;
 }
 
+/* Allows facility table cell content to wrap instead of overflowing. */
 #facilityCostTable td {
     white-space: normal;
     word-break: break-word;
     overflow-wrap: break-word;
 }
 
+/* Prevents key date, time, total, and action columns from wrapping. */
+/*Thus allows them to be able to star on a new line instead of taking over other cell space. */
 #facilityCostTable th:nth-child(1),
 #facilityCostTable td:nth-child(1),
 #facilityCostTable th:nth-child(2),
@@ -626,72 +804,94 @@
     white-space: nowrap;
 }
 
+/* Gives the description column enough width for longer event text. */
 #facilityCostTable th:nth-child(5),
 #facilityCostTable td:nth-child(5) {
     min-width: 280px;
     width: 280px;
 }
 
+/* Sets a readable minimum width for the period column. */
 #facilityCostTable th:nth-child(7),
 #facilityCostTable td:nth-child(7) {
     min-width: 150px;
 }
 
+/* Sets a readable minimum width for the rate mode column. */
 #facilityCostTable th:nth-child(8),
 #facilityCostTable td:nth-child(8) {
     min-width: 120px;
 }
 
+/* Sets a readable minimum width for the services column. */
 #facilityCostTable th:nth-child(9),
 #facilityCostTable td:nth-child(9) {
     min-width: 170px;
 }
 
+/* Sets a readable minimum width for the total cost column. */
 #facilityCostTable th:nth-child(10),
 #facilityCostTable td:nth-child(10) {
     min-width: 130px;
 }
 
+
+/* Reserves horizontal room for the facility action buttons column. */
 #facilityCostTable th:nth-child(11),
 #facilityCostTable td:nth-child(11) {
     min-width: 430px;
     white-space: nowrap;
 }
 
+/*----------------------------
+ * Section: Checkbox styling
+ *---------------------------*/
+
 /*  Checkbox styling (terms & special case)  */
 .form-check-input {
-    border: 2px solid #000 !important; /* negro */
+    /* black */
+    border: 2px solid #000 !important;
     box-shadow: none;
 }
 
-/* Hover */
+/* Checkbox hover state. */
 .form-check-input:hover {
     border-color: #145c32 !important;
 }
 
-/* Checked */
+/* Checkbox checked state using the system success green. */
 .form-check-input:checked {
     background-color: #198754 !important;
     border-color: #145c32 !important;
 }
 
-/* Focus */
+/* Checkbox focus state with a green focus ring. */
 .form-check-input:focus {
     border-color: #145c32 !important;
     box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25) !important;
 }
 
-/* Custom tool tip coloring to make it grey*/
+
+/*--------------------------------
+ * Section: Tooltip customization
+ *-------------------------------*/
+
+/* Custom tooltip color palette used across MAIKINE. */
 .custom-tooltip {
     --bs-tooltip-bg: #D6D6D6;
     --bs-tooltip-color: #000000;
 }
 
+/* Removes rounded corners from custom tooltip bubbles. */
 .custom-tooltip .tooltip-inner {
     border-radius: 0 !important;
 }
 
-/* Messaging & chat styling */
+/*----------------------------------------
+ * Section: Messaging/chat search bar style
+ *----------------------------------------*/
+
+/* Messaging search input style wrapper. */
 .messages-search-group {
     border: 2px solid #212529;
     border-radius: 12px;
@@ -699,64 +899,81 @@
     transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
 }
 
+/* Keeps both parts of the messaging search bar white. */
 .messages-search-group .input-group-text,
 .messages-search-group .form-control {
     background-color: #fff;
 }
 
+/* Removes the right border from the messaging search icon section. */
 .messages-search-group .input-group-text {
     border-right: 0 !important;
 }
 
+/* Removes the left border and shadow from the messaging search input. */
 .messages-search-group .form-control {
     border-left: 0 !important;
     box-shadow: none !important;
 }
 
+/* Adds a Bootstrap-style focus ring to the full messaging search group. */
 .messages-search-group:focus-within {
     border-color: #86b7fe;
     box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
 
+/*--------------------------------
+ *Section: Messaging/chat layout
+ *-------------------------------*/
+
+/* Main messaging card container height. */
 .messages-card {
     height: calc(100vh - 90px);
     min-height: 720px;
 }
 
+/* Makes both messaging columns fill the card height. */
 .messages-sidebar,
 .messages-chat-column {
     height: 100%;
 }
 
+/* Controls message container height behavior. */
 .messages-container {
     min-height: 0;
     min-height: 420px;
 }
 
+/* Prevents the chat input area from shrinking. */
 .chat-input-area {
     background: #fff;
     flex-shrink: 0;
 }
 
+/* Utility class that allows messages to shrink properly when sent. */
 .min-w-0 {
     min-width: 0;
 }
 
+/* Makes the chat list scroll when there are many conversations. */
 #chatListContainer {
     overflow-y: auto;
     max-height: calc(100vh - 260px);
 }
 
+/* Makes the messaging sidebar (conversation finder) a vertical container. */
 .messages-sidebar {
     display: flex;
     flex-direction: column;
 }
 
+/* Allows chat header text to shrink next to buttons. */
 .chat-header-text-wrap {
     min-width: 0;
     flex: 1 1 auto;
 }
 
+/* Truncates the post summary in the chat header to one line. */
 .chat-header-post-summary {
     min-width: 0;
     max-width: 100%;
@@ -771,24 +988,33 @@
     line-height: 1.35;
 }
 
+/* Prevents the post details button from shrinking in the chat header. */
 #openChatPostDetailsBtn {
     flex-shrink: 0;
 }
 
+/* Individual conversation row styling. */
 .messages-person-item {
     border-bottom: 1px solid #d6dde5;
     background-color: #fff;
     transition: background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+/* Hover state for conversation rows. */
 .messages-person-item:hover {
     background-color: #f8fafc;
 }
 
+/* Removes the bottom border from the final conversation item. */
 #chatListContainer .text-decoration-none:last-child .messages-person-item {
     border-bottom: 0;
 }
 
+/*------------------------------------------
+ *Section: Messaging mobile responsiveness
+ *-----------------------------------------*/
+
+/* Removes fixed heights from messaging columns on mobile. */
 @media (max-width: 767.98px) {
     .messages-card {
         height: auto;
@@ -796,6 +1022,7 @@
         border-radius: 1rem;
     }
 
+    /* Restores visible sidebar borders on mobile layouts. */
     .messages-sidebar,
     .messages-chat-column {
         height: auto;
@@ -803,16 +1030,19 @@
         min-height: 0;
     }
 
+    /* Ensures the active chat area has enough height on mobile screens. */
     .messages-sidebar {
         overflow: hidden;
         border-right: 2px solid #212529 !important;
         border-bottom: 2px solid #212529 !important;
     }
 
+    /* Ensures the active chat area has enough height on mobile. */
     .messages-chat-column {
         min-height: 70vh;
     }
 
+    /* Limits the mobile chat list height and enables touch scrolling. */
     #chatListContainer {
         height: 45vh;
         max-height: 45vh;
@@ -820,11 +1050,13 @@
         -webkit-overflow-scrolling: touch;
     }
 
+    /* Limits the message list height on mobile screens. */
     #chatMessagesContainer {
         max-height: 38vh;
         min-height: 220px;
     }
 
+    /* Keeps the input area visible at the bottom of the chat column. */
     .chat-input-area {
         position: sticky;
         bottom: 0;
@@ -832,11 +1064,12 @@
         background: #fff;
     }
 
+    /* Allows the chat header row to wrap on small screens. */
     .chat-header-row {
         flex-wrap: wrap !important;
         align-items: flex-start !important;
     }
-
+    /* Places the main chat header text on its own row. */
     .chat-header-main {
         flex: 0 0 100%;
         width: 100%;
@@ -844,43 +1077,52 @@
         order: 2;
     }
 
+    /* Places the back button before the chat title on mobile. */
     #backToChatsBtn {
         order: 1;
         flex-shrink: 0;
     }
 
+    /* Makes the post details button full width on mobile screens. */
     #openChatPostDetailsBtn {
         width: 100%;
         margin-top: 0.25rem;
         order: 3;
     }
 
+    /* Adjusts mobile sidebar header spacing. */
     .messages-sidebar .p-4.border-bottom {
         padding-bottom: 1rem !important;
     }
 
+    /* Adds mobile spacing to the active chat header. */
     .messages-chat-column > .border-bottom {
         padding-top: 1rem !important;
         padding-bottom: 1rem !important;
     }
 
+    /* Stacks chat input controls into one column on mobile screens. */
     .chat-input-grid {
         grid-template-columns: 1fr;
     }
 
+    /* Aligns the chat character counter to the right. */
     .chat-counter-wrap {
         justify-self: end;
     }
 
+    /* Hides elements that should disappear when a mobile chat is selected. */
     .d-none-selected-mobile {
         display: none !important;
     }
 
+    /* General mobile-only hiding utility for message view adaptability. */
     .mobile-hidden {
         display: none !important;
     }
 }
 
+/* Additional mobile chat list height override. */
 @media (max-width: 767.98px) {
     #chatListContainer {
         max-height: 300px;
@@ -888,14 +1130,18 @@
     }
 }
 
-/*Facility Management styles*/
+/*---------------------------------------------------------
+ * Section: Operational cost event management form helpers
+  *-------------------------------------------------------*/
 
+/* Italic placeholder styling for money inputs in operational cost forms. */
 .money-input::placeholder {
     color: #6c757d;
     font-style: italic;
     opacity: 1;
 }
 
+/* Card styling for selectable service options in operational cost forms. */
 .service-option-card {
     border: 1px solid #dee2e6;
     border-radius: 1rem;
@@ -904,19 +1150,23 @@
     height: 100%;
 }
 
+/* Matches secondary section titles with the desired form title size in fomrs. */
 .section-title-match {
     font-size: 1.25rem;
 }
 
+/* Smaller period title size inside facility configuration forms. */
 .period-title-small {
     font-size: 1rem;
 }
 
+/* Visual box used to display total hours or summary values. */
 .total-hour-box {
     background: #f8f9fa;
     border: 1px solid #dee2e6;
 }
 
+/* Selectable classroom card used for multi-area configuration. */
 .multi-classroom-card {
     display: flex;
     align-items: center;
@@ -929,11 +1179,16 @@
     width: 100%;
 }
 
+/* Hover feedback for multi-classroom cards. */
 .multi-classroom-card:hover {
     background: #f8f9fa;
 }
 
-/* Table spacing */
+/*----------------------------------
+ * Section: Facility table padding
+ *---------------------------------*/
+
+/* Adds consistent padding to operational cost event table cells. */
 #facilityCostTable thead th,
 #facilityCostTable tbody td,
 #facilityCostTable tfoot th,
@@ -942,34 +1197,46 @@
     vertical-align: middle;
 }
 
-/* Modal spacing fixes */
+
+/*-----------------------------------------
+ * Section: Configure rates modal spacing
+ *----------------------------------------*/
+
+/* Adds horizontal padding inside scroll-safe modal areas in operational cost page. */
 #configureRatesModal .modal-scroll-safe {
     padding-left: 1.25rem;
     padding-right: 1.25rem;
 }
 
+/* Adds a small inner edge padding for scrollable modal content. */
 #configureRatesModal .scroll-edge-pad {
     padding-left: .35rem;
     padding-right: .35rem;
 }
 
+/* Adds safe left/right padding to the configure rates modal footer. */
 #configureRatesModal .modal-footer-safe {
     padding-left: 1.5rem !important;
     padding-right: 1.5rem !important;
 }
 
+/* Removes Bootstrap row negative margins inside the configure rates modal. */
 #configureRatesModal .row {
     margin-left: 0;
     margin-right: 0;
 }
 
+/* Adds consistent column padding inside the configure rates modal. */
 #configureRatesModal [class*="col-"] {
     padding-left: .75rem;
     padding-right: .75rem;
 }
 
-/* SECOND STYLE BLOCK */
+/*--------------------------------------
+ * Section: Area name overflow handling
+ *-------------------------------------/
 
+/* Truncates long area names inside selection cards. */
 .classroom-name {
     display: block;
     white-space: nowrap;
@@ -978,17 +1245,23 @@
     max-width: 180px;
 }
 
+/* Allows multi-area card labels to shrink beside other content. */
 .multi-classroom-card label {
     min-width: 0;
     flex: 1;
 }
 
-/* Date picker */
+/*------------------------------
+ * Section: Date picker styling
+ *------------------------------/
+
+/* Makes date-only inputs clickable and leaves room for the trigger icon. */
 .date-picker-only {
     cursor: pointer;
     padding-right: 4.25rem;
 }
 
+/* Makes the browser date picker indicator cover the input while staying invisible. */
 .date-picker-only::-webkit-calendar-picker-indicator {
     cursor: pointer;
     opacity: 0;
@@ -998,15 +1271,18 @@
     height: 100%;
 }
 
+/* Hides extra browser controls from date-only inputs. */
 .date-picker-only::-webkit-inner-spin-button,
 .date-picker-only::-webkit-clear-button {
     display: none;
 }
 
+/* Positions the custom date picker trigger relative to the input. */
 .date-input-shell {
     position: relative;
 }
 
+/* Custom calendar button placed at the right side of date inputs. */
 .date-picker-trigger {
     position: absolute;
     top: 0;
@@ -1025,43 +1301,59 @@
     cursor: pointer;
 }
 
+/* Hover state for the custom date picker trigger. */
 .date-picker-trigger:hover {
     background: #e9ecef;
 }
 
-/* Area column */
+
+/*----------------------------------------------
+ * Section: Operational cost table area column
+ *---------------------------------------------*/
+
+/* Sets a stable width for the facility area column. */
 .area-col {
     min-width: 180px;
     width: 220px;
 }
 
-/*Facility cost row colors*/
+/*-----------------------------------------------
+ * Section: Operational cost row type indicators
+ *-----------------------------------------------*/
 
+/* Blue left border for base facility rows indicators. */
 .facility-row-base td:first-child {
     border-left: 5px solid #0d6efd;
 }
 
+/* Green left border and background for related facility rows indicator. */
 .facility-row-related td:first-child {
     border-left: 5px solid #198754;
     background-color: #f8fff9;
 }
 
+/* Yellow left border and background for exception/custom facility rows indicators. */
 .facility-row-exception td:first-child {
     border-left: 5px solid #ffc107;
     background-color: #fff9e6;
 }
 
+/* Light green row background for related facility area event rows. */
 .facility-row-related {
     background-color: #f8fff9;
 }
 
+/* Light yellow row background for exception/custom facility area event rows. */
 .facility-row-exception {
     background-color: #fff9e6;
 }
 
+/*-----------------------------------------------------------------------------
+ * Section: Shared table scroll wrapper for marketplace management report table
+ *------------------------------------------------------------------------------/
 
 /* Report User Admin Marketplace Management Table */
-
+/* Scrollable wrapper for wide administrative tables. */
 .table-fit-wrapper {
     position: relative;
     height: calc(100vh - 260px);
@@ -1070,6 +1362,11 @@
     padding: 0;
 }
 
+/*-----------------------------------
+ * Section: Marketplace reports table
+ *-----------------------------------*/
+
+/* Main marketplace reports table layout style. */
 .reports-table {
     width: 100%;
     table-layout: fixed;
@@ -1078,6 +1375,7 @@
     border-spacing: 0;
 }
 
+/* Shared cell styling for marketplace reports table headers and body cells. */
 .reports-table thead th,
 .reports-table tbody td {
     vertical-align: middle;
@@ -1089,6 +1387,8 @@
     overflow-wrap: break-word;
 }
 
+/* Sticky header styling for the marketplace reports table. */
+/*Allwos for leyend to be visible at all moments. */
 .reports-table thead th {
     position: sticky;
     top: 0;
@@ -1099,12 +1399,22 @@
     box-shadow: inset 0 -1px 0 #dee2e6;
 }
 
+/* Width for the reporter column. */
 .reports-table th:nth-child(1), .reports-table td:nth-child(1) { width: 14%; }
+
+/* Width for the seller column. */
 .reports-table th:nth-child(2), .reports-table td:nth-child(2) { width: 13%; }
+
+/* Width for the reason column. */
 .reports-table th:nth-child(3), .reports-table td:nth-child(3) { width: 14%; }
+
+/* Width for the reported date column. */
 .reports-table th:nth-child(4), .reports-table td:nth-child(4) { width: 15%; }
+
+/* Width for the report description column. */
 .reports-table th:nth-child(5), .reports-table td:nth-child(5) { width: 24%; }
 
+/* Width for the action columns in the marketplace reports table. */
 .reports-table th:nth-child(6), .reports-table td:nth-child(6),
 .reports-table th:nth-child(7), .reports-table td:nth-child(7),
 .reports-table th:nth-child(8), .reports-table td:nth-child(8),
@@ -1112,11 +1422,17 @@
     width: 5%;
 }
 
+/* Improves readability for long report descriptions by allowing multiple rows
+   and added spacing to the column. */
 .report-description-cell {
     line-height: 1.45;
 }
 
+/*-----------------------------------------
+ * Section: Reports table action controls
+ *----------------------------------------*/
 
+/* Shared action icon column sizing. */
 .action-header-icon {
     width: 75px;
     white-space: nowrap;
@@ -1124,6 +1440,7 @@
     padding-right: 0.8rem;
 }
 
+/* Radio-style action selector buttons used in marketplace report rows. */
 .action-radio {
     transform: scale(1.2);
     cursor: pointer;
@@ -1133,21 +1450,27 @@
     transition: transform 0.2s ease, opacity 0.2s ease, filter 0.2s ease;
 }
 
+/* Enlarges report action radio buttons on hover. */
 .action-radio:hover {
     transform: scale(1.55);
 }
 
+/* Makes the active report action radio feel more emphasized. */
 .action-radio.active-radio {
     opacity: 1;
     filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));
 }
 
+/* Adds a top divider above the marketplace reports empty state. */
 .reports-empty-state {
     border-top: 1px solid #dee2e6;
 }
 
+/*---------------------------------------------
+ * Section: Reports table responsive behavior
+ *--------------------------------------------*/
 
-/* Responsive marketplace reports table */
+/* Adjusts marketplace report table sizing on medium-large screens. */
 @media (max-width: 1199.98px) {
     .reports-table thead th,
     .reports-table tbody td {
@@ -1164,6 +1487,7 @@
     }
 }
 
+/* Enables horizontal scrolling for marketplace reports on smaller screens. */
 @media (max-width: 991.98px) {
     .table-fit-wrapper {
         overflow-x: auto;
@@ -1188,69 +1512,94 @@
     }
 }
 
+/*--------------------------------------------
+ * Section: Global application header/layout
+ *-------------------------------------------*/
 
-
+/* Main application header background and shadow. */
 .app-header {
     background: linear-gradient(135deg, #24282b 0%, #2f3539 100%);
     border-bottom: 1px solid #3c4449 !important;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
 }
 
+/* Forces key header text to remain white over the dark background. */
 .app-header .fs-3,
 .app-header .fw-semibold {
     color: #ffffff !important;
 }
 
+/* Lightens muted text inside the dark header. */
 .app-header small.text-muted {
     color: #b8c0c7 !important;
 }
 
+/* Header outline-success button styling for dark background contrast. */
 .app-header .btn-outline-success {
     color: #7ee0a1;
     border-color: #2f9e68;
     background-color: transparent;
 }
-/*Header stuff*/
+
+/* Header outline button hover state. */
 .app-header .btn-outline-success:hover {
     color: #ffffff;
     background-color: #198754;
     border-color: #198754;
 }
 
+/* Header success button styling. */
 .app-header .btn-success {
     background-color: #198754;
     border-color: #198754;
     color: #ffffff;
 }
 
+/* Header success button hover state. */
 .app-header .btn-success:hover {
     background-color: #157347;
     border-color: #157347;
 }
 
+/* Header success-colored text override. */
 .app-header .text-success {
     color: #8ee4af !important;
 }
 
+/*----------------------------
+ *Section: Branding the layout
+ *----------------------------*/
+
+/* Application brand title accent color. */
 .app-brand-title {
     color: #198754;
 }
 
+/*-------------------------
+ *Section: Secondary navbar
+ *-------------------------*/
+
+/* Secondary navigation bar background color. */
 .app-navbar {
     background-color: #E6E6E6;
-
 }
 
+/*---------------------------------------------
+ * Section: Flatpickr and date picker helpers
+ *--------------------------------------------*/
 
+/* Wrapper used to position custom date picker icons. */
 .date-picker-wrapper {
     position: relative;
 }
 
+/* Adds right padding so date text does not overlap the calendar icon. */
 .date-picker-wrapper .date-picker-input,
 .date-picker-wrapper .flatpickr-input {
     padding-right: 3.25rem !important;
 }
 
+/* Calendar icon button placed inside date picker wrappers. */
 .date-picker-icon {
     position: absolute;
     top: 50%;
@@ -1266,13 +1615,19 @@
     cursor: pointer;
 }
 
+/* Turns the date picker icon green on hover. */
 .date-picker-icon:hover {
     color: #198754;
 }
 
-/*Operational cost page size modification*/
+/*-----------------------------------------------------------------
+ * Section: Facility and operational modal mobile responsiveness
+ *---------------------------------------------------------------*/
+
+/* Small-screen modal adjustments for facility events-related workflows. */
 @media (max-width: 576px) {
 
+    /* Reduces modal margin on small screens. */
     #addRentalModal .modal-dialog,
     #editEventModal .modal-dialog,
     #customizeDaysModal .modal-dialog,
@@ -1282,6 +1637,7 @@
         max-width: calc(100% - 1rem);
     }
 
+    /* Keeps modal content within the mobile viewport. */
     #addRentalModal .modal-content,
     #editEventModal .modal-content,
     #customizeDaysModal .modal-content,
@@ -1291,46 +1647,56 @@
         border-radius: 1rem;
     }
 
+    /* Adjusts service option spacing inside the configure rates modal. */
     #configureRatesModal .service-option-card {
         padding: 1rem;
     }
 
+    /* Forces configure rates modal columns to stack on mobile. */
     #configureRatesModal .row > [class*="col-"] {
         width: 100%;
         flex: 0 0 100%;
         max-width: 100%;
     }
 
+    /* Prevents configure rates input groups from wrapping awkwardly. */
     #configureRatesModal .input-group-lg {
         flex-wrap: nowrap;
     }
 
+    /* Keeps configure rates input prefixes at a stable width. */
     #configureRatesModal .input-group-text {
         width: auto;
         min-width: 52px;
     }
 
+    /* Allows configure rates inputs to shrink properly on smaller screens. */
     #configureRatesModal .form-control {
         min-width: 0;
     }
 
+    /* Improves small helper text readability on mobile. */
     #configureRatesModal small {
         line-height: 1.35;
     }
 
+    /* Stacks configure rates action rows on mobile. */
     #configureRatesModal .d-flex.flex-wrap.align-items-center.gap-2.mb-3 {
         flex-direction: column;
         align-items: stretch !important;
     }
 
+    /* Makes configure rates buttons full width on mobile. */
     #configureRatesModal .d-flex.flex-wrap.align-items-center.gap-2.mb-3 .btn {
         width: 100%;
     }
 
+    /* Adjusts multi-area card spacing on mobile. */
     #configureRatesModal .multi-classroom-card {
         padding: 1rem;
     }
 
+    /* Stacks facility form columns on mobile. */
     #editEventModal .row > [class*="col-"],
     #createRelatedModal .row > [class*="col-"],
     #customizeDaysModal .row > [class*="col-"],
@@ -1340,17 +1706,20 @@
         flex: 0 0 100%;
     }
 
+    /* Gives textareas enough height on mobile. */
     #editEventModal textarea,
     #createRelatedModal textarea,
     #addRentalModal textarea {
         min-height: 110px;
     }
 
+    /* Keeps customize-days inputs readable on mobile. */
     #customizeDaysModal .form-select,
     #customizeDaysModal .form-control {
         font-size: 1rem;
     }
 
+    /* Adds mobile-friendly modal body padding. */
     #customizeDaysModal .modal-body,
     #editEventModal .modal-body,
     #createRelatedModal .modal-body,
@@ -1360,33 +1729,41 @@
         padding-right: 1rem;
     }
 
+    /* Stacks modal footer buttons vertically on mobile. */
     .modal-footer {
         flex-direction: column;
         gap: 0.5rem;
     }
 
+    /* Makes modal footer buttons full width on mobile. */
     .modal-footer .btn {
         width: 100%;
     }
 }
 
+/*-----------------------------------------
+ * Section: Cart modal quantity controls
+ *----------------------------------------*/
 
-
+/* Positions the cart quantity column content. */
 #cartModal .cart-quantity-col {
     position: relative;
 }
 
+/* Centers the inner quantity controls inside the cart quantity column. */
 #cartModal .cart-quantity-col > .d-flex {
     align-items: center !important;
     justify-content: center;
     width: 100%;
 }
 
+/* Keeps the cart quantity number width stable. */
 #cartModal .cart-quantity-display {
     min-width: 32px;
     text-align: center;
 }
 
+/* Sets consistent size for cart increase/decrease buttons. */
 #cartModal .decrease-cart-item,
 #cartModal .increase-cart-item {
     width: 32px;
@@ -1394,6 +1771,11 @@
     padding: 0;
 }
 
+/*----------------------------------------
+ * Section: Scroll-to-top floating button
+ *---------------------------------------/
+
+/* Floating button used to scroll back to the top of the page. */
 .scroll-to-top-btn {
     position: fixed;
     left: 24px;
@@ -1408,14 +1790,21 @@
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
+/* Icon sizing inside the scroll-to-top button. */
 .scroll-to-top-btn i {
     font-size: 1.25rem;
 }
 
+/*---------------------------------------------------
+ * Section: Cart modal rows and validation messages
+ *--------------------------------------------------*/
+
+/* Gives each cart item row enough height for controls and errors. */
 #cartModal .cart-item-row {
     min-height: 125px;
 }
 
+/* Centers cart quantity and remove columns. */
 #cartModal .cart-quantity-col,
 #cartModal .cart-remove-col {
     display: flex;
@@ -1423,14 +1812,17 @@
     justify-content: center;
 }
 
+/* Keeps the cart quantity column available as an anchor for absolute-positioned errors. */
 #cartModal .cart-quantity-col {
     position: relative;
 }
 
+/* Reapplies cart row height later in the cascade. */
 #cartModal .cart-item-row {
     min-height: 125px;
 }
 
+/* Reapplies cart column centering later in the cascade. */
 #cartModal .cart-quantity-col,
 #cartModal .cart-remove-col {
     display: flex;
@@ -1438,10 +1830,12 @@
     justify-content: center;
 }
 
+/* Reapplies relative positioning for cart quantity column. */
 #cartModal .cart-quantity-col {
     position: relative;
 }
 
+/* Wrapper that centers the quantity controls inside the cart row. */
 #cartModal .cart-quantity-wrapper {
     position: relative;
     width: 100%;
@@ -1449,6 +1843,7 @@
     justify-content: center;
 }
 
+/* Horizontal layout for cart quantity minus, value, and plus controls. */
 #cartModal .cart-quantity-controls {
     height: 32px;
     display: flex;
@@ -1458,11 +1853,13 @@
     transform: translateY(-1px);
 }
 
+/* Keeps the quantity value aligned between the minus and plus buttons. */
 #cartModal .cart-quantity-display {
     min-width: 32px;
     text-align: center;
 }
 
+/* Reapplies consistent dimensions for cart quantity buttons. */
 #cartModal .decrease-cart-item,
 #cartModal .increase-cart-item {
     width: 32px;
@@ -1470,6 +1867,7 @@
     padding: 0;
 }
 
+/* Positions per-item cart validation errors below the quantity controls. */
 #cartModal .cart-item-error {
     position: absolute;
     top: 40px;
