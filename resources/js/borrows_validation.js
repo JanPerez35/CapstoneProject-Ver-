@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
      * Number of request cards shown per page in each section.
      * Pending and active requests are paginated separately.
      */
-    const ITEMS_PER_PAGE = 18;
+    const ITEMS_PER_PAGE = 5;
 
     /**
      * Session storage key used to preserve the current vertical scroll position
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     /**
      * Renders pagination buttons inside a given container.
-     * Includes "Anterior", numbered pages, and "Siguiente".
+     * Includes "<<", numbered pages, and ">>".
      *
      * @param {HTMLElement|null} container - Pagination list container.
      * @param {number} totalPages - Total number of pages.
@@ -446,13 +446,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         if (paginationWrapper) {
-            paginationWrapper.classList.toggle('d-none');
+
+                paginationWrapper.classList.toggle('d-none', totalPages <= 1);
         }
 
         renderPagination(paginationContainer, totalPages, currentPage, function (page) {
             setCurrentPage(page);
             applyFiltersAndPagination();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
 
@@ -469,9 +469,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         getAllRequests().forEach(card => {
             const cardDate = card.dataset.date || '';
+            const cardReturnDate = card.dataset.returnDate || '';
             const cardSearch = (card.dataset.search || '').toLowerCase();
 
-            const matchesDate = !selectedDate || cardDate === selectedDate;
+            const matchesDate = !selectedDate || cardDate === selectedDate || cardReturnDate === selectedDate;
             const matchesSearch = !searchValue || cardSearch.includes(searchValue);
             const isVisibleByFilter = matchesDate && matchesSearch;
 
@@ -526,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const itemName = card?.querySelector('h5')?.textContent?.trim() || 'este caso especial';
 
                 approveFormToSubmit = form;
-                approveConfirmText.textContent = `¿Seguro que quieres aprobar "${itemName}"?`;
+                approveConfirmText.textContent = `¿Seguro que quieres aprobar esta solicitud?`;
 
                 const modal = window.bootstrap.Modal.getOrCreateInstance(approveConfirmModalEl);
                 modal.show();
@@ -549,7 +550,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const itemName = card?.querySelector('h5')?.textContent?.trim() || 'este caso especial';
 
                 denyFormToSubmit = form;
-                denyConfirmText.textContent = `¿Seguro que quieres denegar "${itemName}"?`;
+                denyConfirmText.textContent = `¿Seguro que quieres denegar esta solicitud?`;
 
                 const modal = window.bootstrap.Modal.getOrCreateInstance(denyConfirmModalEl);
                 modal.show();

@@ -162,6 +162,7 @@
                                     {{-- Used for filtering with the JS by date and general search matching --}}
                                     data-search="{{ strtolower(($lending->items->first()->equipment->description ?? 'equipo') . ' ' . ($lending->user->first_name ?? '') . ' ' . ($lending->user->last_name ?? '') . ' ' . ($lending->special_reason ?? '')) }}"
                                     data-date="{{ \Carbon\Carbon::parse($lending->start_time)->format('Y-m-d') }}"
+                                    data-return-date="{{ \Carbon\Carbon::parse($lending->end_time)->format('Y-m-d') }}"
                                 >
                                     <div class="card-body p-4">
                                         {{-- Request content --}}
@@ -212,27 +213,19 @@
                                                             <span class="text-muted">Usuario:</span>
                                                             <strong>{{ $lending->user->first_name ?? 'N/A' }} {{ $lending->user->last_name ?? '' }}</strong>
                                                         </div>
-                                                        <div>
-                                                            <span class="text-muted">Total de artículos:</span>
-                                                            <strong>{{ $lending->items->count() }}</strong>
-                                                        </div>
-                                                        <div>
-                                                            <span class="text-muted">Cantidad total:</span>
-                                                            <strong>{{ $lending->items->sum('quantity') }}</strong>
-                                                        </div>
                                                     </div>
 
                                                     <div class="col-md-4">
                                                         <div>
                                                             <span class="text-muted">Recogida:</span>
                                                             <strong>
-                                                            {{ mb_convert_case(
-                                                                \Carbon\Carbon::parse($lending->start_time)
-                                                                    ->locale('es')
-                                                                    ->translatedFormat('j F Y h:i a'),
-                                                                MB_CASE_TITLE,
-                                                                "UTF-8"
-                                                            ) }}
+                                                                {{ mb_convert_case(
+         \Carbon\Carbon::parse($lending->start_time)
+             ->locale('es')
+             ->translatedFormat('j F Y h:i'),
+         MB_CASE_TITLE,
+         "UTF-8"
+     ) }} {{ \Carbon\Carbon::parse($lending->start_time)->format('A') }}
                                                             </strong>
                                                         </div>
                                                     </div>
@@ -242,12 +235,12 @@
                                                             <span class="text-muted">Devolución:</span>
                                                             <strong>
                                                                 {{ mb_convert_case(
-                                                                    \Carbon\Carbon::parse($lending->end_time)
-                                                                        ->locale('es')
-                                                                        ->translatedFormat('j F Y h:i a'),
-                                                                    MB_CASE_TITLE,
-                                                                    "UTF-8"
-                                                                ) }}
+     \Carbon\Carbon::parse($lending->end_time)
+         ->locale('es')
+         ->translatedFormat('j F Y h:i'),
+     MB_CASE_TITLE,
+     "UTF-8"
+ ) }} {{ \Carbon\Carbon::parse($lending->end_time)->format('A') }}
                                                             </strong>                                                        </div>
                                                     </div>
                                                 </div>
@@ -269,7 +262,7 @@
                                                       class="approve-form">
                                                     @csrf
                                                     <button type="button" class="btn btn-success approve-special-btn w-100">
-                                                        Aprobar
+                                                        Aprobar Solicitud
                                                     </button>
                                                 </form>
 
@@ -279,7 +272,7 @@
                                                       class="deny-form">
                                                     @csrf
                                                     <button type="button" class="btn btn-danger deny-special-btn w-100">
-                                                        Denegar
+                                                        Denegar Solicitud
                                                     </button>
                                                 </form>
                                             </div>
@@ -287,9 +280,6 @@
                                     </div>
                                 </div>
                             @empty
-                                <div class="text-center py-4 text-muted">
-                                    No hay solicitudes pendientes.
-                                </div>
                             @endforelse
                         </div>
 
@@ -338,6 +328,7 @@
                                     {{-- Used by JS for filtering by text and date --}}
                                     data-search="{{ strtolower(($lending->items->first()->equipment->description ?? 'equipo') . ' ' . ($lending->user->first_name ?? '') . ' ' . ($lending->user->last_name ?? '')) }}"
                                     data-date="{{ \Carbon\Carbon::parse($lending->start_time)->format('Y-m-d') }}"
+                                    data-return-date="{{ \Carbon\Carbon::parse($lending->end_time)->format('Y-m-d') }}"
                                 >
                                     <div class="card-body p-4">
 
@@ -397,14 +388,7 @@
                                                             : 'Usuario desconocido' }}
                                                     </strong>
                                                 </div>
-                                                <div>
-                                                    <span class="text-muted">Total de artículos:</span>
-                                                    <strong>{{ $lending->items->count() }}</strong>
-                                                </div>
-                                                <div>
-                                                    <span class="text-muted">Cantidad total:</span>
-                                                    <strong>{{ $lending->items->sum('quantity') }}</strong>
-                                                </div>
+
                                             </div>
 
                                             {{-- Dates --}}
@@ -414,23 +398,23 @@
                                                     <span class="text-muted">Recogida:</span>
                                                     <strong>
                                                         {{ mb_convert_case(
-                                                            \Carbon\Carbon::parse($lending->start_time)
-                                                                ->locale('es')
-                                                                ->translatedFormat('j F Y h:i a'),
-                                                            MB_CASE_TITLE,
-                                                            "UTF-8"
-                                                        ) }}
+     \Carbon\Carbon::parse($lending->start_time)
+         ->locale('es')
+         ->translatedFormat('j F Y h:i'),
+     MB_CASE_TITLE,
+     "UTF-8"
+ ) }} {{ \Carbon\Carbon::parse($lending->start_time)->format('A') }}
                                                     </strong>                                                </div>
                                                 <div>
                                                     <span class="text-muted">Devolución:</span>
                                                     <strong>
                                                         {{ mb_convert_case(
-                                                            \Carbon\Carbon::parse($lending->end_time)
-                                                                ->locale('es')
-                                                                ->translatedFormat('j F Y h:i a'),
-                                                            MB_CASE_TITLE,
-                                                            "UTF-8"
-                                                        ) }}
+     \Carbon\Carbon::parse($lending->end_time)
+         ->locale('es')
+         ->translatedFormat('j F Y h:i'),
+     MB_CASE_TITLE,
+     "UTF-8"
+ ) }} {{ \Carbon\Carbon::parse($lending->end_time)->format('A') }}
                                                     </strong>                                                </div>
                                             </div>
                                         </div>
@@ -448,10 +432,6 @@
                                     </div>
                                 </div>
                             @empty
-                                {{-- Empty fallback in case there are no active requests --}}
-                                <div class="text-center py-4 text-muted">
-                                    No hay solicitudes activas.
-                                </div>
                             @endforelse
                         </div>
 
@@ -606,7 +586,7 @@
 
                 {{-- Message in the toast pop up --}}
                 <div class="toast-body fw-semibold rounded-0 pe-1">
-                    Item aprobado correctamente.
+                    Solicitud aprobada correctamente.
                 </div>
 
                 {{-- Close button --}}
@@ -630,7 +610,7 @@
 
                 {{-- Message --}}
                 <div class="toast-body fw-semibold rounded-0 pe-1">
-                    Item denegado correctamente.
+                    Solicitud denegada correctamente.
                 </div>
                 {{-- Close button --}}
                 <button type="button"

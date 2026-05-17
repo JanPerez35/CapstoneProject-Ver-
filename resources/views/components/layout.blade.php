@@ -14,6 +14,13 @@
  * */
     $currentUser = auth()->user();
 
+    use App\Models\Lending;
+
+        $dailyRequestLimit = 50;
+        $todayRequests = Lending::whereDate('created_at', today())->count();
+        $remainingDailyRequests = max($dailyRequestLimit - $todayRequests, 0);
+
+
     $currentUserName = $currentUser?->name ?? 'Usuario';
     $currentUserRole = $currentUser?->role ?? 'rol';
     $superAdminUser = $superAdminUser ?? null;
@@ -508,7 +515,13 @@
                                 </p>
 
                                 <p class="text-muted mb-2 mt-3">
-                                    En el caso de una solicitud normal, recibirás un email de confirmación automaticamente si no se alcanzo el limite de pedidos por dia.
+                                    En el caso de una solicitud normal, recibirás un email de confirmación automáticamente
+                                    si no se alcanzó el límite de pedidos por día.
+
+                                    <span class=" text-bg-warning ms-2">
+                                    {{ $todayRequests }} / {{ $dailyRequestLimit }} pedidos usados hoy
+                                </span>
+
                                 </p>
 
                                 <p class="text-muted mb-2 mt-3">
