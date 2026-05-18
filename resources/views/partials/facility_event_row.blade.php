@@ -1,4 +1,33 @@
+{{-- 
+    Facility Cost Event Row Partial
+
+    Renders one table row for a facility cost report item. The row can represent:
+    - a parent/main event
+    - a related area sub-event
+    - a custom-day modification sub-event
+
+    Expected variables:
+    - $item: FacilityCostReportItem instance being rendered.
+    - $groupKey: Identifier used to group parent and child event rows.
+    - $rowType: Optional value. When set to "child", the row is styled and treated as a sub-event.
+
+    Main responsibilities:
+    - determine whether the row is a parent or child event
+    - display event labels such as Principal, Área relacionada, or Modificación
+    - expose event data through data-* attributes for JavaScript modals/actions
+    - display formatted dates, responsible person, classroom, description, schedule, period type, rate mode, services, and cost
+    - enable or disable action radios depending on the event type
+
+    Action rules:
+    - Parent events can be edited, customized, used to create related areas, and deleted.
+    - Related area sub-events can be edited, customized, used to create more related areas, and deleted.
+    - Custom-day sub-events can be edited and deleted, but cannot be used to create another custom-day modification.
+--}}
 @php
+    /*
+     * Identify the type of row being rendered and determine which actions
+     * should be available for this item.
+     */
     $isChild = ($rowType ?? '') === 'child';
     $isRelatedArea = $item->sub_event_type === 'related_area';
     $isCustomDay = $item->sub_event_type === 'custom_day';
@@ -22,7 +51,7 @@
     data-period-type="{{ $item->period_type }}"
     data-rate-mode="{{ $item->rate_mode }}"
     data-services='@json($item->services ?? [])'
-    data-classroom="{{ $item->facilityCost->classroom_name }}"
+    data-classroom="{{ $item->facilityCost?->classroom_name ?? 'N/A' }}"
     data-month="{{ \Carbon\Carbon::parse($item->event_date)->format('n') }}"
     data-year="{{ \Carbon\Carbon::parse($item->event_date)->format('Y') }}"
 >
@@ -71,7 +100,7 @@
    </td>
 
     <td>{{ $item->responsible }}</td>
-    <td>{{ $item->facilityCost->classroom_name }}</td>
+    <td>{{ $item->facilityCost?->classroom_name ?? 'N/A' }}</td>
     <td>{{ $item->event_description }}</td>
 
     <td>
@@ -134,6 +163,16 @@
     </td>
 
     <td class="text-center action-radio-cell px-2" style="width: 58px; min-width: 58px;">
+        {{--
+            Action radio buttons:
+            - edit-cost-row-btn opens the edit modal
+            - customize-days-btn opens the custom-day modification modal
+            - create-related-btn opens the related-area modal
+            - delete-cost-row-btn opens/executes the delete flow
+
+            Some buttons are disabled depending on whether the item is a parent event,
+            related area, or custom-day modification.
+        --}}
         <input
             class="form-check-input action-radio edit-cost-row-btn"
             type="radio"

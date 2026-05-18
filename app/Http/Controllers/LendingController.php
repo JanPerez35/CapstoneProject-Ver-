@@ -302,12 +302,11 @@ class LendingController extends Controller
 
         $lending->load('user');
 
-        /**
-         * Send approval email automatically when request is NOT a special case.
-         * Only sends if:
-         * - request is auto-approved
-         * - user has a valid email
-         */
+        
+         // Send approval email automatically when request is NOT a special case.
+         // Only sends if:
+         // request is auto-approved
+         // user has a valid email
         if (!$isSpecialCase && $lending->user && !empty($lending->user->email)) {
             $this->emailService->send(
                 $lending->user->email,

@@ -26,14 +26,6 @@ use Illuminate\Support\Str;
  */
 class FacilityCostController extends Controller
 {
-    /**
-     * Displays the facility management view.
-     *
-     * Retrieves all classrooms and applies optional filters (report type,
-     * month, year, classroom) to the cost report items query. Passes the
-     * filtered results, grand total, and year range to the view.
-     */
-
     use LogsActivity;
 
     /**
@@ -116,6 +108,14 @@ class FacilityCostController extends Controller
 
         return $query;
     }
+
+    /**
+     * Displays the facility management view.
+     *
+     * Retrieves all classrooms and applies optional filters (report type,
+     * month, year, classroom) to the cost report items query. Passes the
+     * filtered results, grand total, and year range to the view.
+     */
 
     public function index(Request $request)
     {
@@ -384,6 +384,23 @@ class FacilityCostController extends Controller
         ->with('rental_saved', 'Evento guardado correctamente.');
 }
 
+/**
+ * Updates the main facility usage event.
+ *
+ * Validates the edited event data, recalculates the parent event cost,
+ * and updates the main FacilityCostReportItem. If the event has custom-day
+ * modifications, this method prevents invalid changes unless the request
+ * explicitly confirms that affected custom days should be deleted.
+ *
+ * Custom-day modifications outside the new date range are removed only when
+ * delete_out_of_range_custom_days is true. If the classroom/area changes,
+ * existing custom-day modifications are removed only when
+ * delete_custom_days_on_area_change is true.
+ *
+ * @param Request $request
+ * @param FacilityCostReportItem $item
+ * @return \Illuminate\Http\JsonResponse
+ */
 public function updateEvent(Request $request, FacilityCostReportItem $item)
 {
     if (!$item->is_group_parent) {
@@ -503,6 +520,18 @@ public function updateEvent(Request $request, FacilityCostReportItem $item)
     ]);
 }
 
+/**
+ * Updates the schedule of an entire event group.
+ *
+ * Recalculates the parent event using the new start and end times while
+ * preserving any custom-day deductions already applied to the parent.
+ * This action is intended for modifying the full event schedule from the
+ * parent event level.
+ *
+ * @param Request $request
+ * @param FacilityCostReportItem $item
+ * @return \Illuminate\Http\JsonResponse
+ */
 public function updateEventSchedule(Request $request, FacilityCostReportItem $item)
 {
     $validated = $request->validate([
@@ -564,6 +593,19 @@ public function updateEventSchedule(Request $request, FacilityCostReportItem $it
     ]);
 }
 
+/**
+ * Calculates how much cost should be deducted from the parent event
+ * when creating or updating a custom-day modification.
+ *
+ * Builds a temporary payload using the parent event's original configuration
+ * and the selected custom date range, then calculates the cost that the parent
+ * originally assigned to that period.
+ *
+ * @param FacilityCostReportItem $parent
+ * @param string $customStartDate
+ * @param string $customEndDate
+ * @return float
+ */
 private function calculateParentDeductionForCustomPeriod(
     FacilityCostReportItem $parent,
     string $customStartDate,
@@ -679,6 +721,18 @@ private function calculateParentDeductionForCustomPeriod(
     ]);
 }
 
+/**
+ * Updates a sub-event inside an event group.
+ *
+ * Validates the submitted sub-event data, recalculates its cost, and updates
+ * the existing sub-event record. If the sub-event is a custom-day modification,
+ * the method also recalculates the amount deducted from the parent event and
+ * adjusts the parent cost accordingly.
+ *
+ * @param Request $request
+ * @param FacilityCostReportItem $item
+ * @return \Illuminate\Http\JsonResponse
+ */
 public function updateSubEvent(Request $request, FacilityCostReportItem $item)
 {
     if ($item->is_group_parent) {
@@ -771,6 +825,16 @@ public function updateSubEvent(Request $request, FacilityCostReportItem $item)
     ]);
 }
 
+/**
+ * Resolves the event item that can be customized.
+ *
+ * Prevents creating a custom-day modification from another existing
+ * custom-day modification. Only a main event or valid related event can
+ * be used as the customization target.
+ *
+ * @param FacilityCostReportItem $item
+ * @return FacilityCostReportItem
+ */
 private function getCustomizableTarget(FacilityCostReportItem $item): FacilityCostReportItem
 {
     if ($item->sub_event_type === 'custom_day') {
@@ -780,6 +844,23 @@ private function getCustomizableTarget(FacilityCostReportItem $item): FacilityCo
     return $item;
 }
 
+/**
+ * Calculates facility usage cost from a payload without creating a database record.
+ *
+ * Resolves the selected classroom, calculates the total hours used across
+ * the date range, determines the correct rate based on period type and rate
+ * mode, applies selected service costs, and returns the calculated values
+ * needed to update or create a report item.
+ *
+ * @param array $data
+ * @return array{
+ *     facility_cost_id: int,
+ *     start_time: \Illuminate\Support\Carbon,
+ *     end_time: \Illuminate\Support\Carbon,
+ *     hours_used: float|int,
+ *     calculated_cost: float
+ * }
+ */
 private function calculateFacilityCostFromPayload(array $data): array
 {
     $facilityCost = FacilityCost::where('classroom_name', $data['classroom'])
@@ -1023,6 +1104,17 @@ private function calculateFacilityCostFromPayload(array $data): array
             ->with('entry_deleted', 'Evento eliminado correctamente.');
     }
 
+    /**
+ * Creates a related event under the same event group as the selected item.
+ *
+ * Validates the related event data, resolves the parent event group, creates
+ * a new non-parent FacilityCostReportItem, and marks it as a related_area
+ * sub-event. If the parent does not already have a group id, one is generated.
+ *
+ * @param Request $request
+ * @param FacilityCostReportItem $item
+ * @return \Illuminate\Http\JsonResponse
+ */
     public function storeRelatedEvent(Request $request, FacilityCostReportItem $item)
 {
     $validated = $request->validate([
@@ -1078,6 +1170,20 @@ private function calculateFacilityCostFromPayload(array $data): array
     ], 201);
 }
 
+/**
+ * Creates a custom-day schedule modification for an event.
+ *
+ * Allows an admin to modify either one selected day or the selected day and
+ * all following days within the parent event range. The method prevents
+ * overlapping custom-day modifications unless force_overwrite is true.
+ *
+ * The cost originally assigned to the customized period is deducted from
+ * the parent event, and the new custom-day item is stored as a sub-event.
+ *
+ * @param Request $request
+ * @param FacilityCostReportItem $item
+ * @return \Illuminate\Http\JsonResponse
+ */
 public function customizeDays(Request $request, FacilityCostReportItem $item)
 {
     $validated = $request->validate([
@@ -1192,6 +1298,17 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
     ], 201);
 }
 
+/**
+ * Restores a custom-day deduction back to the parent event.
+ *
+ * Used when a custom-day modification is deleted or overwritten. The amount
+ * stored in parent_deducted_cost is added back to the parent event's
+ * calculated cost.
+ *
+ * @param FacilityCostReportItem $parent
+ * @param FacilityCostReportItem $subEvent
+ * @return void
+ */
 private function restoreSubEventCostToParent(
     FacilityCostReportItem $parent,
     FacilityCostReportItem $subEvent
@@ -1203,6 +1320,16 @@ private function restoreSubEventCostToParent(
     ]);
 }
 
+/**
+ * Gets the parent event for a grouped facility event item.
+ *
+ * If the given item is already the parent or does not belong to a group,
+ * it is returned directly. Otherwise, the method searches for the parent
+ * item within the same event_group_id.
+ *
+ * @param FacilityCostReportItem $item
+ * @return FacilityCostReportItem
+ */
 private function getGroupParent(FacilityCostReportItem $item): FacilityCostReportItem
 {
     if ($item->is_group_parent || !$item->event_group_id) {
@@ -1376,6 +1503,12 @@ private function getGroupParent(FacilityCostReportItem $item): FacilityCostRepor
         return response()->stream($callback, 200, $headers);
     }
 
+    /**
+     * Translates a stored period type value into a Spanish CSV display label.
+     *
+     * @param string|null $value
+     * @return string
+     */
     private function translateCsvPeriodType($value): string
     {
         return match ($value) {
@@ -1386,6 +1519,12 @@ private function getGroupParent(FacilityCostReportItem $item): FacilityCostRepor
         };
     }
 
+    /**
+     * Translates a stored rate mode value into a Spanish CSV display label.
+     *
+     * @param string|null $value
+     * @return string
+     */
     private function translateCsvRateMode($value): string
     {
         return match ($value) {
@@ -1396,6 +1535,15 @@ private function getGroupParent(FacilityCostReportItem $item): FacilityCostRepor
         };
     }
 
+    /**
+     * Translates selected service values into Spanish CSV display labels.
+     *
+     * Accepts either an array of service keys or a JSON-encoded string.
+     * Returns a comma-separated list of translated service names.
+     *
+     * @param array|string|null $services
+     * @return string
+     */
     private function translateCsvServices($services): string
     {
         if (is_string($services)) {

@@ -19,7 +19,7 @@
             <div id="mockImportAutoTrigger"></div>
         @endif
 
-        <!--Header-->
+        {{-- Page header and cost estimate notice --}}
         <div class="mb-4">
             <h1 class="fw-bold mb-1">Gestión de Costos Operacionales</h1>
             <p class="text mb-0">Aquí puedes ver, filtrar y exportar estimaciones de costos operacionales por área dentro del Coliseo Rafael Mangual.</p>
@@ -33,9 +33,8 @@
                     <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong> Los costos mostrados
                     en esta página son
                     <strong>estimaciones</strong> calculadas según las tarifas configuradas, el área,
-                    el horario y los servicios seleccionados. Todas las tarifas estan sujetas a cambios y deberan ser
-                    ratificadas por el area
-                    administrativa para ser consideradas como definitivas.
+                    el horario y los servicios seleccionados. Las tarifas están sujetas a cambios y deberán ser ratificadas por el área administrativa
+                    para ser consideradas como definitivas.
 
                     <br><br>
                     Los registros de estimados de costos operacionales permanecerán almacenados en el sistema durante un período de <strong>3 años </strong> a partir de su fecha de creación. Luego de ese período,
@@ -442,8 +441,7 @@
                     <div class="card-body py-5 text-center">
                         <i class="bi bi-currency-dollar fs-1 text-muted"></i>
                         <h4 class="fw-bold mb-2">No hay costos para mostrar</h4>
-                        <p class="text-muted mb-0">Prueba añadiendo un evento o cambiando los parametros de la
-                            busqueda.</p>
+                        <p class="text-muted mb-0">Prueba añadiendo un evento o cambiando los parámetros de la búsqueda.</p>
                     </div>
                 </div>
             </div>
@@ -455,7 +453,18 @@
         <ul class="pagination justify-content-center" id="facilityCostPagination"></ul>
     </nav>
 
-    <!--Configuration button function-->
+    {{-- 
+        Configure Rates Modal
+
+        Allows a Super Administrator to configure rate values for one or more areas.
+        The modal includes:
+        - area selection shortcuts
+        - add/discard area controls
+        - base area information
+        - hourly service costs
+        - daily, weekly, and monthly rates for each period type
+        - live preview totals handled by JavaScript
+    --}}
     <div class="modal fade" id="configureRatesModal" tabindex="-1" aria-labelledby="configureRatesModalLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-lg-down modal-dialog-centered">
@@ -766,7 +775,14 @@
         </div>
     </div>
 
-    <!--Add event button-->
+    {{-- 
+        Add Event Modal
+
+        Creates a new parent facility usage event.
+        The event is limited to one main area. If the same activity uses multiple
+        areas, the user should create the main event first and then add related
+        area sub-events from the table.
+    --}}
     <div class="modal fade" id="addRentalModal" tabindex="-1" aria-labelledby="addRentalModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-lg-down modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -1109,7 +1125,7 @@
         </div>
     </div>
 
-    <!--Cancel Confirm button-->
+    {{-- Confirm cancellation modal for unsaved rate configuration changes --}}
     <div class="modal fade" id="confirmCancelConfigureModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -1149,7 +1165,7 @@
         </div>
     </div>
 
-    <!--Delete modal-->
+    {{-- Delete event confirmation modal --}}
     <div class="modal fade" id="deleteCostEntryModal" tabindex="-1" aria-labelledby="deleteCostEntryModalLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -1172,7 +1188,13 @@
         </div>
     </div>
 
-    <!-- Create related event modal -->
+    {{--
+        Create Related Event Modal
+
+        Creates a related-area sub-event linked to an existing parent event group.
+        This is used when one real-world event uses more than one facility area,
+        but each area needs its own independent cost calculation.
+    --}}
     <div class="modal fade" id="createRelatedModal" tabindex="-1" aria-labelledby="createRelatedModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-lg-down modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -1486,7 +1508,14 @@
         </div>
     </div>
 
-    <!-- Customize days modal -->
+    {{--
+        Customize Days Modal
+
+        Creates a custom-day modification for an existing event.
+        This allows one selected day, or the selected day and following days,
+        to use a different schedule from the parent event while remaining grouped
+        under the same main event.
+    --}}
     <div class="modal fade" id="customizeDaysModal" tabindex="-1" aria-labelledby="customizeDaysModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -1659,7 +1688,14 @@
         </div>
     </div>
 
-    <!-- Edit event modal -->
+    {{--
+        Edit Event Modal
+
+        Updates an existing parent event or editable sub-event.
+        JavaScript populates this modal using the selected table row's data-* attributes.
+        When editing a parent event, changing the date range or area may affect
+        existing custom-day modifications.
+    --}}
     <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-lg-down modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
