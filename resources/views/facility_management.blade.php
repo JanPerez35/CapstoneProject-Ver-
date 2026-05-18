@@ -809,6 +809,9 @@
                                         <option value="{{ $salon }}">{{ $salon }}</option>
                                     @endforeach
                                 </select>
+                                <small class="text-muted d-block fst-italic">
+                                    Seleccione el área donde se llevará a cabo el evento.
+                                </small>
                                 <div class="invalid-feedback" id="rentalClassroomError"></div>
                             </div>
 
@@ -1212,6 +1215,9 @@
                                         <option value="{{ $salon }}">{{ $salon }}</option>
                                     @endforeach
                                 </select>
+                                <small class="text-muted d-block fst-italic">
+                                    Seleccione el área relacionada al evento principal.
+                                </small>
                                 <div class="invalid-feedback" id="relatedAreaError"></div>
                             </div>
 
@@ -1541,6 +1547,45 @@
                                 <div class="invalid-feedback" id="customizeDateError"></div>
                             </div>
 
+                            <div class="col-12 col-lg-6">
+                                <label for="customizePeriodTypeDisplay" class="form-label fw-semibold">
+                                    Tipo de período <span class="text-danger">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="customizePeriodTypeDisplay"
+                                    class="form-control form-control-lg"
+                                    value="Se calcula automático"
+                                    readonly
+                                    tabindex="-1"
+                                    onfocus="this.blur()"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    id="customizePeriodType"
+                                    name="period_type"
+                                >
+
+                                <small class="text-muted d-block fst-italic mt-1">
+                                    <strong>Laborable: </strong>
+                                    lunes a viernes, 7:30 a.m. a 4:30 p.m.
+                                    <br>
+
+                                    <strong>No laborable sábado: </strong>
+                                    lunes a viernes, 4:30 p.m. a 9:30 p.m.;
+                                    sábado, 8:00 a.m. a 9:30 p.m.
+                                    <br>
+
+                                    <strong>No laborable domingo o festivo: </strong>
+                                    lunes a viernes, 4:30 p.m. a 9:30 p.m.;
+                                    domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                </small>
+
+                                <div class="invalid-feedback d-block" id="customizePeriodTypeError"></div>
+                            </div>
+
                             <div class="col-12"></div>
                             <div class="col-md-6">
                                 <label for="customizeStartTime" class="form-label fw-semibold">
@@ -1655,6 +1700,9 @@
                                         <option value="{{ $salon }}">{{ $salon }}</option>
                                     @endforeach
                                 </select>
+                                <small class="text-muted d-block fst-italic">
+                                    Seleccione el área donde se llevará a cabo el evento.
+                                </small>
                                 <div class="invalid-feedback" id="editClassroomError"></div>
                             </div>
 

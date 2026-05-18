@@ -234,11 +234,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const customizeScope = $('customizeScope');
     const customizeDate = $('customizeDate');
+    const customizePeriodType = $('customizePeriodType');
     const customizeStartTime = $('customizeStartTime');
     const customizeEndTime = $('customizeEndTime');
     const customizeScopeError = $('customizeScopeError');
     const customizeDateError = $('customizeDateError');
     const customizeTimeError = $('customizeTimeError');
+
 
     const rentalStartDateIcon = $('rentalStartDateIcon');
     const rentalEndDateIcon = $('rentalEndDateIcon');
@@ -978,12 +980,99 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function getSelectedCustomizeDateDay() {
+        if (!customizeDate?.value) return null;
+
+        const date = new Date(`${customizeDate.value}T00:00:00`);
+        return date.getDay();
+    }
+
+    function resolveAutomaticCustomizePeriodType(dateValue, startValue, endValue) {
+        if (!dateValue || !startValue || !endValue) return '';
+
+        const day = new Date(`${dateValue}T00:00:00`).getDay();
+        const start = timeToMinutes(startValue);
+        const end = timeToMinutes(endValue);
+
+        if (end <= start) return '';
+
+        if (day === 6) {
+            return start >= 480 && end <= 1290 ? 'non_workday_saturday' : '';
+        }
+
+        if (day === 0) {
+            return start >= 480 && end <= 1290 ? 'non_workday_sunday_holiday' : '';
+        }
+
+        if (day >= 1 && day <= 5) {
+            if (start >= 450 && end <= 990) return 'workday';
+
+            if (start >= 990 && end <= 1290) {
+                return customizeBasePeriodType === 'non_workday_sunday_holiday'
+                    ? 'non_workday_sunday_holiday'
+                    : 'non_workday_saturday';
+            }
+        }
+
+        return '';
+    }
+
+    function getCustomizeInvalidTimeMessage() {
+        const selectedDay = getSelectedCustomizeDateDay();
+
+        if (selectedDay === 6) {
+            return 'Para sábado solo se permiten horarios de 8:00 a.m. a 9:30 p.m.';
+        }
+
+        if (selectedDay === 0) {
+            return 'Para domingo o festivo solo se permiten horarios de 8:00 a.m. a 9:30 p.m.';
+        }
+
+        return 'El horario seleccionado conflige con los períodos establecidos. Usa 7:30 a.m. a 4:30 p.m. para laborable o 4:30 p.m. a 9:30 p.m. para no laborable.';
+    }
+
+    function updateCustomizePeriodType() {
+        if (!customizePeriodType) return '';
+
+        const customizePeriodTypeDisplay = $('customizePeriodTypeDisplay');
+
+        const periodType = resolveAutomaticCustomizePeriodType(
+            customizeDate?.value,
+            customizeStartTime?.value,
+            customizeEndTime?.value
+        );
+
+        customizePeriodType.value = periodType;
+
+        if (customizePeriodTypeDisplay) {
+            customizePeriodTypeDisplay.value = periodLabelFromValue(periodType);
+
+            if (!periodType) {
+                customizePeriodTypeDisplay.value = 'Se calcula automático';
+            }
+        }
+
+        return periodType;
+    }
+
     function updateCustomizeTimeOptions() {
         const previousStart = customizeStartTime.value;
         const previousEnd = customizeEndTime.value;
+        const selectedDay = getSelectedCustomizeDateDay();
 
-        buildTimeOptions(customizeStartTime, 7, 30, 21, 30, 'Seleccionar el horario inicial');
-        buildTimeOptions(customizeEndTime, 7, 45, 21, 30, 'Seleccionar el horario final');
+        customizePeriodType.value = '';
+
+        if (selectedDay === 6 || selectedDay === 0) {
+            buildTimeOptions(customizeStartTime, 8, 0, 21, 30, 'Seleccionar el horario');
+            buildTimeOptions(customizeEndTime, 8, 15, 21, 30, 'Seleccionar el horario');
+        } else if (selectedDay >= 1 && selectedDay <= 5) {
+            buildTimeOptions(customizeStartTime, 7, 30, 21, 30, 'Seleccionar el horario');
+            buildTimeOptions(customizeEndTime, 7, 45, 21, 30, 'Seleccionar el horario');
+        } else {
+            customizeStartTime.innerHTML = '<option value="" selected>Primero selecciona la fecha</option>';
+            customizeEndTime.innerHTML = '<option value="" selected>Primero selecciona la fecha</option>';
+            return;
+        }
 
         if ([...customizeStartTime.options].some(option => option.value === previousStart)) {
             customizeStartTime.value = previousStart;
@@ -1272,22 +1361,40 @@ function fillRelatedModalFromRow(row) {
 
     [customizeStartTime, customizeEndTime].forEach(input => {
         input?.addEventListener('change', () => {
-            validateTimeSelectorChange({
-                changedSelect: input,
-                changedError: input === customizeStartTime
-                    ? customizeStartTimeError
-                    : customizeEndTimeError,
-                changedMessage: input === customizeStartTime
-                    ? 'Selecciona un horario inicial válido.'
-                    : 'Selecciona un horario final válido.',
-                startTime: customizeStartTime,
-                endTime: customizeEndTime,
-                periodType: null,
-                startDate: customizeDate,
-                timeError: customizeTimeError
-            });
+            const detectedCustomizePeriod = updateCustomizePeriodType();
+
+            if (customizeStartTime.value && customizeEndTime.value) {
+                clearFieldError(customizeStartTime, customizeStartTimeError);
+                clearFieldError(customizeEndTime, customizeEndTimeError);
+
+                if (!detectedCustomizePeriod) {
+                    setFieldError(customizeStartTime, customizeStartTimeError, '');
+                    setFieldError(customizeEndTime, customizeEndTimeError, '');
+
+                    if (customizeTimeError) {
+                        customizeTimeError.textContent = getCustomizeInvalidTimeMessage();
+                    }
+                } else {
+                    validateEventTimes({
+                        startTime: customizeStartTime,
+                        endTime: customizeEndTime,
+                        periodType: customizePeriodType,
+                        startDate: customizeDate,
+                        timeError: customizeTimeError,
+                        showError: true
+                    });
+                }
+            } else {
+                clearFieldError(customizeStartTime, customizeStartTimeError);
+                clearFieldError(customizeEndTime, customizeEndTimeError);
+
+                if (customizeTimeError) {
+                    customizeTimeError.textContent = '';
+                }
+            }
 
             updateCustomizeSaveState();
+            customizeDirty = true;
         });
     });
     customizeDate?.addEventListener('change', () => {
@@ -1297,6 +1404,10 @@ function fillRelatedModalFromRow(row) {
             setFieldError(customizeDate, customizeDateError, 'La fecha es requerida.');
         }
 
+        customizeStartTime.value = '';
+        customizeEndTime.value = '';
+
+        updateCustomizeTimeOptions();
         updateCustomizeSaveState();
     });
 
@@ -1891,11 +2002,12 @@ function fillRelatedModalFromRow(row) {
             clickOpens: true,
         };
 
-        const setupPicker = (input, icon) => {
+        const setupPicker = (input, icon, options = {}) => {
             if (!input) return;
 
             const picker = flatpickr(input, {
-                ...sharedOptions
+                ...sharedOptions,
+                ...options
             });
 
             input.setAttribute('readonly', 'readonly');
@@ -1921,8 +2033,8 @@ function fillRelatedModalFromRow(row) {
         setupPicker(relatedStartDate, relatedStartDateIcon);
         setupPicker(relatedEndDate, relatedEndDateIcon);
 
-        setupPicker(editStartDate, editStartDateIcon);
-        setupPicker(editEndDate, editEndDateIcon);
+        setupPicker(editStartDate, editStartDateIcon, { minDate: null });
+        setupPicker(editEndDate, editEndDateIcon, { minDate: null });
 
         setupPicker(customizeDate, customizeDateIcon);
     }
@@ -2689,11 +2801,15 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
         editEndDate.value = originalEndDate;
 
         if (editStartDate?._flatpickr) {
+            editStartDate._flatpickr.set('minDate', originalStartDate);
             editStartDate._flatpickr.setDate(originalStartDate, false);
+            editStartDate._flatpickr.jumpToDate(originalStartDate);
         }
 
         if (editEndDate?._flatpickr) {
+            editEndDate._flatpickr.set('minDate', originalStartDate);
             editEndDate._flatpickr.setDate(originalEndDate, false);
+            editEndDate._flatpickr.jumpToDate(originalEndDate);
         }
 
         editPeriodType.value = row.dataset.periodType || '';
@@ -3006,17 +3122,31 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
 
         if (!customizeStartTime?.value || !customizeEndTime?.value) {
             valid = false;
-            if (showError) {
+
+            if (showError && !customizeStartTime?.value && !customizeEndTime?.value) {
                 customizeStartTime?.classList.add('is-invalid');
                 customizeEndTime?.classList.add('is-invalid');
                 if (customizeTimeError) customizeTimeError.textContent = 'Selecciona hora de inicio y hora de fin.';
             }
-        } else if (timeToMinutes(customizeEndTime.value) <= timeToMinutes(customizeStartTime.value)) {
+        }
+
+        const detectedPeriodType = updateCustomizePeriodType();
+
+        if (
+            customizeStartTime?.value &&
+            customizeEndTime?.value &&
+            !detectedPeriodType
+        ) {
             valid = false;
+
             if (showError) {
                 customizeStartTime?.classList.add('is-invalid');
                 customizeEndTime?.classList.add('is-invalid');
-                if (customizeTimeError) customizeTimeError.textContent = 'El horario final del evento debe ser mayor que la hora inicial del evento.';
+
+                if (customizeTimeError) {
+                    customizeTimeError.textContent =
+                        getCustomizeInvalidTimeMessage();
+                }
             }
         }
 
@@ -3028,12 +3158,7 @@ ${rowsText || 'No hay registros visibles para exportar.'}`;
             date: customizeDate.value,
             start_time: customizeStartTime.value,
             end_time: customizeEndTime.value,
-            period_type: detectPeriodTypeFromDateAndTime(
-                customizeDate.value,
-                customizeStartTime.value,
-                customizeEndTime.value,
-                customizeBasePeriodType
-            )
+            period_type: customizePeriodType?.value || updateCustomizePeriodType()
         };
     }
 

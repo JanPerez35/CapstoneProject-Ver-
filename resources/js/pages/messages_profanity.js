@@ -14,11 +14,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const input = document.getElementById('chatMessageInput');
     const sendBtn = document.getElementById('sendChatMessageBtn');
     const errorEl = document.getElementById('chatMessageError');
+    const chatMessageGroup = document.getElementById('chatMessageGroup');
 
     /**
      * Stops execution if required chat elements are not present.
      */
-    if (!input || !sendBtn || !errorEl) return;
+    if (!input || !sendBtn || !errorEl || !chatMessageGroup) return;
 
     /**
      * Sets a profanity validation error on the chat input.
@@ -27,6 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function setProfanityError(message) {
         input.classList.add('is-invalid');
+        chatMessageGroup.classList.remove('border-dark');
+        chatMessageGroup.classList.add('border-danger');
         errorEl.textContent = message;
         errorEl.dataset.errorType = 'profanity';
         sendBtn.disabled = true;
@@ -38,6 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function clearProfanityError() {
         if(errorEl.dataset.errorType === 'profanity') {
             input.classList.remove('is-invalid');
+            chatMessageGroup.classList.remove('border-danger');
+            chatMessageGroup.classList.add('border-dark');
             errorEl.textContent = '';
             delete errorEl.dataset.errorType;
         }
