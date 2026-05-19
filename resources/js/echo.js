@@ -2,7 +2,7 @@ import Echo from 'laravel-echo';
 import Pusher from 'pusher-js';
 import { renderMessage } from './messages_validation';
 
-
+// Make Pusher available globally for Laravel Echo
 window.Pusher = Pusher;
 
 
@@ -12,7 +12,20 @@ const currentUserId = appData.currentUserId;
 
 console.log('USER ID:', currentUserId);
 
-
+/**
+ * Echo Configuration
+ *
+ * Responsibilities:
+ * - Establishes a WebSocket connection using Laravel Echo and Pusher
+ * - Configures authentication for private channels
+ * - Listens for real-time events on chat channels
+ * - Handles incoming messages and updates the UI accordingly
+ *
+ * Features:
+ * - Dynamic channel subscription based on active chat
+ * - Prevents duplicate subscriptions to the same channel
+ * - Graceful handling of connection states and errors
+ */
 window.Echo = new Echo({
     broadcaster: 'reverb',
     key: import.meta.env.VITE_REVERB_APP_KEY,
@@ -42,6 +55,21 @@ window.Echo = new Echo({
 let currentChannel = null;
 let subscribedChannel = null;
 
+/** * Subscribes to a chat channel for real-time messaging
+ *
+ * @param {string} chatId - The ID of the chat to subscribe to
+ *
+ * Responsibilities:
+ * - Manages dynamic subscription to private chat channels based on the active conversation
+ * - Prevents redundant subscriptions to the same channel
+ * - Handles incoming message events and updates the UI in real-time
+ * - Ensures proper cleanup of previous channel subscriptions when switching chats
+ *
+ * Features:
+ * - Listens for '.MessageSent' events and renders new messages in the UI
+ * - Marks messages as read when they arrive in the active chat
+ * - Logs connection status and errors for debugging purposes
+ */
 function subscribeToChat(chatId) {
     if (!chatId) return;
 
@@ -118,5 +146,5 @@ function subscribeToChat(chatId) {
         });
     }
 }
-
+// Expose the subscribeToChat function globally for use in other modules
 window.subscribeToChat = subscribeToChat;

@@ -5,6 +5,14 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Volt\Volt;
 
+/**
+ * Class VoltServiceProvider
+ *
+ * Service provider responsible for setting up Livewire Volt view paths.
+ *
+ * Responsibilities:
+ * - registering additional view paths for Livewire Volt components
+ */
 class VoltServiceProvider extends ServiceProvider
 {
     /**

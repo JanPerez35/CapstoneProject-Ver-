@@ -2,7 +2,7 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 export const options = {
-    vus: 208, 
+    vus: 500, 
     duration: '1s', 
     insecureSkipTLSVerify: true,
 };
