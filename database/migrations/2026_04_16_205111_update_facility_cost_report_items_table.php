@@ -16,6 +16,9 @@ return new class extends Migration
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
         Schema::table('facility_cost_report_items', function (Blueprint $table) {
