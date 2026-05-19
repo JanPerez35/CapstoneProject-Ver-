@@ -105,7 +105,7 @@ class UserController extends Controller
             $this->emailService->send(
                 $user->email,
                 'Cuenta bloqueada',
-                'Tu cuenta ha sido bloqueada de la plataforma MAIKINE. Si entiendes que esto fue un error, comunícate con el super administrador (' . $superAdminEmail . ').'
+                'Tu cuenta ha sido bloqueada de la plataforma MAIKINE. Si entiendes que esto fue un error, comunícate con el Super Administrador (' . $superAdminEmail . ').'
             );
         }
 

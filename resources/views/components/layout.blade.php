@@ -481,7 +481,7 @@
                                         rows="4"
                                         placeholder="Explica por qué necesitas el equipo por más tiempo"
                                     ></textarea>
-                                    <div class="form-text">Mínimo 10 caracteres. Máximo 500 caracteres.</div>
+                                    <div class="form-text">Mínimo 10 caracteres. Máximo 500 caracteres. Solo letras, números, espacios, punto, coma y guion. </div>
                                     <div class="invalid-feedback d-block" id="special_reason_error"></div>
                                 </div>
 
