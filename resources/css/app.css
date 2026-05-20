@@ -1880,3 +1880,13 @@
     text-align: center;
     margin: 0;
 }
+
+
+/*---------------------------------------------------
+ * Section: Date picker invalid style
+ *--------------------------------------------------*/
+
+/* Removes the calendar icon when an invalid date is present, so that the warning icon may appear. */
+.date-picker-wrapper:has(.is-invalid) .date-picker-icon {
+    display: none;
+}

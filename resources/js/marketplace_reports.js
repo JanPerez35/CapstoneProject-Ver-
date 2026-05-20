@@ -1,4 +1,20 @@
+/**
+ * Bootstrap imports
+ *
+ * Responsible  for modals tooltips and toast configurations
+ * and behaviors
+* */
 import * as bootstrap from 'bootstrap';
+
+/**
+ * Flatpickr imports
+ *
+ * Responsibilities:
+ * - Provides the custom calendar component used by the access logs date filter
+ * - Replaces the browser-native date input for consistent UI behavior
+ * - Enables Spanish localization support
+ * - Loads Flatpickr default styles
+ */
 import flatpickr from "flatpickr";
 import { Spanish } from "flatpickr/dist/l10n/es.js";
 import "flatpickr/dist/flatpickr.min.css";

@@ -96,7 +96,7 @@
                                     type="text"
                                     class="form-control form-control-lg"
                                     id="postTitle"
-                                    placeholder="ej. Baloncesto - Spalding"
+                                    placeholder="Ejemplo: Baloncesto - Spalding"
                                     minlength="5"
                                     required
                                 >
@@ -144,7 +144,7 @@
                                             inputmode="decimal"
                                             class="form-control"
                                             id="postPrice"
-                                            placeholder="Ej. 25.00"
+                                            placeholder="Ejemplo: 25.00"
                                             required
                                         >
                                     </div>

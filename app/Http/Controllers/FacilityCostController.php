@@ -1191,6 +1191,7 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
         'date' => ['required', 'date'],
         'start_time' => ['required'],
         'end_time' => ['required'],
+        'period_type' => ['required', 'in:workday,non_workday_saturday,non_workday_sunday_holiday'],
         'force_overwrite' => ['nullable', 'boolean'],
     ]);
 
@@ -1210,6 +1211,20 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
     $customEndDate = $validated['scope'] === 'this_and_following'
         ? $parentEnd
         : $selectedDate;
+
+    if ($validated['period_type'] === 'workday') {
+        $cursor = $customStartDate->copy();
+
+        while ($cursor->lte($customEndDate)) {
+            if ($cursor->isWeekend()) {
+                return response()->json([
+                    'message' => 'No puedes usar el período laborable porque el rango seleccionado incluye sábado o domingo.',
+                ], 422);
+            }
+
+            $cursor->addDay();
+        }
+    }
 
     $groupId = $parent->event_group_id ?? (string) Str::uuid();
 
@@ -1253,7 +1268,7 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
         'end_time' => $validated['end_time'],
         'description' => $parent->event_description,
         'responsible' => $parent->responsible,
-        'period_type' => $parent->period_type,
+        'period_type' => $validated['period_type'],
         'rate_mode' => $parent->rate_mode,
         'services' => $parent->services ?? [],
         'event_group_id' => $groupId,

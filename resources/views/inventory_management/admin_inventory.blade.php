@@ -337,7 +337,7 @@
                                             class="form-control form-control-lg"
                                             min="1"
                                             value="{{ $item->quantity }}"
-                                            placeholder="Ej. 10"
+                                            placeholder="Ejemplo: 10"
                                             required
                                         >
 
@@ -361,7 +361,7 @@
                                             class="form-control form-control-lg"
                                             min="0"
                                             value="{{ $item->available_quantity }}"
-                                            placeholder="Ej. 8"
+                                            placeholder="Ejemplo: 8"
                                             required
                                         >
                                         {{-- Validation restrictions for Available Quantity --}}
@@ -581,7 +581,7 @@
                                 name="quantity"
                                 class="form-control form-control-lg"
                                 min="1"
-                                placeholder="Ej. 10"
+                                placeholder="Ejemplo: 10"
                                 required
                             >
                             {{-- New item maximum restrictions for Total Quantity --}}
@@ -602,7 +602,7 @@
                                 name="available_quantity"
                                 class="form-control form-control-lg"
                                 min="0"
-                                placeholder="Ej. 8"
+                                placeholder="Ejemplo: 8"
                                 required
                             >
                             {{-- New item maximum restrictions for available quantity --}}
