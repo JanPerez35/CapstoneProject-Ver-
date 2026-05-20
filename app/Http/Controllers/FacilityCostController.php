@@ -99,10 +99,8 @@ class FacilityCostController extends Controller
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('responsible', 'like', "%{$search}%")
-                  ->orWhere('event_description', 'like', "%{$search}%")
-                  ->orWhereHas('facilityCost', function ($q2) use ($search) {
-                      $q2->where('classroom_name', 'like', "%{$search}%");
-                  });
+                  ->orWhere('event_date', 'like', "%{$search}%")
+                  ->orWhere('end_date', 'like', "%{$search}%");
             });
         }
 
@@ -489,9 +487,38 @@ public function updateEvent(Request $request, FacilityCostReportItem $item)
     }
 
     /*
-     * 3. Recalculate parent cost with the new parent values.
+     * 3. Recalculate parent cost with the new parent values, then reapply
+     * any custom-day deductions that still belong to this parent.
      */
     $costData = $this->calculateFacilityCostFromPayload($validated);
+    $customDayDeductedTotal = 0;
+
+    if ($item->event_group_id) {
+        $customDays = FacilityCostReportItem::where('event_group_id', $item->event_group_id)
+            ->where('sub_event_type', 'custom_day')
+            ->where('custom_parent_item_id', $item->id)
+            ->get();
+
+        foreach ($customDays as $customDay) {
+            $newParentDeduction = $this->calculateParentDeductionForCustomPeriod(
+                $item,
+                Carbon::parse($customDay->event_date)->toDateString(),
+                Carbon::parse($customDay->end_date ?? $customDay->event_date)->toDateString(),
+                (float) $costData['calculated_cost']
+            );
+
+            $customDay->update([
+                'parent_deducted_cost' => $newParentDeduction,
+            ]);
+
+            $customDayDeductedTotal += $newParentDeduction;
+        }
+    }
+
+    $calculatedCost = max(
+        (float) $costData['calculated_cost'] - $customDayDeductedTotal,
+        0
+    );
 
     $item->update([
         'facility_cost_id' => $costData['facility_cost_id'],
@@ -505,7 +532,7 @@ public function updateEvent(Request $request, FacilityCostReportItem $item)
         'event_date' => $validated['event_date'],
         'end_date' => $validated['event_end_date'],
         'hours_used' => $costData['hours_used'],
-        'calculated_cost' => $costData['calculated_cost'],
+        'calculated_cost' => $calculatedCost,
     ]);
 
     $this->logActivity(
@@ -516,7 +543,7 @@ public function updateEvent(Request $request, FacilityCostReportItem $item)
     return response()->json([
         'message' => 'Evento actualizado correctamente.',
         'item_id' => $item->id,
-        'calculated_cost' => $costData['calculated_cost'],
+        'calculated_cost' => $calculatedCost,
     ]);
 }
 
@@ -597,9 +624,9 @@ public function updateEventSchedule(Request $request, FacilityCostReportItem $it
  * Calculates how much cost should be deducted from the parent event
  * when creating or updating a custom-day modification.
  *
- * Builds a temporary payload using the parent event's original configuration
- * and the selected custom date range, then calculates the cost that the parent
- * originally assigned to that period.
+ * Prorates the parent event's original total across the selected date range.
+ * Existing custom-day deductions are added back first because the parent row
+ * stores the remaining cost after prior modifications.
  *
  * @param FacilityCostReportItem $parent
  * @param string $customStartDate
@@ -609,24 +636,30 @@ public function updateEventSchedule(Request $request, FacilityCostReportItem $it
 private function calculateParentDeductionForCustomPeriod(
     FacilityCostReportItem $parent,
     string $customStartDate,
-    string $customEndDate
+    string $customEndDate,
+    ?float $originalParentCost = null
 ): float {
-    $payload = [
-        'classroom' => $parent->facilityCost->classroom_name,
-        'event_date' => $customStartDate,
-        'event_end_date' => $customEndDate,
-        'start_time' => Carbon::parse($parent->start_time)->format('H:i:s'),
-        'end_time' => Carbon::parse($parent->end_time)->format('H:i:s'),
-        'description' => $parent->event_description,
-        'responsible' => $parent->responsible,
-        'period_type' => $parent->period_type,
-        'rate_mode' => $parent->rate_mode,
-        'services' => $parent->services ?? [],
-    ];
+    $parentStart = Carbon::parse($parent->event_date)->startOfDay();
+    $parentEnd = Carbon::parse($parent->end_date ?? $parent->event_date)->startOfDay();
+    $customStart = Carbon::parse($customStartDate)->startOfDay();
+    $customEnd = Carbon::parse($customEndDate)->startOfDay();
 
-    $costData = $this->calculateFacilityCostFromPayload($payload);
+    $parentDays = $parentStart->diffInDays($parentEnd) + 1;
+    $customDays = $customStart->diffInDays($customEnd) + 1;
 
-    return (float) $costData['calculated_cost'];
+    if ($parentDays <= 0 || $customDays <= 0) {
+        return 0;
+    }
+
+    if ($originalParentCost === null) {
+        $existingDeductions = FacilityCostReportItem::where('custom_parent_item_id', $parent->id)
+            ->where('sub_event_type', 'custom_day')
+            ->sum('parent_deducted_cost');
+
+        $originalParentCost = (float) $parent->calculated_cost + (float) $existingDeductions;
+    }
+
+    return round(($originalParentCost / $parentDays) * $customDays, 2);
 }
 
     /**
@@ -770,6 +803,8 @@ public function updateSubEvent(Request $request, FacilityCostReportItem $item)
                 'message' => 'La modificación debe estar dentro del rango de fechas del evento principal.',
             ], 422);
         }
+
+        $validated['rate_mode'] = $this->resolveRateModeForDateRange($subStart, $subEnd);
     }
 
     $oldParentDeduction = (float) ($item->parent_deducted_cost ?? 0);
@@ -932,6 +967,27 @@ private function calculateFacilityCostFromPayload(array $data): array
         'monthly' => $this->calculateMonthsCrossed($startDate, $endDate),
         default => 1,
     };
+}
+
+    /**
+     * Resolves the billing mode for a date range.
+     *
+     * Custom-day modifications should be billed by their own duration instead
+     * of inheriting the parent event's weekly or monthly mode.
+     */
+    private function resolveRateModeForDateRange(Carbon $startDate, Carbon $endDate): string
+{
+    $daysUsed = $startDate->diffInDays($endDate) + 1;
+
+    if ($daysUsed < 7) {
+        return 'daily';
+    }
+
+    if ($daysUsed < 28) {
+        return 'weekly';
+    }
+
+    return 'monthly';
 }
 
     /**
@@ -1269,7 +1325,7 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
         'description' => $parent->event_description,
         'responsible' => $parent->responsible,
         'period_type' => $validated['period_type'],
-        'rate_mode' => $parent->rate_mode,
+        'rate_mode' => $this->resolveRateModeForDateRange($customStartDate, $customEndDate),
         'services' => $parent->services ?? [],
         'event_group_id' => $groupId,
         'is_group_parent' => false,

@@ -166,7 +166,7 @@
                                 id="facilitySearch"
                                 name="search"
                                 class="form-control border-0"
-                                placeholder="Buscar por fecha, área, hora, periodo, servicios..."
+                                placeholder="Buscar por responsable o fecha..."
                                 value="{{ request('search') }}"
                             >
                         </div>
@@ -360,6 +360,17 @@
                             $subItems = collect($event->sub_items ?? [$event]);
                             $parent = $subItems->firstWhere('is_group_parent', true) ?? $event;
                             $children = $subItems->where('id', '!=', $parent->id);
+                            $relatedAreas = $children->where('sub_event_type', 'related_area');
+                            $customDaysByParent = $children
+                                ->where('sub_event_type', 'custom_day')
+                                ->groupBy('custom_parent_item_id');
+                            $knownCustomParentIds = $relatedAreas
+                                ->pluck('id')
+                                ->push($parent->id)
+                                ->map(fn ($id) => (string) $id);
+                            $orphanCustomDays = $customDaysByParent
+                                ->except($knownCustomParentIds)
+                                ->flatten();
                             $groupKey = $parent->event_group_id ?: 'single-' . $parent->id;
                         @endphp
 
@@ -420,13 +431,38 @@
                             'groupKey' => $groupKey
                         ])
 
-                        {{-- Sub-event rows --}}
-                        @foreach ($children as $child)
+                        {{-- Parent custom-day modifications --}}
+                        @foreach ($customDaysByParent->get($parent->id, collect()) as $child)
                             @include('partials.facility_event_row', [
                                 'item' => $child,
                                 'rowType' => 'child',
                                 'groupKey' => $groupKey
                             ])
+                        @endforeach
+
+                        @foreach ($orphanCustomDays as $child)
+                            @include('partials.facility_event_row', [
+                                'item' => $child,
+                                'rowType' => 'child',
+                                'groupKey' => $groupKey
+                            ])
+                        @endforeach
+
+                        {{-- Related areas and their custom-day modifications --}}
+                        @foreach ($relatedAreas as $relatedArea)
+                            @include('partials.facility_event_row', [
+                                'item' => $relatedArea,
+                                'rowType' => 'child',
+                                'groupKey' => $groupKey
+                            ])
+
+                            @foreach ($customDaysByParent->get($relatedArea->id, collect()) as $child)
+                                @include('partials.facility_event_row', [
+                                    'item' => $child,
+                                    'rowType' => 'child',
+                                    'groupKey' => $groupKey
+                                ])
+                            @endforeach
                         @endforeach
 
                         <tr class="event-group-total" data-group-key="{{ $groupKey }}">

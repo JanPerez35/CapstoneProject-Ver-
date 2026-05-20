@@ -1770,6 +1770,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let pendingEditPayload = null;
         let pendingDeleteOutOfRangeCustomDays = false;
         let pendingDeleteCustomDaysOnAreaChange = false;
+        let editingIsSubEvent = false;
         let editingIsCustomDay = false;
 
         let pendingCustomizePayload = null;
@@ -1792,7 +1793,11 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteCustomDaysOnAreaChange = false
         ) {
             try {
-                await sendJson(`/facility/events/${payload.event_id}`, 'PUT', {
+                const url = payload.is_sub_event
+                    ? `/facility/events/${payload.event_id}/sub-event`
+                    : `/facility/events/${payload.event_id}`;
+
+                await sendJson(url, 'PUT', {
                     classroom: payload.classroom,
                     responsible: payload.responsible,
                     description: payload.description,
@@ -2412,7 +2417,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * Clears all  filters and resets the visible table state.
      *
      * This resets:
-     * - search text
+     * - search text for responsible and dates
      * - report type
      * - month/year filters
      * - area filter
@@ -3642,7 +3647,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rowMonth = row.dataset.month;
                 const rowYear = row.dataset.year;
                 const rowClassroom = row.dataset.classroom;
-                const rowText = row.textContent.toLowerCase();
+                const searchableText = [
+                    row.dataset.responsible || '',
+                    row.dataset.date || '',
+                    row.dataset.endDate || '',
+                    row.cells[0]?.textContent || '',
+                    row.cells[1]?.textContent || '',
+                    row.cells[2]?.textContent || '',
+                ].join(' ').toLowerCase();
 
                 const rowPeriodType = row.cells[6]?.textContent.trim() || '';
                 const rowRateMode = row.cells[7]?.textContent.trim() || '';
@@ -3666,7 +3678,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     !service || rowServices.includes(service);
 
                 const matchesSearch =
-                    !searchValue || rowText.includes(searchValue);
+                    !searchValue || searchableText.includes(searchValue);
 
                 return (
                     matchesType &&
@@ -3841,6 +3853,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const editingSubEventType = row.dataset.subEventType || '';
         const editingIsParent = row.classList.contains('parent-event-row');
+        editingIsSubEvent = !editingIsParent;
         editingIsCustomDay = editingSubEventType === 'custom_day';
         const editingIsRelatedArea = editingSubEventType === 'related_area';
 
@@ -4669,6 +4682,7 @@ document.addEventListener('DOMContentLoaded', () => {
             event_end_date: editEndDate.value,
             start_time: editStartTime.value,
             end_time: editEndTime.value,
+            is_sub_event: editingIsSubEvent,
             scope: 'whole_event'
         };
     }
@@ -4957,7 +4971,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (!editingIsCustomDay) {
+            if (!payload.is_sub_event) {
                 const outOfRangeCustomDays = getCustomDaysOutsideEditedParentRange(
                     payload.event_id,
                     payload.event_date,
