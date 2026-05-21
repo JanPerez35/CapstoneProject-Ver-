@@ -285,8 +285,9 @@
 
                         {{-- Pagination (handled via JS) most likely not shown in testing but available nonetheless --}}
                         <div id="pendingPaginationWrapper" class="px-3 pb-3 d-none">
-                            <nav aria-label="Paginación de solicitudes pendientes">
-                                <ul id="pendingPagination" class="pagination justify-content-center mb-0"></ul>
+                            <nav aria-label="Paginación de solicitudes pendientes" class="d-flex justify-content-center align-items-center flex-wrap gap-3">
+                                <p class="text-muted small mb-0" id="pendingPaginationSummary"></p>
+                                <ul id="pendingPagination" class="pagination mb-0"></ul>
                             </nav>
                         </div>
                     </div>
@@ -437,8 +438,9 @@
 
                         {{-- Pagination (handled dynamically via JS) not shown due to amount of items normally --}}
                         <div id="activePaginationWrapper" class="px-3 pb-3 d-none">
-                            <nav aria-label="Paginación de solicitudes activas">
-                                <ul id="activePagination" class="pagination justify-content-center mb-0"></ul>
+                            <nav aria-label="Paginación de solicitudes activas" class="d-flex justify-content-center align-items-center flex-wrap gap-3">
+                                <p class="text-muted small mb-0" id="activePaginationSummary"></p>
+                                <ul id="activePagination" class="pagination mb-0"></ul>
                             </nav>
                         </div>
                     </div>

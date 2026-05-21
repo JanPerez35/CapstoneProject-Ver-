@@ -28,7 +28,7 @@
                 dentro del Coliseo Rafael Mangual.</p>
         </div>
 
-        <!--Notice-->
+        {{-- Notice --}}
         <div class="alert bg-warning-subtle text-warning-emphasis rounded-4 border-0 shadow-sm mb-4 px-4 py-4"
              id="costEstimateNotice">
             <div class="d-flex align-items-start gap-3">
@@ -59,9 +59,9 @@
             </div>
         </div>
 
-        <!--Buttons-->
+        {{-- Buttons --}}
         <div id="facilityActionButtons" class="d-flex flex-wrap gap-3 mb-4">
-
+            {{-- Only Super Administrator can add, edit or delete configurations --}}
             @if(auth()->user()->role === 'Super Administrador')
                 <span
                     data-bs-toggle="tooltip"
@@ -82,6 +82,7 @@
             </span>
             @endif
 
+            {{-- Add a new event record --}}
             <span
                 data-bs-toggle="tooltip"
                 data-bs-placement="top"
@@ -100,6 +101,7 @@
                 </button>
             </span>
 
+            {{-- Export via CSV --}}
             <span
                 data-bs-toggle="tooltip"
                 data-bs-placement="top"
@@ -115,6 +117,7 @@
                         </a>
                 </span>
 
+            {{-- Export via PDF --}}
             <span
                 data-bs-toggle="tooltip"
                 data-bs-placement="top"
@@ -130,6 +133,7 @@
                         </a>
                 </span>
 
+            {{-- EventFlow simulated bridge --}}
             <span
                 data-bs-toggle="tooltip"
                 data-bs-placement="top"
@@ -149,7 +153,7 @@
             </span>
         </div>
 
-        <!--Search and Filters-->
+        {{-- Search and filters --}}
         <div class="mb-4">
             <form id="facilityCostFilterForm" method="GET" action="{{ route('facility_management') }}" class="mb-4">
                 @csrf
@@ -161,6 +165,7 @@
                                     <i class="bi bi-search"></i>
                                 </span>
 
+                            {{-- Search bar --}}
                             <input
                                 type="text"
                                 id="facilitySearch"
@@ -178,6 +183,7 @@
                         </button>
                     </div>
 
+                    {{-- Report type filter --}}
                     <div class="col-md-3">
                         <select id="reportType" name="report_type" class="form-select border-2 border-dark">
                             <option value="" {{ $reportType === '' ? 'selected' : '' }}>Tipo de Informe</option>
@@ -186,6 +192,7 @@
                         </select>
                     </div>
 
+                    {{-- Month filter --}}
                     <div class="col-md-3 {{ $reportType !== 'monthly' ? 'd-none' : '' }}" id="monthFilterWrapper">
                         <select id="reportMonth" name="report_month" class="form-select border-2 border-dark">
                             <option value="" {{ $reportMonth === '' ? 'selected' : '' }}>Mes</option>
@@ -204,6 +211,7 @@
                         </select>
                     </div>
 
+                    {{-- Yearly filter --}}
                     <div class="col-md-3 {{ $reportType === '' ? 'd-none' : '' }}" id="yearFilterWrapper">
                         <select id="reportYear" name="report_year" class="form-select border-2 border-dark">
                             <option value="" {{ $reportYear === '' ? 'selected' : '' }}>Año</option>
@@ -216,6 +224,7 @@
                         </select>
                     </div>
 
+                    {{-- Area filter --}}
                     <div class="col-md-3">
                         <select id="filterClassroom" name="filter_classroom" class="form-select border-2 border-dark">
                             <option value="" {{ ($filterClassroom ?? '') === '' ? 'selected' : '' }}>Área</option>
@@ -228,6 +237,7 @@
                         </select>
                     </div>
 
+                    {{-- Period type filter --}}
                     <div class="col-md-3">
                         <select id="filterPeriodType" name="filter_period_type"
                                 class="form-select border-2 border-dark">
@@ -238,6 +248,7 @@
                         </select>
                     </div>
 
+                    {{-- Rate mode filter --}}
                     <div class="col-md-3">
                         <select id="filterRateMode" name="filter_rate_mode" class="form-select border-2 border-dark">
                             <option value="">Tipo de Tarifa</option>
@@ -247,6 +258,7 @@
                         </select>
                     </div>
 
+                    {{-- Services filter --}}
                     <div class="col-md-3">
                         <select id="filterServices" name="filter_services" class="form-select border-2 border-dark">
                             <option value="">Servicios</option>
@@ -256,6 +268,7 @@
                         </select>
                     </div>
 
+                    {{-- Clean filters --}}
                     <div class="col-md-3">
                         <button type="button" class="btn btn-outline-secondary" id="clearFacilityFilters">
                             Limpiar Filtros
@@ -265,7 +278,7 @@
             </form>
         </div>
 
-        <!--Data Table-->
+        {{-- Data table --}}
         <div class="card border-dark border-2 shadow-sm rounded-2 overflow-hidden">
             <div class="card-body p-4 border-bottom">
                 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
@@ -276,6 +289,7 @@
                         </p>
                     </div>
 
+                    {{-- Actions leyend --}}
                     <div class="d-flex align-items-start gap-3 me-3 ms-lg-0 ms-auto">
                         <span class="fw-semibold">Leyenda:</span>
 
@@ -300,6 +314,7 @@
                 </div>
             </div>
 
+            {{-- Table columns headers --}}
             <div class="table-fit-wrapper mt-0" style="max-height: 620px; overflow: auto;">
                 <table class="table align-middle mb-0" id="facilityCostTable">
                     <thead class="table-light position-sticky top-0" style="z-index: 20;">
@@ -495,6 +510,7 @@
                     </tfoot>
                 </table>
 
+                {{-- Filters does not return anything --}}
                 <div id="facilityCostEmptyState" class="card border-0 shadow-sm rounded-0 d-none container mb-4">
                     <div class="card-body py-5 text-center">
                         <i class="bi bi-currency-dollar fs-1 text-muted"></i>
@@ -508,8 +524,9 @@
     </div>
 
 
-    <nav class="mt-4" aria-label="Paginación de costos">
-        <ul class="pagination justify-content-center" id="facilityCostPagination"></ul>
+    <nav class="mt-4 d-flex justify-content-center align-items-center flex-wrap gap-3" aria-label="Paginación de costos">
+        <p class="text-muted small mb-0" id="facilityCostPaginationSummary"></p>
+        <ul class="pagination mb-0" id="facilityCostPagination"></ul>
     </nav>
 
     {{--
@@ -1215,7 +1232,7 @@
         </div>
     </div>
 
-    <!-- Confirmar cancelar evento -->
+    {{-- Confirm to cancel the event --}}
     <div class="modal fade" id="confirmCancelRentalModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -2112,7 +2129,7 @@
     </div>
 
 
-    <!--Add Classroom Modal-->
+    {{-- Add classroom modal --}}
     <div class="modal fade" id="addClassroomModal" tabindex="-1" aria-labelledby="addClassroomModalLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -2155,6 +2172,7 @@
                     <div class="invalid-feedback d-block" id="newClassroomNameError"></div>
                 </div>
 
+                {{-- Add a new area --}}
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" id="cancelAddClassroomBtn"
                             data-bs-dismiss="modal">Cancelar
@@ -2173,7 +2191,7 @@
         </div>
     </div>
 
-
+    {{-- Deleted selected area --}}
     <div class="modal fade" id="deleteClassroomModal" tabindex="-1" aria-labelledby="deleteClassroomModalLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -2205,6 +2223,7 @@
         </div>
     </div>
 
+    {{-- Warnings if the Super Administrator or Facility Administrator change an event that affect a child event --}}
     <div class="modal fade" id="parentRangeWarningModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -2233,7 +2252,7 @@
         </div>
     </div>
 
-
+    {{-- Warnings if the Super Administrator or Facility Administrator change an event that affect a child event --}}
     <div class="modal fade" id="customizeOverwriteWarningModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -2263,7 +2282,7 @@
     </div>
 
 
-    <!--Notification Toasts-->
+    {{-- Notifications toasts --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
         <div id="deleteEntryToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
@@ -2287,7 +2306,7 @@
             </div>
         </div>
 
-        <!-- Tarifa Toast -->
+        {{-- Areas costs saved toast --}}
         <div id="ratesSavedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert" aria-live="assertive" aria-atomic="true">
@@ -2299,7 +2318,7 @@
             </div>
         </div>
 
-        <!-- Event Toast -->
+        {{-- Event creation toast --}}
         <div id="rentalSavedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert" aria-live="assertive" aria-atomic="true">
@@ -2311,8 +2330,7 @@
             </div>
         </div>
 
-        <!--Eventflow toast-->
-
+        {{-- EventFlow imported simulation toast --}}
         @if(session('mock_imported'))
             <div id="mockImportToast"
                  class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"

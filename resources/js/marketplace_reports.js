@@ -291,6 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     reportsTable: $('reportsTable'),
     emptyState: $('reportsEmptyState'),
     reportsPagination: $('querellasPagination'),
+    reportsPaginationSummary: $('querellasPaginationSummary'),
     };
 
     /**
@@ -380,10 +381,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!container) return;
 
     const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+    const summary = container === els.reportsPagination ? els.reportsPaginationSummary : null;
 
     if (totalItems <= 0) {
     container.innerHTML = '';
+    if (summary) summary.textContent = '';
     return;
+    }
+
+    if (summary) {
+    const firstItem = ((currentPage - 1) * itemsPerPage) + 1;
+    const lastItem = Math.min(currentPage * itemsPerPage, totalItems);
+    summary.textContent = `Mostrando ${firstItem} a ${lastItem} de ${totalItems} resultados`;
     }
 
     let paginationHTML = '';
@@ -905,4 +914,3 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchReports();
         initializeReportsDatePicker();
     });
-

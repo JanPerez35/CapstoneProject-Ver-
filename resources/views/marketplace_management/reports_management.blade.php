@@ -237,8 +237,9 @@
 
        {{--Pagination container. Located at the buttom of the table.
            Updated when the amount of reports exceeds 18--}}
-        <nav class="mt-4" aria-label="Paginación de querellas">
-            <ul class="pagination justify-content-center" id="querellasPagination"></ul>
+        <nav class="mt-4 d-flex justify-content-center align-items-center flex-wrap gap-3" aria-label="Paginación de querellas">
+            <p class="text-muted small mb-0" id="querellasPaginationSummary"></p>
+            <ul class="pagination mb-0" id="querellasPagination"></ul>
         </nav>
 
         {{--Resolve report confimration modal. It is opened before a report/querella is marked as resolved

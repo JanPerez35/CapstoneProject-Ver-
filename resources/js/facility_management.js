@@ -179,6 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * Facility cost pagination container.
      */
     const facilityCostPagination = $('facilityCostPagination');
+    const facilityCostPaginationSummary = $('facilityCostPaginationSummary');
 
     /**
      * Report filter references.
@@ -3551,10 +3552,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container) return;
 
         const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+        const summary = container === facilityCostPagination ? facilityCostPaginationSummary : null;
 
         if (totalItems <= 0) {
             container.innerHTML = '';
+            if (summary) summary.textContent = '';
             return;
+        }
+
+        if (summary) {
+            const firstItem = ((currentPage - 1) * itemsPerPage) + 1;
+            const lastItem = Math.min(currentPage * itemsPerPage, totalItems);
+            summary.textContent = `Mostrando ${firstItem} a ${lastItem} de ${totalItems} resultados`;
         }
 
         let paginationHTML = '';

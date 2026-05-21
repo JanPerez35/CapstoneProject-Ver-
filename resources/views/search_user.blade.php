@@ -219,7 +219,8 @@
         </div>
 
         {{-- Pagination --}}
-        <div class="mt-4 d-flex justify-content-center">
+        <div class="mt-4 d-flex justify-content-center align-items-center flex-wrap gap-3">
+            <p class="text-muted small mb-0" id="usersPaginationSummary"></p>
             <ul class="pagination users-pagination mb-0" id="usersPagination"></ul>
         </div>
     </div>
@@ -358,4 +359,3 @@
     </div>
 
 </x-layout>
-
