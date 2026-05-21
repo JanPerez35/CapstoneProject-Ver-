@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const userCards = Array.from(document.querySelectorAll('.user-card'));
     const usersEmptyState = document.getElementById('usersEmptyState');
     const usersPagination = document.getElementById('usersPagination');
+    const usersPaginationSummary = document.getElementById('usersPaginationSummary');
 
     /**
      * Role change confirmation modal references
@@ -180,7 +181,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (totalItems === 0) {
             usersPagination.innerHTML = '';
+            if (usersPaginationSummary) usersPaginationSummary.textContent = '';
             return;
+        }
+
+        if (usersPaginationSummary) {
+            const firstItem = ((currentPage - 1) * USERS_PER_PAGE) + 1;
+            const lastItem = Math.min(currentPage * USERS_PER_PAGE, totalItems);
+            usersPaginationSummary.textContent = `Mostrando ${firstItem} a ${lastItem} de ${totalItems} resultados`;
         }
 
         let paginationHTML = `

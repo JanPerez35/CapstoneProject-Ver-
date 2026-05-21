@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('user_reports', function (Blueprint $table) {
@@ -23,9 +26,13 @@ return new class extends Migration
 
             $table->timestamps();
         });
-        }
+    }
 
-    public function down(): void {
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void 
+    {
         Schema::dropIfExists('user_reports');
     }
 };

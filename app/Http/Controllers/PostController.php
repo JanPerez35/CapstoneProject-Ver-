@@ -116,7 +116,7 @@ class PostController extends Controller
 
         foreach ($images as $image) {
             if ($image) {
-                Storage::disk('public')->delete($image);
+                Storage::disk('public', 'posts')->delete($image);
             }
         }
 

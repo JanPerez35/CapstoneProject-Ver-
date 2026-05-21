@@ -6,6 +6,9 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     */
     public function up(): void
     {
         Schema::create('messages', function (Blueprint $table) {
@@ -23,10 +26,13 @@ return new class extends Migration
 
             $table->timestamps();
         });
-            }
+    }
 
-            public function down(): void
-            {
-                Schema::dropIfExists('messages');
-            }
-        };
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('messages');
+    }
+};

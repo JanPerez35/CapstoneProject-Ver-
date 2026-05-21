@@ -107,6 +107,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const activePagination = document.getElementById('activePagination');
     const pendingPaginationWrapper = document.getElementById('pendingPaginationWrapper');
     const activePaginationWrapper = document.getElementById('activePaginationWrapper');
+    const pendingPaginationSummary = document.getElementById('pendingPaginationSummary');
+    const activePaginationSummary = document.getElementById('activePaginationSummary');
 
     /**
      * Stores the form that should be submitted after the user confirms
@@ -399,6 +401,9 @@ document.addEventListener('DOMContentLoaded', function () {
         const filteredCards = getFilteredCards(cards);
         const totalItems = filteredCards.length;
         const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
+        const paginationSummary = paginationContainer === pendingPagination
+            ? pendingPaginationSummary
+            : activePaginationSummary;
 
         if (currentPage > totalPages) {
             currentPage = totalPages;
@@ -422,6 +427,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 paginationContainer.innerHTML = '';
             }
 
+            if (paginationSummary) {
+                paginationSummary.textContent = '';
+            }
+
             return;
         }
 
@@ -431,6 +440,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
         const endIndex = startIndex + ITEMS_PER_PAGE;
+
+        if (paginationSummary) {
+            const firstItem = startIndex + 1;
+            const lastItem = Math.min(endIndex, totalItems);
+            paginationSummary.textContent = `Mostrando ${firstItem} a ${lastItem} de ${totalItems} resultados`;
+        }
 
         cards.forEach(card => {
             if (card.dataset.filteredOut === 'true') {

@@ -68,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const clearPostsFilters = document.getElementById('clearPostsFilters');
     const postsEmptyState = document.getElementById('postsEmptyState');
     const postsPagination = document.getElementById('postsPagination');
+    const postsPaginationSummary = document.getElementById('postsPaginationSummary');
 
     /*
      * References for the requests section.
@@ -373,10 +374,19 @@ document.addEventListener('DOMContentLoaded', function () {
         const safePage = Math.min(currentPageValue, totalPages);
         const start = (safePage - 1) * ITEMS_PER_PAGE;
         const end = start + ITEMS_PER_PAGE;
+        const summary = paginationContainer === postsPagination ? postsPaginationSummary : null;
 
         items.forEach((item, index) => {
             item.classList.toggle('d-none', !(index >= start && index < end));
         });
+
+        if (summary) {
+            const firstItem = items.length === 0 ? 0 : start + 1;
+            const lastItem = Math.min(end, items.length);
+            summary.textContent = items.length === 0
+                ? ''
+                : `Mostrando ${firstItem} a ${lastItem} de ${items.length} resultados`;
+        }
 
         buildPagination(paginationContainer, totalPages, safePage, onPageChange);
 
@@ -538,6 +548,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (matchingCards.length === 0) {
             if (postsPagination) postsPagination.innerHTML = '';
+            if (postsPaginationSummary) postsPaginationSummary.textContent = '';
             return;
         }
 

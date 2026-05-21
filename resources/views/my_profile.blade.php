@@ -536,8 +536,9 @@
                     </div>
                 </div>
 
-                <nav aria-label="Paginación de publicaciones" class="mt-4">
-                    <ul class="pagination justify-content-center mb-0 profile-pagination" id="postsPagination"></ul>
+                <nav aria-label="Paginación de publicaciones" class="mt-4 d-flex justify-content-center align-items-center flex-wrap gap-3">
+                    <p class="text-muted small mb-0" id="postsPaginationSummary"></p>
+                    <ul class="pagination mb-0 profile-pagination" id="postsPagination"></ul>
                 </nav>
 
                 </div>

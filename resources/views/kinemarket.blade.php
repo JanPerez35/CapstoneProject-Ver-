@@ -96,7 +96,7 @@
                                     type="text"
                                     class="form-control form-control-lg"
                                     id="postTitle"
-                                    placeholder="ej. Baloncesto - Spalding"
+                                    placeholder="Ejemplo: Baloncesto - Spalding"
                                     minlength="5"
                                     required
                                 >
@@ -144,7 +144,7 @@
                                             inputmode="decimal"
                                             class="form-control"
                                             id="postPrice"
-                                            placeholder="Ej. 25.00"
+                                            placeholder="Ejemplo: 25.00"
                                             required
                                         >
                                     </div>
@@ -377,9 +377,10 @@
 
 
         {{--Pagination controls for navigating posts, controlled via the marketplace JS file--}}
-        <nav aria-label="Paginación de publicaciones" class="mt-4">
+        <nav aria-label="Paginación de publicaciones" class="mt-4 d-flex justify-content-center align-items-center flex-wrap gap-3">
+            <p class="text-muted small mb-0" id="marketplacePaginationSummary"></p>
             {{--Pagination list dynamically filled by marketplace JS--}}
-            <ul class="pagination justify-content-center mb-0" id="marketplacePagination"></ul>
+            <ul class="pagination mb-0" id="marketplacePagination"></ul>
         </nav>
 
 
@@ -826,4 +827,3 @@
         </div>
     </div>
 </x-layout>
-

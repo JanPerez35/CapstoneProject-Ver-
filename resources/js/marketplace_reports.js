@@ -1,4 +1,20 @@
+/**
+ * Bootstrap imports
+ *
+ * Responsible  for modals tooltips and toast configurations
+ * and behaviors
+* */
 import * as bootstrap from 'bootstrap';
+
+/**
+ * Flatpickr imports
+ *
+ * Responsibilities:
+ * - Provides the custom calendar component used by the access logs date filter
+ * - Replaces the browser-native date input for consistent UI behavior
+ * - Enables Spanish localization support
+ * - Loads Flatpickr default styles
+ */
 import flatpickr from "flatpickr";
 import { Spanish } from "flatpickr/dist/l10n/es.js";
 import "flatpickr/dist/flatpickr.min.css";
@@ -275,6 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     reportsTable: $('reportsTable'),
     emptyState: $('reportsEmptyState'),
     reportsPagination: $('querellasPagination'),
+    reportsPaginationSummary: $('querellasPaginationSummary'),
     };
 
     /**
@@ -364,10 +381,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!container) return;
 
     const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+    const summary = container === els.reportsPagination ? els.reportsPaginationSummary : null;
 
     if (totalItems <= 0) {
     container.innerHTML = '';
+    if (summary) summary.textContent = '';
     return;
+    }
+
+    if (summary) {
+    const firstItem = ((currentPage - 1) * itemsPerPage) + 1;
+    const lastItem = Math.min(currentPage * itemsPerPage, totalItems);
+    summary.textContent = `Mostrando ${firstItem} a ${lastItem} de ${totalItems} resultados`;
     }
 
     let paginationHTML = '';
@@ -889,4 +914,3 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchReports();
         initializeReportsDatePicker();
     });
-

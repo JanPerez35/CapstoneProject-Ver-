@@ -9,6 +9,17 @@ use App\Models\Post;
 use App\Models\Chat;
 use App\Models\UserReport;
 
+/**
+ * Class KineMercadoTest
+ *
+ * This test suite covers the core functionalities of the KineMercado marketplace feature, including:
+ * - post creation and deletion
+ * - chat initiation and messaging
+ * - user reviews and reporting
+ * - administrative actions such as resolving reports and blocking users
+ *
+ * The tests ensure that both normal users and administrators can perform their respective actions while enforcing proper access controls and validations.
+ */
 class KineMercadoTest extends TestCase
 {
     use RefreshDatabase;
@@ -24,6 +35,9 @@ class KineMercadoTest extends TestCase
         ];
     }
 
+    /**
+     * Test that a user can create a post and then delete it, ensuring the post is removed from the database.
+     */
     public function test_user_can_create_and_delete_post()
     {
         $user = User::factory()->create();
@@ -34,11 +48,23 @@ class KineMercadoTest extends TestCase
 
         $post = Post::first();
 
+        $this->assertDatabaseHas('posts', [
+            'id' => $post->id,
+            'user_id' => $user->id,
+        ]);
+
         $this->actingAs($user)
             ->delete("/posts/{$post->id}")
             ->assertStatus(200);
+        
+        $this->assertDatabaseMissing('posts', [
+            'id' => $post->id,
+        ]);
     }
 
+    /**
+     * Test that a user cannot create more than 15 posts, ensuring the post limit is enforced.
+     */
     public function test_user_cannot_exceed_post_limit()
     {
         $user = User::factory()->create();
@@ -54,12 +80,17 @@ class KineMercadoTest extends TestCase
                 'status' => 'Disponible',
             ]);
         }
-
+    
         $this->actingAs($user)
             ->post('/posts', $this->postData())
             ->assertStatus(403);
+        
+        $this->assertCount(15, Post::where('user_id', $user->id)->get());
     }
 
+    /**
+     * Test that a user can review another user, ensuring the review is saved in the database.
+     */
     public function test_user_can_review_other_user()
     {
         $user = User::factory()->create();
@@ -80,8 +111,17 @@ class KineMercadoTest extends TestCase
                 'rating' => 5
             ])
             ->assertStatus(200);
+
+        $this->assertDatabaseHas('reviews', [
+            'user_id' => $user->id,
+            'post_id' => $post->id,
+            'rating' => 5,
+        ]);
     }
 
+    /**
+     * Test that a user can report another user, ensuring the report is saved in the database.
+     */
     public function test_user_can_report_other_user()
     {
         $user = User::factory()->create();
@@ -105,8 +145,20 @@ class KineMercadoTest extends TestCase
                 'description' => 'Este usuario está haciendo spam',
             ])
             ->assertStatus(200);
+    
+        $this->assertDatabaseHas('user_reports', [
+            'user_id' => $user->id,
+            'reported_user_id' => $target->id,
+            'post_id' => $post->id,
+            'report_reason' => 'Spam',
+            'description' => 'Este usuario está haciendo spam',
+            'status' => 'pending',
+        ]);
     }
 
+    /**
+     * Test that a user can create a chat and send a message, ensuring the message is saved in the database.
+     */
     public function test_user_can_create_chat_and_send_message()
     {
         $user1 = User::factory()->create();
@@ -138,8 +190,15 @@ class KineMercadoTest extends TestCase
                 'content' => 'Hola'
             ])
             ->assertStatus(200);
+    
+        $this->assertDatabaseHas('messages', [
+            'chat_id' => $chat->id,
+        ]);
     }
 
+    /**
+     * Test that an admin can delete any post, ensuring the post is removed from the database.
+     */
     public function test_admin_can_delete_any_post()
     {
         $admin = User::factory()->create(['role' => 'Administrador de Mercado']);
@@ -158,8 +217,15 @@ class KineMercadoTest extends TestCase
         $this->actingAs($admin)
             ->delete("/posts/{$post->id}")
             ->assertStatus(200);
+
+        $this->assertDatabaseMissing('posts', [
+            'id' => $post->id,
+        ]);
     }
 
+    /**
+     * Test that an admin can resolve reports, ensuring the report status is updated in the database.
+     */
     public function test_admin_can_resolve_reports()
     {
         $admin = User::factory()->create(['role' => 'Administrador de Mercado']);
@@ -187,8 +253,16 @@ class KineMercadoTest extends TestCase
         $this->actingAs($admin)
             ->post("/reports/{$report->id}/resolve")
             ->assertStatus(200);
+
+        $this->assertDatabaseHas('user_reports', [
+            'id' => $report->id,
+            'status' => 'resolved'
+        ]);
     }
 
+    /**
+    * Test that an admin can block a user, ensuring the user's status is updated in the database.
+    */
     public function test_admin_can_block_user()
     {
         $admin = User::factory()->create(['role' => 'Administrador de Mercado']);
@@ -216,8 +290,16 @@ class KineMercadoTest extends TestCase
         $this->actingAs($admin)
             ->post("/reports/{$report->id}/ban")
             ->assertStatus(200);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'status' => 'Bloqueado'
+        ]);
     }
 
+    /**
+     * Test that a blocked user cannot create a post, ensuring the action is forbidden.
+     */
     public function test_blocked_user_cannot_create_post()
     {
         $user = User::factory()->create([
@@ -227,8 +309,15 @@ class KineMercadoTest extends TestCase
         $this->actingAs($user)
             ->post('/posts', $this->postData())
             ->assertStatus(302);
+
+        $this->assertDatabaseMissing('posts', [
+            'user_id' => $user->id,
+        ]);
     }
 
+    /**
+     * Test that a user cannot delete another user's post, ensuring the action is forbidden.
+     */
     public function test_user_cannot_delete_other_user_post()
     {
         $user1 = User::factory()->create();
@@ -247,8 +336,15 @@ class KineMercadoTest extends TestCase
         $this->actingAs($user1)
             ->delete("/posts/{$post->id}")
             ->assertStatus(403);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $post->id,
+        ]);
     }
 
+    /**
+     * Test that a user cannot review their own post, ensuring the action is forbidden.
+     */
     public function test_user_cannot_review_own_post()
     {
         $user = User::factory()->create();
@@ -268,8 +364,17 @@ class KineMercadoTest extends TestCase
                 'rating' => 5
             ])
             ->assertStatus(422);
+
+        $this->assertDatabaseMissing('reviews', [
+            'user_id' => $user->id,
+            'reviewed_user_id' => $user->id,
+            'post_id' => $post->id,
+        ]);
     }
 
+    /**
+     * Test that a user cannot report themselves, ensuring the action is forbidden.
+     */
     public function test_user_cannot_chat_with_self()
     {
         $user = User::factory()->create();
@@ -290,8 +395,17 @@ class KineMercadoTest extends TestCase
                 'post_id' => $post->id,
             ])
             ->assertStatus(403);
+
+            $this->assertDatabaseMissing('chats', [
+                'post_id' => $post->id,
+                'buyer_user_id' => $user->id,
+                'seller_user_id' => $user->id,
+            ]);
     }
 
+    /**
+     * Test that a user cannot report themselves, ensuring the action is forbidden.
+     */
     public function test_user_cannot_report_self()
     {
         $user = User::factory()->create();
@@ -314,8 +428,17 @@ class KineMercadoTest extends TestCase
                 'description' => 'Test para reporte a uno mismo',
             ])
             ->assertStatus(403);
+
+        $this->assertDatabaseMissing('user_reports', [
+            'user_id' => $user->id,
+            'reported_user_id' => $user->id,
+            'post_id' => $post->id,
+        ]);
     }
 
+    /**
+     * Test that a normal user cannot resolve reports, ensuring the action is forbidden.
+     */
     public function test_normal_user_cannot_resolve_reports()
     {
         $user = User::factory()->create();
@@ -343,8 +466,16 @@ class KineMercadoTest extends TestCase
         $this->actingAs($user)
             ->post("/reports/{$report->id}/resolve")
             ->assertStatus(403);
+
+        $this->assertDatabaseHas('user_reports', [
+            'id' => $report->id,
+            'status' => 'pending'
+        ]);
     }
 
+    /**
+     * Test that a user can only see their own chats, ensuring the correct chats are returned in the view.
+     */
     public function test_user_can_only_see_own_chats()
     {
         $user1 = User::factory()->create();
@@ -385,6 +516,9 @@ class KineMercadoTest extends TestCase
         });
     }
 
+    /**
+     * Test that deleting a post also deletes related chats, ensuring data integrity in the database.
+     */
     public function test_deleting_post_deletes_related_chats()
     {
         $user = User::factory()->create();
@@ -419,6 +553,9 @@ class KineMercadoTest extends TestCase
         ]);
     }
 
+    /**
+     * Test that resolving a report changes its status to 'resolved', ensuring the report is updated in the database.
+     */
     public function test_report_status_changes_on_resolve()
     {
         $admin = User::factory()->create(['role' => 'Administrador de Mercado']);
@@ -452,6 +589,9 @@ class KineMercadoTest extends TestCase
         ]);
     }
 
+    /**
+     * Test that a user cannot view the reports list, ensuring the action is forbidden for non-admin users.
+     */
     public function test_user_cannot_view_reports_list()
     {
         $user = User::factory()->create();
@@ -461,6 +601,9 @@ class KineMercadoTest extends TestCase
             ->assertStatus(403);
     }
 
+    /**
+     * Test that an admin can view the reports list, ensuring the page loads successfully for admin users.
+     */
     public function test_admin_can_view_reports()
     {
         $admin = User::factory()->create(['role' => 'Administrador de Mercado']);
@@ -470,6 +613,9 @@ class KineMercadoTest extends TestCase
             ->assertStatus(200);
     }
 
+    /**
+     * Test that only a super admin can change user roles, ensuring the action is successful for super admins and forbidden for others.
+     */
     public function test_only_super_admin_can_change_roles()
     {
         $super = User::factory()->create(['role' => 'Super Administrador']);
@@ -480,8 +626,16 @@ class KineMercadoTest extends TestCase
                 'role' => 'Administrador de Mercado'
             ])
             ->assertStatus(200);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'role' => 'Administrador de Mercado'
+        ]);
     }
 
+    /**
+     * Test that a market admin cannot change user roles, ensuring the action is forbidden for market admins.
+     */
     public function test_market_admin_cannot_change_roles()
     {
         $admin = User::factory()->create(['role' => 'Administrador de Mercado']);
@@ -492,8 +646,16 @@ class KineMercadoTest extends TestCase
                 'role' => 'Super Administrador'
             ])
             ->assertStatus(403);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'role' => $user->role 
+        ]);
     }
 
+    /**
+     * Test that a facility admin cannot change user roles, ensuring the action is forbidden for facility admins.
+     */
     public function test_facility_admin_cannot_change_roles()
     {
         $admin = User::factory()->create(['role' => 'Administrador de Instalaciones']);
@@ -504,8 +666,16 @@ class KineMercadoTest extends TestCase
                 'role' => 'Super Administrador'
             ])
             ->assertStatus(403);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'role' => $user->role 
+        ]);
     }
 
+    /**
+     * Test that an inventory admin cannot change user roles, ensuring the action is forbidden for inventory admins.
+     */
     public function test_inventory_admin_cannot_change_roles()
     {
         $admin = User::factory()->create(['role' => 'Administrador de Inventario']);
@@ -516,8 +686,16 @@ class KineMercadoTest extends TestCase
                 'role' => 'Super Administrador'
             ])
             ->assertStatus(403);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'role' => $user->role 
+        ]);
     }
 
+    /**
+     * Test that a blocked user cannot send messages, ensuring the action is forbidden for blocked users.
+     */
     public function test_blocked_user_cannot_send_message()
     {
         $user = User::factory()->create(['status' => 'Bloqueado']);
@@ -528,8 +706,16 @@ class KineMercadoTest extends TestCase
                 'content' => 'Hola'
             ])
             ->assertStatus(302);
+
+            $this->assertDatabaseMissing('messages', [
+                'sender_user_id' => $user->id,
+                'content' => 'Hola'
+            ]);
     }
 
+    /**
+     * Test that a blocked user cannot open a chat, ensuring the action is forbidden for blocked users.
+     */
     public function test_blocked_user_cannot_open_chat()
     {
         $user = User::factory()->create(['status' => 'Bloqueado']);
@@ -537,8 +723,15 @@ class KineMercadoTest extends TestCase
         $this->actingAs($user)
             ->post('/chats/open', [])
             ->assertStatus(302);
+
+        $this->assertDatabaseMissing('chats', [
+            'buyer_user_id' => $user->id,
+        ]);
     }
 
+    /**
+     * Test that a blocked user cannot review other users, ensuring the action is forbidden for blocked users.
+     */
     public function test_blocked_user_cannot_review()
     {
         $user = User::factory()->create(['status' => 'Bloqueado']);
@@ -558,8 +751,16 @@ class KineMercadoTest extends TestCase
                 'rating' => 5
             ])
             ->assertStatus(302);
+
+        $this->assertDatabaseMissing('reviews', [
+            'user_id' => $user->id,
+            'post_id' => $post->id,
+        ]);
     }
 
+    /**
+     * Test that a blocked user cannot report other users, ensuring the action is forbidden for blocked users.
+     */
     public function test_blocked_user_cannot_report()
     {
         $user = User::factory()->create(['status' => 'Bloqueado']);
@@ -567,8 +768,15 @@ class KineMercadoTest extends TestCase
         $this->actingAs($user)
             ->post('/reports', [])
             ->assertStatus(302);
+
+        $this->assertDatabaseMissing('user_reports', [
+            'user_id' => $user->id,
+        ]);
     }
 
+    /**
+     * Test that a user cannot access another user's chat, ensuring the action is forbidden and returns a 404 status.
+     */
     public function test_user_cannot_access_other_users_chat()
     {
         $user1 = User::factory()->create();
@@ -594,8 +802,15 @@ class KineMercadoTest extends TestCase
         $this->actingAs($user1)
             ->get("/chat/{$chat->id}")
             ->assertStatus(404);
+
+        $this->assertDatabaseHas('chats', [
+            'id' => $chat->id,
+        ]);
     }
 
+    /**
+     * Test that a user cannot open multiple chats for the same post, ensuring that duplicate chats are not created.
+     */
     public function test_chat_is_not_duplicated()
     {
         $user1 = User::factory()->create();
@@ -622,8 +837,17 @@ class KineMercadoTest extends TestCase
         ]);
 
         $this->assertEquals(1, Chat::count());
+
+        $this->assertDatabaseHas('chats', [
+            'post_id' => $post->id,
+            'buyer_user_id' => $user1->id,
+            'seller_user_id' => $user2->id,
+        ]);
     }
 
+    /**
+     * Test that post creation validation fails when required fields are missing, ensuring the action is forbidden and returns a 302 status.
+     */
     public function test_post_validation_fails()
     {
         $user = User::factory()->create();
@@ -631,8 +855,15 @@ class KineMercadoTest extends TestCase
         $this->actingAs($user)
             ->post('/posts', [])
             ->assertStatus(302);
+
+        $this->assertDatabaseMissing('posts', [
+            'user_id' => $user->id,
+        ]);
     }
 
+    /**
+     * Test that message creation validation fails when required fields are missing, ensuring the action is forbidden and returns a 302 status.
+     */
     public function test_message_validation_fails()
     {
         $user = User::factory()->create();
@@ -640,8 +871,15 @@ class KineMercadoTest extends TestCase
         $this->actingAs($user)
             ->post('/messages', [])
             ->assertStatus(302);
+
+        $this->assertDatabaseMissing('messages', [
+            'sender_user_id' => $user->id,
+        ]);
     }
 
+    /**
+     * Test that report creation validation fails when required fields are missing, ensuring the action is forbidden and returns a 302 status.
+     */
     public function test_report_validation_fails()
     {
         $user = User::factory()->create();
@@ -649,24 +887,62 @@ class KineMercadoTest extends TestCase
         $this->actingAs($user)
             ->post('/reports', [])
             ->assertStatus(302);
+
+        $this->assertDatabaseMissing('user_reports', [
+            'user_id' => $user->id,
+        ]);
     }
 
+    /**
+     * Test that guests cannot create posts, ensuring the action is forbidden and returns a 302 status.
+     */
     public function test_guest_cannot_create_post()
     {
         $this->post('/posts', [])
             ->assertStatus(302);
+
+        $this->assertDatabaseMissing('posts', [
+            'title' => null,
+        ]);
     }
 
+    /**
+     * Test that guests cannot open chats, ensuring the action is forbidden and returns a 302 status.
+     */
     public function test_guest_cannot_open_chat()
     {
         $this->post('/chats/open', [])
             ->assertStatus(302);
+
+        $this->assertDatabaseMissing('chats', [
+            'id' => null,
+        ]);
     }
 
+    /**
+     * Test that guests cannot send messages, ensuring the action is forbidden and returns a 302 status.
+     */
+    public function test_guest_cannot_send_message()
+    {
+        $this->post('/messages', [])
+            ->assertStatus(302);
+
+        $this->assertDatabaseMissing('messages', [
+            'id' => null,
+        ]);
+    }
+
+    /**
+     * Test that guests cannot access the marketplace, ensuring the action is forbidden and returns a 302 status.
+     */
     public function test_guest_cannot_access_marketplace()
     {
         $this->get('/kinemarket')
             ->assertStatus(302);
+
+        $this->assertDatabaseMissing('posts', [
+            'id' => null,
+        ]);
     }
 }
         

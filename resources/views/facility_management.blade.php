@@ -1,3 +1,5 @@
+@php use Illuminate\Support\Str; @endphp
+@php use Carbon\Carbon; @endphp
 <x-layout title="Gestión de Costos de Instalaciones">
     <x-navbar></x-navbar>
     @vite('resources/js/facility_management.js')
@@ -9,7 +11,7 @@
 
         @if(session('entry_deleted'))
             <div id="deleteEntryAutoTrigger"></div>
-            @endif
+        @endif
 
         @if(session('rental_saved'))
             <div id="rentalSavedAutoTrigger"></div>
@@ -22,10 +24,11 @@
         {{-- Page header and cost estimate notice --}}
         <div class="mb-4">
             <h1 class="fw-bold mb-1">Gestión de Costos Operacionales</h1>
-            <p class="text mb-0">Aquí puedes ver, filtrar y exportar estimaciones de costos operacionales por área dentro del Coliseo Rafael Mangual.</p>
+            <p class="text mb-0">Aquí puedes ver, filtrar y exportar estimaciones de costos operacionales por área
+                dentro del Coliseo Rafael Mangual.</p>
         </div>
 
-        <!--Notice-->
+        {{-- Notice --}}
         <div class="alert bg-warning-subtle text-warning-emphasis rounded-4 border-0 shadow-sm mb-4 px-4 py-4"
              id="costEstimateNotice">
             <div class="d-flex align-items-start gap-3">
@@ -33,26 +36,39 @@
                     <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong> Los costos mostrados
                     en esta página son
                     <strong>estimaciones</strong> calculadas según las tarifas configuradas, el área,
-                    el horario y los servicios seleccionados. Las tarifas están sujetas a cambios y deberán ser ratificadas por el área administrativa
+                    el horario y los servicios seleccionados. Las tarifas están sujetas a cambios y deberán ser
+                    ratificadas por el área administrativa
                     para ser consideradas como definitivas.
 
                     <br><br>
-                    Los registros de estimados de costos operacionales permanecerán almacenados en el sistema durante un período de <strong>3 años </strong> a partir de su fecha de creación. Luego de ese período,
+                    Los registros de estimados de costos operacionales permanecerán almacenados en el sistema durante un
+                    período de <strong>3 años </strong> a partir de su fecha de creación. Luego de ese período,
                     serán eliminados automáticamente del sistema.
+
+                    <br><br>
+                    <strong>Nota normativa:</strong>
+                    El sistema sigue como referencia la Certificación 20-21-090 <strong>Procedimiento Para El Préstamo y Uso de Instalaciones Físicas
+                    Del Recinto Universitario de Mayagüez</strong>
+                    para la estructura de tarifas y
+                    períodos.
+                    Sin embargo, los horarios de días no laborables fueron ajustados operacionalmente en el sistema ya
+                    que se esta utilizando
+                    la normas/certificaciones específicas del Departamento de Kinesiología;
+                    por tanto, los períodos no laborables se manejan de 8:00 AM a 9:30 PM.
                 </div>
             </div>
         </div>
 
-        <!--Buttons-->
-        <div class="d-flex flex-wrap gap-3 mb-4">
-
+        {{-- Buttons --}}
+        <div id="facilityActionButtons" class="d-flex flex-wrap gap-3 mb-4">
+            {{-- Only Super Administrator can add, edit or delete configurations --}}
             @if(auth()->user()->role === 'Super Administrador')
-            <span
-                data-bs-toggle="tooltip"
-                data-bs-placement="left"
-                data-bs-custom-class="custom-tooltip"
-                data-bs-title="Configura tarifas de áreas, medidas de áreas y costos por período."
-            >
+                <span
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="left"
+                    data-bs-custom-class="custom-tooltip"
+                    data-bs-title="Configura tarifas de áreas, medidas de áreas y costos por período"
+                >
                 <button
                     type="button"
                     id="openConfigureRatesModalBtn"
@@ -66,11 +82,12 @@
             </span>
             @endif
 
+            {{-- Add a new event record --}}
             <span
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    data-bs-custom-class="custom-tooltip"
-                    data-bs-title="Registra eventos y calcula costos estimados."
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-custom-class="custom-tooltip"
+                data-bs-title="Registra eventos y calcula costos estimados."
             >
                 <button
                     type="button"
@@ -84,41 +101,44 @@
                 </button>
             </span>
 
-                <span
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    data-bs-custom-class="custom-tooltip"
-                    data-bs-title="Solo incluye la información según los filtros aplicados."
-                >
+            {{-- Export via CSV --}}
+            <span
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-custom-class="custom-tooltip"
+                data-bs-title="Solo incluye la información según los filtros aplicados"
+            >
                     <a href="{{ route('facility.export.csv') }}"
-                        data-base-url="{{ route('facility.export.csv') }}"
-                        id="downloadCsvBtn"
-                        class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
+                       data-base-url="{{ route('facility.export.csv') }}"
+                       id="downloadCsvBtn"
+                       class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
                             <i class="bi bi-download"></i>
                             Exportar a CSV
                         </a>
                 </span>
 
-                <span
-                    data-bs-toggle="tooltip"
-                    data-bs-placement="top"
-                    data-bs-custom-class="custom-tooltip"
-                    data-bs-title="Solo incluye la información según los filtros aplicados."
-                >
+            {{-- Export via PDF --}}
+            <span
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                data-bs-custom-class="custom-tooltip"
+                data-bs-title="Solo incluye la información según los filtros aplicados"
+            >
                     <a href="{{ route('facility.export.pdf') }}"
-                        data-base-url="{{ route('facility.export.pdf') }}"
-                        id="downloadPdfBtn"
-                        class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
+                       data-base-url="{{ route('facility.export.pdf') }}"
+                       id="downloadPdfBtn"
+                       class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold">
                             <i class="bi bi-download"></i>
                             Exportar a PDF
                         </a>
                 </span>
 
+            {{-- EventFlow simulated bridge --}}
             <span
                 data-bs-toggle="tooltip"
                 data-bs-placement="top"
                 data-bs-custom-class="custom-tooltip"
-                data-bs-title="Simula la importación de eventos desde EventFlow."
+                data-bs-title="Simula la importación de eventos desde EventFlow"
             >
             <form method="POST" action="{{ route('facility.import.mock') }}" class="d-inline">
                 @csrf
@@ -133,7 +153,7 @@
             </span>
         </div>
 
-        <!--Search and Filters-->
+        {{-- Search and filters --}}
         <div class="mb-4">
             <form id="facilityCostFilterForm" method="GET" action="{{ route('facility_management') }}" class="mb-4">
                 @csrf
@@ -145,12 +165,13 @@
                                     <i class="bi bi-search"></i>
                                 </span>
 
+                            {{-- Search bar --}}
                             <input
                                 type="text"
                                 id="facilitySearch"
                                 name="search"
                                 class="form-control border-0"
-                                placeholder="Buscar por fecha, área, hora, periodo, servicios..."
+                                placeholder="Buscar por responsable o fecha..."
                                 value="{{ request('search') }}"
                             >
                         </div>
@@ -162,6 +183,7 @@
                         </button>
                     </div>
 
+                    {{-- Report type filter --}}
                     <div class="col-md-3">
                         <select id="reportType" name="report_type" class="form-select border-2 border-dark">
                             <option value="" {{ $reportType === '' ? 'selected' : '' }}>Tipo de Informe</option>
@@ -170,6 +192,7 @@
                         </select>
                     </div>
 
+                    {{-- Month filter --}}
                     <div class="col-md-3 {{ $reportType !== 'monthly' ? 'd-none' : '' }}" id="monthFilterWrapper">
                         <select id="reportMonth" name="report_month" class="form-select border-2 border-dark">
                             <option value="" {{ $reportMonth === '' ? 'selected' : '' }}>Mes</option>
@@ -188,6 +211,7 @@
                         </select>
                     </div>
 
+                    {{-- Yearly filter --}}
                     <div class="col-md-3 {{ $reportType === '' ? 'd-none' : '' }}" id="yearFilterWrapper">
                         <select id="reportYear" name="report_year" class="form-select border-2 border-dark">
                             <option value="" {{ $reportYear === '' ? 'selected' : '' }}>Año</option>
@@ -200,6 +224,7 @@
                         </select>
                     </div>
 
+                    {{-- Area filter --}}
                     <div class="col-md-3">
                         <select id="filterClassroom" name="filter_classroom" class="form-select border-2 border-dark">
                             <option value="" {{ ($filterClassroom ?? '') === '' ? 'selected' : '' }}>Área</option>
@@ -212,8 +237,10 @@
                         </select>
                     </div>
 
+                    {{-- Period type filter --}}
                     <div class="col-md-3">
-                        <select id="filterPeriodType" name="filter_period_type" class="form-select border-2 border-dark">
+                        <select id="filterPeriodType" name="filter_period_type"
+                                class="form-select border-2 border-dark">
                             <option value="">Tipo de Período</option>
                             <option value="Laborable">Laborable</option>
                             <option value="No laborable sábado">No laborable sábado</option>
@@ -221,6 +248,7 @@
                         </select>
                     </div>
 
+                    {{-- Rate mode filter --}}
                     <div class="col-md-3">
                         <select id="filterRateMode" name="filter_rate_mode" class="form-select border-2 border-dark">
                             <option value="">Tipo de Tarifa</option>
@@ -230,6 +258,7 @@
                         </select>
                     </div>
 
+                    {{-- Services filter --}}
                     <div class="col-md-3">
                         <select id="filterServices" name="filter_services" class="form-select border-2 border-dark">
                             <option value="">Servicios</option>
@@ -239,6 +268,7 @@
                         </select>
                     </div>
 
+                    {{-- Clean filters --}}
                     <div class="col-md-3">
                         <button type="button" class="btn btn-outline-secondary" id="clearFacilityFilters">
                             Limpiar Filtros
@@ -248,16 +278,18 @@
             </form>
         </div>
 
-        <!--Data Table-->
-            <div class="card border-dark border-2 shadow-sm rounded-2 overflow-hidden">
+        {{-- Data table --}}
+        <div class="card border-dark border-2 shadow-sm rounded-2 overflow-hidden">
             <div class="card-body p-4 border-bottom">
                 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3">
                     <div>
                         <h2 class="fw-bold mb-1">Uso de Áreas y Costos Estimados</h2>
                         <p class="text-muted mb-0">Organización de eventos y estimaciones de costos operacionales</p>
-                        <p class="text-muted mb-0">Desliza para ver más información <i class="bi bi-arrow-right"></i></p>
+                        <p class="text-muted mb-0">Desliza para ver más información <i class="bi bi-arrow-right"></i>
+                        </p>
                     </div>
 
+                    {{-- Actions leyend --}}
                     <div class="d-flex align-items-start gap-3 me-3 ms-lg-0 ms-auto">
                         <span class="fw-semibold">Leyenda:</span>
 
@@ -282,7 +314,8 @@
                 </div>
             </div>
 
-                <div class="table-fit-wrapper mt-0" style="max-height: 620px; overflow: auto;">
+            {{-- Table columns headers --}}
+            <div class="table-fit-wrapper mt-0" style="max-height: 620px; overflow: auto;">
                 <table class="table align-middle mb-0" id="facilityCostTable">
                     <thead class="table-light position-sticky top-0" style="z-index: 20;">
                     <tr>
@@ -307,25 +340,29 @@
                         <th class="fw-bold">Servicios</th>
                         <th class="fw-bold text-end">Costo Total</th>
                         <th class="text-center action-header-icon px-2" style="width: 58px; min-width: 58px;">
-                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Editar Evento">
+                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
+                                  data-bs-title="Editar Evento">
                                 <i class="bi bi-pencil fs-5 text-primary"></i>
                             </span>
                         </th>
 
                         <th class="text-center action-header-icon px-2" style="width: 58px; min-width: 58px;">
-                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Modificar Días">
+                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
+                                  data-bs-title="Modificar Días">
                                 <i class="bi bi-calendar-event fs-5 text-warning"></i>
                             </span>
                         </th>
 
                         <th class="text-center action-header-icon px-2" style="width: 58px; min-width: 58px;">
-                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Crear Evento Relacionado">
+                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
+                                  data-bs-title="Crear Evento Relacionado">
                                 <i class="bi bi-diagram-3 fs-5 text-success"></i>
                             </span>
                         </th>
 
                         <th class="text-center action-header-icon px-2" style="width: 58px; min-width: 58px;">
-                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip" data-bs-title="Eliminar evento">
+                            <span data-bs-toggle="tooltip" data-bs-placement="top" data-bs-custom-class="custom-tooltip"
+                                  data-bs-title="Eliminar evento">
                                 <i class="bi bi-trash fs-5 text-danger"></i>
                             </span>
                         </th>
@@ -333,99 +370,135 @@
                     </thead>
 
                     <tbody id="facilityCostTableBody">
-                        @forelse ($eventGroups as $event)
-                            @php
-                                $subItems = collect($event->sub_items ?? [$event]);
-                                $parent = $subItems->firstWhere('is_group_parent', true) ?? $event;
-                                $children = $subItems->where('id', '!=', $parent->id);
-                                $groupKey = $parent->event_group_id ?: 'single-' . $parent->id;
-                            @endphp
+                    @forelse ($eventGroups as $event)
+                        @php
+                            $subItems = collect($event->sub_items ?? [$event]);
+                            $parent = $subItems->firstWhere('is_group_parent', true) ?? $event;
+                            $children = $subItems->where('id', '!=', $parent->id);
+                            $relatedAreas = $children->where('sub_event_type', 'related_area');
+                            $customDaysByParent = $children
+                                ->where('sub_event_type', 'custom_day')
+                                ->groupBy('custom_parent_item_id');
+                            $knownCustomParentIds = $relatedAreas
+                                ->pluck('id')
+                                ->push($parent->id)
+                                ->map(fn ($id) => (string) $id);
+                            $orphanCustomDays = $customDaysByParent
+                                ->except($knownCustomParentIds)
+                                ->flatten();
+                            $groupKey = $parent->event_group_id ?: 'single-' . $parent->id;
+                        @endphp
 
-                            {{-- Group header --}}
-                            <tr class="event-group-header" data-group-key="{{ $groupKey }}" data-group-header="1">
-                                <td colspan="14">
-                                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                        <div>
+                        {{-- Group header --}}
+                        <tr class="event-group-header" data-group-key="{{ $groupKey }}" data-group-header="1">
+                            <td colspan="14">
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                    <div>
                                             <span class="fw-bold">
                                                 Evento principal #{{ $parent->id }}
                                             </span>
 
-                                            <span class="text-muted ms-2">
+                                        <span class="text-muted ms-2">
                                                {{ \Illuminate\Support\Str::title(
-                                                    \Carbon\Carbon::parse($parent->event_date)
+                                                    Carbon::parse($parent->event_date)
                                                         ->locale('es')
                                                         ->translatedFormat('j F Y')
                                                 ) }}
                                                 <i class="bi bi-arrow-right"></i>
                                                {{ \Illuminate\Support\Str::title(
-                                                    \Carbon\Carbon::parse($parent->end_date ?? $parent->event_date)
+                                                    Carbon::parse($parent->end_date ?? $parent->event_date)
                                                         ->locale('es')
                                                         ->translatedFormat('j F Y')
                                                 ) }}
                                             </span>
 
-                                            @php
-                                                $relatedAreasCount = $children->where('sub_event_type', 'related_area')->count();
-                                                $modificationsCount = $children->where('sub_event_type', 'custom_day')->count();
-                                            @endphp
+                                        @php
+                                            $relatedAreasCount = $children->where('sub_event_type', 'related_area')->count();
+                                            $modificationsCount = $children->where('sub_event_type', 'custom_day')->count();
+                                        @endphp
 
-                                            @if($relatedAreasCount > 0)
-                                                <span class="badge bg-info-subtle text-info-emphasis ms-2">
+                                        @if($relatedAreasCount > 0)
+                                            <span class="badge bg-info-subtle text-info-emphasis ms-2">
                                                     {{ $relatedAreasCount }} área(s) relacionada(s)
                                                 </span>
-                                            @endif
+                                        @endif
 
-                                            @if($modificationsCount > 0)
-                                                <span class="badge bg-warning-subtle text-warning-emphasis ms-2">
+                                        @if($modificationsCount > 0)
+                                            <span class="badge bg-warning-subtle text-warning-emphasis ms-2">
                                                     {{ $modificationsCount }} modificación(es)
                                                 </span>
-                                            @endif
+                                        @endif
 
-                                            @if($children->count() === 0)
-                                                <span class="badge bg-secondary-subtle text-secondary-emphasis ms-2">
+                                        @if($children->count() === 0)
+                                            <span class="badge bg-secondary-subtle text-secondary-emphasis ms-2">
                                                     Sin elementos relacionados
                                                 </span>
-                                            @endif
-                                        </div>
+                                        @endif
                                     </div>
-                                </td>
-                            </tr>
+                                </div>
+                            </td>
+                        </tr>
 
-                            {{-- Parent row --}}
+                        {{-- Parent row --}}
+                        @include('partials.facility_event_row', [
+                            'item' => $parent,
+                            'rowType' => 'parent',
+                            'groupKey' => $groupKey
+                        ])
+
+                        {{-- Parent custom-day modifications --}}
+                        @foreach ($customDaysByParent->get($parent->id, collect()) as $child)
                             @include('partials.facility_event_row', [
-                                'item' => $parent,
-                                'rowType' => 'parent',
+                                'item' => $child,
+                                'rowType' => 'child',
+                                'groupKey' => $groupKey
+                            ])
+                        @endforeach
+
+                        @foreach ($orphanCustomDays as $child)
+                            @include('partials.facility_event_row', [
+                                'item' => $child,
+                                'rowType' => 'child',
+                                'groupKey' => $groupKey
+                            ])
+                        @endforeach
+
+                        {{-- Related areas and their custom-day modifications --}}
+                        @foreach ($relatedAreas as $relatedArea)
+                            @include('partials.facility_event_row', [
+                                'item' => $relatedArea,
+                                'rowType' => 'child',
                                 'groupKey' => $groupKey
                             ])
 
-                            {{-- Sub-event rows --}}
-                            @foreach ($children as $child)
+                            @foreach ($customDaysByParent->get($relatedArea->id, collect()) as $child)
                                 @include('partials.facility_event_row', [
                                     'item' => $child,
                                     'rowType' => 'child',
                                     'groupKey' => $groupKey
                                 ])
                             @endforeach
+                        @endforeach
 
-                            <tr class="event-group-total" data-group-key="{{ $groupKey }}">
-                                <td colspan="9" class="text-end fw-bold text-muted bg-light">
-                                    Total del evento
-                                </td>
+                        <tr class="event-group-total" data-group-key="{{ $groupKey }}">
+                            <td colspan="9" class="text-end fw-bold text-muted bg-light">
+                                Total del evento
+                            </td>
 
-                                <td class="text-end fw-bold bg-light" style="min-width: 140px;">
-                                    ${{ number_format($event->group_total, 2) }}
-                                </td>
+                            <td class="text-end fw-bold bg-light" style="min-width: 140px;">
+                                ${{ number_format($event->group_total, 2) }}
+                            </td>
 
-                                <td colspan="4" class="bg-light"></td>
-                            </tr>
+                            <td colspan="4" class="bg-light"></td>
+                        </tr>
 
-                            {{-- Space between event groups --}}
-                            <tr class="event-group-spacer" data-group-key="{{ $groupKey }}" data-group-spacer="1">
-                                <td colspan="14"></td>
-                            </tr>
-                        @empty
-                        @endforelse
-                        </tbody>
+                        {{-- Space between event groups --}}
+                        <tr class="event-group-spacer" data-group-key="{{ $groupKey }}" data-group-spacer="1">
+                            <td colspan="14"></td>
+                        </tr>
+                    @empty
+                    @endforelse
+                    </tbody>
 
                     <tfoot class="table-light">
                     <tr>
@@ -437,11 +510,13 @@
                     </tfoot>
                 </table>
 
+                {{-- Filters does not return anything --}}
                 <div id="facilityCostEmptyState" class="card border-0 shadow-sm rounded-0 d-none container mb-4">
                     <div class="card-body py-5 text-center">
                         <i class="bi bi-currency-dollar fs-1 text-muted"></i>
                         <h4 class="fw-bold mb-2">No hay costos para mostrar</h4>
-                        <p class="text-muted mb-0">Prueba añadiendo un evento o cambiando los parámetros de la búsqueda.</p>
+                        <p class="text-muted mb-0">Prueba añadiendo un evento o cambiando los parámetros de la
+                            búsqueda.</p>
                     </div>
                 </div>
             </div>
@@ -449,11 +524,12 @@
     </div>
 
 
-    <nav class="mt-4" aria-label="Paginación de costos">
-        <ul class="pagination justify-content-center" id="facilityCostPagination"></ul>
+    <nav class="mt-4 d-flex justify-content-center align-items-center flex-wrap gap-3" aria-label="Paginación de costos">
+        <p class="text-muted small mb-0" id="facilityCostPaginationSummary"></p>
+        <ul class="pagination mb-0" id="facilityCostPagination"></ul>
     </nav>
 
-    {{-- 
+    {{--
         Configure Rates Modal
 
         Allows a Super Administrator to configure rate values for one or more areas.
@@ -493,19 +569,23 @@
                                     Áreas a configurar <span class="text-danger">*</span>
                                 </label>
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-3 justify-content-start ps-3">
-                                    <button type="button" class="btn btn-outline-success btn-sm" id="selectAllClassroomsBtn">
+                                    <button type="button" class="btn btn-outline-success btn-sm"
+                                            id="selectAllClassroomsBtn">
                                         <i class="bi bi-check2-square me-1"></i>Seleccionar Todos
                                     </button>
 
-                                    <button type="button" class="btn btn-outline-success btn-sm" id="selectAcademicClassroomsBtn">
+                                    <button type="button" class="btn btn-outline-success btn-sm"
+                                            id="selectAcademicClassroomsBtn">
                                         <i class="bi bi-building me-1"></i>Solo Salones
                                     </button>
 
-                                    <button type="button" class="btn btn-outline-success btn-sm" id="selectLateralClassroomsBtn">
+                                    <button type="button" class="btn btn-outline-success btn-sm"
+                                            id="selectLateralClassroomsBtn">
                                         <i class="bi bi-grid me-1"></i>Solo Laterales
                                     </button>
 
-                                    <button type="button" class="btn btn-outline-success btn-sm" id="clearClassroomsSelectionBtn">
+                                    <button type="button" class="btn btn-outline-success btn-sm"
+                                            id="clearClassroomsSelectionBtn">
                                         <i class="bi bi-eraser me-1"></i>Limpiar Selección
                                     </button>
 
@@ -579,7 +659,7 @@
                                                     class="form-control"
                                                     id="configClassroomArea"
                                                     name="classroom_space"
-                                                    placeholder="Ej. 1200.00"
+                                                    placeholder="Ejemplo: 1200.00"
                                                     required
                                                 >
                                             </div>
@@ -610,7 +690,7 @@
                                                         class="form-control money-input"
                                                         id="{{ $campo['id'] }}"
                                                         name="{{ $campo['name'] }}"
-                                                        placeholder="Ej. 25.00"
+                                                        placeholder="Ejemplo: 25.00"
                                                         required
                                                     >
                                                 </div>
@@ -634,7 +714,7 @@
                                         $periodos = [
                                             [
                                                 'titulo' => 'Período laborable',
-                                                'texto' => 'Lunes a viernes, 7:30 a.m. a 4:30 p.m.',
+                                                'texto' => 'Lunes a viernes, 7:30 AM a 4:30 PM',
                                                 'sufijo' => '1',
                                                 'diario' => '0.21',
                                                 'semanal' => '0.86',
@@ -642,7 +722,7 @@
                                             ],
                                             [
                                                 'titulo' => 'No laborable sábado',
-                                                'texto' => 'Lunes a viernes, 4:30 p.m. a 9:30 p.m.; y sábados, 8:00 a.m. a 9:30 p.m.',
+                                                'texto' => 'Lunes a sábado, 8:00 AM a 9:30 PM',
                                                 'sufijo' => '2',
                                                 'diario' => '0.26',
                                                 'semanal' => '1.03',
@@ -650,7 +730,7 @@
                                             ],
                                             [
                                                 'titulo' => 'No laborable domingo o festivo',
-                                                'texto' => 'Lunes a viernes, 4:30 p.m. a 9:30 p.m.; y domingo o festivo, 8:00 a.m. a 9:30 p.m.',
+                                                'texto' => 'Lunes a viernes, domingo o festivo, 8:00 AM a 9:30 PM',
                                                 'sufijo' => '3',
                                                 'diario' => '0.31',
                                                 'semanal' => '0.00',
@@ -676,13 +756,13 @@
                                                         class="form-control money-input"
                                                         id="configDaily{{ $periodo['sufijo'] }}"
                                                         name="daily_cost_{{ $periodo['sufijo'] }}"
-                                                        placeholder="Ej. 25.00"
+                                                        placeholder="Ejemplo: 25.00"
                                                         required
                                                     >
                                                 </div>
                                                 <div class="invalid-feedback d-block"
                                                      id="configDaily{{ $periodo['sufijo'] }}Error"></div>
-                                                <small class="text-muted d-block mt-2">
+                                                <small class="text-muted d-block mt-2  mb-4">
                                                     Escribe solo números y hasta 2 decimales. El máximo permitido es
                                                     $500.00.
                                                 </small>
@@ -698,13 +778,13 @@
                                                         class="form-control money-input"
                                                         id="configWeekly{{ $periodo['sufijo'] }}"
                                                         name="weekly_cost_{{ $periodo['sufijo'] }}"
-                                                        placeholder="Ej. 25.00"
+                                                        placeholder="Ejemplo: 25.00"
                                                         required
                                                     >
                                                 </div>
                                                 <div class="invalid-feedback d-block"
                                                      id="configWeekly{{ $periodo['sufijo'] }}Error"></div>
-                                                <small class="text-muted d-block mt-2">
+                                                <small class="text-muted d-block mt-2  mb-4">
                                                     Escribe solo números y hasta 2 decimales. El máximo permitido es
                                                     $500.00.
                                                 </small>
@@ -720,7 +800,7 @@
                                                         class="form-control money-input"
                                                         id="configMonthly{{ $periodo['sufijo'] }}"
                                                         name="monthly_cost_{{ $periodo['sufijo'] }}"
-                                                        placeholder="Ej. 25.00"
+                                                        placeholder="Ejemplo: 25.00"
                                                         required
                                                     >
                                                 </div>
@@ -775,7 +855,7 @@
         </div>
     </div>
 
-    {{-- 
+    {{--
         Add Event Modal
 
         Creates a new parent facility usage event.
@@ -808,8 +888,10 @@
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
                                     <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
                                     Solo se puede seleccionar <strong>una (1) área</strong> por evento.
-                                    Las áreas disponibles corresponden exclusivamente a instalaciones internas del Coliseo Rafael Mangual.
-                                    Si un mismo evento utiliza más de un área, primero registre el área principal y luego utilice la opción
+                                    Las áreas disponibles corresponden exclusivamente a instalaciones internas del
+                                    Coliseo Rafael Mangual.
+                                    Si un mismo evento utiliza más de un área, primero registre el área principal y
+                                    luego utilice la opción
                                     <strong>Crear Evento relacionado</strong> desde la tabla.
                                 </div>
                             </div>
@@ -818,7 +900,8 @@
                                 <label for="rentalClassroom" class="form-label fw-semibold">
                                     Área <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalClassroom" name="classroom" class="form-select form-select-lg" required>
+                                <select id="rentalClassroom" name="classroom" class="form-select form-select-lg"
+                                        required>
                                     <option value="" selected>Seleccionar área</option>
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
@@ -893,7 +976,8 @@
                                             </label>
                                         </div>
                                         <small class="text-muted d-block mt-2">
-                                            Seleccione si el evento incluye costos generales de utilidades asociados al uso del área.
+                                            Seleccione si el evento incluye costos generales de utilidades asociados al
+                                            uso del área.
                                         </small>
                                     </div>
                                 </div>
@@ -961,7 +1045,8 @@
                                     Tipo de período <span class="text-danger">*</span>
                                 </label>
 
-                                <select id="rentalPeriodType" name="period_type" class="form-select  form-select-lg" required>
+                                <select id="rentalPeriodType" name="period_type" class="form-select  form-select-lg"
+                                        required>
                                     <option value="" selected>Seleccionar tipo de período</option>
 
                                     <option value="workday">
@@ -977,9 +1062,10 @@
                                     </option>
                                 </select>
                                 <small class="text-muted d-block fst-italic mt-1">
-                                    <strong>Laborable: </strong> lunes a viernes, 7:30 a.m. a 4:30 p.m. <br>
-                                    <strong>No laborable sábado: </strong> lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m. <br>
-                                    <strong>No laborable domingo o festivo: </strong> lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                    <strong>Laborable: </strong> lunes a viernes, 7:30 PM a 4:30 PM <br>
+                                    <strong>No laborable sábado: </strong> lunes a sábado, 8:00 AM a 9:30 PM;
+                                    <br>
+                                    <strong>No laborable domingo o festivo: </strong> lunes a viernes, domingo o festivo, 8:00 AM a 9:30 PM
                                 </small>
                                 <div class="invalid-feedback" id="rentalPeriodTypeError"></div>
                             </div>
@@ -1076,7 +1162,8 @@
                                 <label for="rentalStartTime" class="form-label fw-semibold">
                                     Horario inicial del evento <span class="text-danger">*</span>
                                 </label>
-                                <select id="rentalStartTime" name="start_time" class="form-select form-select-lg" required>
+                                <select id="rentalStartTime" name="start_time" class="form-select form-select-lg"
+                                        required>
                                     <option value="" selected>Seleccionar horario inicial</option>
                                 </select>
                                 <div class="invalid-feedback" id="rentalStartTimeError"></div>
@@ -1145,7 +1232,7 @@
         </div>
     </div>
 
-    <!-- Confirmar cancelar evento -->
+    {{-- Confirm to cancel the event --}}
     <div class="modal fade" id="confirmCancelRentalModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -1195,7 +1282,8 @@
         This is used when one real-world event uses more than one facility area,
         but each area needs its own independent cost calculation.
     --}}
-    <div class="modal fade" id="createRelatedModal" tabindex="-1" aria-labelledby="createRelatedModalLabel" aria-hidden="true">
+    <div class="modal fade" id="createRelatedModal" tabindex="-1" aria-labelledby="createRelatedModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-lg-down modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0 align-items-start">
@@ -1289,13 +1377,15 @@
                                 <div class="col-md-4">
                                     <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="relatedUtilities" value="utilities">
+                                            <input class="form-check-input" type="checkbox" id="relatedUtilities"
+                                                   value="utilities">
                                             <label class="form-check-label fw-semibold" for="relatedUtilities">
                                                 Utilidades
                                             </label>
                                         </div>
                                         <small class="text-muted d-block mt-2">
-                                            Seleccione si el evento incluye costos generales de utilidades asociados al uso del área.
+                                            Seleccione si el evento incluye costos generales de utilidades asociados al
+                                            uso del área.
                                         </small>
                                     </div>
                                 </div>
@@ -1303,7 +1393,8 @@
                                 <div class="col-md-4">
                                     <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="relatedElectricity" value="electricity">
+                                            <input class="form-check-input" type="checkbox" id="relatedElectricity"
+                                                   value="electricity">
                                             <label class="form-check-label fw-semibold" for="relatedElectricity">
                                                 Electricidad
                                             </label>
@@ -1317,7 +1408,8 @@
                                 <div class="col-md-4">
                                     <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="relatedWater" value="water">
+                                            <input class="form-check-input" type="checkbox" id="relatedWater"
+                                                   value="water">
                                             <label class="form-check-label fw-semibold" for="relatedWater">
                                                 Agua
                                             </label>
@@ -1354,8 +1446,15 @@
                                         <option value="" selected>Seleccionar tipo de período</option>
                                         <option value="workday">Laborable</option>
                                         <option value="non_workday_saturday">No laborable sábado</option>
-                                        <option value="non_workday_sunday_holiday">No laborable domingo o festivo</option>
+                                        <option value="non_workday_sunday_holiday">No laborable domingo o festivo
+                                        </option>
                                     </select>
+
+                                    <small class="text-muted d-block fst-italic mt-1">
+                                        <strong>Laborable: </strong> lunes a viernes, 7:30 AM a 4:30 PM <br>
+                                        <strong>No laborable sábado: </strong> lunes a sábado ,8:00 AM a 9:30 PM <br>
+                                        <strong>No laborable domingo o festivo: </strong> lunes a viernes, domingo o festivo, 8:00 AM a 9:30 PM
+                                    </small>
                                     <div class="invalid-feedback" id="relatedPeriodTypeError"></div>
                                 </div>
 
@@ -1459,7 +1558,8 @@
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div>
                                     <div class="fw-bold fs-5">Costo estimado calculado</div>
-                                    <small class="text-muted d-block">Se determina según período y servicios seleccionados.</small>
+                                    <small class="text-muted d-block">Se determina según período y servicios
+                                        seleccionados.</small>
                                 </div>
                                 <span class="fw-bold text-success fs-2 mb-0" id="relatedEstimatedTotal">$0.00</span>
                             </div>
@@ -1501,7 +1601,8 @@
                     Tienes información escrita. Si cancelas, perderás los cambios no guardados.
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando
+                    </button>
                     <button type="button" class="btn btn-danger" id="confirmCancelRelatedBtn">Cancelar</button>
                 </div>
             </div>
@@ -1516,7 +1617,8 @@
         to use a different schedule from the parent event while remaining grouped
         under the same main event.
     --}}
-    <div class="modal fade" id="customizeDaysModal" tabindex="-1" aria-labelledby="customizeDaysModalLabel" aria-hidden="true">
+    <div class="modal fade" id="customizeDaysModal" tabindex="-1" aria-labelledby="customizeDaysModalLabel"
+         aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0 align-items-start">
@@ -1550,24 +1652,24 @@
                                 </label>
 
                                 <div class="date-picker-wrapper">
-                                <input
-                                    type="text"
-                                    id="customizeDate"
-                                    name="event_start_date"
-                                    class="form-control form-control-lg date-picker-input"
-                                    placeholder="Día Mes Año"
-                                    autocomplete="off"
-                                    inputmode="none"
-                                    required
-                                >
+                                    <input
+                                        type="text"
+                                        id="customizeDate"
+                                        name="event_start_date"
+                                        class="form-control form-control-lg date-picker-input"
+                                        placeholder="Día Mes Año"
+                                        autocomplete="off"
+                                        inputmode="none"
+                                        required
+                                    >
 
-                                <button type="button"
-                                        class="date-picker-icon"
-                                        id="customizeDateIcon"
-                                        aria-label="Abrir calendario de personalizar fechas">
-                                    <i class="bi bi-calendar3"></i>
-                                </button>
-                            </div>
+                                    <button type="button"
+                                            class="date-picker-icon"
+                                            id="customizeDateIcon"
+                                            aria-label="Abrir calendario de personalizar fechas">
+                                        <i class="bi bi-calendar3"></i>
+                                    </button>
+                                </div>
 
                                 <small class="text-muted d-block fst-italic">
                                     Seleccione la fecha que desea modificar.
@@ -1577,39 +1679,26 @@
                             </div>
 
                             <div class="col-12 col-lg-6">
-                                <label for="customizePeriodTypeDisplay" class="form-label fw-semibold">
+                                <label for="customizePeriodType" class="form-label fw-semibold">
                                     Tipo de período <span class="text-danger">*</span>
                                 </label>
 
-                                <input
-                                    type="text"
-                                    id="customizePeriodTypeDisplay"
-                                    class="form-control form-control-lg"
-                                    value="Se calcula automático"
-                                    readonly
-                                    tabindex="-1"
-                                    onfocus="this.blur()"
-                                >
-
-                                <input
-                                    type="hidden"
+                                <select
                                     id="customizePeriodType"
                                     name="period_type"
+                                    class="form-select form-select-lg"
+                                    required
                                 >
+                                    <option value="" selected>Seleccionar período</option>
+                                    <option value="workday">Laborable</option>
+                                    <option value="non_workday_saturday">No laborable sábado</option>
+                                    <option value="non_workday_sunday_holiday">No laborable dom./festivo</option>
+                                </select>
 
                                 <small class="text-muted d-block fst-italic mt-1">
-                                    <strong>Laborable: </strong>
-                                    lunes a viernes, 7:30 a.m. a 4:30 p.m.
-                                    <br>
-
-                                    <strong>No laborable sábado: </strong>
-                                    lunes a viernes, 4:30 p.m. a 9:30 p.m.;
-                                    sábado, 8:00 a.m. a 9:30 p.m.
-                                    <br>
-
-                                    <strong>No laborable domingo o festivo: </strong>
-                                    lunes a viernes, 4:30 p.m. a 9:30 p.m.;
-                                    domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                    <strong>Laborable: </strong> lunes a viernes, 7:30 AM a 4:30 PM <br>
+                                    <strong>No laborable sábado: </strong> lunes a sábado ,8:00 AM a 9:30 PM <br>
+                                    <strong>No laborable domingo o festivo: </strong> lunes a viernes, domingo o festivo, 8:00 AM a 9:30 PM
                                 </small>
 
                                 <div class="invalid-feedback d-block" id="customizePeriodTypeError"></div>
@@ -1681,7 +1770,8 @@
                     Tienes información escrita. Si cancelas, perderás los cambios no guardados.
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando
+                    </button>
                     <button type="button" class="btn btn-danger" id="confirmCancelCustomizeBtn">Cancelar</button>
                 </div>
             </div>
@@ -1721,7 +1811,8 @@
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
                                     <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
-                                    Si editas un evento principal y cambias su rango de fechas, cualquier modificación fuera del nuevo rango puede ser eliminada.
+                                    Si editas un evento principal y cambias su rango de fechas, cualquier modificación
+                                    fuera del nuevo rango puede ser eliminada.
                                 </div>
                             </div>
 
@@ -1790,13 +1881,15 @@
                                 <div class="col-md-4">
                                     <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="editUtilities" value="utilities">
+                                            <input class="form-check-input" type="checkbox" id="editUtilities"
+                                                   value="utilities">
                                             <label class="form-check-label fw-semibold" for="editUtilities">
                                                 Utilidades
                                             </label>
                                         </div>
                                         <small class="text-muted d-block mt-2">
-                                            Seleccione si el evento incluye costos generales de utilidades asociados al uso del área.
+                                            Seleccione si el evento incluye costos generales de utilidades asociados al
+                                            uso del área.
                                         </small>
                                     </div>
                                 </div>
@@ -1804,7 +1897,8 @@
                                 <div class="col-md-4">
                                     <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="editElectricity" value="electricity">
+                                            <input class="form-check-input" type="checkbox" id="editElectricity"
+                                                   value="electricity">
                                             <label class="form-check-label fw-semibold" for="editElectricity">
                                                 Electricidad
                                             </label>
@@ -1818,7 +1912,8 @@
                                 <div class="col-md-4">
                                     <div class="service-option-card h-100 p-4">
                                         <div class="form-check">
-                                            <input class="form-check-input" type="checkbox" id="editWater" value="water">
+                                            <input class="form-check-input" type="checkbox" id="editWater"
+                                                   value="water">
                                             <label class="form-check-label fw-semibold" for="editWater">
                                                 Agua
                                             </label>
@@ -1866,9 +1961,9 @@
                                     </option>
                                 </select>
                                 <small class="text-muted d-block fst-italic mt-1">
-                                    <strong>Laborable: </strong> lunes a viernes, 7:30 a.m. a 4:30 p.m. <br>
-                                    <strong>No laborable sábado: </strong> lunes a viernes, 4:30 p.m. a 9:30 p.m.; sábado, 8:00 a.m. a 9:30 p.m. <br>
-                                    <strong> No laborable domingo o festivo: </strong> lunes a viernes, 4:30 p.m. a 9:30 p.m.; domingo o festivo, 8:00 a.m. a 9:30 p.m.
+                                    <strong>Laborable: </strong> lunes a viernes, 7:30 AM a 4:30 PM <br>
+                                    <strong>No laborable sábado: </strong> lunes a sábado, 8:00 AM a 9:30 p.m. <br>
+                                    <strong> No laborable domingo o festivo: </strong> lunes a viernes, domingo o festivo, 8:00 AM a 9:30 PM
                                 </small>
                                 <div class="invalid-feedback" id="editPeriodTypeError"></div>
                             </div>
@@ -1889,7 +1984,8 @@
                                 >
 
                                 <small class="text-muted d-block mt-1">
-                                    El tipo de tarifa se calcula automáticamente según las fechas inicial y final seleccionadas.
+                                    El tipo de tarifa se calcula automáticamente según las fechas inicial y final
+                                    seleccionadas.
                                 </small>
                             </div>
 
@@ -2024,7 +2120,8 @@
                     Tienes información editada. Si cancelas, perderás los cambios no guardados.
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando
+                    </button>
                     <button type="button" class="btn btn-danger" id="confirmCancelEditBtn">Cancelar</button>
                 </div>
             </div>
@@ -2032,7 +2129,7 @@
     </div>
 
 
-    <!--Add Classroom Modal-->
+    {{-- Add classroom modal --}}
     <div class="modal fade" id="addClassroomModal" tabindex="-1" aria-labelledby="addClassroomModalLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -2067,7 +2164,7 @@
                         type="text"
                         id="newClassroomName"
                         class="form-control border-2 border-dark"
-                        placeholder="Ej. CM 211 o Lateral 3"
+                        placeholder="Ejemplo: CM 211 o Lateral 3"
                     >
                     <small class="text-muted d-block fst-italic">
                         Entre 6 y 40 caracteres. Solo letras, números, espacios, coma, punto y guion.
@@ -2075,6 +2172,7 @@
                     <div class="invalid-feedback d-block" id="newClassroomNameError"></div>
                 </div>
 
+                {{-- Add a new area --}}
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" id="cancelAddClassroomBtn"
                             data-bs-dismiss="modal">Cancelar
@@ -2093,7 +2191,7 @@
         </div>
     </div>
 
-
+    {{-- Deleted selected area --}}
     <div class="modal fade" id="deleteClassroomModal" tabindex="-1" aria-labelledby="deleteClassroomModalLabel"
          aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -2125,8 +2223,9 @@
         </div>
     </div>
 
+    {{-- Warnings if the Super Administrator or Facility Administrator change an event that affect a child event --}}
     <div class="modal fade" id="parentRangeWarningModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0">
                     <h5 class="modal-title fw-bold">Advertencia de rango</h5>
@@ -2140,9 +2239,9 @@
                     </p>
                 </div>
 
-                <div class="modal-footer border-0">
+                <div class="modal-footer border-0 d-flex flex-nowrap justify-content-end gap-2">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        Arreglar evento padre
+                        Arreglar evento principal
                     </button>
 
                     <button type="button" class="btn btn-danger" id="confirmParentRangeDeleteBtn">
@@ -2153,9 +2252,9 @@
         </div>
     </div>
 
-
+    {{-- Warnings if the Super Administrator or Facility Administrator change an event that affect a child event --}}
     <div class="modal fade" id="customizeOverwriteWarningModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0">
                     <h5 class="modal-title fw-bold">Advertencia: modificaciones existentes</h5>
@@ -2164,11 +2263,12 @@
 
                 <div class="modal-body">
                     <p class="mb-0" id="customizeOverwriteWarningText">
-                        El rango seleccionado incluye días que ya tienen modificaciones. Si continúas, esas modificaciones serán eliminadas.
+                        El rango seleccionado incluye días que ya tienen modificaciones. Si continúas, esas
+                        modificaciones serán eliminadas.
                     </p>
                 </div>
 
-                <div class="modal-footer border-0">
+                <div class="modal-footer border-0 d-flex flex-nowrap justify-content-end gap-2">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                         Cancelar
                     </button>
@@ -2182,7 +2282,7 @@
     </div>
 
 
-    <!--Notification Toasts-->
+    {{-- Notifications toasts --}}
     <div class="toast-container position-fixed bottom-0 start-0 p-3">
         <div id="deleteEntryToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
@@ -2206,7 +2306,7 @@
             </div>
         </div>
 
-        <!-- Tarifa Toast -->
+        {{-- Areas costs saved toast --}}
         <div id="ratesSavedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert" aria-live="assertive" aria-atomic="true">
@@ -2218,7 +2318,7 @@
             </div>
         </div>
 
-        <!-- Event Toast -->
+        {{-- Event creation toast --}}
         <div id="rentalSavedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert" aria-live="assertive" aria-atomic="true">
@@ -2230,8 +2330,7 @@
             </div>
         </div>
 
-        <!--Eventflow toast-->
-
+        {{-- EventFlow imported simulation toast --}}
         @if(session('mock_imported'))
             <div id="mockImportToast"
                  class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"

@@ -62,6 +62,7 @@ const marketplaceConditionFilter = document.getElementById('marketplaceCondition
 const marketplaceCardsContainer = document.getElementById('marketplaceCardsContainer');
 const marketplaceEmptyState = document.getElementById('marketplaceEmptyState');
 const marketplacePagination = document.getElementById('marketplacePagination');
+const marketplacePaginationSummary = document.getElementById('marketplacePaginationSummary');
 
 /**
  * Post details modal references.
@@ -1163,10 +1164,18 @@ function renderPagination({container, currentPage, totalItems, itemsPerPage, onP
     if (!container) return;
 
     const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+    const summary = container === marketplacePagination ? marketplacePaginationSummary : null;
 
     if (totalItems <= 0) {
         container.innerHTML = '';
+        if (summary) summary.textContent = '';
         return;
+    }
+
+    if (summary) {
+        const firstItem = ((currentPage - 1) * itemsPerPage) + 1;
+        const lastItem = Math.min(currentPage * itemsPerPage, totalItems);
+        summary.textContent = `Mostrando ${firstItem} a ${lastItem} de ${totalItems} resultados`;
     }
 
     let paginationHTML = '';
