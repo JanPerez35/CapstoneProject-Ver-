@@ -926,10 +926,22 @@
  *Section: Messaging/chat layout
  *-------------------------------*/
 
-/* Main messaging card container height. */
+/* Keeps the messaging card inside the visible viewport. */
 .messages-card {
-    height: calc(100vh - 90px);
-    min-height: 720px;
+    height: calc(100vh - 160px);
+    min-height: 0;
+}
+
+/* Allows the messaging row to fill the card without forcing page overflow. */
+.messages-card .row {
+    height: 100%;
+    min-height: 0;
+}
+
+/* Allows the active chat column to shrink so only the messages area scrolls. */
+.messages-chat-column {
+    min-height: 0;
+    overflow: hidden;
 }
 
 /* Makes both messaging columns fill the card height. */
@@ -938,16 +950,17 @@
     height: 100%;
 }
 
-/* Controls message container height behavior. */
+/* Makes the message list the only scrollable area when messages overflow. */
 .messages-container {
     min-height: 0;
-    min-height: 420px;
+    overflow-y: auto;
+    flex: 1 1 auto;
 }
 
-/* Prevents the chat input area from shrinking. */
+/* Keeps the chat input fixed at the bottom of the chat column. */
 .chat-input-area {
     background: #fff;
-    flex-shrink: 0;
+    flex: 0 0 auto;
 }
 
 /* Utility class that allows messages to shrink properly when sent. */

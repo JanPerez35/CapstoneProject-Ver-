@@ -1,4 +1,5 @@
 import * as bootstrap from 'bootstrap';
+import { findProfanity } from './utils/profanity_checker.js';
 
 /**
  * Messages page front-end page initialization behavior controller
@@ -345,6 +346,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const allowedReportRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
     const chatId = messagesView?.dataset.chatId;
 
+    function validateMessageProfanity(showError = true) {
+        const value = input.value.trim();
+
+        if (!value) {
+            clearValidationError('profanity');
+            return true;
+        }
+
+        const matchedWord = findProfanity(value);
+
+        if (matchedWord) {
+            if (showError) {
+                setValidationError('El mensaje contiene lenguaje inapropiado.', 'profanity');
+            }
+            return false;
+        }
+
+        clearValidationError('profanity');
+        return true;
+    }
+
     /**
      * Enables or disables the chat input depending on whether a chat is selected.
      *
@@ -553,7 +575,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const hasBlockingError =
             errorEl.dataset.errorType === 'required' ||
             errorEl.dataset.errorType === 'maxlength-over' ||
-            errorEl.dataset.errorType === 'characters';
+            errorEl.dataset.errorType === 'characters' ||
+            errorEl.dataset.errorType === 'profanity';
 
         sendBtn.disabled = !trimmedValue || hasBlockingError;
     }
@@ -1377,6 +1400,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         validateMaxLength(true);
         validateAllowedCharacters(true);
+        validateMessageProfanity(true);
         updateSendButtonState();
         updateCounter();
     });
@@ -1393,9 +1417,12 @@ document.addEventListener('DOMContentLoaded', () => {
             input.value.length <= MAX_LENGTH &&
             validateAllowedCharacters(false)
         ) {
+
+        if (errorEl.dataset.errorType !== 'profanity') {
             input.classList.remove('is-invalid');
             errorEl.textContent = '';
             delete errorEl.dataset.errorType;
+        }
         }
 
         updateSendButtonState();
@@ -1414,10 +1441,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
                 event.stopPropagation();
+
+                if (!isChatMessageValid(true)) {
+                    return;
+                }
+
                 handleSendMessage();
             }
         });
     }
+
 
     /**
      * Prevents duplicate message submissions.
@@ -1426,48 +1459,75 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     let isSending = false;
 
-    /**
-     * Sends the active chat message to the backend.
-     *
-     * Validates that a message and chat ID exist, posts to /messages
-     * using JSON and CSRF protection, then clears the input after the request.
-     * Real-time rendering is expected to happen through the backend/broadcast flow.
-     */
+
+    function isChatMessageValid(showError = true) {
+        const message = input.value.trim();
+
+        if (!message) {
+            if (showError) {
+                setValidationError('El mensaje es obligatorio.', 'required');
+            }
+            updateSendButtonState();
+            return false;
+        }
+
+        const isLengthValid = validateMaxLength(showError);
+        const isCharactersValid = validateAllowedCharacters(showError);
+        const isProfanityValid = validateMessageProfanity(showError);
+
+        updateSendButtonState();
+
+        return isLengthValid && isCharactersValid && isProfanityValid;
+    }
+
     async function handleSendMessage() {
         if (isSending) return;
-        isSending = true;
 
-        const message = input.value.trim();
-        const chatId = messagesView.dataset.chatId;
-
-        if (!message || !chatId) {
-            isSending = false;
+        if (!isChatMessageValid(true)) {
             return;
         }
 
+        const message = input.value.trim();
+        const activeChatId = messagesView?.dataset.chatId;
+
+        if (!activeChatId) {
+            setValidationError('Selecciona un chat antes de enviar un mensaje.', 'required');
+            return;
+        }
+
+        isSending = true;
+        sendBtn.disabled = true;
+
         try {
-            await fetch('/messages', {
+            const response = await fetch('/messages', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    chat_id: chatId,
+                    chat_id: activeChatId,
                     content: message
                 })
             });
 
+            if (!response.ok) {
+                throw new Error('Error enviando mensaje');
+            }
+
+
             input.value = '';
             clearAllValidationErrors();
-            updateSendButtonState();
             updateCounter();
-            input.focus();
+            updateSendButtonState();
 
         } catch (error) {
-            console.error(error);
+            console.error('Error enviando mensaje:', error);
+            setValidationError('No se pudo enviar el mensaje. Inténtalo nuevamente.', 'required');
         } finally {
             isSending = false;
+            updateSendButtonState();
         }
     }
 
@@ -1480,6 +1540,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sendBtn.addEventListener('click', (e) => {
             e.preventDefault();
+
+            if (!isChatMessageValid(true)) {
+                return;
+            }
+
             handleSendMessage();
         });
     }

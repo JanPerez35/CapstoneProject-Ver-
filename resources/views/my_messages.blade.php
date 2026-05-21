@@ -3,7 +3,7 @@
 
     {{--Javascript modules that handle profanity word filtering logic, frontend validation, chat UI interactions,
          modal behavior, dynamic messsage rendering, search filtering, and toast notifications--}}
-    @vite(['resources/js/pages/messages_profanity.js', 'resources/js/messages_validation.js'])
+    @vite(['resources/js/messages_validation.js'])
 
     {{--Variables that preserve navigation flow between marketplace posts and messaging system--}}
     @php
@@ -41,11 +41,11 @@
             Splits into left sidebar - chat list and search bar &
             right sidebar - active chat conversation--}}
         <div class="messages-card flex-grow-1 d-flex flex-column"
-             style="min-height: calc(100vh - 160px); margin-bottom: 15rem;">
-            <div class="row g-3 align-items-stretch">
+             style="min-height: calc(100vh - 160px); margin-bottom: 2rem;">
+            <div class="row g-3 align-items-stretch flex-grow-1" style="min-height: 0;">
 
                 {{--Left sidebar--}}
-                <div class="col-12 col-md-4 border border-dark border-2 border-end border-dark messages-sidebar d-flex flex-column"
+                <div class="col-12 col-md-4 border border-dark border-2 border-end border-dark messages-sidebar d-flex flex-column rounded-2"
                      style="align-self: stretch; position: relative; z-index: 2; background: white;">
                     {{--Sidebar header and return navigation.
                         Allows the user to return to the page they originally came from.
@@ -61,7 +61,7 @@
                         <h1 class="fw-bold mt-5 mb-1">Mensajes</h1>
 
                         {{--Page description--}}
-                        <p class="text-muted mb-0">Chats relacionados con tus publicaciones</p>
+                        <p class="text-muted mb-0">Centro de conversaciones para publicaciones del Kinemercado</p>
                     </div>
 
                     {{--Chat search section, allows the user filter conversations dynamically,
@@ -186,7 +186,7 @@
                 </div>
 
                 {{--Right side bar, represents the active messaging/chatting area--}}
-                <div class="col-12 col-md-8 d-flex flex-column border border-dark border-2 overflow-hidden messages-chat-column"
+                <div class="col-12 col-md-8 d-flex flex-column border border-dark border-2 overflow-hidden messages-chat-column rounded-2"
                      >
 
                     {{--Top divider/header container for the active chat section--}}
@@ -246,8 +246,8 @@
 
                     {{--Scrollable container that dynamically renders all messages belonging to the active conversation--}}
                     <div id="chatMessagesContainer"
-                         class="flex-grow-1 p-4 overflow-auto messages-container border-bottom border-dark border-2 "
-                         style="min-height: 490px; margin-left: calc(var(--bs-gutter-x) * -0.5); margin-right: calc(var(--bs-gutter-x) * -0.5);">
+                         class="flex-grow-1 p-4 overflow-auto messages-container border-bottom border-dark border-2"
+                         style="min-height: 0; margin-left: calc(var(--bs-gutter-x) * -0.5); margin-right: calc(var(--bs-gutter-x) * -0.5);">
 
                         {{--Empty state that is displayed when no chat is selected or selected chat has no messages--}}
                         <div id="chatEmptyState" class="d-none h-100 d-flex align-items-center justify-content-center">
@@ -266,8 +266,7 @@
                     </div>
 
                     {{--Chat text message input section--}}
-                    <div class="p-3 p-md-4 chat-input-area d-flex flex-column gap-2"
-                         style="min-height: 250px;">
+                    <div class="p-3 p-md-4 chat-input-area d-flex flex-column gap-2">
                         {{--Message input group that is initially disabled until a chat is selected--}}
                         <div id="chatMessageGroup" class="input-group chat-message-group border border-dark border-2 rounded-3 overflow-hidden">
                             <input
