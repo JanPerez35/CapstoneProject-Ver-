@@ -81,7 +81,7 @@ class ReviewController extends Controller
             [
                 'rating' => $request->rating,
                 'status' => $status,
-                'comment' => $comment,
+                'comment' => $request->input('comment') ?? $comment,
             ]
         );
 

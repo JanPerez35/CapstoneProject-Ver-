@@ -56,7 +56,7 @@ class KineMercadoTest extends TestCase
         $this->actingAs($user)
             ->delete("/posts/{$post->id}")
             ->assertStatus(200);
-        
+
         $this->assertDatabaseMissing('posts', [
             'id' => $post->id,
         ]);
@@ -80,11 +80,11 @@ class KineMercadoTest extends TestCase
                 'status' => 'Disponible',
             ]);
         }
-    
+
         $this->actingAs($user)
             ->post('/posts', $this->postData())
             ->assertStatus(403);
-        
+
         $this->assertCount(15, Post::where('user_id', $user->id)->get());
     }
 
@@ -145,7 +145,7 @@ class KineMercadoTest extends TestCase
                 'description' => 'Este usuario está haciendo spam',
             ])
             ->assertStatus(200);
-    
+
         $this->assertDatabaseHas('user_reports', [
             'user_id' => $user->id,
             'reported_user_id' => $target->id,
@@ -190,7 +190,7 @@ class KineMercadoTest extends TestCase
                 'content' => 'Hola'
             ])
             ->assertStatus(200);
-    
+
         $this->assertDatabaseHas('messages', [
             'chat_id' => $chat->id,
         ]);
@@ -367,7 +367,7 @@ class KineMercadoTest extends TestCase
 
         $this->assertDatabaseMissing('reviews', [
             'user_id' => $user->id,
-            'reviewed_user_id' => $user->id,
+            'seller_id' => $user->id,
             'post_id' => $post->id,
         ]);
     }
@@ -649,7 +649,7 @@ class KineMercadoTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
-            'role' => $user->role 
+            'role' => $user->role
         ]);
     }
 
@@ -669,7 +669,7 @@ class KineMercadoTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
-            'role' => $user->role 
+            'role' => $user->role
         ]);
     }
 
@@ -689,7 +689,7 @@ class KineMercadoTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'id' => $user->id,
-            'role' => $user->role 
+            'role' => $user->role
         ]);
     }
 
@@ -708,7 +708,7 @@ class KineMercadoTest extends TestCase
             ->assertStatus(302);
 
             $this->assertDatabaseMissing('messages', [
-                'sender_user_id' => $user->id,
+                'user_id' => $user->id,
                 'content' => 'Hola'
             ]);
     }
@@ -873,7 +873,7 @@ class KineMercadoTest extends TestCase
             ->assertStatus(302);
 
         $this->assertDatabaseMissing('messages', [
-            'sender_user_id' => $user->id,
+            'user_id' => $user->id,
         ]);
     }
 
@@ -945,4 +945,3 @@ class KineMercadoTest extends TestCase
         ]);
     }
 }
-        
