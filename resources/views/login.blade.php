@@ -47,13 +47,26 @@
             padding: 18px 40px;
             font-size: 1.2rem;
             font-weight: 600;
-            background: #28a745;
+            background: #176333;
             border: none;
+            color: #ffffff;
         }
 
         /* Hover state for login button */
         .login-btn:hover {
-            background: #218838;
+            background: #124f29;
+            color: #ffffff;
+        }
+
+        /* Keeps the login button from turning white when clicked or focused */
+        .login-btn:focus,
+        .login-btn:active,
+        .login-btn:focus-visible,
+        .login-btn:active:focus {
+            background: #176333 !important;
+            color: #ffffff !important;
+            border: none !important;
+            box-shadow: 0 0 0 0.25rem rgba(23, 99, 51, 0.35) !important;
         }
 
         /* Footer informational text */
@@ -136,7 +149,7 @@
 
 <body>
 
-<div class="text-center container">
+<main class="text-center container">
 
     {{-- Portal logo section --}}
     <div class="mb-4">
@@ -166,7 +179,7 @@
         Sistema de Mercado e Inventario de Kinesiología
     </p>
 
-</div>
+</main>
 
 </body>
 </html>
