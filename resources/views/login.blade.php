@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+
+    {{-- Makes the page scale correctly on phones instead of shrinking the desktop layout --}}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>MAIKINE Portal</title>
 
     {{-- Load global compiled CSS and JavaScript assets --}}
@@ -10,52 +14,122 @@
 
     <style>
         /* Full-page centered layout with soft green institutional background as requested by client */
-        body{
-            background: linear-gradient(135deg,#e8f5e9,#ffffff,#e8f5e9);
-            min-height:100vh;
-            display:flex;
-            align-items:center;
-            justify-content:center;
+        body {
+            background: linear-gradient(135deg, #e8f5e9, #ffffff, #e8f5e9);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
         }
 
         /* Main logo image styling */
-        .logo{
-            width:250px;
-            height:250px;
-            object-fit:contain;
+        .logo {
+            width: 250px;
+            height: 250px;
+            object-fit: contain;
         }
 
         /* Main application title */
-        .main-title{
-            font-size:4rem;
-            font-weight:bold;
+        .main-title {
+            font-size: 4rem;
+            font-weight: bold;
         }
 
         /* Subtitle below the application title */
-        .subtitle{
-            font-size:1.5rem;
-            color:#555;
+        .subtitle {
+            font-size: 1.5rem;
+            color: #555;
         }
 
         /* Main login button */
-        .login-btn{
-            padding:18px 40px;
-            font-size:1.2rem;
-            font-weight:600;
-            background:#28a745;
-            border:none;
+        .login-btn {
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            background: #28a745;
+            border: none;
         }
 
         /* Hover state for login button */
-        .login-btn:hover{
-            background:#218838;
+        .login-btn:hover {
+            background: #218838;
         }
 
         /* Footer informational text */
-        .footer-text{
-            font-size:0.9rem;
-            color:#777;
-            margin-top:30px;
+        .footer-text {
+            font-size: 0.9rem;
+            color: #777;
+            margin-top: 30px;
+        }
+
+        /* Makes the portal landing page easier to read and use on phones,
+           while keeping the original desktop layout unchanged. */
+        @media (max-width: 576px) {
+            body {
+                padding: 24px 18px;
+                align-items: center;
+            }
+
+            .container {
+                max-width: 100%;
+            }
+
+            .logo {
+                width: 190px;
+                height: 190px;
+            }
+
+            .main-title {
+                font-size: 3.2rem;
+                line-height: 1.1;
+                margin-bottom: 10px;
+            }
+
+            .subtitle {
+                font-size: 1.2rem;
+                line-height: 1.35;
+                color: #444;
+                margin-bottom: 0;
+            }
+
+            .login-btn {
+                width: 100%;
+                max-width: 340px;
+                padding: 16px 18px;
+                font-size: 1.05rem;
+                border-radius: 12px;
+            }
+
+            .footer-text {
+                font-size: 0.9rem;
+                line-height: 1.5;
+                margin-top: 24px;
+                padding: 0 4px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .logo {
+                width: 170px;
+                height: 170px;
+            }
+
+            .main-title {
+                font-size: 2.8rem;
+            }
+
+            .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .login-btn {
+                font-size: 1rem;
+            }
+
+            .footer-text {
+                font-size: 0.85rem;
+            }
         }
     </style>
 </head>
