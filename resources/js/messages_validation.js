@@ -346,6 +346,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const allowedReportRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
     const chatId = messagesView?.dataset.chatId;
 
+    /**
+     * Validates the chat message against the profanity list.
+     *
+     * Empty values are treated as valid because the required-message validation
+     * handles empty input separately. When a profanity word is detected, a blocking
+     * validation error is applied so the message cannot be sent by button or Enter.
+     *
+     * @param {boolean} showError - Whether to display the profanity error message.
+     * @returns {boolean} True when the message does not contain prohibited words.
+     */
     function validateMessageProfanity(showError = true) {
         const value = input.value.trim();
 
@@ -1460,6 +1470,16 @@ document.addEventListener('DOMContentLoaded', () => {
     let isSending = false;
 
 
+    /**
+     * Validates the full chat message before submission.
+     *
+     * This is the final validation used by both the Enter key and the send
+     * button. It checks required text, maximum length, allowed characters, and
+     * profanity before allowing handleSendMessage() to run.
+     *
+     * @param {boolean} showError - Whether to display validation feedback.
+     * @returns {boolean} True only when the message can be submitted.
+     */
     function isChatMessageValid(showError = true) {
         const message = input.value.trim();
 
@@ -1480,6 +1500,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return isLengthValid && isCharactersValid && isProfanityValid;
     }
 
+    /**
+     * Sends the current chat message to the backend.
+     *
+     * Prevents duplicate submissions with isSending, validates the message again
+     * before sending, verifies that a chat is selected, posts the message to
+     * /messages, and resets the input after a successful response.
+     */
     async function handleSendMessage() {
         if (isSending) return;
 
@@ -1790,6 +1817,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Confirms cancellation of the report form after the user chooses to discard
+     * unsaved report data.
+     *
+     * This closes the confirmation modal, closes the report modal, allows the form
+     * reset flow to run, and returns the user to the post details modal.
+     */
     if (confirmCancelReport && reportUserModal && cancelReportConfirmModal) {
         confirmCancelReport.addEventListener('click', () => {
             allowReportClose = true;

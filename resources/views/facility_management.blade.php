@@ -285,7 +285,7 @@
                     <div>
                         <h2 class="fw-bold mb-1">Uso de Áreas y Costos Estimados</h2>
                         <p class="text-muted mb-0">Organización de eventos y estimaciones de costos operacionales</p>
-                        <p class="text-muted mb-0">Desliza para ver más información <i class="bi bi-arrow-right"></i>
+                        <p class="text-success fw-bold mb-0">Desliza para ver más información <i class="bi bi-arrow-right-circle"></i>
                         </p>
                     </div>
 
