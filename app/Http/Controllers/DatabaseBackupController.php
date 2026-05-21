@@ -55,12 +55,11 @@ class DatabaseBackupController extends Controller
         $host = $dbConfig['host'] ?? '127.0.0.1';
         $port = $dbConfig['port'] ?? 3306;
 
-        $dumpBinary = env('DB_DUMP_BINARY');
+        $dumpBinary = env('DB_DUMP_BINARY') ?: '/usr/bin/mariadb-dump';
 
-        if (!$dumpBinary) {
-            abort(500, 'DB_DUMP_BINARY is not configured in the .env file.');
+        if (!File::exists($dumpBinary) || !is_executable($dumpBinary)) {
+            abort(500, 'Database dump binary was not found or is not executable: ' . $dumpBinary);
         }
-
         $backupDirectory = storage_path('app/backups');
 
         if (!File::exists($backupDirectory)) {
