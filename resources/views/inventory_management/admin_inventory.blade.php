@@ -336,6 +336,7 @@
                                             name="quantity"
                                             class="form-control form-control-lg"
                                             min="1"
+                                            max="10000"
                                             value="{{ $item->quantity }}"
                                             placeholder="Ejemplo: 10"
                                             required
@@ -343,7 +344,7 @@
 
                                         {{-- Validation restrictions for Total Quantity --}}
                                         <div class="form-text">
-                                            Debe ser un número entero mayor o igual a 1.
+                                            Debe ser un número entero mayor o igual a 1 y no puede exceder 10,000.
                                         </div>
                                         <div class="invalid-feedback d-block error-quantity"></div>
                                     </div>
@@ -354,19 +355,20 @@
                                             Cantidad Disponible<span class="text-danger">*</span>
                                         </label>
 
-                                        {{-- Choose Available Quanity --}}
+                                        {{-- Choose Available Quantity --}}
                                         <input
                                             type="number"
                                             name="available_quantity"
                                             class="form-control form-control-lg"
                                             min="0"
+                                            max="10000"
                                             value="{{ $item->available_quantity }}"
                                             placeholder="Ejemplo: 8"
                                             required
                                         >
                                         {{-- Validation restrictions for Available Quantity --}}
                                         <div class="form-text">
-                                            Debe ser un número entero igual o mayor a 0 y no puede exceder la cantidad total.
+                                            Debe ser un número entero igual o mayor a 0, no puede exceder 10,000 y no puede exceder la cantidad total.
                                         </div>
                                         <div class="invalid-feedback d-block error-available"></div>
                                     </div>
@@ -581,12 +583,13 @@
                                 name="quantity"
                                 class="form-control form-control-lg"
                                 min="1"
+                                max="10000"
                                 placeholder="Ejemplo: 10"
                                 required
                             >
                             {{-- New item maximum restrictions for Total Quantity --}}
                             <div class="form-text">
-                                Debe ser un número entero mayor o igual a 1.
+                                Debe ser un número entero mayor o igual a 1 y no puede exceder 10,000.
                             </div>
                             <div class="invalid-feedback d-block" id="cantidadTotalError"></div>
                         </div>
@@ -602,12 +605,13 @@
                                 name="available_quantity"
                                 class="form-control form-control-lg"
                                 min="0"
+                                max="10000"
                                 placeholder="Ejemplo: 8"
                                 required
                             >
                             {{-- New item maximum restrictions for available quantity --}}
                             <div class="form-text">
-                                Debe ser un número entero igual o mayor a 0 y no puede exceder la cantidad total.
+                                Debe ser un número entero igual o mayor a 0, no puede exceder 10,000 y no puede exceder la cantidad total.
                             </div>
                             <div class="invalid-feedback d-block" id="cantidadDisponibleError"></div>
                         </div>
