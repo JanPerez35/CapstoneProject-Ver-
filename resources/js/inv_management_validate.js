@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
     const MAX_TEXT_LENGTH = 100;
     const MIN_TEXT_LENGTH = 3;
+    const MAX_INVENTORY_QUANTITY = 10000;
     const SCROLL_KEY = 'inventoryScrollY';
 
     /*
@@ -293,9 +294,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /*
-     * Validates total quantity fields to ensure they contain a valid
-     * positive integers.
-     */
+ * Validates total quantity fields to ensure they contain a valid
+ * positive integer and do not exceed the maximum inventory limit.
+ */
     function validateQuantityField(input, errorElement, showError = true) {
         if (showError) {
             clearError(input, errorElement);
@@ -319,13 +320,20 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
 
+        if (numericValue > MAX_INVENTORY_QUANTITY) {
+            if (showError) {
+                setError(input, errorElement, 'El máximo permitido es 10,000.');
+            }
+            return false;
+        }
+
         return true;
     }
 
     /*
-     * Validates available quantity fields and ensures they do not exceed
-     * the total quantity of the item.
-     */
+  * Validates available quantity fields and ensures they do not exceed
+  * the maximum inventory limit or the total quantity of the item.
+  */
     function validateAvailableField(availableInput, quantityInput, errorElement, showError = true) {
         if (showError) {
             clearError(availableInput, errorElement);
@@ -351,6 +359,13 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
 
+        if (available > MAX_INVENTORY_QUANTITY) {
+            if (showError) {
+                setError(availableInput, errorElement, 'El máximo permitido es 10,000.');
+            }
+            return false;
+        }
+
         if (!Number.isInteger(quantity) || quantity < 1) {
             return false;
         }
@@ -359,6 +374,30 @@ document.addEventListener('DOMContentLoaded', function () {
             if (showError) {
                 setError(availableInput, errorElement, 'La cantidad disponible no puede exceder la cantidad total.');
             }
+            return false;
+        }
+
+        return true;
+    }
+    /*
+ * Prevents quantity fields from exceeding the maximum inventory limit
+ * during live typing, paste actions, or browser number-step controls.
+ */
+    function validateQuantityLimitLive(input, errorElement) {
+        if (!input) return true;
+
+        const value = input.value.trim();
+
+        if (value === '') {
+            clearError(input, errorElement);
+            return true;
+        }
+
+        const numericValue = Number(value);
+
+        if (Number.isInteger(numericValue) && numericValue > MAX_INVENTORY_QUANTITY) {
+            input.value = String(MAX_INVENTORY_QUANTITY);
+            setError(input, errorElement, 'El máximo permitido es 10,000.');
             return false;
         }
 
@@ -808,13 +847,23 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         totalQuantityInput.addEventListener('input', function () {
-            validateTotalQuantity(true);
+            const withinLimit = validateQuantityLimitLive(totalQuantityInput, totalQuantityError);
+
+            if (withinLimit) {
+                validateTotalQuantity(true);
+            }
+
             validateAvailableQuantity(true);
             updateAddButtonState();
         });
 
         availableQuantityInput.addEventListener('input', function () {
-            validateAvailableQuantity(true);
+            const withinLimit = validateQuantityLimitLive(availableQuantityInput, availableQuantityError);
+
+            if (withinLimit) {
+                validateAvailableQuantity(true);
+            }
+
             updateAddButtonState();
         });
 
@@ -1113,13 +1162,23 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         quantityInput.addEventListener('input', function () {
-            validateQuantity(true);
+            const withinLimit = validateQuantityLimitLive(quantityInput, quantityError);
+
+            if (withinLimit) {
+                validateQuantity(true);
+            }
+
             validateAvailable(true);
             updateEditButtonState();
         });
 
         availableInput.addEventListener('input', function () {
-            validateAvailable(true);
+            const withinLimit = validateQuantityLimitLive(availableInput, availableError);
+
+            if (withinLimit) {
+                validateAvailable(true);
+            }
+
             updateEditButtonState();
         });
 
