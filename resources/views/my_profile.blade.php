@@ -252,8 +252,7 @@
                         <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
                             <span class="text-muted fw-medium">Calificación:</span>
 
-                            <div class="rating-stars" style="--rating: {{ $sellerAverageRating }};">
-                                <div class="rating-stars-base">
+                            <div class="rating-stars readonly-rating-stars" style="--rating-width: {{ ($sellerAverageRating / 5) * 100 }}%;">                                <div class="rating-stars-base">
                                     <i class="bi bi-star-fill"></i>
                                     <i class="bi bi-star-fill"></i>
                                     <i class="bi bi-star-fill"></i>

@@ -16,6 +16,11 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
+/* Default value for read-only rating width. */
+:root {
+    --rating-width: 0%;
+}
+
 /*
  * Shared search input wrapper style.
  * Used across pages to make Bootstrap input groups look like one unified bordered field.
@@ -154,13 +159,19 @@
 
 /*--------------------------------------------------
  * Section: Rating stars for marketplace and profile
- *---------------------------------------------------/
+ *---------------------------------------------------*/
 
 /* Interactive rating container used when users select stars on marketplace post. */
 .rating-stars {
     display: flex;
     align-items: center;
     gap: 0.25rem;
+}
+.readonly-rating-stars {
+    position: relative;
+    display: inline-block;
+    font-size: 1.2rem;
+    line-height: 1;
 }
 
 /* Makes each rating star clickable and animated. */
@@ -186,7 +197,7 @@
 
 /*--------------------------------------------------------
  * Section: Kinemercado create, details, and report modals
- *---------------------------------------------------------/
+ *---------------------------------------------------------*/
 
 /* Adds extra bottom spacing inside modal bodies. */
 .modal-body {
@@ -332,16 +343,7 @@
  * Section: Read-only rating display
  *----------------------------------*/
 
-/*
- * Read-only star rating display.
- * Uses a base layer and a filled layer controlled by the --rating variable.
- */
-.rating-stars {
-    position: relative;
-    display: inline-block;
-    font-size: 1.2rem;
-    line-height: 1;
-}
+
 
 /* Aligns the base and filled star layers consistently. */
 .rating-stars-base,
@@ -363,7 +365,7 @@
     left: 0;
     overflow: hidden;
     white-space: nowrap;
-    width: calc((var(--rating) / 5) * 100%);
+    width: var(--rating-width, 0%);
 }
 
 
@@ -667,7 +669,7 @@
 
 /*--------------------------
  *Section: Chat input field
- *--------------------------/
+ *--------------------------*/
 
 /* Chat message input group container. */
 .chat-message-group {
@@ -1247,7 +1249,7 @@
 
 /*--------------------------------------
  * Section: Area name overflow handling
- *-------------------------------------/
+ *-------------------------------------*/
 
 /* Truncates long area names inside selection cards. */
 .classroom-name {
@@ -1266,7 +1268,7 @@
 
 /*------------------------------
  * Section: Date picker styling
- *------------------------------/
+ *------------------------------*/
 
 /* Makes date-only inputs clickable and leaves room for the trigger icon. */
 .date-picker-only {
@@ -1363,7 +1365,7 @@
 
 /*-----------------------------------------------------------------------------
  * Section: Shared table scroll wrapper for marketplace management report table
- *------------------------------------------------------------------------------/
+ *------------------------------------------------------------------------------*/
 
 /* Report User Admin Marketplace Management Table */
 /* Scrollable wrapper for wide administrative tables. */
@@ -1786,7 +1788,7 @@
 
 /*----------------------------------------
  * Section: Scroll-to-top floating button
- *---------------------------------------/
+ *---------------------------------------*/
 
 /* Floating button used to scroll back to the top of the page. */
 .scroll-to-top-btn {
