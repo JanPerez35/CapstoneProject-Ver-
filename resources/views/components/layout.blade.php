@@ -358,7 +358,7 @@
                                 </p>
 
                                 <p class="mb-0 fw-bold text-warning-emphasis">
-                                    Viernes solo se pueden devolver equipos.
+                                    Viernes se pueden devolver equipos solamente por caso especial.
                                 </p>
 
                                 <p class="mb-0 fw-bold text-warning-emphasis">
@@ -466,8 +466,7 @@
                                         </button>
                                     </div>
 
-                                    <div class="form-text">Debe ser una fecha futura. No se permiten viernes, sábados ni domingos.</div>
-                                    <div class="invalid-feedback d-block" id="return_date_error"></div>
+                                    <div class="form-text">Debe ser una fecha futura. No se permiten sábados ni domingos.</div>                                    <div class="invalid-feedback d-block" id="return_date_error"></div>
                                 </div>
 
                                 <div class="mb-3">

@@ -314,7 +314,7 @@
 
         {{-- User banned toast --}}
         <div id="banToast"
-             class="toast align-items-center shadow-sm border border-success-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
+             class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"

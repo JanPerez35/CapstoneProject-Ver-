@@ -114,7 +114,7 @@
                     </div>
 
                     {{--Action legend that explains the purpose of every icon button that appears in each report row--}}
-                    <div class="d-flex align-items-start gap-3">
+                    <div class="d-flex align-items-start gap-3 ms-lg-0 ms-auto align-self-end">
 
                         {{--Left side of the legend, used as the legend title--}}
                         <div class="fw-bold">

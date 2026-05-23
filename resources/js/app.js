@@ -64,14 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const submitToastEl = document.getElementById('submitToast');
 
-        const hasBorrowModal =
-            borrowModal &&
-            borrowModalText &&
-            borrowModalImage &&
-            borrowModalStock &&
-            borrowQuantity &&
-            confirmAddToCart;
-
         /**
          * Allowed character pattern for free-text loan fields.
          */

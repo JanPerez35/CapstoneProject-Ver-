@@ -249,6 +249,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /**
+     * Checks whether a given return date falls on a blocked return day.
+     * Return dates can be Fridays, but Saturdays and Sundays are not allowed.
+     *
+     * @param {string} dateString - Date in YYYY-MM-DD format.
+     * @returns {boolean} True if the return date is not allowed.
+     */
+    function isBlockedReturnDay(dateString) {
+        const date = new Date(`${dateString}T00:00:00`);
+        const day = date.getDay();
+
+        return day === 6 || day === 0;
+    }
+
+    /**
      * Returns today's date as a YYYY-MM-DD string with time removed.
      *
      * @returns {string} Today's date formatted for date inputs.
@@ -370,22 +384,27 @@ document.addEventListener('DOMContentLoaded', function () {
 
             allowInput: false,
             disableMobile: true,
-            minDate: minPickupDateString(),
-
-            /**
-             * Disable Friday, Saturday, and Sunday.
-             */
-            disable: [
-                function (date) {
-                    const day = date.getDay();
-                    return day === 5 || day === 6 || day === 0;
-                }
-            ]
+            minDate: minPickupDateString()
         };
+
+        const pickupDisabledDays = [
+            function (date) {
+                const day = date.getDay();
+                return day === 5 || day === 6 || day === 0;
+            }
+        ];
+
+        const returnDisabledDays = [
+            function (date) {
+                const day = date.getDay();
+                return day === 6 || day === 0;
+            }
+        ];
 
         if (pickupDate) {
             flatpickr(pickupDate, {
                 ...sharedOptions,
+                disable: pickupDisabledDays,
                 onChange: function () {
                     validatePickupDate(true);
 
@@ -397,6 +416,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     updateSubmitButtonStateQuietly();
                 }
             });
+
             pickupDateIcon?.addEventListener('click', function () {
                 pickupDate._flatpickr?.open();
             });
@@ -405,11 +425,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (returnDate) {
             flatpickr(returnDate, {
                 ...sharedOptions,
+                disable: returnDisabledDays,
                 onChange: function () {
                     validateReturnDate(true);
                     updateSubmitButtonStateQuietly();
                 }
             });
+
             returnDateIcon?.addEventListener('click', function () {
                 returnDate._flatpickr?.open();
             });
@@ -584,8 +606,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
 
-        if (isBlockedPickupDay(returnDate.value)) {
-            if (showErrors) setError(returnDate, returnDateError, 'No se permiten viernes, sábados ni domingos.');
+        if (isBlockedReturnDay(returnDate.value)) {
+            if (showErrors) setError(returnDate, returnDateError, 'No se permiten sábados ni domingos.');
             return false;
         }
 

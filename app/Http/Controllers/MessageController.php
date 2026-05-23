@@ -39,15 +39,15 @@ class MessageController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'chat_id' => 'required|exists:chats,id',
             'content' => 'required|string|max:255',
         ]);
 
         $message = Message::create([
-            'chat_id' => $request->chat_id,
+            'chat_id' => $validated['chat_id'],
             'user_id' => auth()->id(),
-            'content' => $request->content,
+            'content' => $validated['content'],
             'status' => 'sent',
             'sent_at' => now(),
             'read_at' => null,
@@ -57,7 +57,7 @@ class MessageController extends Controller
 
         $this->logActivity(
             'Enviar mensaje',
-            "Se envió un mensaje en el chat ID: {$request->chat_id}"
+            "Se envió un mensaje en el chat ID: {$validated['chat_id']}"
         );
 
         /**
