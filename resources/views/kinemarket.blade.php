@@ -2,7 +2,6 @@
     <x-navbar></x-navbar>
 
     {{--Loads JS responsible for the validation in kinemercado, includes modal bahavior, scrolling, and profanity filtering behavior--}}
-    @vite('resources/js/pages/marketplace_profanity.js')
     @vite('resources/js/marketplace_validation.js')
 
     {{--Main marketplace container used to expose configuration values,
@@ -101,7 +100,7 @@
                                     required
                                 >
                                 <small class="text-muted d-block fst-italic">
-                                    Entre 5 y 100 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                    Entre 5 y 100 caracteres. Solo letras, números, espacios, puntos, comas y guiones.
                                 </small>
                                 {{--Displays error if there is invalid inputs in title format or an inappropriate word was detected--}}
                                 <div class="invalid-feedback" id="postTitleError"></div>
@@ -121,7 +120,7 @@
                                 ></textarea>
                                 <small class="text-muted d-block fst-italic">
                                     Si escribes una descripción, debe tener como máximo 500 caracteres.
-                                    Solo letras, números espacios, punto, coma y guion.
+                                    Solo letras, números espacios, puntos, comas y guiones.
                                 </small>
                                 {{--Displays error if there is invalid inputs in description format or an inappropriate word was detected--}}
                                 <div class="invalid-feedback" id="postDescriptionError"></div>
@@ -219,8 +218,8 @@
 
                             <small class="text-muted d-block fst-italic mt-2">
                                 Mínimo 1 imagen y máximo 3 imágenes permitidas.
-                                Solo JPEG/JPG.
-                                Máximo 2MB por imagen.
+                                Solo formatos JPEG/JPG.
+                                Tamaño máximo de 2MB por imagen.
                             </small>
                             {{--Displays image upload validation errors related to format, size, or quantity restrictions--}}
                             <div id="imageError" class="invalid-feedback d-block d-none"></div>
@@ -607,8 +606,8 @@
 
                     {{--Form to submit report/querella with the reason of the report/querella and description of the incident--}}
                     <div class="modal-body px-4 pt-2 pb-4">
-                        @csrf
                         <form id="reportUserForm" novalidate>
+                            @csrf
 
                             {{--Notice message explaining report review process--}}
                             <div class="alert alert-warning rounded-4 mb-3">
@@ -648,7 +647,7 @@
                                     required
                                 ></textarea>
                                 <small class="text-muted d-block fst-italic">
-                                    Entre 10 y 500 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                    Entre 10 y 500 caracteres. Solo letras, números, espacios, puntos, comas y guiones.
                                 </small>
                                 {{--Displays error if the report/querella is attempted to be sent an incorrect description format--}}
                                 <div class="invalid-feedback d-block" id="reportDescriptionError"></div>

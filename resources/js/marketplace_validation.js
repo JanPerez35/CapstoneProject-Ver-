@@ -1,5 +1,5 @@
 import * as bootstrap from 'bootstrap';
-
+import { findProfanity } from './utils/profanity_checker.js';
 /**
  * Initializes kine marketplace page behavior and all client-side kine marketplace interactions.
  *
@@ -1175,7 +1175,11 @@ function renderPagination({container, currentPage, totalItems, itemsPerPage, onP
     if (summary) {
         const firstItem = ((currentPage - 1) * itemsPerPage) + 1;
         const lastItem = Math.min(currentPage * itemsPerPage, totalItems);
-        summary.textContent = `Mostrando ${firstItem} a ${lastItem} de ${totalItems} resultados`;
+        summary.innerHTML = `
+            Mostrando <strong>${firstItem}</strong>
+            a <strong>${lastItem}</strong>
+            de <strong>${totalItems}</strong> resultados
+        `;
     }
 
     let paginationHTML = '';
@@ -1306,7 +1310,7 @@ function validateTitle(showError = true) {
             setFieldError(
                 postTitle,
                 postTitleError,
-                'Solo se permiten letras, números, espacios, punto, coma y guion.'
+                'Solo se permiten letras, números, espacios, puntos, comas y guiones.'
             );
         }
         return false;
@@ -1327,6 +1331,52 @@ function validateTitle(showError = true) {
     }
 
     return true;
+}
+
+/**
+ * Validates create-post title and description fields for profanity.
+ *
+ * Checks both text fields using the shared profanity checker before allowing
+ * a marketplace post to be published. If inappropriate language is detected,
+ * the related field is marked invalid, the base validation message is cleared,
+ * and a profanity-specific error message is displayed.
+ *
+ * @param {boolean} [showError=true] - Whether profanity error messages should be displayed.
+ * @returns {boolean} True when no profanity is detected, otherwise false.
+ */
+function validateCreatePostProfanity(showError = true) {
+    const titleValue = postTitle?.value.trim() || '';
+    const descriptionValue = postDescription?.value.trim() || '';
+
+    const titleProfanityError = document.getElementById('postTitleProfanityError');
+    const descriptionProfanityError = document.getElementById('postDescriptionProfanityError');
+
+    let isValid = true;
+
+    if(showError) {
+        if (titleProfanityError) titleProfanityError.textContent = '';
+        if (descriptionProfanityError) descriptionProfanityError.textContent = '';
+    }
+
+    if (titleValue && findProfanity(titleValue)) {
+        isValid = false;
+        if (showError) {
+            postTitle.classList.add('is-invalid');
+            postTitleError.textContent = '';
+            titleProfanityError.textContent = 'El título contiene lenguaje inapropiado.';
+        }
+    }
+
+    if (descriptionValue && findProfanity(descriptionValue)) {
+        isValid = false;
+        if (showError) {
+            postDescription.classList.add('is-invalid');
+            postDescriptionError.textContent = '';
+            descriptionProfanityError.textContent = 'La descripción contiene lenguaje inapropiado.';
+        }
+    }
+
+    return isValid;
 }
 
 /**
@@ -1356,7 +1406,7 @@ function validateDescription(showError = true) {
             setFieldError(
                 postDescription,
                 postDescriptionError,
-                'Solo se permiten letras, números, espacios, punto, coma y guion.'
+                'Solo se permiten letras, números, espacios, puntos, comas y guiones.'
             );
         }
         return false;
@@ -1518,6 +1568,7 @@ function validateImages(showError = true) {
  * - condition
  * - images
  * - description (optional but if written then required)
+ * - profanity words usage
  */
 function updatePublishButtonState() {
     if (!publishBtn) return;
@@ -1528,7 +1579,8 @@ function updatePublishButtonState() {
         validateSelect(postCategory, false) &&
         validateSelect(postCondition, false) &&
         validateImages(false) &&
-        validateDescription(false);
+        validateDescription(false) &&
+        validateCreatePostProfanity(false);
 
     publishBtn.disabled = !isReady;
 }
@@ -1786,7 +1838,7 @@ function validateReportDescription(showError = true) {
         if (showError) {
             reportDescription.classList.add('is-invalid');
             reportDescriptionError.textContent =
-                'Solo se permiten letras, números, espacios, punto, coma y guion.';
+                'Solo se permiten letras, números, espacios, puntos, comas y guiones.';
         }
         return false;
     }
@@ -2214,6 +2266,7 @@ if (postTitle) {
             );
         } else {
             validateTitle(true);
+            validateCreatePostProfanity(true);
         }
 
         updatePublishButtonState();
@@ -2227,6 +2280,7 @@ if (postTitle) {
             clearFieldError(postTitle, postTitleError);
         } else {
             validateTitle(true);
+            validateCreatePostProfanity(true);
         }
 
         updatePublishButtonState();
@@ -2265,6 +2319,7 @@ if (postDescription) {
             );
         } else {
             validateDescription(true);
+            validateCreatePostProfanity(true);
         }
 
         updatePublishButtonState();
@@ -2278,6 +2333,7 @@ if (postDescription) {
             clearFieldError(postDescription, postDescriptionError);
         } else {
             validateDescription(true);
+            validateCreatePostProfanity(true);
         }
 
         updatePublishButtonState();
@@ -2475,6 +2531,7 @@ if (publishBtn && createPostForm) {
             const isCategoryValid = validateSelect(postCategory, true);
             const isConditionValid = validateSelect(postCondition, true);
             const areImagesValid = validateImages(true);
+            const isProfanityValid = validateCreatePostProfanity(true);
 
             if (
                 !isTitleValid ||
@@ -2482,7 +2539,8 @@ if (publishBtn && createPostForm) {
                 !isPriceValid ||
                 !isCategoryValid ||
                 !isConditionValid ||
-                !areImagesValid
+                !areImagesValid ||
+                !isProfanityValid
             ) {
                 return;
             }

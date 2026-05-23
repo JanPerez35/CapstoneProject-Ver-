@@ -294,8 +294,8 @@
                             live character counter--}}
                         <div class="d-flex justify-content-between align-items-start gap-2 mt-2">
                             <small class="text-muted fst-italic pe-lg-3">
-                            Máximo 255 caracteres. Solo letras, números, espacios, punto, coma,
-                                guion, signos de pregunta, signos de exclamación, signo de dólar
+                            Máximo 255 caracteres. Solo letras, números, espacios, puntos, comas,
+                                guiones, signos de pregunta, signos de exclamación, signo de dólar
                                 y signo numeral.
                             </small>
 

@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const MAX_LENGTH = 255;
     const MAX_REPORT_LENGTH = 500;
-    const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s.,\-¿?¡!#$]+$/;
+    const allowedTextRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s@.,\-¿?¡!#$]+$/;
     const allowedReportRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
     const chatId = messagesView?.dataset.chatId;
 
