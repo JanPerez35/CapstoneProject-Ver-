@@ -58,7 +58,12 @@ class LendingController extends Controller
 
         $redirectBack = $validated['redirect_back'] ?? route('kinventory');
 
-        if (!str_starts_with($redirectBack, url('/'))) {
+        $appUrl = rtrim(url('/'), '/');
+
+        if (
+            ! filter_var($redirectBack, FILTER_VALIDATE_URL) ||
+            ! str_starts_with($redirectBack, $appUrl . '/')
+        ) {
             $redirectBack = route('kinventory');
         }
 

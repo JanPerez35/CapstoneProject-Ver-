@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\Post;
 use App\Models\Chat;
 use App\Models\UserReport;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Class KineMercadoTest
@@ -1053,5 +1055,98 @@ public function test_normal_user_cannot_view_reports_data(): void
         $this->assertDatabaseMissing('posts', [
             'id' => null,
         ]);
+    }
+
+    public function test_user_cannot_upload_php_file_as_post_image(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create([
+            'role' => 'Usuario',
+            'status' => 'Activo',
+        ]);
+
+        $file = UploadedFile::fake()->create('shell.php', 10, 'application/x-php');
+
+        $response = $this->actingAs($user)
+            ->post(route('posts.store'), [
+                'title' => 'Valid Test Title',
+                'description' => 'Valid description',
+                'cost' => 10,
+                'category' => 'Test',
+                'condition' => 'Nuevo',
+                'images' => [$file],
+            ]);
+
+        $response->assertSessionHasErrors(['images.0']);
+
+        $this->assertDatabaseMissing('posts', [
+            'title' => 'Valid Test Title',
+        ]);
+    }
+
+    public function test_user_cannot_upload_more_than_three_post_images(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create([
+            'role' => 'Usuario',
+            'status' => 'Activo',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->post(route('posts.store'), [
+                'title' => 'Valid Test Title',
+                'description' => 'Valid description',
+                'cost' => 10,
+                'category' => 'Test',
+                'condition' => 'Nuevo',
+                'images' => [
+                    UploadedFile::fake()->image('one.jpg'),
+                    UploadedFile::fake()->image('two.jpg'),
+                    UploadedFile::fake()->image('three.jpg'),
+                    UploadedFile::fake()->image('four.jpg'),
+                ],
+            ]);
+
+        $response->assertSessionHasErrors(['images']);
+
+        $this->assertDatabaseMissing('posts', [
+            'title' => 'Valid Test Title',
+        ]);
+    }
+
+    public function test_user_can_upload_valid_post_images(): void
+    {
+        Storage::fake('public');
+
+        $user = User::factory()->create([
+            'role' => 'Usuario',
+            'status' => 'Activo',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->post(route('posts.store'), [
+                'title' => 'Valid Test Title',
+                'description' => 'Valid description',
+                'cost' => 10,
+                'category' => 'Test',
+                'condition' => 'Nuevo',
+                'images' => [
+                    UploadedFile::fake()->image('one.jpg'),
+                    UploadedFile::fake()->image('two.png'),
+                ],
+            ]);
+
+        $response->assertOk();
+
+        $this->assertDatabaseHas('posts', [
+            'title' => 'Valid Test Title',
+            'user_id' => $user->id,
+        ]);
+
+        $post = Post::where('title', 'Valid Test Title')->first();
+
+        $this->assertNotNull($post);
     }
 }

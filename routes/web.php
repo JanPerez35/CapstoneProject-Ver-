@@ -430,6 +430,10 @@ Route::get('/debug-user', function () {
  *  Testing route using a json with simulated data as will come from EventFlow when is launch.
  */
 Route::post('/facility/import-mock-events', [FacilityCostController::class, 'importMockEvents'])
-        ->name('facility.import.mock')
-        ->middleware('role:Super Administrador,Administrador de Instalaciones');
+    ->name('facility.import.mock')
+    ->middleware('role:Super Administrador,Administrador de Instalaciones');
+
+Route::get('/mock-eventflow/events', [FacilityCostController::class, 'mockExternalEvents'])
+    ->name('facility.mock.events')
+    ->middleware('role:Super Administrador,Administrador de Instalaciones');
 }
