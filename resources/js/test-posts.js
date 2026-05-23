@@ -8,9 +8,10 @@ export const options = {
 };
 
 export default function () {
-    const res = http.post('https://maikine.test/test-concurrency');
+    const res = http.post('https://maikine.uprm.edu/test-concurrency');
 
     console.log(`STATUS: ${res.status}`);
+    console.log(`BODY: ${res.body}`);
 
     check(res, {
         'status 200': (r) => r.status === 200,
