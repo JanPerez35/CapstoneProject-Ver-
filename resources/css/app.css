@@ -520,7 +520,7 @@
 }
 
 /* Allows profile post descriptions to wrap inside the details modal.
-   This creates multpiple rows.*/
+   This creates multiple rows.*/
 #profilePostDetailsDescription {
     white-space: normal !important;
     overflow: visible !important;
@@ -791,8 +791,8 @@
     overflow-wrap: break-word;
 }
 
-/* Prevents key date, time, total, and action columns from wrapping. */
-/*Thus allows them to be able to star on a new line instead of taking over other cell space. */
+/* Prevents key date, time, total, and action columns from wrapping.
+   This helps preserve table alignment and prevents layout shifts. */
 #facilityCostTable th:nth-child(1),
 #facilityCostTable td:nth-child(1),
 #facilityCostTable th:nth-child(2),
@@ -849,7 +849,7 @@
  * Section: Checkbox styling
  *---------------------------*/
 
-/*  Checkbox styling (terms & special case)  */
+/* Checkbox styling for terms and special-case confirmation inputs.*/
 .form-check-input {
     /* black */
     border: 2px solid #000 !important;
@@ -1165,7 +1165,7 @@
     height: 100%;
 }
 
-/* Matches secondary section titles with the desired form title size in fomrs. */
+/* Matches secondary section titles with the desired form title size in forms. */
 .section-title-match {
     font-size: 1.25rem;
 }
@@ -1403,7 +1403,7 @@
 }
 
 /* Sticky header styling for the marketplace reports table. */
-/*Allwos for leyend to be visible at all moments. */
+/*Allows for legend to be visible at all moments. */
 .reports-table thead th {
     position: sticky;
     top: 0;
@@ -1904,4 +1904,41 @@
 /* Removes the calendar icon when an invalid date is present, so that the warning icon may appear. */
 .date-picker-wrapper:has(.is-invalid) .date-picker-icon {
     display: none;
+}
+
+/*---------------------------------------------------
+ * Section: Messaging unread badge and empty states
+ *--------------------------------------------------*/
+
+/* Keeps the chat list container positioned correctly for the search empty state. */
+#chatListContainer {
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+}
+
+/* Centers the empty-state message shown when no conversations match the search. */
+.chat-search-empty-state {
+    min-height: 220px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 1.5rem;
+
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* Keeps the Mi Chats navigation link above nearby header buttons when it has an unread badge. */
+a:has(#miChatsUnreadBadge) {
+    z-index: 1055;
+}
+
+/* Places the Mi Chats unread badge above the Mi Chats link and nearby navbar elements. */
+#miChatsUnreadBadge {
+    z-index: 1056;
 }

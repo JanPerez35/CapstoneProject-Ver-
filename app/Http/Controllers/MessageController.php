@@ -33,6 +33,7 @@ class MessageController extends Controller
      *
      * Actions:
      * - creates message
+     * - updates the chat timestamp so the conversation moves to the top
      * - broadcasts event (real-time)
      * - logs activity
      * - dispatches reminder job if unread
@@ -53,6 +54,7 @@ class MessageController extends Controller
             'read_at' => null,
         ]);
 
+        Chat::where('id', $validated['chat_id'])->touch();
         broadcast(new MessageSent($message))->toOthers();
 
         $this->logActivity(

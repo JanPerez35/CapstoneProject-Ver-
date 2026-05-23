@@ -1,3 +1,11 @@
+/**
+ * Bootstrap import and profanity checker import
+ *
+ * Responsible for modals tooltips and toast configurations
+ * and behaviors. Additionally, verifies that the input field
+ * does not contain any profanity words.
+ * */
+
 import * as bootstrap from 'bootstrap';
 import { findProfanity } from './utils/profanity_checker.js';
 
@@ -41,8 +49,8 @@ function escapeHtml(text) {
  *
  * Behavior is as follows:
  *  Returns "Hoy" when the message date is today.
- *  Returns "Ayer" when the message date is yesterday
- *  Otherwise returns a Spanish Puerto Rico formatted date for when the message was sent
+ *  Returns "Ayer" when the message date is yesterday.
+ *  Otherwise returns a Spanish Puerto Rico formatted date for when the message was sent.
  *
  * @param {string|Date} dateValue - Date value from the backend or frontend message object.
  * @returns {string} Human-readable date separator text.
@@ -335,8 +343,8 @@ document.addEventListener('DOMContentLoaded', () => {
      * MAX_LENGTH controls the input chat message length.
      * MAX_REPORT_LENGTH controls report descriptions maximum length.
      * allowedTextRegex controls chat message characters, only allowing
-     * letters, numbers, periods, commas, hyphens, spaces, question & exclamation marks,
-     * dollar signs, and pound sign.
+     * letters, numbers, spaces, periods, commas, hyphens, at signs,
+     * question marks, exclamation marks, dollar signs, and pound signs.
      * allowedReportRegex controls report description characters, only allowing
      * letters, numbers, commas, periods, hyphens, and spaces.
      */
@@ -407,6 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     let isReportDirty = false;
     let allowReportClose = false;
+    let isSubmittingReport = false;
     let reportedUserId = null;
 
     /**
@@ -526,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!allowedTextRegex.test(value)) {
             if (showError) {
                 setValidationError(
-                    'Solo se permiten letras, números, espacios, punto, signo de exclamación e interogativo, signo de dolar, signo numeral, coma y guion.',
+                    'Solo se permiten letras, números, espacios, puntos, signos de exclamación e interrogativo, signos de dólar, signos numerales, comas, arrobas y guiones.',
                     'characters'
                 );
             }
@@ -537,58 +546,64 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
+
     /**
-     * Validates the chat message maximum length.
+     * Validates and limits the chat message length.
      *
-     * If the value exceeds MAX_LENGTH, it is sliced/trimmed back to the limit and a
-     * blocking error is shown. If it exactly reaches the limit, a warning-style
-     * validation message is shown while still allowing submission.
+     * If the value exceeds MAX_LENGTH, the input is sliced back to the allowed
+     * length and a maximum-length message is displayed. Reaching exactly
+     * MAX_LENGTH shows feedback but still allows the message to be submitted.
      *
-     * @param {boolean} showError - Whether to display validation feedback.
-     * @returns {boolean} False only when the message exceeds the allowed limit.
+     * @param {boolean} showError - Whether to display maximum-length feedback.
+     * @returns {boolean} Always true because the input is normalized instead of blocked.
      */
     function validateMaxLength(showError = true) {
-        const value = input.value;
+        const exceededLimit = input.value.length > MAX_LENGTH;
 
-        if (value.length > MAX_LENGTH) {
-            input.value = value.slice(0, MAX_LENGTH);
-
-            if (showError) {
-                input.classList.add('is-invalid');
-                errorEl.textContent = `Has alcanzado el máximo de ${MAX_LENGTH} caracteres. No puedes escribir más.`;
-                errorEl.dataset.errorType = 'maxlength-over';
-            }
-
-            return false;
+        if (exceededLimit) {
+            input.value = input.value.slice(0, MAX_LENGTH);
         }
 
-        if (value.length === MAX_LENGTH) {
-            input.classList.add('is-invalid');
-            errorEl.textContent = `Has alcanzado el máximo de ${MAX_LENGTH} caracteres, puedes aún someter esa cantidad.`;
-            errorEl.dataset.errorType = 'maxlength-limit';
+        const currentLength = input.value.length;
+
+        if (currentLength === MAX_LENGTH) {
+            if (showError) {
+                input.classList.add('is-invalid');
+
+                if (exceededLimit) {
+                    errorEl.textContent =
+                        `Has alcanzado el máximo de ${MAX_LENGTH} caracteres. No puedes escribir más.`;
+                } else {
+                    errorEl.textContent =
+                        `Has alcanzado el máximo de ${MAX_LENGTH} caracteres, puedes aún someter esa cantidad.`;
+                }
+
+                errorEl.dataset.errorType = 'maxlength-limit';
+            }
+
             return true;
         }
 
-        clearValidationError('maxlength-over');
         clearValidationError('maxlength-limit');
         return true;
     }
 
     /**
-     * Enables or disables the send button based on current input and errors.
+     * Enables or disables the send button based on the current input state.
      *
-     * The button stays disabled when the input is empty or when a blocking
-     * validation type is active.
+     * The button is disabled when the message is empty, when a blocking validation
+     * error exists, or while a message is already being sent. The maxlength-limit
+     * state is treated as non-blocking because a 255-character message can still
+     * be submitted.
      */
     function updateSendButtonState() {
         const trimmedValue = input.value.trim();
         const hasBlockingError =
             errorEl.dataset.errorType === 'required' ||
-            errorEl.dataset.errorType === 'maxlength-over' ||
             errorEl.dataset.errorType === 'characters' ||
             errorEl.dataset.errorType === 'profanity';
 
-        sendBtn.disabled = !trimmedValue || hasBlockingError;
+        sendBtn.disabled = !trimmedValue || hasBlockingError || isSending;
     }
 
     /**
@@ -609,6 +624,8 @@ document.addEventListener('DOMContentLoaded', () => {
             counterEl.classList.add('text-muted');
         }
     }
+
+
 
     /**
      * Filters the chat sidebar using the current search query.
@@ -640,6 +657,31 @@ document.addEventListener('DOMContentLoaded', () => {
             chatSearchEmptyState.classList.toggle('d-none', visibleCount !== 0);
         }
     }
+
+    /**
+     * Moves the active conversation card to the top of the conversations sidebar.
+     *
+     * This is used when the page loads from a marketplace "Enviar Mensaje" redirect
+     * and after sending a message, so the most recently active conversation appears
+     * first without requiring a full page refresh.
+     *
+     * @param {number|string} chatId - Chat/conversation ID that should be moved to the top.
+     */
+    function moveActiveChatToTop(chatId = messagesView?.dataset.chatId) {
+        if (!chatListContainer || !chatId) return;
+
+        const activeChatItem = chatListContainer.querySelector(
+            `.chat-list-item[data-chat-id="${chatId}"]`
+        );
+
+        const activeChatLink = activeChatItem?.closest('a');
+
+        if (!activeChatLink) return;
+
+        chatListContainer.prepend(activeChatLink);
+    }
+
+    moveActiveChatToTop();
 
     /**
      * Builds Bootstrap star icon HTML from a numeric seller rating.
@@ -922,7 +964,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (showError) {
             if (!isValid) {
                 reportReason.classList.add('is-invalid');
-                reportReasonError.textContent = 'Seleciona una razón.';
+                reportReasonError.textContent = 'Selecciona una razón para reportar al usuario.';
             } else {
                 reportReason.classList.remove('is-invalid');
                 reportReasonError.textContent = '';
@@ -936,7 +978,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * Validates the report description field.
      *
      * The description is a required field that only uses allowedReportRegex characters,
-     * has a minimum of 10 characters, and a maximum MAX_REPORT_LENGTH characters.
+     * has a minimum of 10 characters, and a maximum of MAX_REPORT_LENGTH characters.
      *
      * @param {boolean} showError - Whether to display validation feedback.
      * @returns {boolean} True when the description is valid.
@@ -963,7 +1005,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (showError) {
                 reportDescription.classList.add('is-invalid');
                 reportDescriptionError.textContent =
-                    'Solo se permiten letras, números, espacios, punto, coma y guion.';
+                    'Solo se permiten letras, números, espacios, puntos, comas y guiones.';
             }
             return false;
         }
@@ -1117,7 +1159,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     message: msg.content,
                     createdAt: msg.created_at,
                     time: new Date(msg.created_at).toLocaleTimeString([], {
-                        hour: '2-digit',
+                        hour: 'numeric',
                         minute: '2-digit'
                     }),
                     senderId: msg.sender_id,
@@ -1223,6 +1265,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 filterChats();
             });
         }
+
 
         /**
          * Tracks the current Echo channel so the previous channel can be left
@@ -1331,6 +1374,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
+     * Triggers chat filtering when the user presses the Enter key
+     * inside the conversations search input.
+     *
+     * Prevents the default Enter behavior and applies the same
+     * filtering logic used by the search button.
+     */
+    messagesSearchInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+
+            if (searchMessagesBtn) {
+                searchMessagesBtn.disabled = messagesSearchInput.value.trim() === '';
+            }
+
+            filterChats();
+        }
+    });
+
+
+    /**
      * Mobile back button reference.
      *
      * Used to return from the active chat column back to the chat sidebar on
@@ -1374,24 +1437,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Prevents the user from typing past the maximum chat message length.
+     * Prevents typing beyond the chat message maximum length.
      *
-     * beforeinput is used because it can block the incoming character before it
-     * is inserted into the input value.
+     * This catches direct typing before the browser applies the new character.
+     * When the next input would exceed MAX_LENGTH, the change is blocked, the
+     * current value is kept within the limit, and the non-blocking maxlength
+     * feedback is shown.
      */
     input.addEventListener('beforeinput', (event) => {
         const selectionLength = input.selectionEnd - input.selectionStart;
         const incomingText = event.data || '';
 
-        if (
-            input.value.length - selectionLength + incomingText.length > MAX_LENGTH
-        ) {
+        const nextLength = input.value.length - selectionLength + incomingText.length;
+
+        if (nextLength > MAX_LENGTH) {
             event.preventDefault();
 
-            input.classList.add('is-invalid');
-            errorEl.textContent = `Has alcanzado el máximo de ${MAX_LENGTH} caracteres. No puedes escribir más.`;
-            errorEl.dataset.errorType = 'maxlength-over';
+            input.value = input.value.slice(0, MAX_LENGTH);
 
+            input.classList.add('is-invalid');
+            chatMessageGroup.classList.remove('border-dark');
+            chatMessageGroup.classList.add('border-danger');
+
+            errorEl.textContent =
+                `Has alcanzado el máximo de ${MAX_LENGTH} caracteres. No puedes escribir más.`;
+            errorEl.dataset.errorType = 'maxlength-limit';
+
+            updateCounter();
             updateSendButtonState();
         }
     });
@@ -1452,10 +1524,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 event.preventDefault();
                 event.stopPropagation();
 
-                if (!isChatMessageValid(true)) {
-                    return;
-                }
-
                 handleSendMessage();
             }
         });
@@ -1473,9 +1541,10 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Validates the full chat message before submission.
      *
-     * This is the final validation used by both the Enter key and the send
-     * button. It checks required text, maximum length, allowed characters, and
-     * profanity before allowing handleSendMessage() to run.
+     * This final validation is shared by the Enter key and send button paths.
+     * It blocks empty messages, invalid characters, and profanity. The maximum
+     * length check normalizes the input but does not block submission when the
+     * message is exactly MAX_LENGTH.
      *
      * @param {boolean} showError - Whether to display validation feedback.
      * @returns {boolean} True only when the message can be submitted.
@@ -1491,21 +1560,26 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
-        const isLengthValid = validateMaxLength(showError);
+        validateMaxLength(false);
+
         const isCharactersValid = validateAllowedCharacters(showError);
         const isProfanityValid = validateMessageProfanity(showError);
 
+        if (errorEl.dataset.errorType === 'maxlength-limit') {
+            delete errorEl.dataset.errorType;
+        }
+
         updateSendButtonState();
 
-        return isLengthValid && isCharactersValid && isProfanityValid;
+        return isCharactersValid && isProfanityValid;
     }
 
     /**
      * Sends the current chat message to the backend.
      *
-     * Prevents duplicate submissions with isSending, validates the message again
-     * before sending, verifies that a chat is selected, posts the message to
-     * /messages, and resets the input after a successful response.
+     * Prevents duplicate submissions with isSending, validates the message,
+     * verifies that a chat is selected, posts the message to /messages, and
+     * clears the input after a successful response.
      */
     async function handleSendMessage() {
         if (isSending) return;
@@ -1515,6 +1589,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const message = input.value.trim();
+
         const activeChatId = messagesView?.dataset.chatId;
 
         if (!activeChatId) {
@@ -1548,6 +1623,7 @@ document.addEventListener('DOMContentLoaded', () => {
             clearAllValidationErrors();
             updateCounter();
             updateSendButtonState();
+            moveActiveChatToTop(activeChatId);
 
         } catch (error) {
             console.error('Error enviando mensaje:', error);
@@ -1567,10 +1643,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         sendBtn.addEventListener('click', (e) => {
             e.preventDefault();
-
-            if (!isChatMessageValid(true)) {
-                return;
-            }
 
             handleSendMessage();
         });
@@ -1709,6 +1781,10 @@ document.addEventListener('DOMContentLoaded', () => {
         submitReportBtn.addEventListener('click', async (e) => {
             e.preventDefault();
 
+            if (submitReportBtn.dataset.submitting === 'true' || isSubmittingReport) {
+                return;
+            }
+
             const isReasonValid = validateReportReason(true);
             const isDescriptionValid = validateReportDescription(true);
 
@@ -1717,9 +1793,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            try {
+            submitReportBtn.dataset.submitting = 'true';
+            isSubmittingReport = true;
+            allowReportClose = true;
+            isReportDirty = false;
+            submitReportBtn.disabled = true;
 
-                await fetch('/reports', {
+            try {
+                const response = await fetch('/reports', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1727,15 +1808,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify({
                         reported_user_id: reportedUserId,
+                        post_id: Number(messagesView?.dataset.postId || 0),
                         report_reason: reportReason.value,
                         description: reportDescription.value
                     })
                 });
 
-                allowReportClose = true;
+                if (!response.ok) {
+                    throw new Error('Error enviando reporte');
+                }
 
-                const reportModalInstance = bootstrap.Modal.getOrCreateInstance(reportUserModal);
-                reportModalInstance.hide();
+                bootstrap.Modal.getOrCreateInstance(reportUserModal).hide();
 
                 setTimeout(() => {
                     reportSentToast?.show();
@@ -1743,13 +1826,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (postDetailsModal) {
                     setTimeout(() => {
-                        const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
-                        postModalInstance.show();
+                        bootstrap.Modal.getOrCreateInstance(postDetailsModal).show();
                     }, 300);
                 }
-            }
-            catch (error) {
+            } catch (error) {
                 console.error('Error enviando reporte:', error);
+                isSubmittingReport = false;
+                allowReportClose = false;
+                submitReportBtn.disabled = false;
+                delete submitReportBtn.dataset.submitting;
             }
         });
     }
@@ -1757,8 +1842,9 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Report modal lifecycle handlers.
      *
-     * These events reset validation when the modal opens, block accidental closing
-     * when the form contains unsaved data, and clean the form after intentional closes.
+     * Resets validation when the report modal opens, intercepts accidental
+     * modal closes when the form has unsaved data, and resets the form only
+     * after an allowed close or successful submission.
      */
     if (reportUserModal) {
         reportUserModal.addEventListener('show.bs.modal', () => {
@@ -1767,7 +1853,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         reportUserModal.addEventListener('hide.bs.modal', (event) => {
-            if (allowReportClose) {
+            if (
+                allowReportClose ||
+                isSubmittingReport ||
+                submitReportBtn?.dataset.submitting === 'true'
+            ) {
                 return;
             }
 
@@ -1775,6 +1865,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (!isReportDirty) {
                 resetReportForm();
+
+                if (postDetailsModal) {
+                    setTimeout(() => {
+                        const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
+                        postModalInstance.show();
+                    }, 150);
+                }
+
                 return;
             }
 
@@ -1787,9 +1885,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         reportUserModal.addEventListener('hidden.bs.modal', () => {
-            if (allowReportClose) {
+            if (allowReportClose || isSubmittingReport) {
                 resetReportForm();
                 allowReportClose = false;
+                isSubmittingReport = false;
+                delete submitReportBtn?.dataset.submitting;
             }
         });
     }

@@ -30,6 +30,7 @@ class ChatController extends Controller
      * - related post
      * - last message timestamp
      * - unread message count
+     * - newest active chats first, including new chats without messages
      *
      * Optionally selects an active chat using:
      * - chat_id (query param)
@@ -48,7 +49,7 @@ class ChatController extends Controller
                           ->where('user_id', '!=', $userId);
                 }
             ])
-            ->orderByDesc('messages_max_created_at')
+            ->orderByRaw('COALESCE(messages_max_created_at, chats.created_at) DESC')
             ->get();
 
         $selectedChat = null;

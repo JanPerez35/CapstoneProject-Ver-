@@ -2,7 +2,7 @@
     <x-navbar></x-navbar>
 
     {{--Javascript modules that handle profanity word filtering logic, frontend validation, chat UI interactions,
-         modal behavior, dynamic messsage rendering, search filtering, and toast notifications--}}
+     modal behavior, dynamic message rendering, search filtering, and toast notifications--}}
     @vite(['resources/js/messages_validation.js'])
 
     {{--Variables that preserve navigation flow between marketplace posts and messaging system--}}
@@ -32,7 +32,7 @@
         style="min-height: calc(100vh - 90px);"
         {{--Used to load and highlight the selected chat--}}
         data-chat-id="{{ request('chat_id', '') }}"
-        {{--Used to determines message ownership for message aligment and styling--}}
+        {{--Used to determine message ownership for message alignment and styling--}}
         data-current-user-id="{{ auth()->id() }}"
         {{--Used to connect the active conversation with a marketplace post--}}
         data-post-id="{{ $selectedChat?->post_id ?? '' }}"
@@ -83,7 +83,7 @@
                                 </div>
                             </div>
 
-                            {{--Search trigger button, initially disabled until user enters text--}}
+                            {{--Search trigger button, initially disabled until the user enters text--}}
                             <div class="col-6 d-grid">
                                 <button type="button" class="btn btn-success" id="searchMessagesBtn" disabled>
                                     Buscar
@@ -93,7 +93,7 @@
                             {{--Clears all search filters--}}
                             <div class="col-6 d-grid">
                                 <button type="button" class="btn btn-outline-secondary" id="clearMessagesFiltersBtn">
-                                    Limpiar Busqueda
+                                    Limpiar Búsqueda
                                 </button>
                             </div>
                         </div>
@@ -166,26 +166,23 @@
                         </a>
                         @endforeach
 
-                           {{--Flexible spacer that pushes the empty search state
-                           toward the vertical center when there are few chats--}}
-                           <div class="flex-grow-1"></div>
-                    </div>
+                           {{--Empty search state, displayed when no chat/conversation matches the search query.
+                                 It stays inside the scrollable conversations container so overflow behavior
+                                remains consistent across different screen sizes.--}}
+                           <div
+                               id="chatSearchEmptyState"
+                               class="d-none chat-search-empty-state text-center text-muted"
+                           >
+                               <i class="bi bi-search fs-3 d-block mb-2"></i>
 
-                    {{--Empty search state, displayed when no chat/conversation matches the search query--}}
-                    <div
-                        id="chatSearchEmptyState"
-                        class="d-none px-4 pb-4 text-center text-muted"
-
-                        {{--Negative top margin used to visually raise the empty
-                        state closer to the conversations section title--}}
-                        style="margin-top: -15rem;"
-                    >
-                        <i class="bi bi-search fs-3 d-block mb-2"></i>
-                        <p class="mb-0">No se encontraron chats que coincidan con la busqueda.</p>
+                               <p class="mb-0">
+                                   No se encontraron conversaciones que coincidan con la búsqueda.
+                               </p>
+                           </div>
                     </div>
                 </div>
 
-                {{--Right side bar, represents the active messaging/chatting area--}}
+                {{--Right sidebar that represents the active messaging/chatting area--}}
                 <div class="col-12 col-md-8 d-flex flex-column border border-dark border-2 overflow-hidden messages-chat-column rounded-2"
                      >
 
@@ -229,7 +226,7 @@
                                 </div>
                             </div>
 
-                            {{--Button that open the marketplace publication details modal--}}
+                            {{--Button that opens the marketplace publication details modal--}}
                             <button
                                 type="button"
                                 class="btn btn-success rounded-3 px-4 flex-shrink-0 chat-header-post-btn"
@@ -277,7 +274,7 @@
                                 disabled
                             >
 
-                            {{--Send Button that submits the message through the JS file--}}
+                            {{--Send button used to submit the current chat message--}}
                             <button
                                 id="sendChatMessageBtn"
                                 class="btn btn-success px-4"
@@ -294,9 +291,9 @@
                             live character counter--}}
                         <div class="d-flex justify-content-between align-items-start gap-2 mt-2">
                             <small class="text-muted fst-italic pe-lg-3">
-                            Máximo 255 caracteres. Solo letras, números, espacios, puntos, comas,
-                                guiones, signos de pregunta, signos de exclamación, signo de dólar
-                                y signo numeral.
+                            Máximo 255 caracteres. Solo se permiten letras, números, espacios, puntos, comas,
+                                guiones, arrobas, signos de pregunta, signos de exclamación, signos de dólar
+                                y signos numerales.
                             </small>
 
                             {{--Live character counter updated by messages_validation.js--}}
@@ -535,17 +532,17 @@
                         {{--Report reason dropdown--}}
                         <div class="mb-3">
                             <label for="reportReason" class="form-label fw-semibold">
-                                Razón <span class="text-danger">*</span>
+                                Razón de la Querella <span class="text-danger">*</span>
                             </label>
                             <select class="form-select form-select-lg" id="reportReason" required>
-                                <option value="" selected>Seleccionar una razón</option>
+                                <option value="" selected>Selecciona una razón</option>
                                 <option value="Fraude o estafa">Fraude o estafa</option>
                                 <option value="Información falsa">Información falsa</option>
                                 <option value="Lenguaje ofensivo">Lenguaje ofensivo</option>
                                 <option value="Contenido inapropiado">Contenido inapropiado</option>
                                 <option value="Otros">Otros</option>
                             </select>
-                            <div class="invalid-feedback" id="reportReasonError">Seleciona una razón.</div>
+                            <div class="invalid-feedback" id="reportReasonError">Selecciona una razón.</div>
                         </div>
 
                         {{--Report description, validation of required text, minimum length, and allowed characters
@@ -565,7 +562,7 @@
                             ></textarea>
 
                             <small class="text-muted d-block fst-italic">
-                                Entre 10 y 500 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                Entre 10 y 500 caracteres. Solo letras, números, espacios, puntos, comas y guiones.
                             </small>
 
                             <div class="invalid-feedback d-block" id="reportDescriptionError"></div>
@@ -574,7 +571,7 @@
                         {{--Administrative warning explaining the possible consequences after a report/querella is submitted--}}
                         <div class="alert alert-warning rounded-4 mb-0">
                             <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
-                            Los querellas son revisados por los administradores de mercado.
+                            Las querellas son revisados por los administradores de mercado.
                             Las querellas válidas pueden resultar en restricciones de cuenta.
                         </div>
                     </form>
@@ -632,16 +629,16 @@
                             class="btn btn-outline-secondary"
                             data-bs-dismiss="modal"
                         >
-                            Seguir editando
+                            Seguir Editando
                         </button>
 
-                        {{--Confirms report cancellation, resets its data,and returns to post details modal--}}
+                        {{--Confirms report cancellation, resets its data, and returns to post details modal--}}
                         <button
                             type="button"
                             class="btn btn-danger"
                             id="confirmCancelReport"
                         >
-                            Sí, cancelar
+                            Sí, Cancelar
                         </button>
                     </div>
             </div>
@@ -678,7 +675,7 @@
         >
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
-                    Reporte fue enviado exitosamente.
+                    Querella fue enviado exitosamente.
                 </div>
                 <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar" style="background-color: transparent; border: none; transform: scale(0.8);"></button>
             </div>

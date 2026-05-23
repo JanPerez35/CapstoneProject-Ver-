@@ -1,3 +1,10 @@
+/**
+ * Bootstrap import and profanity checker import
+ *
+ * Responsible for modals tooltips and toast configurations
+ * and behaviors. Additionally, verifies that the input field
+ * does not contain any profanity words.
+ * */
 import * as bootstrap from 'bootstrap';
 import { findProfanity } from './utils/profanity_checker.js';
 /**
