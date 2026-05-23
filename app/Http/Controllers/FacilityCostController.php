@@ -10,6 +10,7 @@ use Illuminate\Support\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Concerns\LogsActivity;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 
 /**
  * Class FacilityCostController
@@ -1084,20 +1085,7 @@ private function calculateFacilityCostFromPayload(array $data): array
     {
         $events = $this->getMockExternalEvents();
 
-        $imported = 0;
-
-        foreach ($events as $event) {
-            $facilityExists = FacilityCost::where('classroom_name', $event['classroom'])
-            ->where('pending_deletion', false)
-            ->exists();
-
-            if (!$facilityExists) {
-                continue;
-            }
-
-            $this->createFacilityReportItemFromPayload($event);
-            $imported++;
-        }
+        $imported = $this->importExternalFacilityEvents($events);
 
         $this->logActivity(
             'Importar eventos simulados',
@@ -1107,6 +1095,138 @@ private function calculateFacilityCostFromPayload(array $data): array
         return redirect()->route('facility_management')
             ->with('mock_imported', "{$imported} evento(s) simulados importados correctamente.");
         }
+
+    /**
+     * Imports facility events from EventFlow's export endpoint.
+     *
+     * The API key and URL are read from config/services.php so the credential
+     * stays server-side and never reaches browser JavaScript.
+     */
+    public function importEventFlowEvents()
+    {
+        $apiKey = config('services.eventflow.api_key');
+        $exportUrl = config('services.eventflow.export_url');
+
+        if (!$apiKey || !$exportUrl) {
+            return redirect()->route('facility_management')
+                ->with('mock_imported', 'Configura EVENTFLOW_API_KEY y EVENTFLOW_EXPORT_URL antes de importar eventos.');
+        }
+
+        try {
+            $response = Http::acceptJson()
+                ->withHeaders([
+                    'X-API-KEY' => $apiKey,
+                ])
+                ->timeout(20)
+                ->get($exportUrl);
+        } catch (\Throwable $exception) {
+            return redirect()->route('facility_management')
+                ->with('mock_imported', 'No se pudo conectar con EventFlow. Intenta nuevamente.');
+        }
+
+        if (!$response->successful()) {
+            return redirect()->route('facility_management')
+                ->with('mock_imported', "EventFlow respondió con error {$response->status()}.");
+        }
+
+        $events = $this->extractEventFlowEvents($response->json());
+        $imported = $this->importExternalFacilityEvents($events);
+
+        $this->logActivity(
+            'Importar eventos de EventFlow',
+            "Se importaron {$imported} evento(s) desde EventFlow."
+        );
+
+        return redirect()->route('facility_management')
+            ->with('mock_imported', "{$imported} evento(s) de EventFlow importados correctamente.");
+    }
+
+    /**
+     * Normalizes EventFlow API response shapes into a plain event list.
+     */
+    private function extractEventFlowEvents($payload): array
+    {
+        if (!is_array($payload)) {
+            return [];
+        }
+
+        if (array_is_list($payload)) {
+            return $payload;
+        }
+
+        foreach (['data', 'events', 'items'] as $key) {
+            if (isset($payload[$key]) && is_array($payload[$key])) {
+                return $payload[$key];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Imports external facility events using the existing cost calculation path.
+     */
+    private function importExternalFacilityEvents(array $events): int
+    {
+        $imported = 0;
+
+        foreach ($events as $event) {
+            if (!is_array($event) || empty($event['classroom'])) {
+                continue;
+            }
+
+            $event = $this->normalizeExternalFacilityEvent($event);
+
+            $facilityExists = FacilityCost::where('classroom_name', $event['classroom'])
+                ->where('pending_deletion', false)
+                ->exists();
+
+            if (!$facilityExists) {
+                continue;
+            }
+
+            $this->createFacilityReportItemFromPayload($event);
+            $imported++;
+        }
+
+        return $imported;
+    }
+
+    /**
+     * Applies defaults for fields EventFlow may not send yet.
+     */
+    private function normalizeExternalFacilityEvent(array $event): array
+    {
+        $event['event_end_date'] = $event['event_end_date']
+            ?? $event['end_date']
+            ?? $event['event_date']
+            ?? null;
+
+        $event['description'] = $event['description']
+            ?? $event['event_description']
+            ?? 'Evento importado desde EventFlow';
+
+        $event['responsible'] = $event['responsible']
+            ?? $event['responsable']
+            ?? 'EventFlow';
+
+        $event['period_type'] = $event['period_type'] ?? 'workday';
+        $event['rate_mode'] = $event['rate_mode'] ?? 'daily';
+        $event['services'] = $event['services'] ?? ['utilities', 'electricity', 'water'];
+
+        if (is_string($event['services'])) {
+            $decodedServices = json_decode($event['services'], true);
+            $event['services'] = is_array($decodedServices)
+                ? $decodedServices
+                : array_filter(array_map('trim', explode(',', $event['services'])));
+        }
+
+        if (empty($event['services'])) {
+            $event['services'] = ['utilities', 'electricity', 'water'];
+        }
+
+        return $event;
+    }
 
     /**
      * Deletes a facility cost report item.

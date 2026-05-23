@@ -34,6 +34,11 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    'eventflow' => [
+        'api_key' => env('EVENTFLOW_API_KEY'),
+        'export_url' => env('EVENTFLOW_EXPORT_URL', 'https://eventflow.uprm.edu/api/export-data'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

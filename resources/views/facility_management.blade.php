@@ -133,21 +133,21 @@
                         </a>
                 </span>
 
-            {{-- EventFlow simulated bridge --}}
+            {{-- EventFlow import bridge --}}
             <span
                 data-bs-toggle="tooltip"
                 data-bs-placement="top"
                 data-bs-custom-class="custom-tooltip"
-                data-bs-title="Simula la importación de eventos desde EventFlow"
+                data-bs-title="Importa eventos desde EventFlow"
             >
-            <form method="POST" action="{{ route('facility.import.mock') }}" class="d-inline">
+            <form method="POST" action="{{ route('facility.import.eventflow') }}" class="d-inline">
                 @csrf
                 <button
                     type="submit"
                     class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
                 >
                     <i class="bi bi-cloud-arrow-down"></i>
-                    Eventflow API Simulado
+                    Importar EventFlow
                 </button>
             </form>
             </span>

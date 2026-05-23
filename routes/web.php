@@ -273,6 +273,9 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
     Route::post('/facility/import-mock-events', [FacilityCostController::class, 'importMockEvents'])
         ->name('facility.import.mock');
 
+    Route::post('/facility/import-eventflow-events', [FacilityCostController::class, 'importEventFlowEvents'])
+        ->name('facility.import.eventflow');
+
     Route::put('/facility/events/{item}', [FacilityCostController::class, 'updateEvent'])
         ->name('facility.events.update');
 
