@@ -213,6 +213,11 @@
                                 <span>Por favor, desplácese hacia abajo para ver más</span>
                                 <i class="bi bi-arrow-down-circle"></i>
                             </div>
+
+                            <div class="alert alert-warning rounded-4 py-2 px-3 mb-3">
+                                <strong>Importante:</strong>
+                                Los equipos agregados al carrito se mantienen disponibles solo mientras tu sesión esté activa.
+                            </div>
                         @endif
 
                         <h4 class="fw-bold mb-3">
@@ -486,7 +491,7 @@
 
                                 {{-- Warning reminding the user that the request needs manual approval --}}
                                 <div class="alert alert-warning border-warning-subtle rounded-4">
-                                    <strong><i class="bi bi-exclamation-circle me-2"></i>Caso Especial:</strong>
+                                    <strong>Caso Especial:</strong>
                                     Tu solicitud requerirá aprobación manual del administrador de inventario.
                                 </div>
                             </div>
@@ -861,13 +866,53 @@
                                 aria-label="Cerrar"></button>
                     </div>
 
-                    <p class="text-muted mt-2 mb-0">
-                        Lee los términos y condiciones que aceptaste al usar el sistema.
-                    </p>
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mt-2 mb-3">                        <p class="text-muted mb-0">
+                            Lee los términos y condiciones que aceptaste al usar el sistema.
+                        </p>
+
+                        @auth
+                            @if(trim(auth()->user()->role) === 'Super Administrador')
+                                <form id="updateTermsForm"
+                                      method="POST"
+                                      action="{{ route('terms.update') }}"
+                                      enctype="multipart/form-data">
+                                    @csrf
+
+                                    <input
+                                        type="file"
+                                        id="termsPdfInput"
+                                        name="terms_pdf"
+                                        accept="application/pdf,.pdf"
+                                        class="d-none"
+                                    >
+
+                                    <div class="d-flex flex-column align-items-start align-items-md-end gap-2">
+                                        <button type="button"
+                                                class="btn btn-success"
+                                                id="openTermsPdfPicker">
+                                            <i class="bi bi-upload me-1"></i>
+                                            Actualizar términos y condiciones
+                                        </button>
+
+                                        <div id="termsPdfSelectedName" class="text-muted small d-none"></div>
+
+                                        <div id="termsPdfError" class="text-danger small d-none"></div>
+
+                                        @error('terms_pdf')
+                                        <div class="text-danger small mt-1">
+                                            {{ $message }}
+                                        </div>
+                                        @enderror
+                                    </div>
+                                </form>
+                            @endif
+                        @endauth
+                    </div>
+
                 </div>
             </div>
 
-            <div class="modal-body pt-3">
+            <div class="modal-body pt-4">
                 <div class="border rounded-4 overflow-hidden mb-3" style="height: 75vh;">
 
                     <iframe
@@ -880,45 +925,9 @@
 
                 </div>
 
-                @auth
-                    @if(trim(auth()->user()->role) === 'Super Administrador')
-                        <form id="updateTermsForm"
-                            method="POST"
-                            action="{{ route('terms.update') }}"
-                            enctype="multipart/form-data">
-                            @csrf
-
-                            <input
-                                type="file"
-                                id="termsPdfInput"
-                                name="terms_pdf"
-                                accept="application/pdf,.pdf"
-                                class="d-none"
-                            >
-
-                            <div class="d-flex flex-column gap-2">
-                                <button type="button"
-                                        class="btn btn-outline-success align-self-start"
-                                        id="openTermsPdfPicker">
-                                    <i class="bi bi-upload me-1"></i>
-                                    Actualizar términos y condiciones
-                                </button>
-
-                                <div id="termsPdfSelectedName" class="text-muted small d-none"></div>
-
-                                <div id="termsPdfError" class="text-danger small d-none"></div>
-                                @error('terms_pdf')
-                                <div class="text-danger small mt-1">
-                                    {{ $message }}
-                                </div>
-                                @enderror
-                            </div>
-                        </form>
-                    @endif
-                @endauth
             </div>
 
-            <div class="modal-footer border-0 pt-0">
+            <div class="modal-footer border-0 pt-3">
                 <a href="{{ asset('documents/terms_conditions.pdf') }}?v={{ file_exists(public_path('documents/terms_conditions.pdf')) ? filemtime(public_path('documents/terms_conditions.pdf')) : time() }}"
                    target="_blank"
                    class="btn btn-outline-success">
@@ -927,7 +936,7 @@
                 </a>
 
                 <button type="button"
-                        class="btn btn-success"
+                        class="btn btn-outline-success"
                         data-bs-dismiss="modal">
                     Cerrar
                 </button>
@@ -944,7 +953,7 @@
                 <div class="w-100">
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="modal-title fw-bold mb-0" id="confirmTermsUpdateModalLabel">
-                            Confirmar actualización
+                            Confirmar Actualización
                         </h4>
 
                         <button type="button"

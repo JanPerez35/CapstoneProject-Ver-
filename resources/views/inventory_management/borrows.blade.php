@@ -137,7 +137,7 @@
                         {{-- Header --}}
                         <div class="p-4">
                             <h4 class="fw-bold mb-1">
-                                <i class="bi bi-exclamation-circle me-2 text-warning"></i>
+
                                 Solicitudes por Revisar
                             </h4>
                             <p class="text-muted mb-0">

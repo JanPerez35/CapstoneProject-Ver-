@@ -33,7 +33,7 @@
              id="costEstimateNotice">
             <div class="d-flex align-items-start gap-3">
                 <div>
-                    <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong> Los costos mostrados
+                    <strong>Aviso importante:</strong> Los costos mostrados
                     en esta página son
                     <strong>estimaciones</strong> calculadas según las tarifas configuradas, el área,
                     el horario y los servicios seleccionados. Las tarifas están sujetas a cambios y deberán ser
@@ -635,7 +635,7 @@
                                      id="configureRatesHelpNotice">
                                     <div class="d-flex align-items-start gap-3">
                                         <div>
-                                            <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso
+                                            <strong>Aviso
                                                 importante:</strong>
                                             Si el área ya fue configurado anteriormente, se mostrarán sus tarifas
                                             guardadas para que puedas modificarlas.
@@ -886,7 +886,7 @@
                         <div class="row g-2 mb-2 justify-content-center">
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
-                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    <strong>Aviso:</strong>
                                     Solo se puede seleccionar <strong>una (1) área</strong> por evento.
                                     Las áreas disponibles corresponden exclusivamente a instalaciones internas del
                                     Coliseo Rafael Mangual.
@@ -1031,7 +1031,7 @@
                         <div class="row g-3 mb-3">
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-2 px-3 py-2">
-                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso importante:</strong>
+                                    <strong>Aviso importante:</strong>
                                     Si el evento combina días u horarios laborables con días u horarios no laborables,
                                     seleccione el período no laborable correspondiente:
                                     <strong>No laborable sábado</strong> o
@@ -1307,7 +1307,7 @@
                         <div class="row g-2 mb-2 justify-content-center">
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-3">
-                                    <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso:</strong>
+                                    <strong>Aviso:</strong>
                                     <span id="relatedModalNoticeText">
                                         Esta opción permite agregar otra área relacionada al mismo evento principal.
                                     </span>
@@ -1428,7 +1428,7 @@
 
                         <div class="mb-3">
                             <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-3 px-3 py-2">
-                                <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso importante:</strong>
+                                <strong>Aviso importante:</strong>
                                 Si el evento combina días u horarios laborables con días u horarios no laborables,
                                 seleccione el período no laborable correspondiente:
                                 <strong>No laborable sábado</strong> o
@@ -1641,7 +1641,7 @@
                         <div class="row g-3">
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-3 px-4 py-3">
-                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    <strong>Aviso:</strong>
                                     Esta opción permite preparar modificaciones puntuales de días u horarios.
                                 </div>
                             </div>
@@ -1810,7 +1810,7 @@
                         <div class="row g-2 mb-2 justify-content-center">
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
-                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso:</strong>
+                                    <strong>Aviso:</strong>
                                     Si editas un evento principal y cambias su rango de fechas, cualquier modificación
                                     fuera del nuevo rango puede ser eliminada.
                                 </div>
@@ -1933,7 +1933,7 @@
                         <div class="row g-3 mb-3">
                             <div class="col-12">
                                 <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-2 px-3 py-2">
-                                    <strong><i class="bi bi-exclamation-circle me-1"></i>Aviso importante:</strong>
+                                    <strong>Aviso importante:</strong>
                                     Si el evento combina días u horarios laborables con días u horarios no laborables,
                                     seleccione el período no laborable correspondiente:
                                     <strong>No laborable sábado</strong> o

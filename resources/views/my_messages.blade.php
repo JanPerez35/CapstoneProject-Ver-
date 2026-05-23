@@ -573,7 +573,7 @@
 
                         {{--Administrative warning explaining the possible consequences after a report/querella is submitted--}}
                         <div class="alert alert-warning rounded-4 mb-0">
-                            <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
+                            <strong>Aviso importante:</strong>
                             Los querellas son revisados por los administradores de mercado.
                             Las querellas válidas pueden resultar en restricciones de cuenta.
                         </div>
