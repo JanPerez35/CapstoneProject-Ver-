@@ -66,13 +66,6 @@ Route::get('/', function () {
     return view('login');
 });
 
-Route::get('/debug-user', function () {
-    return [
-        'auth_user' => auth()->user(),
-        'session_id' => session()->getId(),
-    ];
-});
-
 /**
  * SAML Authentication
  *
@@ -121,7 +114,8 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
         ->middleware('role:Super Administrador');
 
     Route::put('/users/{user}/status', [UserController::class, 'updateStatus'])
-        ->name('users.updateStatus');
+    ->name('users.updateStatus')
+    ->middleware('role:Super Administrador');
 
 
     /**
@@ -198,17 +192,24 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
     Route::post('/marketplace/{post}/review', [ReviewController::class, 'store'])
         ->name('marketplace.review.store');
 
-    Route::get('/marketplace_management', [UserReportController::class, 'index'])
-        ->name('marketplace_management')
-        ->middleware('role:Super Administrador,Administrador de Mercado');
-
-    Route::get('/reports', [UserReportController::class, 'index'])
-        ->middleware('role:Super Administrador,Administrador de Mercado');
-
     Route::post('/reports', [UserReportController::class, 'store']);
-    Route::get('/reports/data', [UserReportController::class, 'getReports']);
-    Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve']);
-    Route::post('/reports/{report}/ban', [UserReportController::class, 'ban']);
+
+    Route::middleware('role:Super Administrador,Administrador de Mercado')->group(function () {
+        Route::get('/marketplace_management', [UserReportController::class, 'index'])
+            ->name('marketplace_management');
+
+        Route::get('/reports', [UserReportController::class, 'index'])
+            ->name('reports.index');
+
+        Route::get('/reports/data', [UserReportController::class, 'getReports'])
+            ->name('reports.data');
+
+        Route::post('/reports/{report}/resolve', [UserReportController::class, 'resolve'])
+            ->name('reports.resolve');
+
+        Route::post('/reports/{report}/ban', [UserReportController::class, 'ban'])
+            ->name('reports.ban');
+    });
     Route::get('/user/post-limit', [PostController::class, 'getUserPostLimit']);
 
 
@@ -241,10 +242,9 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
      * Includes rates, events, classrooms,
      * imports, and exports for facility administration.
      */
-
+    Route::middleware('role:Super Administrador,Administrador de Instalaciones')->group(function () {
     Route::get('/facility_management', [FacilityCostController::class, 'index'])
-        ->name('facility_management')
-        ->middleware('role:Super Administrador,Administrador de Instalaciones');
+        ->name('facility_management');
 
     Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])
         ->name('facility.rates.save');
@@ -267,12 +267,6 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
     Route::get('/facility_management/export/pdf', [FacilityCostController::class, 'exportPdf'])
         ->name('facility.export.pdf');
 
-    Route::get('/mock-eventflow/events', [FacilityCostController::class, 'mockExternalEvents'])
-        ->name('facility.mock.events');
-
-    Route::post('/facility/import-mock-events', [FacilityCostController::class, 'importMockEvents'])
-        ->name('facility.import.mock');
-
     Route::post('/facility/import-eventflow-events', [FacilityCostController::class, 'importEventFlowEvents'])
         ->name('facility.import.eventflow');
 
@@ -290,7 +284,7 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
 
     Route::put('/facility/events/{item}/schedule', [FacilityCostController::class, 'updateEventSchedule'])
         ->name('facility.events.schedule.update');
-
+    });
     /**
      * Profile
      *
@@ -327,27 +321,15 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
         ->middleware('role:Super Administrador');
 
     /**
-     * Email and temporary testing routes.
+     * Email route.
      *
-     * Includes generic email sending and
-     * a temporary activity log test route.
+     * Generic email sending.
+     *
      */
     Route::post('/send-email', [EmailController::class, 'sendEmail']);
-
-    Route::get('/test-log-ipv6', function () {
-        \App\Models\ActivityLog::create([
-            'user_id' => 3,
-            'role' => 'Super Administrador',
-            'action' => 'IPv4 test',
-            'ip_address' => '2345:0425:2CA1:0000:0000:0567:5673:23b5',
-            'comment' => 'IPv4 test My IPv4',
-        ]);
-
-        return 'IPv6 test';
-    });
 });
 
-
+if (app()->environment('local', 'testing')) {
 /**
  * Temporary email testing routes.
  *
@@ -386,7 +368,6 @@ Route::get('/test-email/performance', function (\Illuminate\Http\Request $reques
     ]);
 });
 
-
 /**
  * Temporary concurrency testing route.
  *
@@ -406,9 +387,6 @@ Route::post('/test-concurrency', function () {
     return response()->json(['ok' => true]);
 });
 
-
-
-
 /**
  * Raw email testing route.
  *
@@ -422,3 +400,36 @@ Route::get('/test-email', function () {
 
     return 'Email enviado';
 });
+
+/**
+*   Activity log IPv6 test route.
+*/
+Route::get('/test-log-ipv6', function () {
+    \App\Models\ActivityLog::create([
+    'user_id' => 3,
+        'role' => 'Super Administrador',
+        'action' => 'IPv4 test',
+        'ip_address' => '2345:0425:2CA1:0000:0000:0567:5673:23b5',
+        'comment' => 'IPv4 test My IPv4',
+    ]);
+    return 'IPv6 test';
+});
+
+/**
+ * Debug user if UPRM IDP is down
+ */
+
+Route::get('/debug-user', function () {
+    return [
+        'auth_user' => auth()->user(),
+        'session_id' => session()->getId(),
+    ];
+});
+
+/**
+ *  Testing route using a json with simulated data as will come from EventFlow when is launch.
+ */
+Route::post('/facility/import-mock-events', [FacilityCostController::class, 'importMockEvents'])
+        ->name('facility.import.mock')
+        ->middleware('role:Super Administrador,Administrador de Instalaciones');
+}

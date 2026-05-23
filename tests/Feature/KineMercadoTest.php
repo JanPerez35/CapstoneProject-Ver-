@@ -24,6 +24,116 @@ class KineMercadoTest extends TestCase
 {
     use RefreshDatabase;
 
+public function test_normal_user_cannot_view_reports_data(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'Usuario',
+            'status' => 'Activo',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('reports.data'));
+
+        $response->assertForbidden();
+    }
+
+    public function test_marketplace_admin_can_view_reports_data(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'Administrador de Mercado',
+            'status' => 'Activo',
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('reports.data'));
+
+        $response->assertOk();
+    }
+
+    public function test_normal_user_cannot_resolve_report(): void
+{
+    $user = User::factory()->create([
+        'role' => 'Usuario',
+        'status' => 'Activo',
+    ]);
+
+    $target = User::factory()->create([
+        'role' => 'Usuario',
+        'status' => 'Activo',
+    ]);
+
+    $post = Post::create([
+        'user_id' => $target->id,
+        'title' => 'Post',
+        'description' => 'Desc',
+        'cost' => 10,
+        'category' => 'Test',
+        'condition' => 'Nuevo',
+        'status' => 'Disponible',
+    ]);
+
+    $report = UserReport::create([
+        'user_id' => $user->id,
+        'reported_user_id' => $target->id,
+        'post_id' => $post->id,
+        'report_reason' => 'Spam',
+        'description' => 'Test report',
+        'status' => 'pending',
+    ]);
+
+    $response = $this->actingAs($user)
+        ->post(route('reports.resolve', $report));
+
+    $response->assertForbidden();
+
+    $this->assertDatabaseHas('user_reports', [
+        'id' => $report->id,
+        'status' => 'pending',
+    ]);
+}
+
+    public function test_normal_user_cannot_ban_from_report(): void
+{
+    $user = User::factory()->create([
+        'role' => 'Usuario',
+        'status' => 'Activo',
+    ]);
+
+    $target = User::factory()->create([
+        'role' => 'Usuario',
+        'status' => 'Activo',
+    ]);
+
+    $post = Post::create([
+        'user_id' => $target->id,
+        'title' => 'Post',
+        'description' => 'Desc',
+        'cost' => 10,
+        'category' => 'Test',
+        'condition' => 'Nuevo',
+        'status' => 'Disponible',
+    ]);
+
+    $report = UserReport::create([
+        'user_id' => $user->id,
+        'reported_user_id' => $target->id,
+        'post_id' => $post->id,
+        'report_reason' => 'Spam',
+        'description' => 'Test report',
+        'status' => 'pending',
+    ]);
+
+    $response = $this->actingAs($user)
+        ->post(route('reports.ban', $report));
+
+    $response->assertForbidden();
+
+    $this->assertDatabaseHas('users', [
+        'id' => $target->id,
+        'status' => 'Activo',
+    ]);
+}
+
     private function postData()
     {
         return [
