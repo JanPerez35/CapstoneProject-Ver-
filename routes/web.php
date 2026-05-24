@@ -321,6 +321,10 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
         ->name('access_logs')
         ->middleware('role:Super Administrador');
 
+    Route::get('/access_logs/export-csv', [AccessLogController::class, 'exportCsv'])
+        ->name('access_logs.export-csv')
+        ->middleware('role:Super Administrador');
+
     /**
      * Terms and Conditions
      *

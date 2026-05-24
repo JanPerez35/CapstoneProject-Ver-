@@ -30,13 +30,12 @@
 
         {{-- Action buttons section --}}
         <div class="d-flex justify-content-start gap-3 mb-4">
-            <button
-                type="button"
-                id="downloadAccessLogsCsvBtn"
+            <a
+                href="{{ route('access_logs.export-csv', request()->only(['search', 'role', 'event', 'date'])) }}"
                 class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
             >
                 <i class="bi bi-download"></i>  Exportar a CSV
-            </button>
+            </a>
         </div>
 
         {{--
