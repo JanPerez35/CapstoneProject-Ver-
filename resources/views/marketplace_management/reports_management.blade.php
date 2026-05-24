@@ -158,8 +158,8 @@
                             by the contentes stored on the backend and called upon by the JS--}}
                         <th>Reportado por</th>
                         <th>Vendedor</th>
-                        <th>Razón</th>
-                        <th>Fecha Reportada (Día Mes Año)</th>
+                        <th>Razón de la Querella</th>
+                        <th>Fecha Reportada <br>(Día Mes Año)</th>
                         <th>Descripción de la Querella</th>
 
                         {{--View post action header. Tooltip the explains what the icon represents.
@@ -225,7 +225,7 @@
             {{--Empty sate that ramins hidden by default and is only shown when no reports
                 match the current filters, no reports were sent, or all reports were solved--}}
             <div id="reportsEmptyState" class="reports-empty-state d-none">
-                    <div class="card border-0 shadow-sm rounded-0">
+                    <div class="card border-0 rounded-0">
                         <div class="card-body py-5 text-center">
                             <i class="bi bi-flag fs-1 text-muted"></i>
                             <h4 class="fw-bold mt-3">No se encontraron querellas.</h4>
@@ -329,7 +329,7 @@
             {{--Success toast shown after a reported publication is deleted and the querella is resolved--}}
             <div id="deleteToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2 market-toast" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="d-flex align-items-center">
-                    <div class="toast-body fw-semibold rounded-0 pe-1 market-toast-body" >Publicación eliminada y querella resuelto correctamente.</div>
+                    <div class="toast-body fw-semibold rounded-0 pe-1 market-toast-body" >Publicación eliminada y querella resuelta correctamente.</div>
                     <button type="button" class="btn-close p-0 ms-1 me-2 market-toast-close" data-bs-dismiss="toast" aria-label="Cerrar"></button>
                 </div>
             </div>
@@ -337,7 +337,7 @@
             {{--Success toast shown after a seller/user is blocked and the querella is resolved.--}}
             <div id="banToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2 market-toast" role="alert" aria-live="assertive" aria-atomic="true" >
                 <div class="d-flex align-items-center">
-                    <div class="toast-body fw-semibold rounded-0 pe-1 market-toast-body">Usuario bloqueado y querella resuelto correctamente.</div>
+                    <div class="toast-body fw-semibold rounded-0 pe-1 market-toast-body">Usuario bloqueado y querella resuelta correctamente.</div>
                     <button type="button" class="btn-close p-0 ms-1 me-2 market-toast-close" data-bs-dismiss="toast" aria-label="Cerrar" ></button>
                 </div>
             </div>

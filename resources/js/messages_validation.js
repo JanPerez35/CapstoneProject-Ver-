@@ -6,8 +6,10 @@
  * does not contain any profanity words.
  * */
 
+
 import * as bootstrap from 'bootstrap';
 import { findProfanity } from './utils/profanity_checker.js';
+
 
 /**
  * Messages page front-end page initialization behavior controller
@@ -28,6 +30,7 @@ import { findProfanity } from './utils/profanity_checker.js';
  * - displaying Bootstrap success toasts for rating and report actions
  */
 
+
 /**
  * Escapes user-controlled text before inserting it into the DOM (Document Object Model).
  *
@@ -43,6 +46,7 @@ function escapeHtml(text) {
     div.textContent = text;
     return div.innerHTML;
 }
+
 
 /**
  * Converts a message timestamp into the label shown between message groups.
@@ -60,21 +64,26 @@ function formatDateSeparator(dateValue) {
     const today = new Date();
     const yesterday = new Date();
 
+
     yesterday.setDate(today.getDate() - 1);
+
 
     if (date.toDateString() === today.toDateString()) {
         return 'Hoy';
     }
 
+
     if (date.toDateString() === yesterday.toDateString()) {
         return 'Ayer';
     }
+
 
     const formattedDate = date.toLocaleDateString('es-PR', {
         day: 'numeric',
         month: 'long',
         year: 'numeric'
     });
+
 
     return formattedDate
         .replaceAll(' de ', ' ')
@@ -84,10 +93,12 @@ function formatDateSeparator(dateValue) {
                 return part.charAt(0).toUpperCase() + part.slice(1);
             }
 
+
             return part;
         })
         .join(' ');
 }
+
 
 /**
  * Inserts a visual date separator before a message only when the day changes.
@@ -101,22 +112,26 @@ function formatDateSeparator(dateValue) {
 function insertDateSeparatorIfNeeded(messagesContainer, dateValue) {
     const separatorText = formatDateSeparator(dateValue);
 
+
     if (messagesContainer.dataset.lastMessageDate === separatorText) {
         return;
     }
 
+
     messagesContainer.insertAdjacentHTML('beforeend', `
-        <div class="text-center text-muted small my-3">
-           <div class="d-flex align-items-center my-3">
-                <hr class="flex-grow-1">
-                <span class="px-3 text-muted fs-6 fw-semibold">${separatorText}</span>
-                <hr class="flex-grow-1">
-           </div>
-        </div>
-    `);
+       <div class="text-center text-muted small my-3">
+          <div class="d-flex align-items-center my-3">
+               <hr class="flex-grow-1">
+               <span class="px-3 text-muted fs-6 fw-semibold">${separatorText}</span>
+               <hr class="flex-grow-1">
+          </div>
+       </div>
+   `);
+
 
     messagesContainer.dataset.lastMessageDate = separatorText;
 }
+
 
 /**
  * Renders one chat message bubble inside the messages container.
@@ -140,6 +155,7 @@ export function renderMessage(messageObj) {
     const messagesContainer = document.getElementById('chatMessagesContainer');
     const emptyState = document.getElementById('chatEmptyState');
 
+
     if (!messagesContainer) {
         console.error('No se encontró el contenedor de mensajes');
         return;
@@ -148,37 +164,44 @@ export function renderMessage(messageObj) {
         emptyState.classList.add('d-none');
     }
 
+
     const isMine = messageObj.isMine === true;
+
 
     const alignment = isMine ? 'justify-content-end' : 'justify-content-start';
     const bubbleClass = isMine ? 'bg-success-subtle text-dark border border-success-subtle' : 'bg-success-subtle text-dark border border-success-subtle';
     const timeClass = 'small mt-1 text-end text-muted';
+
 
     insertDateSeparatorIfNeeded(
         messagesContainer,
         messageObj.createdAt || messageObj.created_at || new Date()
     );
 
+
     messagesContainer.insertAdjacentHTML('beforeend', `
-            <div class="d-flex ${alignment} mb-3">
-                <div
-                    class="${bubbleClass} px-3 py-2 rounded-4 shadow-sm"
-                    style="max-width: 75%; word-break: break-word;"
-                    data-message-id="${messageObj.id ?? ''}"
-                    data-conversation-id="${messageObj.conversationId ?? ''}"
-                    data-sender-id="${messageObj.senderId ?? ''}"
-                >
-                    <div>${escapeHtml(messageObj.message)}</div>
-                    <div class=" ${timeClass}">${messageObj.time}</div>
-                </div>
-            </div>
-        `);
+           <div class="d-flex ${alignment} mb-3">
+               <div
+                   class="${bubbleClass} px-3 py-2 rounded-4 shadow-sm"
+                   style="max-width: 75%; word-break: break-word;"
+                   data-message-id="${messageObj.id ?? ''}"
+                   data-conversation-id="${messageObj.conversationId ?? ''}"
+                   data-sender-id="${messageObj.senderId ?? ''}"
+               >
+                   <div>${escapeHtml(messageObj.message)}</div>
+                   <div class=" ${timeClass}">${messageObj.time}</div>
+               </div>
+           </div>
+       `);
+
 
     messagesContainer.scrollTo({
         top: messagesContainer.scrollHeight,
         behavior: 'smooth'
     });
 }
+
+
 
 
 /**
@@ -188,6 +211,7 @@ export function renderMessage(messageObj) {
  * references and event listeners are registered.
  */
 document.addEventListener('DOMContentLoaded', () => {
+
 
     /**
      * Chat message input references.
@@ -203,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const counterEl = document.getElementById('chatMessageCounter');
     const chatMessageGroup = document.getElementById('chatMessageGroup');
 
+
     /**
      * Chat context and header references.
      *
@@ -215,6 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatHeaderPostSummary = document.getElementById('chatHeaderPostSummary');
     const chatHeaderParticipantInitial = document.getElementById('chatHeaderParticipantInitial');
 
+
     /**
      * Chat search and list references.
      *
@@ -226,6 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatSearchEmptyState = document.getElementById('chatSearchEmptyState');
     const searchMessagesBtn = document.getElementById('searchMessagesBtn');
     const clearMessagesFiltersBtn = document.getElementById('clearMessagesFiltersBtn');
+
 
     /**
      * Marketplace post details modal references.
@@ -247,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const postDetailsSellerRating = document.getElementById('postDetailsSellerRating');
     const postDetailsCategory = document.getElementById('postDetailsCategory');
 
+
     /**
      * Post image carousel references.
      *
@@ -258,7 +286,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const postImagesCarouselPrev = document.getElementById('postImagesCarouselPrev');
     const postImagesCarouselNext = document.getElementById('postImagesCarouselNext');
 
+
     const openChatPostDetailsBtn = document.getElementById('openChatPostDetailsBtn');
+
 
     /**
      * Seller rating references.
@@ -272,6 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const ratingText = document.getElementById('sellerRatingText');
     const clearSellerRating = document.getElementById('clearSellerRating');
 
+
     /**
      * Toast references.
      *
@@ -280,6 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const ratingSentToastEl = document.getElementById('ratingSentToast');
     const reportSentToastEl = document.getElementById('reportSentToast');
+
+
 
 
     /**
@@ -292,9 +325,11 @@ document.addEventListener('DOMContentLoaded', () => {
         ? bootstrap.Toast.getOrCreateInstance(ratingSentToastEl)
         : null;
 
+
     const reportSentToast = reportSentToastEl
         ? bootstrap.Toast.getOrCreateInstance(reportSentToastEl)
         : null;
+
 
     /**
      * Report/querella modal references.
@@ -317,6 +352,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const reportUserText = document.getElementById('reportUserText');
 
 
+
+
     /**
      * Safety guard.
      *
@@ -324,6 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * the script exits early to prevent null reference errors.
      */
     if (!input || !errorEl || !sendBtn || !messagesContainer) return;
+
 
     /**
      * Prevents the message input from receiving focus when no chat is selected.
@@ -336,6 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
             input.blur();
         }
     });
+
 
     /**
      * Validation constants.
@@ -354,6 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const allowedReportRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/;
     const chatId = messagesView?.dataset.chatId;
 
+
     /**
      * Validates the chat message against the profanity list.
      *
@@ -367,12 +407,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function validateMessageProfanity(showError = true) {
         const value = input.value.trim();
 
+
         if (!value) {
             clearValidationError('profanity');
             return true;
         }
 
+
         const matchedWord = findProfanity(value);
+
 
         if (matchedWord) {
             if (showError) {
@@ -381,9 +424,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
+
         clearValidationError('profanity');
         return true;
     }
+
 
     /**
      * Enables or disables the chat input depending on whether a chat is selected.
@@ -395,6 +440,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateChatInputState() {
         const hasChat = !!messagesView?.dataset.chatId;
 
+
         if (!hasChat) {
             input.disabled = true;
             input.placeholder = 'Selecciona un chat para escribir...';
@@ -405,6 +451,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateSendButtonState();
         }
     }
+
 
     /**
      * Report modal state flags.
@@ -418,6 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let isSubmittingReport = false;
     let reportedUserId = null;
 
+
     /**
      * Preserves marketplace return context when the user leaves the messages page.
      *
@@ -428,6 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
         messagesVolverBtn.addEventListener('click', () => {
             const returnPostId = messagesVolverBtn.dataset.returnPostId;
 
+
             if (returnPostId) {
                 sessionStorage.setItem('marketplaceReturnPostId', returnPostId);
             } else {
@@ -436,13 +485,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
     if (!messagesView?.dataset.chatId) {
         chatHeaderParticipantInitial?.classList.add('d-none');
     }
 
+
     if (!messagesView?.dataset.chatId && openChatPostDetailsBtn) {
         openChatPostDetailsBtn.disabled = true;
     }
+
 
     /**
      * Truncates long display text and appends an (...).
@@ -461,6 +513,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return trimmed.slice(0, maxLength).trimEnd() + '...';
     }
 
+
     /**
      * Applies a blocking validation error to the chat input.
      *
@@ -473,14 +526,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function setValidationError(message, type) {
         input.classList.add('is-invalid');
 
+
         chatMessageGroup.classList.remove('border-dark');
         chatMessageGroup.classList.add('border-danger');
+
 
         errorEl.textContent = message;
         errorEl.dataset.errorType = type;
 
+
         sendBtn.disabled = true;
     }
+
 
     /**
      * Clears a validation error only if it matches the provided error type.
@@ -494,13 +551,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (errorEl.dataset.errorType === type) {
             input.classList.remove('is-invalid');
 
+
             chatMessageGroup.classList.remove('border-danger');
             chatMessageGroup.classList.add('border-dark');
+
 
             errorEl.textContent = '';
             delete errorEl.dataset.errorType;
         }
     }
+
 
     /**
      * Clears every chat input validation state.
@@ -511,12 +571,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function clearAllValidationErrors() {
         input.classList.remove('is-invalid');
 
+
         chatMessageGroup.classList.remove('border-danger');
         chatMessageGroup.classList.add('border-dark');
+
 
         errorEl.textContent = '';
         delete errorEl.dataset.errorType;
     }
+
 
     /**
      * Validates chat message characters against allowedTextRegex.
@@ -527,10 +590,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function validateAllowedCharacters(showError = true) {
         const value = input.value;
 
+
         if (!value) {
             clearValidationError('characters');
             return true;
         }
+
 
         if (!allowedTextRegex.test(value)) {
             if (showError) {
@@ -542,9 +607,12 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
+
         clearValidationError('characters');
         return true;
     }
+
+
 
 
     /**
@@ -560,15 +628,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function validateMaxLength(showError = true) {
         const exceededLimit = input.value.length > MAX_LENGTH;
 
+
         if (exceededLimit) {
             input.value = input.value.slice(0, MAX_LENGTH);
         }
 
+
         const currentLength = input.value.length;
+
 
         if (currentLength === MAX_LENGTH) {
             if (showError) {
                 input.classList.add('is-invalid');
+
 
                 if (exceededLimit) {
                     errorEl.textContent =
@@ -578,15 +650,19 @@ document.addEventListener('DOMContentLoaded', () => {
                         `Has alcanzado el máximo de ${MAX_LENGTH} caracteres, puedes aún someter esa cantidad.`;
                 }
 
+
                 errorEl.dataset.errorType = 'maxlength-limit';
             }
+
 
             return true;
         }
 
+
         clearValidationError('maxlength-limit');
         return true;
     }
+
 
     /**
      * Enables or disables the send button based on the current input state.
@@ -603,8 +679,10 @@ document.addEventListener('DOMContentLoaded', () => {
             errorEl.dataset.errorType === 'characters' ||
             errorEl.dataset.errorType === 'profanity';
 
+
         sendBtn.disabled = !trimmedValue || hasBlockingError || isSending;
     }
+
 
     /**
      * Updates the live chat message character counter.
@@ -613,8 +691,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateCounter() {
         if (!counterEl) return;
 
+
         const currentLength = input.value.length;
         counterEl.textContent = `${currentLength} / ${MAX_LENGTH}`;
+
 
         if (currentLength >= MAX_LENGTH) {
             counterEl.classList.remove('text-muted');
@@ -627,6 +707,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
+
+
     /**
      * Filters the chat sidebar using the current search query.
      *
@@ -636,27 +719,35 @@ document.addEventListener('DOMContentLoaded', () => {
     function filterChats() {
         if (!messagesSearchInput || !chatListContainer) return;
 
+
         const query = messagesSearchInput.value.trim().toLowerCase();
         const items = chatListContainer.querySelectorAll('.chat-list-item');
 
 
+
+
         let visibleCount = 0;
+
 
         items.forEach((item) => {
             const haystack = (item.dataset.searchText || item.textContent || '').toLowerCase();
             const matches = !query || haystack.includes(query);
 
+
             item.classList.toggle('d-none', !matches);
+
 
             if (matches) {
                 visibleCount += 1;
             }
         });
 
+
         if (chatSearchEmptyState) {
             chatSearchEmptyState.classList.toggle('d-none', visibleCount !== 0);
         }
     }
+
 
     /**
      * Moves the active conversation card to the top of the conversations sidebar.
@@ -670,18 +761,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function moveActiveChatToTop(chatId = messagesView?.dataset.chatId) {
         if (!chatListContainer || !chatId) return;
 
+
         const activeChatItem = chatListContainer.querySelector(
             `.chat-list-item[data-chat-id="${chatId}"]`
         );
 
+
         const activeChatLink = activeChatItem?.closest('a');
 
+
         if (!activeChatLink) return;
+
 
         chatListContainer.prepend(activeChatLink);
     }
 
+
     moveActiveChatToTop();
+
 
     /**
      * Builds Bootstrap star icon HTML from a numeric seller rating.
@@ -695,22 +792,28 @@ document.addEventListener('DOMContentLoaded', () => {
         const hasHalfStar = rating % 1 >= 0.5;
         const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
+
         let starsHTML = '';
+
 
         for (let i = 0; i < fullStars; i++) {
             starsHTML += '<i class="bi bi-star-fill"></i>';
         }
 
+
         if (hasHalfStar) {
             starsHTML += '<i class="bi bi-star-half"></i>';
         }
+
 
         for (let i = 0; i < emptyStars; i++) {
             starsHTML += '<i class="bi bi-star"></i>';
         }
 
+
         return starsHTML;
     }
+
 
     /**
      * Renders the post details image carousel.
@@ -724,52 +827,60 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderPostDetailsCarousel(images = []) {
         if (!postImagesCarouselIndicators || !postImagesCarouselInner) return;
 
+
         postImagesCarouselIndicators.innerHTML = '';
         postImagesCarouselInner.innerHTML = '';
 
+
         const validImages = Array.isArray(images) && images.length ? images : [];
+
 
         validImages.forEach((image, index) => {
             postImagesCarouselIndicators.insertAdjacentHTML(
                 'beforeend',
                 `
-                <button
-                    type="button"
-                    data-bs-target="#postImagesCarousel"
-                    data-bs-slide-to="${index}"
-                    class="${index === 0 ? 'active' : ''}"
-                    ${index === 0 ? 'aria-current="true"' : ''}
-                    aria-label="Slide ${index + 1}"
-                ></button>
-                `
+               <button
+                   type="button"
+                   data-bs-target="#postImagesCarousel"
+                   data-bs-slide-to="${index}"
+                   class="${index === 0 ? 'active' : ''}"
+                   ${index === 0 ? 'aria-current="true"' : ''}
+                   aria-label="Slide ${index + 1}"
+               ></button>
+               `
             );
+
 
             postImagesCarouselInner.insertAdjacentHTML(
                 'beforeend',
                 `
-                <div class="carousel-item ${index === 0 ? 'active' : ''} post-carousel-item">
-                    <div class="carousel-image-box">
-                        <img
-                            src="${image}"
-                            alt="Imagen ${index + 1}"
-                            class="post-carousel-img"
-                        >
-                    </div>
-                </div>
-                `
+               <div class="carousel-item ${index === 0 ? 'active' : ''} post-carousel-item">
+                   <div class="carousel-image-box">
+                       <img
+                           src="${image}"
+                           alt="Imagen ${index + 1}"
+                           class="post-carousel-img"
+                       >
+                   </div>
+               </div>
+               `
             );
         });
 
+
         const shouldHideControls = validImages.length <= 1;
+
 
         if (postImagesCarouselPrev) {
             postImagesCarouselPrev.classList.toggle('d-none', shouldHideControls);
         }
 
+
         if (postImagesCarouselNext) {
             postImagesCarouselNext.classList.toggle('d-none', shouldHideControls);
         }
     }
+
 
     /**
      * Populates the marketplace post details modal from a fetched post object.
@@ -786,30 +897,38 @@ document.addEventListener('DOMContentLoaded', () => {
             reportedUserId = post.user.id;
         }
 
+
         const currentUserId = Number(messagesView?.dataset.currentUserId || 0);
         const sellerId = Number(post.user?.id || 0);
         const isOwner = currentUserId === sellerId;
+
 
         const sellerName =
             post.user?.name ||
             `${post.user?.first_name ?? ''} ${post.user?.last_name ?? ''}`.trim() ||
             'Usuario';
 
+
         const sellerRating = Number(post.rating ?? post.user?.average_rating ?? 0);
         const sellerReviews = Number(post.reviews ?? post.user?.reviews_count ?? 0);
 
+
         const restrictedSection = document.getElementById('postOwnerRestrictedSection');
+
 
         if (restrictedSection) {
             restrictedSection.classList.toggle('d-none', isOwner);
         }
 
+
         if (postDetailsModalLabel) {
             postDetailsModalLabel.textContent = post.title || 'Detalle de la publicación';
         }
 
+
         if (postDetailsDescription) {
             const description = (post.description || '').trim();
+
 
             if (description) {
                 postDetailsDescription.textContent = description;
@@ -820,49 +939,60 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+
         if (postDetailsRatingStars) {
             postDetailsRatingStars.innerHTML = buildStarsHTML(sellerRating);
         }
+
 
         if (postDetailsRatingValue) {
             postDetailsRatingValue.textContent = sellerRating.toFixed(1);
         }
 
+
         if (postDetailsReviewCount) {
             postDetailsReviewCount.textContent = `(${sellerReviews})`;
         }
+
 
         if (postDetailsPrice) {
             postDetailsPrice.textContent = `$${post.cost || '0.00'}`;
         }
 
+
         if (postDetailsSeller) {
             postDetailsSeller.textContent = sellerName;
         }
 
+
         if (reportUserText) {
             reportUserText.textContent = `Reportar a ${sellerName} por comportamiento sospechoso`;
         }
+
 
         if (postDetailsSellerRating) {
             postDetailsSellerRating.innerHTML =
                 `<i class="bi bi-star-fill text-warning me-1"></i> ${sellerRating.toFixed(1)} <span class="text-muted">(${sellerReviews} reseñas)</span>`;
         }
 
+
         if (postDetailsStatus) {
             postDetailsStatus.textContent = post.status || 'Disponible';
             postDetailsStatus.className = 'label-badge badge-available';
         }
+
 
         if (postDetailsCondition) {
             postDetailsCondition.textContent = post.condition || 'Sin especificar';
             postDetailsCondition.className = 'label-badge badge-available';
         }
 
+
         if (postDetailsCategory) {
             postDetailsCategory.textContent = post.category || 'Sin categoría';
             postDetailsCategory.className = 'label-badge badge-available';
         }
+
 
         const images = [
             post.photo_1_url,
@@ -870,8 +1000,10 @@ document.addEventListener('DOMContentLoaded', () => {
             post.photo_3_url
         ].filter(Boolean).map(img => '/storage/' + img);
 
+
         renderPostDetailsCarousel(images);
     }
+
 
     /**
      * Initializes the interactive seller rating stars.
@@ -882,7 +1014,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function initializeSellerRating() {
         if (!ratingContainer || !ratingInput || !ratingText) return;
 
+
         const stars = ratingContainer.querySelectorAll('.rating-star');
+
 
         const ratingLabels = {
             0: 'Selecciona una calificación',
@@ -893,6 +1027,7 @@ document.addEventListener('DOMContentLoaded', () => {
             5: 'Excelente'
         };
 
+
         /**
          * Updates star icons style and rating label for a given value.
          *
@@ -902,7 +1037,9 @@ document.addEventListener('DOMContentLoaded', () => {
             stars.forEach((star) => {
                 const starValue = Number(star.dataset.value);
 
+
                 star.classList.remove('bi-star', 'bi-star-fill');
+
 
                 if (starValue <= value) {
                     star.classList.add('bi-star-fill');
@@ -911,19 +1048,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
+
             ratingText.textContent = ratingLabels[value] || ratingLabels[0];
         }
+
 
         stars.forEach((star) => {
             star.addEventListener('mouseenter', function () {
                 paintStars(Number(this.dataset.value));
             });
 
+
             star.addEventListener('click', function () {
                 const value = Number(this.dataset.value);
                 ratingInput.value = value;
                 paintStars(value);
             });
+
 
             star.addEventListener('keydown', function (event) {
                 if (event.key === 'Enter' || event.key === ' ') {
@@ -935,9 +1076,11 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+
         ratingContainer.addEventListener('mouseleave', () => {
             paintStars(Number(ratingInput.value || 0));
         });
+
 
         if (clearSellerRating) {
             clearSellerRating.addEventListener('click', () => {
@@ -946,8 +1089,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+
         paintStars(Number(ratingInput.value || 0));
     }
+
 
     /**
      * Validates the required report reason dropdown.
@@ -959,7 +1104,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function validateReportReason(showError = true) {
         if (!reportReason || !reportReasonError) return true;
 
+
         const isValid = !!reportReason.value;
+
 
         if (showError) {
             if (!isValid) {
@@ -971,8 +1118,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+
         return isValid;
     }
+
 
     /**
      * Validates the report description field.
@@ -986,12 +1135,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function validateReportDescription(showError = true) {
         if (!reportDescription || !reportDescriptionError) return true;
 
+
         const value = reportDescription.value.trim();
+
 
         if (showError) {
             reportDescription.classList.remove('is-invalid');
             reportDescriptionError.textContent = '';
         }
+
 
         if (!value) {
             if (showError) {
@@ -1000,6 +1152,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return false;
         }
+
 
         if (!allowedReportRegex.test(value)) {
             if (showError) {
@@ -1010,6 +1163,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
+
         if (value.length < 10) {
             if (showError) {
                 reportDescription.classList.add('is-invalid');
@@ -1018,6 +1172,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             return false;
         }
+
 
         if (value.length > MAX_REPORT_LENGTH) {
             if (showError) {
@@ -1028,8 +1183,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
+
         return true;
     }
+
 
     /**
      * Enables the report submit button only when all report fields are valid.
@@ -1040,12 +1197,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateReportButtonState() {
         if (!submitReportBtn) return;
 
+
         const isReady =
             validateReportReason(false) &&
             validateReportDescription(false);
 
+
         submitReportBtn.disabled = !isReady;
     }
+
 
     /**
      * Clears all report modal validation styles and messages.
@@ -1055,18 +1215,22 @@ document.addEventListener('DOMContentLoaded', () => {
             reportReason.classList.remove('is-invalid');
         }
 
+
         if (reportDescription) {
             reportDescription.classList.remove('is-invalid');
         }
+
 
         if (reportDescriptionError) {
             reportDescriptionError.textContent = '';
         }
 
+
         if (reportReasonError) {
             reportReasonError.textContent = '';
         }
     }
+
 
     /**
      * Resets the report form, dirty-state flags, validation messages, and submit button.
@@ -1076,12 +1240,15 @@ document.addEventListener('DOMContentLoaded', () => {
             reportUserForm.reset();
         }
 
+
         isReportDirty = false;
         allowReportClose = false;
+
 
         resetReportValidation();
         updateReportButtonState();
     }
+
 
     /**
      * Updates whether the report form has unsaved user input.
@@ -1093,8 +1260,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const hasReason = !!(reportReason && reportReason.value);
         const hasDescription = !!(reportDescription && reportDescription.value.trim() !== '');
 
+
         isReportDirty = hasReason || hasDescription;
     }
+
 
     /**
      * Loads all messages for a selected chat from the backend.
@@ -1111,23 +1280,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const messages = await response.json();
             messagesContainer.innerHTML = '';
 
+
             if (emptyState) {
                 messagesContainer.appendChild(emptyState);
             }
 
+
             delete messagesContainer.dataset.lastMessageDate;
+
 
             if (!messages.length) {
                 if (emptyState) {
                     emptyState.classList.remove('d-none');
 
+
                     const emptyTitle = emptyState.querySelector('h4');
                     const emptyText = emptyState.querySelector('p');
+
 
                     if (chatId) {
                         if (emptyTitle) {
                             emptyTitle.textContent = 'Aquí aparecerán tus mensajes.';
                         }
+
 
                         if (emptyText) {
                             emptyText.textContent =
@@ -1138,6 +1313,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             emptyTitle.textContent = 'No hay mensajes aún.';
                         }
 
+
                         if (emptyText) {
                             emptyText.textContent =
                                 'Selecciona un chat para comenzar la conversación.';
@@ -1145,12 +1321,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
+
                 return;
             }
+
 
             if (emptyState) {
                 emptyState.classList.add('d-none');
             }
+
+
 
 
             messages.forEach(msg => {
@@ -1168,10 +1348,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
 
+
         } catch (error) {
             console.error('ERROR:', error);
         }
     }
+
 
     /**
      * Handles attempts to close/cancel the report modal.
@@ -1183,13 +1365,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function tryCloseReportModal() {
         if (!reportUserModal) return;
 
+
         updateReportDirtyState();
 
+
         const reportModalInstance = bootstrap.Modal.getOrCreateInstance(reportUserModal);
+
 
         if (!isReportDirty) {
             allowReportClose = true;
             reportModalInstance.hide();
+
 
             if (postDetailsModal) {
                 setTimeout(() => {
@@ -1200,11 +1386,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+
         if (cancelReportConfirmModal) {
             const confirmModal = bootstrap.Modal.getOrCreateInstance(cancelReportConfirmModal);
             confirmModal.show();
         }
     }
+
 
     /**
      * Opens the post details modal for the post connected to the active chat.
@@ -1221,18 +1409,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch(`/posts/${postId}`);
                 const post = await response.json();
 
+
                 populatePostDetailsModal(post);
+
 
                 if (postDetailsModal) {
                     const modalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
                     modalInstance.show();
                 }
 
+
             } catch (error) {
                 console.error('Error cargando post:', error);
             }
         });
     }
+
 
     /**
      * Chat search and chat selection event binding.
@@ -1254,9 +1446,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+
         if (searchMessagesBtn) {
             searchMessagesBtn.addEventListener('click', filterChats);
         }
+
 
         if (clearMessagesFiltersBtn) {
             clearMessagesFiltersBtn.addEventListener('click', () => {
@@ -1267,39 +1461,50 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
+
+
         /**
          * Tracks the current Echo channel so the previous channel can be left
          * before subscribing to a newly selected chat.
          */
         let currentChannel = null;
 
+
         document.querySelectorAll('.chat-list-item').forEach(item => {
+
 
             if (item.dataset.bound) return;
             item.dataset.bound = true;
 
+
             item.addEventListener('click', async (e) => {
                 e.preventDefault();
+
 
                 document.querySelectorAll('.chat-list-item').forEach(chat => {
                     chat.classList.remove('bg-success-subtle', 'border-success', 'shadow-sm');
                     chat.classList.add('bg-white', 'border-success-subtle');
                 });
 
+
                 item.classList.remove('bg-white', 'border-success-subtle');
                 item.classList.add('bg-success-subtle', 'border-success', 'shadow-sm');
                 const unreadBadge = item.querySelector('.badge.bg-danger');
                 const itemUnreadCount = Number(unreadBadge?.textContent?.trim() || 0);
 
+
                 if (unreadBadge) {
                     unreadBadge.remove();
                 }
 
+
                 const navbarChatBadge = document.getElementById('miChatsUnreadBadge');
+
 
                 if (navbarChatBadge) {
                     const currentCount = Number(navbarChatBadge.textContent.trim() || 0);
                     const newCount = Math.max(currentCount - itemUnreadCount, 0);
+
 
                     if (newCount > 0) {
                         navbarChatBadge.textContent = newCount;
@@ -1308,31 +1513,39 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
+
                 const isMobile = window.innerWidth < 768;
+
 
                 document.querySelectorAll('.chat-list-item').forEach(chat => {
                     chat.classList.remove('d-none-selected-mobile');
                 });
 
+
                 if (isMobile) {
                     item.classList.add('d-none-selected-mobile');
+
 
                     const sidebar = document.querySelector('.messages-sidebar');
                     const chatColumn = document.querySelector('.messages-chat-column');
 
+
                     if (sidebar) {
                         sidebar.classList.add('d-none');
                     }
+
 
                     if (chatColumn) {
                         chatColumn.classList.remove('mobile-hidden');
                     }
                 }
 
+
                 const chatId = item.dataset.chatId;
                 const postId = item.dataset.postId;
                 const userName = item.dataset.userName;
                 const postTitle = item.dataset.postTitle;
+
 
                 chatHeaderParticipantName.textContent = userName;
                 chatHeaderPostSummary.textContent = truncateText(postTitle, 60);
@@ -1340,38 +1553,47 @@ document.addEventListener('DOMContentLoaded', () => {
                 chatHeaderParticipantInitial.textContent = userName.charAt(0).toUpperCase();
                 chatHeaderParticipantInitial.classList.remove('d-none');
 
+
                 if (!chatId) {
                     console.error('No hay chat_id');
                     return;
                 }
 
+
                 if (currentChannel) {
                     window.Echo.leave(currentChannel);
                 }
 
+
                 messagesView.dataset.chatId = chatId;
                 updateChatInputState();
                 messagesView.dataset.postId = postId;
+
 
                 if (openChatPostDetailsBtn) {
                     openChatPostDetailsBtn.disabled = false;
                     openChatPostDetailsBtn.dataset.postId = postId || '';
                 }
 
+
                 messagesView.dataset.chatId = chatId;
 
+
                 await loadMessages(chatId);
+
 
                 if (window.subscribeToChat) {
                     window.subscribeToChat(chatId);
                 }
                 currentChannel = `chat.${chatId}`;
 
+
                 console.log('Chat seleccionado:', chatId);
                 console.log('Post relacionado:', postId);
             });
         });
     }
+
 
     /**
      * Triggers chat filtering when the user presses the Enter key
@@ -1384,13 +1606,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.key === 'Enter') {
             event.preventDefault();
 
+
             if (searchMessagesBtn) {
                 searchMessagesBtn.disabled = messagesSearchInput.value.trim() === '';
             }
 
+
             filterChats();
         }
     });
+
+
 
 
     /**
@@ -1401,20 +1627,24 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const backBtn = document.getElementById('backToChatsBtn');
 
+
     if (backBtn) {
         backBtn.addEventListener('click', () => {
             const sidebar = document.querySelector('.messages-sidebar');
             const chatColumn = document.querySelector('.messages-chat-column');
+
 
             // Shows the sidebar once again
             if (sidebar) {
                 sidebar.classList.remove('d-none');
             }
 
+
             // Hides the chat column on mobile
             if (window.innerWidth < 768 && chatColumn) {
                 chatColumn.classList.add('mobile-hidden');
             }
+
 
             // Restore all chat items
             document.querySelectorAll('.chat-list-item').forEach(chat => {
@@ -1422,6 +1652,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
 
     /**
      * Initial mobile state.
@@ -1436,6 +1667,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
     /**
      * Prevents typing beyond the chat message maximum length.
      *
@@ -1448,25 +1680,32 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectionLength = input.selectionEnd - input.selectionStart;
         const incomingText = event.data || '';
 
+
         const nextLength = input.value.length - selectionLength + incomingText.length;
+
 
         if (nextLength > MAX_LENGTH) {
             event.preventDefault();
 
+
             input.value = input.value.slice(0, MAX_LENGTH);
+
 
             input.classList.add('is-invalid');
             chatMessageGroup.classList.remove('border-dark');
             chatMessageGroup.classList.add('border-danger');
 
+
             errorEl.textContent =
                 `Has alcanzado el máximo de ${MAX_LENGTH} caracteres. No puedes escribir más.`;
             errorEl.dataset.errorType = 'maxlength-limit';
+
 
             updateCounter();
             updateSendButtonState();
         }
     });
+
 
     /**
      * Revalidates the chat input on every change.
@@ -1480,12 +1719,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
+
+
         validateMaxLength(true);
         validateAllowedCharacters(true);
         validateMessageProfanity(true);
         updateSendButtonState();
         updateCounter();
     });
+
 
     /**
      * Cleans up non-blocking chat validation feedback when the input loses focus.
@@ -1500,15 +1742,18 @@ document.addEventListener('DOMContentLoaded', () => {
             validateAllowedCharacters(false)
         ) {
 
-        if (errorEl.dataset.errorType !== 'profanity') {
-            input.classList.remove('is-invalid');
-            errorEl.textContent = '';
-            delete errorEl.dataset.errorType;
+
+            if (errorEl.dataset.errorType !== 'profanity') {
+                input.classList.remove('is-invalid');
+                errorEl.textContent = '';
+                delete errorEl.dataset.errorType;
+            }
         }
-        }
+
 
         updateSendButtonState();
     });
+
 
     /**
      * Binds Enter-to-send only once.
@@ -1519,15 +1764,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!input.dataset.bound) {
         input.dataset.bound = 'true';
 
+
         input.addEventListener('keydown', (event) => {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
                 event.stopPropagation();
 
+
                 handleSendMessage();
             }
         });
     }
+
+
 
 
     /**
@@ -1536,6 +1785,8 @@ document.addEventListener('DOMContentLoaded', () => {
      * While a fetch('/messages') request is in progress, additional sends are ignored.
      */
     let isSending = false;
+
+
 
 
     /**
@@ -1552,6 +1803,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function isChatMessageValid(showError = true) {
         const message = input.value.trim();
 
+
         if (!message) {
             if (showError) {
                 setValidationError('El mensaje es obligatorio.', 'required');
@@ -1560,19 +1812,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
+
         validateMaxLength(false);
+
 
         const isCharactersValid = validateAllowedCharacters(showError);
         const isProfanityValid = validateMessageProfanity(showError);
+
 
         if (errorEl.dataset.errorType === 'maxlength-limit') {
             delete errorEl.dataset.errorType;
         }
 
+
         updateSendButtonState();
+
 
         return isCharactersValid && isProfanityValid;
     }
+
 
     /**
      * Sends the current chat message to the backend.
@@ -1584,21 +1842,27 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleSendMessage() {
         if (isSending) return;
 
+
         if (!isChatMessageValid(true)) {
             return;
         }
 
+
         const message = input.value.trim();
 
+
         const activeChatId = messagesView?.dataset.chatId;
+
 
         if (!activeChatId) {
             setValidationError('Selecciona un chat antes de enviar un mensaje.', 'required');
             return;
         }
 
+
         isSending = true;
         sendBtn.disabled = true;
+
 
         try {
             const response = await fetch('/messages', {
@@ -1614,9 +1878,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
             });
 
+
             if (!response.ok) {
                 throw new Error('Error enviando mensaje');
             }
+
+
 
 
             input.value = '';
@@ -1624,6 +1891,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCounter();
             updateSendButtonState();
             moveActiveChatToTop(activeChatId);
+
 
         } catch (error) {
             console.error('Error enviando mensaje:', error);
@@ -1634,6 +1902,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+
     /**
      * Binds the send button click only once.
      * This uses the same handleSendMessage() function as the Enter key path.
@@ -1641,14 +1910,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!sendBtn.dataset.bound) {
         sendBtn.dataset.bound = 'true';
 
+
         sendBtn.addEventListener('click', (e) => {
             e.preventDefault();
+
 
             handleSendMessage();
         });
     }
 
+
     initializeSellerRating();
+
 
     /**
      * Submits the selected seller rating.
@@ -1661,9 +1934,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const ratingValue = Number(ratingInput?.value || 0);
             const postId = Number(messagesView?.dataset.postId || 0);
 
+
             if (!ratingValue || !postId) return;
 
+
             submitSellerRatingBtn.disabled = true;
+
 
             try {
                 const response = await fetch(`/marketplace/${postId}/review`, {
@@ -1678,16 +1954,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     })
                 });
 
+
                 if (!response.ok) {
                     throw new Error('Error guardando rating');
                 }
 
+
                 const updatedResponse = await fetch(`/posts/${postId}`);
                 const updatedPost = await updatedResponse.json();
 
+
                 populatePostDetailsModal(updatedPost);
 
+
                 ratingSentToast?.show();
+
 
             } catch (error) {
                 console.error(error);
@@ -1696,6 +1977,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
 
     /**
      * Revalidates the report reason whenever the dropdown changes.
@@ -1710,6 +1992,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
     /**
      * Report description validation listeners.
      *
@@ -1722,22 +2005,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectionLength = reportDescription.selectionEnd - reportDescription.selectionStart;
             const incomingText = event.data || '';
 
+
             if (
                 reportDescription.value.length - selectionLength + incomingText.length > MAX_REPORT_LENGTH
             ) {
                 event.preventDefault();
 
+
                 reportDescription.classList.add('is-invalid');
                 reportDescriptionError.textContent =
                     `Has alcanzado el máximo de ${MAX_REPORT_LENGTH} caracteres. No puedes escribir más.`;
+
 
                 updateReportButtonState();
             }
         });
 
+
         reportDescription.addEventListener('input', () => {
             const value = reportDescription.value;
             const currentLength = value.length;
+
 
             if (currentLength > MAX_REPORT_LENGTH) {
                 reportDescription.value = value.slice(0, MAX_REPORT_LENGTH);
@@ -1752,11 +2040,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 validateReportDescription(true);
             }
 
+
             updateReportDirtyState();
             updateReportButtonState();
         });
 
+
         reportDescription.addEventListener('change', updateReportDirtyState);
+
 
         reportDescription.addEventListener('blur', () => {
             if (validateReportDescription(false)) {
@@ -1766,9 +2057,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 validateReportDescription(true);
             }
 
+
             updateReportButtonState();
         });
     }
+
 
     /**
      * Submits a report/querella against the selected seller.
@@ -1781,23 +2074,28 @@ document.addEventListener('DOMContentLoaded', () => {
         submitReportBtn.addEventListener('click', async (e) => {
             e.preventDefault();
 
+
             if (submitReportBtn.dataset.submitting === 'true' || isSubmittingReport) {
                 return;
             }
 
+
             const isReasonValid = validateReportReason(true);
             const isDescriptionValid = validateReportDescription(true);
+
 
             if (!isReasonValid || !isDescriptionValid) {
                 updateReportButtonState();
                 return;
             }
 
+
             submitReportBtn.dataset.submitting = 'true';
             isSubmittingReport = true;
             allowReportClose = true;
             isReportDirty = false;
             submitReportBtn.disabled = true;
+
 
             try {
                 const response = await fetch('/reports', {
@@ -1814,15 +2112,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     })
                 });
 
+
                 if (!response.ok) {
                     throw new Error('Error enviando reporte');
                 }
 
+
                 bootstrap.Modal.getOrCreateInstance(reportUserModal).hide();
+
 
                 setTimeout(() => {
                     reportSentToast?.show();
                 }, 250);
+
 
                 if (postDetailsModal) {
                     setTimeout(() => {
@@ -1839,6 +2141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
     /**
      * Report modal lifecycle handlers.
      *
@@ -1852,6 +2155,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateReportButtonState();
         });
 
+
         reportUserModal.addEventListener('hide.bs.modal', (event) => {
             if (
                 allowReportClose ||
@@ -1861,10 +2165,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+
             updateReportDirtyState();
+
 
             if (!isReportDirty) {
                 resetReportForm();
+
 
                 if (postDetailsModal) {
                     setTimeout(() => {
@@ -1873,16 +2180,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     }, 150);
                 }
 
+
                 return;
             }
 
+
             event.preventDefault();
+
 
             if (cancelReportConfirmModal) {
                 const confirmModal = bootstrap.Modal.getOrCreateInstance(cancelReportConfirmModal);
                 confirmModal.show();
             }
         });
+
 
         reportUserModal.addEventListener('hidden.bs.modal', () => {
             if (allowReportClose || isSubmittingReport) {
@@ -1894,6 +2205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
     /**
      * Report cancel button handler.
      *
@@ -1903,6 +2215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cancelReportBtn) {
         cancelReportBtn.addEventListener('click', tryCloseReportModal);
     }
+
 
     /**
      * Report close icon handler.
@@ -1917,6 +2230,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
     /**
      * Confirms cancellation of the report form after the user chooses to discard
      * unsaved report data.
@@ -1928,11 +2242,14 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmCancelReport.addEventListener('click', () => {
             allowReportClose = true;
 
+
             const confirmModal = bootstrap.Modal.getOrCreateInstance(cancelReportConfirmModal);
             confirmModal.hide();
 
+
             const reportModalInstance = bootstrap.Modal.getOrCreateInstance(reportUserModal);
             reportModalInstance.hide();
+
 
             if (postDetailsModal) {
                 setTimeout(() => {
@@ -1942,6 +2259,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
 
     /**
      * Initial page state setup.
@@ -1953,12 +2271,14 @@ document.addEventListener('DOMContentLoaded', () => {
         emptyState.classList.remove('d-none');
     }
 
+
     if (chatId) {
         loadMessages(chatId);
         if (window.subscribeToChat) {
             window.subscribeToChat(chatId);
         }
     }
+
 
     /**
      * Desktop resize recovery.
@@ -1971,13 +2291,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const chatColumn = document.querySelector('.messages-chat-column');
         const sidebar = document.querySelector('.messages-sidebar');
 
+
         if (!isMobile) {
             sidebar?.classList.remove('d-none');
             chatColumn?.classList.remove('mobile-hidden');
 
+
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
     });
+
 
     /**
      * Final UI synchronization.
@@ -1991,3 +2314,4 @@ document.addEventListener('DOMContentLoaded', () => {
     updateChatInputState();
     updateReportButtonState();
 });
+

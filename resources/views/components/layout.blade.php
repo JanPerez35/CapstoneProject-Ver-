@@ -102,7 +102,7 @@
                    data-bs-toggle="tooltip"
                    data-bs-placement="bottom"
                    data-bs-custom-class="custom-tooltip"
-                   data-bs-title="Comunícate con otros usuarios sobre publicaciones!">
+                   data-bs-title="Comunícate con otros usuarios sobre publicaciones del mercado!">
                     <i class="bi bi-chat-left-text"></i> Mis Chats
                     @if($totalUnread > 0)
                         <span
@@ -122,7 +122,7 @@
                     data-bs-target="#cartModal"
                     data-bs-placement="top"
                     data-bs-custom-class="custom-tooltip"
-                    data-bs-title="Verifica equipo deportivo en tu carrito"
+                    data-bs-title="Verifica equipo deportivo en tu carrito!"
                     data-bs-trigger="hover"
                 >
                     <i class="bi bi-cart3 me-1"></i>

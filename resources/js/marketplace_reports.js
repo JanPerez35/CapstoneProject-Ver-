@@ -392,7 +392,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (summary) {
     const firstItem = ((currentPage - 1) * itemsPerPage) + 1;
     const lastItem = Math.min(currentPage * itemsPerPage, totalItems);
-    summary.textContent = `Mostrando ${firstItem} a ${lastItem} de ${totalItems} resultados`;
+    summary.innerHTML = `
+        Mostrando <strong>${firstItem}</strong>
+        a <strong>${lastItem}</strong>
+        de <strong>${totalItems}</strong> resultados
+    `;
     }
 
     let paginationHTML = '';

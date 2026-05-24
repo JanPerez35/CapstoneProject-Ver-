@@ -37,7 +37,7 @@
                            data-bs-toggle="tooltip"
                            data-bs-placement="top"
                            data-bs-custom-class="custom-tooltip"
-                           data-bs-title="Manejas querellas, moderas publicaciones reportadas y resuleves incidencias de publicaciones!">
+                           data-bs-title="Manejar querellas, moderar publicaciones reportadas y resolver incidencias de publicaciones!">
                             <i class="bi bi-shop-window"></i>
                             Gestión de Mercado
                         </a>
