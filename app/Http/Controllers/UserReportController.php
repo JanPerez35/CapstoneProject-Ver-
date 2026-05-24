@@ -98,8 +98,8 @@ class UserReportController extends Controller
         }
 
         $this->logActivity(
-            'Crear reporte de usuario',
-            "Se creó un reporte (ID: {$report->id}) contra el usuario ID: {$request->reported_user_id} por razón: '{$request->report_reason}'"
+            'Crear querella a usuario',
+            "Se creó una querella (ID: {$report->id}) contra el usuario ID: {$request->reported_user_id} por razón: '{$request->report_reason}'"
         );
 
         return response()->json([
@@ -169,8 +169,8 @@ class UserReportController extends Controller
         ]);
 
         $this->logActivity(
-            'Resolver reporte',
-            "Se resolvió el reporte (ID: {$report->id}) contra el usuario '{$report->reportedUser->email}' (ID: {$report->reported_user_id})"
+            'Resolver querella',
+            "Se resolvió la querella (ID: {$report->id}) contra el usuario '{$report->reportedUser->email}' (ID: {$report->reported_user_id})"
         );
 
         return response()->json([
@@ -225,7 +225,7 @@ class UserReportController extends Controller
 
         $this->logActivity(
             'Bloquear usuario',
-            "Se bloqueó al usuario '{$report->reportedUser->email}' (ID: {$report->reported_user_id}) mediante el reporte (ID: {$report->id})"
+            "Se bloqueó al usuario '{$report->reportedUser->email}' (ID: {$report->reported_user_id}) mediante la querella (ID: {$report->id})"
         );
 
         return response()->json([
