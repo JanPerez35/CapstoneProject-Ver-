@@ -200,8 +200,6 @@ class UserReportController extends Controller
             'status' => 'Bloqueado'
         ]);
 
-        Post::where('user_id', $report->reported_user_id)->delete();
-
         $report->update([
             'status' => 'resolved',
             'resolved_at' => now()
