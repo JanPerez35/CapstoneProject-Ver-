@@ -7,6 +7,7 @@ use App\Models\Chat;
 use App\Models\Post;
 use App\Models\Message;
 use App\Http\Controllers\Concerns\LogsActivity;
+use App\Http\Controllers\Concerns\AuthorizesChat;
 
 /**
  * Class ChatController
@@ -20,7 +21,7 @@ use App\Http\Controllers\Concerns\LogsActivity;
  */
 class ChatController extends Controller
 {
-    use LogsActivity;
+    use LogsActivity, AuthorizesChat;
 
     /**
      * Displays the list of chats for the authenticated user.

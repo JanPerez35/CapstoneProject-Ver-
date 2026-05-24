@@ -8,6 +8,7 @@ use App\Models\Chat;
 use App\Events\MessageSent;
 use App\Jobs\SendUnreadMessageReminder;
 use App\Http\Controllers\Concerns\LogsActivity;
+use App\Http\Controllers\Concerns\AuthorizesChat;
 
 /**
  * Class MessageController
@@ -22,7 +23,7 @@ use App\Http\Controllers\Concerns\LogsActivity;
  */
 class MessageController extends Controller
 {
-    use LogsActivity;
+    use LogsActivity, AuthorizesChat;
 
     /**
      * Stores a new message in a chat.
@@ -44,6 +45,10 @@ class MessageController extends Controller
             'chat_id' => 'required|exists:chats,id',
             'content' => 'required|string|max:255',
         ]);
+
+        $chat = Chat::findOrFail($validated['chat_id']);
+
+        $this->authorizeChat($chat);
 
         $message = Message::create([
             'chat_id' => $validated['chat_id'],
@@ -92,6 +97,9 @@ class MessageController extends Controller
     public function getMessages($chatId)
     {
         $userId = auth()->id();
+
+        $chat = Chat::findOrFail($chatId);
+        $this->authorizeChat($chat);
 
         $readCount = Message::where('chat_id', $chatId)
             ->where('user_id', '!=', $userId)

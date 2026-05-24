@@ -79,7 +79,7 @@
 
                                             {{--Notification explaining that marketplace posts automatically expire
                                             and are permanently removed after 15 days--}}
-                                            <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong>
+                                            <strong>Aviso importante:</strong>
                                             Las publicaciones en Kinemercado solo permanecen activas por un máximo de
                                             <strong>15 días</strong>. Luego de ese período, la publicación será
                                             <strong>eliminada automáticamente</strong>.
@@ -611,7 +611,7 @@
 
                             {{--Notice message explaining report review process--}}
                             <div class="alert alert-warning rounded-4 mb-3">
-                                <strong><i class="bi bi-exclamation-circle me-2"></i>Aviso importante:</strong> Los querellas son revisados por los administradores de mercado.
+                                <strong>Aviso importante:</strong> Los querellas son revisados por los administradores de mercado.
                                 Las querellas válidas pueden resultar en restricciones de cuenta.
                             </div>
 
