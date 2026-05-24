@@ -41,7 +41,7 @@
         </div>
 
         {{--Marketplace publication limit notice for the 15-day posting period--}}
-        <div class="d-inline-flex align-items-center alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-3">
+        <div class="d-inline-flex align-items-center alert alert-warning rounded-0 border-0 shadow-sm mb-4 px-4 py-3">
             <strong><i class="bi bi-info-circle me-2"></i>Límite de Publicaciones:</strong>
             <span class="ms-1">
         Puedes crear un máximo de <strong>15 publicaciones</strong> dentro de un período de <strong>15 días</strong>.
@@ -73,7 +73,7 @@
                         <form id="createPostForm" novalidate>
                             @csrf
                             <div class="mb-3">
-                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mt-3 mb-3 px-4 py-3" id="postExpirationNotice">
+                                <div class="alert alert-warning rounded-0 border-0 shadow-sm mt-3 mb-3 px-4 py-3" id="postExpirationNotice">
                                     <div class="d-flex align-items-start gap-3">
                                         <div>
 
@@ -610,7 +610,7 @@
                             @csrf
 
                             {{--Notice message explaining report review process--}}
-                            <div class="alert alert-warning rounded-4 mb-3">
+                            <div class="alert alert-warning rounded-0 mb-3 shadow-sm">
                                 <strong>Aviso importante:</strong> Los querellas son revisados por los administradores de mercado.
                                 Las querellas válidas pueden resultar en restricciones de cuenta.
                             </div>

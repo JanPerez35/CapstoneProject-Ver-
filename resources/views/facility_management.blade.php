@@ -29,7 +29,7 @@
         </div>
 
         {{-- Notice --}}
-        <div class="alert bg-warning-subtle text-warning-emphasis rounded-4 border-0 shadow-sm mb-4 px-4 py-4"
+        <div class="alert bg-warning-subtle text-warning-emphasis rounded-0 border-0 shadow-sm mb-4 px-4 py-4"
              id="costEstimateNotice">
             <div class="d-flex align-items-start gap-3">
                 <div>
@@ -631,7 +631,7 @@
                             <hr class="my-4">
 
                             <div class="mb-4">
-                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-3"
+                                <div class="alert alert-warning rounded-0 border-0 shadow-sm mb-4 px-4 py-3"
                                      id="configureRatesHelpNotice">
                                     <div class="d-flex align-items-start gap-3">
                                         <div>
@@ -885,7 +885,7 @@
 
                         <div class="row g-2 mb-2 justify-content-center">
                             <div class="col-12">
-                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
+                                <div class="alert alert-warning rounded-0 border-0 shadow-sm mb-1 px-3 py-2">
                                     <strong>Aviso:</strong>
                                     Solo se puede seleccionar <strong>una (1) área</strong> por evento.
                                     Las áreas disponibles corresponden exclusivamente a instalaciones internas del
@@ -1030,7 +1030,7 @@
 
                         <div class="row g-3 mb-3">
                             <div class="col-12">
-                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-2 px-3 py-2">
+                                <div class="alert alert-warning rounded-0 border-0 shadow-sm mb-2 px-3 py-2">
                                     <strong>Aviso importante:</strong>
                                     Si el evento combina días u horarios laborables con días u horarios no laborables,
                                     seleccione el período no laborable correspondiente:
@@ -1306,7 +1306,7 @@
 
                         <div class="row g-2 mb-2 justify-content-center">
                             <div class="col-12">
-                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-4 px-4 py-3">
+                                <div class="alert alert-warning rounded-0 border-0 shadow-sm mb-4 px-4 py-3">
                                     <strong>Aviso:</strong>
                                     <span id="relatedModalNoticeText">
                                         Esta opción permite agregar otra área relacionada al mismo evento principal.
@@ -1427,7 +1427,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-3 px-3 py-2">
+                            <div class="alert alert-warning rounded-0 border-0 shadow-sm mb-3 px-3 py-2">
                                 <strong>Aviso importante:</strong>
                                 Si el evento combina días u horarios laborables con días u horarios no laborables,
                                 seleccione el período no laborable correspondiente:
@@ -1640,7 +1640,7 @@
 
                         <div class="row g-3">
                             <div class="col-12">
-                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-3 px-4 py-3">
+                                <div class="alert alert-warning rounded-0 border-0 shadow-sm mb-3 px-4 py-3">
                                     <strong>Aviso:</strong>
                                     Esta opción permite preparar modificaciones puntuales de días u horarios.
                                 </div>
@@ -1809,7 +1809,7 @@
 
                         <div class="row g-2 mb-2 justify-content-center">
                             <div class="col-12">
-                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-1 px-3 py-2">
+                                <div class="alert alert-warning rounded-0 border-0 shadow-sm mb-1 px-3 py-2">
                                     <strong>Aviso:</strong>
                                     Si editas un evento principal y cambias su rango de fechas, cualquier modificación
                                     fuera del nuevo rango puede ser eliminada.
@@ -1932,7 +1932,7 @@
 
                         <div class="row g-3 mb-3">
                             <div class="col-12">
-                                <div class="alert alert-warning rounded-4 border-0 shadow-sm mb-2 px-3 py-2">
+                                <div class="alert alert-warning rounded-0 border-0 shadow-sm mb-2 px-3 py-2">
                                     <strong>Aviso importante:</strong>
                                     Si el evento combina días u horarios laborables con días u horarios no laborables,
                                     seleccione el período no laborable correspondiente:

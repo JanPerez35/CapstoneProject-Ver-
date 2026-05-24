@@ -8,11 +8,16 @@
     <div class= "container py-4">
 
     {{--Page header introducing the Kinventory/Kinventario page--}}
-        <div class="mb-4">
+        <div class="mb-2">
             <h1 class="fw-bold" >Bienvenido al Kinventario</h1>
             <p>Aquí puedes pedir prestado equipo deportivo
                 directamente del departamento de Kinesiología.
             </p>
+
+            <div class="alert alert-warning rounded-0 border-0 shadow-sm mb-3 px-3 py-2 d-inline-block">
+                <strong>Aviso:</strong>
+                Solo se pueden seleccionar hasta 10 equipos diferentes por solicitud.
+            </div>
         </div>
 
         {{--Search and filter form for browsing equipment, connects to the backend to do the requests--}}

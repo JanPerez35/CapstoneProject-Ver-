@@ -214,7 +214,7 @@
                                 <i class="bi bi-arrow-down-circle"></i>
                             </div>
 
-                            <div class="alert alert-warning rounded-4 py-2 px-3 mb-3">
+                            <div class="alert alert-warning rounded-0 shadow-sm py-2 px-3 mb-3">
                                 <strong>Importante:</strong>
                                 Los equipos agregados al carrito se mantienen disponibles solo mientras tu sesión esté activa.
                             </div>
@@ -490,7 +490,7 @@
                                 </div>
 
                                 {{-- Warning reminding the user that the request needs manual approval --}}
-                                <div class="alert alert-warning border-warning-subtle rounded-4">
+                                <div class="alert alert-warning border-warning-subtle rounded-0 shadow-sm">
                                     <strong>Caso Especial:</strong>
                                     Tu solicitud requerirá aprobación manual del administrador de inventario.
                                 </div>
