@@ -237,7 +237,7 @@
                                             name="description"
                                             class="form-control form-control-lg"
                                             value="{{ $item->description }}"
-                                            placeholder="Ejemplo: Bola de Volibol"
+                                            placeholder="Ejemplo: Bola de Voleibol"
                                             maxlength="100"
                                             required
                                         >
@@ -495,7 +495,7 @@
                                 id="nombre_item"
                                 name="description"
                                 class="form-control form-control-lg"
-                                placeholder="Ejemplo: Bola de Volibol"
+                                placeholder="Ejemplo: Bola de Voleibol"
                                 maxlength="100"
                                 required
                             >
