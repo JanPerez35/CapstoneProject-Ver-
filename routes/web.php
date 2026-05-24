@@ -67,6 +67,25 @@ Route::get('/', function () {
 });
 
 /**
+ * Temporary concurrency testing route.
+ *
+ * Used for load testing post creation with tools like k6.
+ */
+Route::post('/test-concurrency', function () {
+    \App\Models\Post::create([
+        'user_id' => 1,
+        'title' => 'k6 test',
+        'description' => 'concurrency',
+        'cost' => 10,
+        'category' => 'test',
+        'condition' => 'nuevo',
+        'status' => 'Disponible',
+    ]);
+
+    return response()->json(['ok' => true]);
+});
+
+/**
  * SAML Authentication
  *
  * Loads external SAML authentication routes
@@ -366,25 +385,6 @@ Route::get('/test-email/performance', function (\Illuminate\Http\Request $reques
         'message' => 'Performance test email sent.',
         'email' => $request->email,
     ]);
-});
-
-/**
- * Temporary concurrency testing route.
- *
- * Used for load testing post creation with tools like k6.
- */
-Route::post('/test-concurrency', function () {
-    \App\Models\Post::create([
-        'user_id' => 1,
-        'title' => 'k6 test',
-        'description' => 'concurrency',
-        'cost' => 10,
-        'category' => 'test',
-        'condition' => 'nuevo',
-        'status' => 'Disponible',
-    ]);
-
-    return response()->json(['ok' => true]);
 });
 
 /**
