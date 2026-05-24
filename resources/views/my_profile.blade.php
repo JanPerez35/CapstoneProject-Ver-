@@ -29,7 +29,7 @@
                     </div>
 
                     <div class="modal-body pt-2">
-                        <div class="alert alert-warning border-warning mb-0">
+                        <div class="alert alert-warning border-warning rounded-0 mb-0">
                             <strong>Advertencia:</strong>
                             Guarde este archivo en un lugar seguro y no lo comparta con usuarios no autorizados.
                         </div>
@@ -43,7 +43,7 @@
                         <a href="{{ route('database.backup.download') }}"
                         class="btn btn-danger px-4"
                         id="confirmDatabaseBackup">
-                            Sí, crear respaldo
+                            Sí, Crear Respaldo
                         </a>
                     </div>
                 </div>

@@ -201,7 +201,7 @@
                 <p class="text-muted mb-0 fs-5"> Historial de actividades y acciones realizadas dentro del sistema.</p>
             </div>
 
-            <div class="table-responsive">
+            <div class="table-responsive access-logs-table-wrapper">
                 <table class="table align-middle mb-0" id="accessLogsTable">
                     <thead class="table-light">
                         <tr>
@@ -240,7 +240,7 @@
                                     $formattedDate = \Carbon\Carbon::parse($log->created_at)
                                         ->timezone('America/Puerto_Rico')
                                         ->locale('es')
-                                        ->translatedFormat('j F Y, h:i A');
+                                        ->translatedFormat('j F Y, g:i A');
                                     $formattedDate = str_replace(
                                         ['A. M.', 'P. M.', 'A.M.', 'P.M.', 'a. m.', 'p. m.', 'a.m.', 'p.m.'],
                                          ['AM', 'PM', 'AM', 'PM', 'AM', 'PM', 'AM', 'PM'],
@@ -298,7 +298,7 @@
                             <td colspan="6" class="text-center py-5">
                                 <i class="bi bi-search fs-1 text-muted"></i>
                                 <h4 class="fw-bold mt-3">No se encontraron registros</h4>
-                                <p class="text-muted mb-0">Intenta cambiar los filtros o buscar otro término.</p>
+                                <p class="text-muted mb-0">Intenta cambiar los filtros o buscar por otro término.</p>
                             </td>
                         </tr>
                     </tbody>
@@ -308,7 +308,7 @@
 
         {{-- Pagination controls for multi-page log results --}}
         @if ($logs->hasPages())
-            <div class="mt-4 d-flex justify-content-center">
+            <div class="mt-4 d-flex justify-content-center access-logs-pagination">
                 {{ $logs->links('pagination::bootstrap-5') }}
             </div>
         @endif

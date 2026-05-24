@@ -530,14 +530,14 @@
                         @csrf
 
                         {{--Administrative warning explaining the possible consequences after a report/querella is submitted--}}
-                        <div class="alert alert-warning rounded-4 mb-0">
+                        <div class="alert alert-warning rounded-0 shadow-sm mb-0">
                             <strong>Aviso importante:</strong>
                             Las querellas son revisados por los administradores de mercado.
                             Las querellas válidas pueden resultar en restricciones de cuenta.
                         </div>
 
                         {{--Report reason dropdown--}}
-                        <div class="mb-4">
+                        <div class="mt-2 mb-4">
                             <label for="reportReason" class="form-label fw-semibold">
                                 Razón de la Querella <span class="text-danger">*</span>
                             </label>
