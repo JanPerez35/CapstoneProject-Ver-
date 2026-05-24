@@ -529,8 +529,15 @@
                     <form id="reportUserForm" novalidate>
                         @csrf
 
+                        {{--Administrative warning explaining the possible consequences after a report/querella is submitted--}}
+                        <div class="alert alert-warning rounded-4 mb-0">
+                            <strong>Aviso importante:</strong>
+                            Las querellas son revisados por los administradores de mercado.
+                            Las querellas válidas pueden resultar en restricciones de cuenta.
+                        </div>
+
                         {{--Report reason dropdown--}}
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <label for="reportReason" class="form-label fw-semibold">
                                 Razón de la Querella <span class="text-danger">*</span>
                             </label>
@@ -566,13 +573,6 @@
                             </small>
 
                             <div class="invalid-feedback d-block" id="reportDescriptionError"></div>
-                        </div>
-
-                        {{--Administrative warning explaining the possible consequences after a report/querella is submitted--}}
-                        <div class="alert alert-warning rounded-4 mb-0">
-                            <strong>Aviso importante:</strong>
-                            Las querellas son revisados por los administradores de mercado.
-                            Las querellas válidas pueden resultar en restricciones de cuenta.
                         </div>
                     </form>
                 </div>
