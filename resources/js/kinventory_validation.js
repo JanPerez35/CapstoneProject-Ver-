@@ -1,4 +1,5 @@
 
+import * as bootstrap from "bootstrap";
 /**
  * Initializes Kinventory/Kinventario page behavior after the DOM is fully loaded.
  * Handles:
@@ -382,6 +383,31 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     confirmAddToCart.addEventListener('click', () => {
         if (!validateBorrowQuantity(true)) {
+            return;
+        }
+
+        const maxDifferentItems = 10;
+        const cartRows = document.querySelectorAll('.cart-item-row');
+        const selectedEquipmentId = String(borrowEquipmentId.value);
+
+        const itemAlreadyInCart = Array.from(cartRows).some((row) => {
+            const quantityInput = row.querySelector('.cart-quantity-input');
+
+            if (!quantityInput) return false;
+
+            return quantityInput.name === `cart_quantities[${selectedEquipmentId}]`;
+        });
+
+        if (!itemAlreadyInCart && cartRows.length >= maxDifferentItems) {
+            const errorToastEl = document.getElementById('errorToast');
+            const errorToastMessage = document.getElementById('errorToastMessage');
+
+            if (errorToastEl && errorToastMessage) {
+                errorToastMessage.textContent = 'No puedes pedir más de 10 equipos diferentes por solicitud.';
+                bootstrap.Toast.getOrCreateInstance(errorToastEl, { delay: 5000 }).show();                return;
+            }
+
+            alert('No puedes pedir más de 10 equipos diferentes por solicitud.');
             return;
         }
 

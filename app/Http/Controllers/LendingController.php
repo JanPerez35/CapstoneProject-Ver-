@@ -76,6 +76,14 @@ class LendingController extends Controller
 
         $cart = session()->get('cart', []);
 
+        $maxDifferentItems = 10;
+
+        if (!isset($cart[$equipment->id]) && count($cart) >= $maxDifferentItems) {
+            return redirect($redirectBack)
+                ->with('error', 'No puedes pedir más de 10 equipos diferentes a la vez.');
+        }
+
+
         if (isset($cart[$equipment->id])) {
             $newQuantity = $cart[$equipment->id]['quantity'] + $validated['quantity'];
 
@@ -307,7 +315,7 @@ class LendingController extends Controller
 
         $lending->load('user');
 
-        
+
          // Send approval email automatically when request is NOT a special case.
          // Only sends if:
          // request is auto-approved
