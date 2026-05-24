@@ -5,6 +5,9 @@ namespace Tests\Feature;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Equipment;
+use App\Models\Lending;
+use App\Models\LendingItem;
+use App\Services\EmailService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class LendingTest extends TestCase
@@ -283,5 +286,138 @@ public function test_normal_user_cannot_access_inventory_management(): void
         $this->assertDatabaseHas('lendings', [
             'user_id' => $user->id,
         ]);
+    }
+
+    public function test_inventory_admin_approves_lending_and_decrements_stock(): void
+    {
+        $this->mock(EmailService::class, function ($mock) {
+            $mock->shouldReceive('send')->once();
+        });
+
+        $admin = User::factory()->create([
+            'role' => 'Administrador de Inventario',
+            'status' => 'Activo',
+        ]);
+
+        [$lending, $equipment] = $this->createPendingLending(quantity: 2, availableQuantity: 5);
+
+        $this->actingAs($admin)
+            ->post(route('inventory_management.requests.approve', $lending->id))
+            ->assertRedirect(route('inventory_management.borrows'));
+
+        $this->assertDatabaseHas('lendings', [
+            'id' => $lending->id,
+            'status' => 'approved',
+        ]);
+
+        $this->assertDatabaseHas('lending_items', [
+            'lending_id' => $lending->id,
+            'item_status' => 'approved',
+        ]);
+
+        $this->assertDatabaseHas('equipment', [
+            'id' => $equipment->id,
+            'available_quantity' => 3,
+        ]);
+    }
+
+    public function test_inventory_admin_rejects_lending_without_decrementing_stock(): void
+    {
+        $this->mock(EmailService::class, function ($mock) {
+            $mock->shouldReceive('send')->once();
+        });
+
+        $admin = User::factory()->create([
+            'role' => 'Administrador de Inventario',
+            'status' => 'Activo',
+        ]);
+
+        [$lending, $equipment] = $this->createPendingLending(quantity: 2, availableQuantity: 5);
+
+        $this->actingAs($admin)
+            ->post(route('inventory_management.requests.reject', $lending->id))
+            ->assertRedirect(route('inventory_management.borrows'));
+
+        $this->assertDatabaseHas('lendings', [
+            'id' => $lending->id,
+            'status' => 'rejected',
+        ]);
+
+        $this->assertDatabaseHas('lending_items', [
+            'lending_id' => $lending->id,
+            'item_status' => 'rejected',
+        ]);
+
+        $this->assertDatabaseHas('equipment', [
+            'id' => $equipment->id,
+            'available_quantity' => 5,
+        ]);
+    }
+
+    public function test_inventory_admin_marks_lending_returned_and_restores_stock(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'Administrador de Inventario',
+            'status' => 'Activo',
+        ]);
+
+        [$lending, $equipment] = $this->createPendingLending(quantity: 2, availableQuantity: 3);
+
+        $lending->update(['status' => 'approved']);
+        $lending->items()->update(['item_status' => 'approved']);
+
+        $this->actingAs($admin)
+            ->post(route('inventory_management.requests.return', $lending->id))
+            ->assertRedirect(route('inventory_management.borrows'));
+
+        $this->assertDatabaseHas('lendings', [
+            'id' => $lending->id,
+            'status' => 'returned',
+        ]);
+
+        $this->assertDatabaseHas('lending_items', [
+            'lending_id' => $lending->id,
+            'item_status' => 'returned',
+        ]);
+
+        $this->assertDatabaseHas('equipment', [
+            'id' => $equipment->id,
+            'available_quantity' => 5,
+        ]);
+    }
+
+    private function createPendingLending(int $quantity, int $availableQuantity): array
+    {
+        $borrower = User::factory()->create([
+            'role' => 'Usuario',
+            'status' => 'Activo',
+        ]);
+
+        $equipment = Equipment::create([
+            'description' => 'Admin Lending Equipment',
+            'category' => 'Test',
+            'location' => 'Storage',
+            'quantity' => 5,
+            'available_quantity' => $availableQuantity,
+            'pending_deletion' => false,
+        ]);
+
+        $lending = Lending::create([
+            'user_id' => $borrower->id,
+            'start_time' => now()->addDay(),
+            'end_time' => now()->addDay()->setTime(15, 0),
+            'flag' => true,
+            'status' => 'pending',
+            'special_reason' => 'Actividad institucional de larga duracion.',
+        ]);
+
+        LendingItem::create([
+            'lending_id' => $lending->id,
+            'equipment_id' => $equipment->id,
+            'quantity' => $quantity,
+            'item_status' => 'pending',
+        ]);
+
+        return [$lending->fresh('items'), $equipment];
     }
 }

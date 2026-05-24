@@ -958,6 +958,50 @@ public function test_normal_user_cannot_view_reports_data(): void
     }
 
     /**
+     * Test that banning a user from a report atomically blocks the user AND resolves the report.
+     */
+    public function test_banning_user_from_report_resolves_report_and_blocks_user(): void
+    {
+        $admin = User::factory()->create(['role' => 'Administrador de Mercado', 'status' => 'Activo']);
+        $target = User::factory()->create(['role' => 'Usuario', 'status' => 'Activo']);
+
+        $post = Post::create([
+            'user_id' => $target->id,
+            'title' => 'Post',
+            'description' => 'Desc',
+            'cost' => 10,
+            'category' => 'Test',
+            'condition' => 'Nuevo',
+            'status' => 'Disponible',
+        ]);
+
+        $report = UserReport::create([
+            'user_id' => $admin->id,
+            'reported_user_id' => $target->id,
+            'post_id' => $post->id,
+            'report_reason' => 'Spam',
+            'description' => 'Descripción del reporte de prueba',
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('reports.ban', $report))
+            ->assertOk();
+
+        $this->assertDatabaseHas('users', [
+            'id' => $target->id,
+            'status' => 'Bloqueado',
+        ]);
+
+        $this->assertDatabaseHas('user_reports', [
+            'id' => $report->id,
+            'status' => 'resolved',
+        ]);
+
+        $this->assertNotNull($report->fresh()->resolved_at);
+    }
+
+    /**
      * Test that post creation validation fails when required fields are missing, ensuring the action is forbidden and returns a 302 status.
      */
     public function test_post_validation_fails()
