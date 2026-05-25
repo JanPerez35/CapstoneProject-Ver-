@@ -179,14 +179,20 @@
             <div class="modal-content rounded-4 border-0 shadow">
 
                 {{--Modal header--}}
-                <div class="modal-header border-0 pb-0">
+                <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-start">
                     <div>
-                        <h4 class="modal-title fw-bold" id="borrowModalLabel">Agregar al carrito</h4>
+                        <h4 class="modal-title fw-bold mb-1" id="borrowModalLabel">Agregar al carrito</h4>
                         <p class="text-muted mb-0" id="borrowModalText">
                             Selecciona la cantidad que deseas
                         </p>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+                    <button
+                        type="button"
+                        class="btn-close mt-1"
+                        data-bs-dismiss="modal"
+                        aria-label="Cerrar">
+                    </button>
                 </div>
 
                 {{--Form that submits the selected quantity to the cart--}}
