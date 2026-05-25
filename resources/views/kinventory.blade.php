@@ -15,7 +15,7 @@
             </p>
 
             <div class="alert alert-warning rounded-0 border-0 shadow-sm mb-3 px-3 py-2 d-inline-block">
-                <strong>Aviso:</strong>
+                <strong>Límite:</strong>
                 Solo se pueden seleccionar hasta 10 equipos diferentes por solicitud.
             </div>
         </div>

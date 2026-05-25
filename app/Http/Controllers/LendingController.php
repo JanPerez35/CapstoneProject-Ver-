@@ -175,6 +175,83 @@ class LendingController extends Controller
     }
 
     /**
+     * Formats a date using the Spanish month name.
+     *
+     * This method avoids depending on the server locale configuration
+     * and guarantees that dates are shown consistently in Spanish.
+     *
+     * Example:
+     * - 25 Mayo 2026
+     */
+    private function formatSpanishDate($dateTime): string
+    {
+        $date = \Carbon\Carbon::parse($dateTime);
+
+        $months = [
+            1 => 'Enero',
+            2 => 'Febrero',
+            3 => 'Marzo',
+            4 => 'Abril',
+            5 => 'Mayo',
+            6 => 'Junio',
+            7 => 'Julio',
+            8 => 'Agosto',
+            9 => 'Septiembre',
+            10 => 'Octubre',
+            11 => 'Noviembre',
+            12 => 'Diciembre',
+        ];
+
+        $day = $date->format('d');
+        $month = $months[(int) $date->format('n')];
+        $year = $date->format('Y');
+
+        return "{$day} {$month} {$year}";
+    }
+
+    /**
+     * Builds the approval email message for a lending request.
+     *
+     * Keeps the original approval text and appends the request details
+     * so the user can clearly see what was approved.
+     *
+     * Details included:
+     * - requested equipment items with their quantities
+     * - pickup date and pickup time
+     * - return date and return time range
+     * - pickup location
+     */
+    private function buildApprovalEmailMessage(Lending $lending): string
+    {
+        $lending->loadMissing(['items.equipment']);
+
+        $itemsText = $lending->items->map(function ($item) {
+            $equipmentName = $item->equipment?->description ?? 'Equipo no disponible';
+
+            return "- {$equipmentName} | Cantidad: {$item->quantity}";
+        })->implode("\n");
+
+        $pickupDate = $this->formatSpanishDate($lending->start_time);
+
+        $pickupTime = \Carbon\Carbon::parse($lending->start_time)
+            ->format('g:i A');
+
+        $returnDate = $this->formatSpanishDate($lending->end_time);
+
+        return "Tu solicitud de equipo deportivo fue aprobada satisfactoriamente. Por favor entra a tu perfil de MAIKINE para más detalles.\n\n"
+            . "Detalles de tu solicitud:\n\n"
+            . "Equipos solicitados:\n"
+            . $itemsText . "\n\n"
+            . "Lugar de recogida: COLI 109 en el Coliseo Rafael A. Mangual\n"
+            . "Día de recogida: {$pickupDate}\n"
+            . "Hora de recogida: {$pickupTime}\n"
+            . "Día de devolución: {$returnDate}\n"
+            . "Hora de devolución: Entre 8:00 AM a 3:00 PM del día de devolución\n\n"
+            . "Recuerda traer tu identificación de estudiante o empleado";
+
+    }
+
+    /**
      * Checks out the cart and creates a lending request.
      *
      * Applies stricter validation for special-case requests (extended return date
@@ -313,7 +390,7 @@ class LendingController extends Controller
             }
         });
 
-        $lending->load('user');
+        $lending->load(['user', 'items.equipment']);
 
 
          // Send approval email automatically when request is NOT a special case.
@@ -324,7 +401,7 @@ class LendingController extends Controller
             $this->emailService->send(
                 $lending->user->email,
                 'Solicitud de equipo deportivo aprobada',
-                'Tu solicitud de equipo deportivo fue aprobada satisfactoriamente. Por favor entra a tu perfil de MAIKINE para más detalles.'
+                $this->buildApprovalEmailMessage($lending)
             );
         }
 
@@ -414,8 +491,7 @@ class LendingController extends Controller
      */
     public function approveRequest($id)
     {
-        $lending = Lending::with(['items', 'user'])->findOrFail($id);
-
+        $lending = Lending::with(['items.equipment', 'user'])->findOrFail($id);
         DB::transaction(function () use ($lending) {
             foreach ($lending->items as $item) {
                 $equipment = Equipment::lockForUpdate()->findOrFail($item->equipment_id);
@@ -442,7 +518,7 @@ class LendingController extends Controller
             $this->emailService->send(
                 $lending->user->email,
                 'Solicitud de equipo deportivo aprobada',
-                'Tu solicitud de equipo deportivo fue aprobada satisfactoriamente. Por favor entra a tu perfil de MAIKINE para más detalles.'
+                $this->buildApprovalEmailMessage($lending)
             );
         }
 
