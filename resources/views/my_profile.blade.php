@@ -557,9 +557,10 @@
                         </p>
 
                         <div class="alert alert-warning  rounded-0 mb-0">
-                            <strong>Lugar de recogida:</strong>
-                            El equipo deportivo debe ser recogido en COLI 109, ubicado en el Coliseo Rafael A. Mangual.
+                            <strong>Importante:</strong>
+                            El equipo deportivo debe ser recogido en COLI 109, ubicado en el Coliseo Rafael A. Mangual.                             Para poder recoger su equipo deportivo debe entregar su tarjeta de estudiante o empleado.
                         </div>
+
                     </div>
 
                     <div class="card-body p-4">

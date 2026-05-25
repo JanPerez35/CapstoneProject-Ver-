@@ -216,7 +216,7 @@
 
                             <div class="alert alert-warning rounded-0 shadow-sm py-2 px-3 mb-3">
                                 <strong>Importante:</strong>
-                                Los equipos agregados al carrito se mantienen disponibles solo mientras tu sesión esté activa.
+                                Los equipos agregados al carrito se mantienen disponibles solo mientras la sesión esté activa.
                             </div>
                         @endif
 
