@@ -247,7 +247,7 @@ class LendingController extends Controller
             . "Hora de recogida: {$pickupTime}\n"
             . "Día de devolución: {$returnDate}\n"
             . "Hora de devolución: Entre 8:00 AM a 3:00 PM del día de devolución\n\n"
-            . "Recuerda traer tu identificación de estudiante o empleado.d";
+            . "Recuerda traer tu identificación de estudiante o empleado.";
 
     }
 
