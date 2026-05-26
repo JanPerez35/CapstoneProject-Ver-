@@ -152,16 +152,22 @@
             margin-bottom: 0.35rem;
         }
 
+        .requests-table-shell {
+            border: 2px solid #212529;
+            border-radius: 1rem;
+            overflow: hidden;
+            background-color: #fff;
+        }
+
         .requests-table-wrapper {
             height: 390px;
             overflow-y: auto;
             overflow-x: auto;
-            border: 2px solid #212529;
-            border-radius: 1rem;
+            scrollbar-gutter: stable;
         }
 
         .requests-table {
-            min-width: 1350px;
+            min-width: 1050px;
         }
 
         .requests-table thead th {
@@ -668,19 +674,18 @@
                             Desliza para ver más información <i class="bi bi-arrow-right-circle"></i>
                         </p>
 
-                        <div class="requests-table-wrapper">
-                            <table class="table align-middle mb-0 requests-table">
+                        <div class="requests-table-shell">
+                            <div class="requests-table-wrapper">
+                                <table class="table align-middle mb-0 requests-table">
                                 <thead>
                                 <tr>
                                     <th class="requests-items-cell">Artículo(s)</th>
                                     <th class="text-center">Estado</th>
                                     <th class="requests-date-cell">Fecha de Creación</th>
-                                    <th class="requests-date-cell">Fecha de Recogida</th>
-                                    <th class="requests-date-cell">Hora de Recogida</th>
-                                    <th class="requests-date-cell">Fecha de Devolución</th>
-                                    <th class="requests-date-cell">Hora de Devolución</th>
+                                    <th class="requests-date-cell">Fecha y Hora de Recogida</th>
+                                    <th class="requests-date-cell">Fecha y Hora de Devolución</th>
                                     <th class="requests-returned-cell text-center">¿Devuelto?</th>
-                                </tr>
+                                    <th class="requests-date-cell">Devuelto en</th>                                </tr>
                                 </thead>
 
                                 <tbody>
@@ -753,14 +758,10 @@
                                                     MB_CASE_TITLE,
                                                     "UTF-8"
                                                 ) }}
-                                            @else
-                                                —
-                                            @endif
-                                        </td>
-
-                                        <td>
-                                            @if($request->start_time)
-                                                {{ \Carbon\Carbon::parse($request->start_time)->format('g:i A') }}
+                                                <br>
+                                                <span class="text-muted">
+            {{ \Carbon\Carbon::parse($request->start_time)->format('g:i A') }}
+        </span>
                                             @else
                                                 —
                                             @endif
@@ -775,31 +776,49 @@
                                                     MB_CASE_TITLE,
                                                     "UTF-8"
                                                 ) }}
+                                                <br>
+                                                <span class="text-muted">
+            Entre las 8:00 AM y 3:00 PM
+        </span>
                                             @else
                                                 —
                                             @endif
                                         </td>
 
-                                        <td>
-                                            Entre las 8:00 AM y 3:00 PM
-                                        </td>
-
                                         <td class="text-center">
                                             @if($wasReturned)
                                                 <span class="badge bg-success-subtle text-success-emphasis rounded-0 px-3 py-2">
-                                        Sí
-                                    </span>
+            Sí
+        </span>
                                             @else
                                                 <span class="badge bg-secondary-subtle text-secondary-emphasis rounded-0 px-3 py-2">
-                                        No
-                                    </span>
+            No
+        </span>
+                                            @endif
+                                        </td>
+
+                                        <td>
+                                            @if($wasReturned)
+                                                {{ mb_convert_case(
+                                                    \Carbon\Carbon::parse($request->updated_at)
+                                                        ->locale('es')
+                                                        ->translatedFormat('j F Y'),
+                                                    MB_CASE_TITLE,
+                                                    "UTF-8"
+                                                ) }}
+                                                <br>
+                                                <span class="text-muted">
+            {{ \Carbon\Carbon::parse($request->updated_at)->format('g:i A') }}
+        </span>
+                                            @else
+                                                —
                                             @endif
                                         </td>
 
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8">
+                                        <td colspan="7">
                                             <div class="py-5 text-center">
                                                 <i class="bi bi-search fs-1 text-muted"></i>
                                                 <h4 class="fw-bold mt-3">No se encontraron solicitudes</h4>
@@ -810,6 +829,7 @@
                                 @endforelse
                                 </tbody>
                             </table>
+                            </div>
                         </div>
 
                         {{-- Connection for pagination --}}
