@@ -1493,6 +1493,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 const itemUnreadCount = Number(unreadBadge?.textContent?.trim() || 0);
 
 
+                /**
+                 * Accumulates the number of unread messages cleared while opening chats.
+                 *
+                 * Some browsers, such as Opera, may restore a cached version of the previous
+                 * page after using the browser back button. When this happens, the navbar
+                 * unread badge can temporarily display outdated values even though the backend
+                 * already marked those messages as read.
+                 *
+                 * The accumulated count is stored in sessionStorage so the global layout header
+                 * can synchronize and correct the unread badge after the cached page is restored.
+                 */
+                if (itemUnreadCount > 0) {
+                    const previousReadCount = Number(sessionStorage.getItem('maikineReadMessagesCount') || 0);
+                    sessionStorage.setItem('maikineReadMessagesCount', String(previousReadCount + itemUnreadCount));
+                }
+
                 if (unreadBadge) {
                     unreadBadge.remove();
                 }

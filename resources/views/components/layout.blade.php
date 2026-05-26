@@ -44,6 +44,49 @@
     <script>
         window.useDedicatedLayoutValidation = true;
     </script>
+
+
+    <script>
+
+        /**
+         * Synchronizes the global unread chat badge after navigating back from
+         * the messages page.
+         *
+         * Opera and some browsers may restore a cached version of the previous page
+         * using the back/forward cache (bfcache). When this happens, the unread
+         * badge in the navbar can appear outdated even though the backend already
+         * marked the messages as read.
+         *
+         * This function restores the correct unread counter using the value stored
+         * in sessionStorage by messages_validation.js when a conversation is opened.
+         */
+        function syncUnreadChatBadgeFromSession() {
+            const readCount = Number(sessionStorage.getItem('maikineReadMessagesCount') || 0);
+
+            if (readCount <= 0) {
+                return;
+            }
+
+            const badge = document.getElementById('miChatsUnreadBadge');
+
+            if (badge) {
+                const currentCount = Number(badge.textContent.trim() || 0);
+                const newCount = Math.max(currentCount - readCount, 0);
+
+                if (newCount > 0) {
+                    badge.textContent = newCount;
+                } else {
+                    badge.remove();
+                }
+            }
+
+            sessionStorage.removeItem('maikineReadMessagesCount');
+        }
+
+        window.addEventListener('pageshow', syncUnreadChatBadgeFromSession);
+        document.addEventListener('DOMContentLoaded', syncUnreadChatBadgeFromSession);
+    </script>
+
     {{-- Global app styles and scripts for validation logic, handle things like badge styles and toasts--}}
     @vite([
         'resources/css/app.css',
@@ -61,7 +104,7 @@
     data-current-user-id="{{ auth()->id() ?? '' }}"
 
 
-    data-unread-count="{{ $totalUnreadMessages ?? 0 }}"
+    data-unread-count="{{ $totalUnread ?? 0 }}"
     data-error-message="{{ session('error') }}"
 >
 {{-- Top navigation bar with branding, user info, quick actions, and logout --}}
