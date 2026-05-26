@@ -697,6 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         method: 'POST',
                         headers: { 'X-CSRF-TOKEN': csrf }
                     });
+                    fetchReports();
                 }
 
                 // Removes the row from the user interface

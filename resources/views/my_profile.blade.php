@@ -161,7 +161,7 @@
         }
 
         .requests-table {
-            min-width: 1050px;
+            min-width: 1350px;
         }
 
         .requests-table thead th {
@@ -535,10 +535,10 @@
                     </div>
                 </div>
 
-                <nav aria-label="Paginación de publicaciones" class="mt-4 d-flex justify-content-center align-items-center flex-wrap gap-3">
-                    <p class="text-muted small mb-0" id="postsPaginationSummary"></p>
-                    <ul class="pagination mb-0 profile-pagination" id="postsPagination"></ul>
-                </nav>
+                        <nav aria-label="Paginación de publicaciones" class="mt-4 d-flex justify-content-center align-items-center flex-wrap">
+                            <p class="text-muted small mb-0 me-5" id="postsPaginationSummary"></p>
+                            <ul class="pagination mb-0 profile-pagination" id="postsPagination"></ul>
+                        </nav>
 
                 </div>
                 </div>
@@ -551,9 +551,16 @@
                 <div class="card border-2 border-dark rounded-4 requests-profile-card">
                     <div class="card-body p-4 border-bottom">
                         <h2 class="fw-bold mb-1">Solicitudes de Artículos</h2>
-                        <p class="text-muted mb-0">
+
+                        <p class="text-muted mb-3">
                             Busca tus solicitudes y filtra por estado.
                         </p>
+
+                        <div class="alert alert-warning  rounded-0 mb-0">
+                            <strong>Importante:</strong>
+                            El equipo deportivo debe ser recogido en COLI 109, ubicado en el Coliseo Rafael A. Mangual.                             Para poder recoger su equipo deportivo debe entregar su tarjeta de estudiante o empleado.
+                        </div>
+
                     </div>
 
                     <div class="card-body p-4">
@@ -654,16 +661,22 @@
                             </div>
                         </div>
 
+                        <p class="text-success fw-bold mb-3">
+                            Desliza para ver más información <i class="bi bi-arrow-right-circle"></i>
+                        </p>
+
                         <div class="requests-table-wrapper">
                             <table class="table align-middle mb-0 requests-table">
                                 <thead>
                                 <tr>
                                     <th class="requests-items-cell">Artículo(s)</th>
+                                    <th class="text-center">Estado</th>
                                     <th class="requests-date-cell">Fecha de Creación</th>
                                     <th class="requests-date-cell">Fecha de Recogida</th>
+                                    <th class="requests-date-cell">Hora de Recogida</th>
                                     <th class="requests-date-cell">Fecha de Devolución</th>
+                                    <th class="requests-date-cell">Hora de Devolución</th>
                                     <th class="requests-returned-cell text-center">¿Devuelto?</th>
-                                    <th class="text-center">Estado</th>
                                 </tr>
                                 </thead>
 
@@ -699,6 +712,8 @@
                                         $wasReturned = in_array(strtolower($request->status), ['returned', 'finished']);
                                     @endphp
 
+
+
                                     <tr data-title="{{ strtolower($itemsText) }}" data-status="{{ $normalizedStatus }}">
                                         <td class="requests-items-cell fw-bold">
                                             @if($request->items->count())
@@ -708,6 +723,12 @@
                                             @else
                                                 Sin artículos
                                             @endif
+                                        </td>
+
+                                        <td class="text-center">
+    <span class="label-badge {{ $statusClass }}">
+        {{ $statusLabel }}
+    </span>
                                         </td>
 
                                         <td>
@@ -735,6 +756,14 @@
                                         </td>
 
                                         <td>
+                                            @if($request->start_time)
+                                                {{ \Carbon\Carbon::parse($request->start_time)->format('g:i A') }}
+                                            @else
+                                                —
+                                            @endif
+                                        </td>
+
+                                        <td>
                                             @if($request->end_time)
                                                 {{ mb_convert_case(
                                                     \Carbon\Carbon::parse($request->end_time)
@@ -746,6 +775,10 @@
                                             @else
                                                 —
                                             @endif
+                                        </td>
+
+                                        <td>
+                                            Entre 8:00 AM y 1:00 PM
                                         </td>
 
                                         <td class="text-center">
@@ -760,15 +793,10 @@
                                             @endif
                                         </td>
 
-                                        <td class="text-center">
-                                <span class="label-badge {{ $statusClass }}">
-                                    {{ $statusLabel }}
-                                </span>
-                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6">
+                                        <td colspan="8">
                                             <div class="py-5 text-center">
                                                 <i class="bi bi-search fs-1 text-muted"></i>
                                                 <h4 class="fw-bold mt-3">No se encontraron solicitudes</h4>
@@ -807,6 +835,8 @@
                                 </nav>
                             @endif
                         </div>
+
+
                     </div>
                 </div>
 

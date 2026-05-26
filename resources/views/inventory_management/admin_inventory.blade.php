@@ -214,12 +214,22 @@
                 <div class="modal fade" id="editItemModal{{ $item->id }}" tabindex="-1" aria-labelledby="editItemModalLabel{{ $item->id }}" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content rounded-4 border-0 shadow">
-                            <div class="modal-header border-0 pb-0">
+                            <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-start">
                                 <div>
-                                    <h4 class="modal-title fw-bold" id="editItemModalLabel{{ $item->id }}">Editar Equipo</h4>
-                                    <p class="text-muted mb-0">Actualiza la información del equipo</p>
+                                    <h4 class="modal-title fw-bold mb-1" id="editItemModalLabel{{ $item->id }}">
+                                        Editar Equipo
+                                    </h4>
+                                    <p class="text-muted mb-0">
+                                        Actualiza la información del equipo
+                                    </p>
                                 </div>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+
+                                <button
+                                    type="button"
+                                    class="btn-close mt-1"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Cerrar">
+                                </button>
                             </div>
 
                             <div class="modal-body">
