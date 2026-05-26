@@ -270,7 +270,8 @@ class FacilityCostController extends Controller
 
         return redirect()
             ->route('facility_management')
-            ->with('success', 'Salón agregado correctamente.');
+            ->with('success', 'Área agregada correctamente.')
+            ->with('classroom_added', 'Área agregada correctamente.');
     }
 
     /**
@@ -323,7 +324,8 @@ class FacilityCostController extends Controller
 
         return redirect()
             ->route('facility_management')
-            ->with('success', 'Salón(es) procesado(s) correctamente.');
+            ->with('success', 'Área(s) descartada(s) correctamente.')
+            ->with('classrooms_deleted', 'Área(s) descartada(s) correctamente.');
     }
 
     /**

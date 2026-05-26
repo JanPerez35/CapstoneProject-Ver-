@@ -144,6 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const newClassroomName = $('newClassroomName');
     const newClassroomType = $('newClassroomType');
     const newClassroomNameError = $('newClassroomNameError');
+    const newClassroomTypeError = $('newClassroomTypeError');
     const confirmAddClassroomBtn = $('confirmAddClassroomBtn');
     const addClassroomModal = $('addClassroomModal');
 
@@ -236,6 +237,9 @@ document.addEventListener('DOMContentLoaded', () => {
      * classroom configuration checkboxes currently rendered.
      */
     const getConfigClassroomChecks = () => [...document.querySelectorAll('.config-classroom-check')];
+
+    const configClassroomSelectionError = $('configClassroomSelectionError');
+    let configClassroomSelectionTouched = false;
 
     /**
      * These inputs automatically format and validate operational rate values.
@@ -605,6 +609,8 @@ document.addEventListener('DOMContentLoaded', () => {
         customizeSaved: createToastInstance('customizeSavedToast'),
         editSaved: createToastInstance('editSavedToast'),
         relatedSaved: createToastInstance('relatedSavedToast'),
+        classroomAdded: createToastInstance('classroomAddedToast'),
+        classroomsDeleted: createToastInstance('classroomsDeletedToast'),
     };
 
 
@@ -787,6 +793,11 @@ document.addEventListener('DOMContentLoaded', () => {
             newClassroomName.value = '';
             newClassroomName.classList.remove('is-invalid');
             newClassroomNameError.textContent = '';
+
+            newClassroomType.value = '';
+            newClassroomType.classList.remove('is-invalid');
+            newClassroomTypeError.textContent = '';
+
             confirmAddClassroomBtn.disabled = true;
 
             if (shouldReturnToConfigureRates) {
@@ -834,7 +845,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setFieldError(
                     newClassroomName,
                     newClassroomNameError,
-                    'Solo se permiten letras, números, espacios, punto, coma y guion.'
+                    'Solo se permiten letras, números, espacios, puntos, comas y guiones.'
                 );
             }
             return false;
@@ -864,13 +875,38 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
+    function validateNewClassroomType(showError = true) {
+        if (!newClassroomType || !newClassroomTypeError) return true;
+
+        if (showError) {
+            clearFieldError(newClassroomType, newClassroomTypeError);
+        }
+
+        if (!newClassroomType.value) {
+            if (showError) {
+                setFieldError(
+                    newClassroomType,
+                    newClassroomTypeError,
+                    'Selecciona un tipo de área.'
+                );
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * Enables or disables the add-classroom confirmation button depending
      * on the current classroom name validation state.
      */
     function updateAddClassroomButtonState() {
         if (!confirmAddClassroomBtn) return;
-        confirmAddClassroomBtn.disabled = !validateNewClassroomName(false) || !newClassroomType?.value;
+
+        confirmAddClassroomBtn.disabled =
+            !validateNewClassroomName(false) ||
+            !validateNewClassroomType(false);
     }
 
     /**
@@ -959,9 +995,15 @@ document.addEventListener('DOMContentLoaded', () => {
          * Updates the confirmation button when the selected area type changes.
          */
         newClassroomType?.addEventListener('change', () => {
+            validateNewClassroomType(true);
             updateAddClassroomButtonState();
         });
     }
+
+        newClassroomType?.addEventListener('blur', () => {
+            validateNewClassroomType(true);
+            updateAddClassroomButtonState();
+        });
 
 
     /**
@@ -969,7 +1011,7 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     if (confirmAddClassroomBtn) {
         confirmAddClassroomBtn.addEventListener('click', () => {
-            if (!validateNewClassroomName(true)) {
+            if (!validateNewClassroomName(true) || !validateNewClassroomType(true)) {
                 updateAddClassroomButtonState();
                 return;
             }
@@ -1584,7 +1626,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 setFieldError(
                     customizePeriodType,
                     customizePeriodTypeError,
-                    'Selecciona el tipo de período.'
+                    'Selecciona un tipo de período válido.'
                 );
             }
 
@@ -1695,6 +1737,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return facilityCostTableBody.querySelector(
             `tr.parent-event-row[data-group-key="${groupKey}"]`
         );
+    }
+
+    const classroomAddedAutoTrigger = document.getElementById('classroomAddedAutoTrigger');
+    const classroomsDeletedAutoTrigger = document.getElementById('classroomsDeletedAutoTrigger');
+
+    if (classroomAddedAutoTrigger && toasts.classroomAdded) {
+        toasts.classroomAdded.show();
+    }
+
+    if (classroomsDeletedAutoTrigger && toasts.classroomsDeleted) {
+        toasts.classroomsDeleted.show();
     }
 
     /**
@@ -2035,8 +2088,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        const baseMinDate = startDate?.dataset?.minDate || 'today';
+        const baseMaxDate = startDate?.dataset?.maxDate || null;
+
+        if (startDate?._flatpickr) {
+            startDate._flatpickr.set('minDate', baseMinDate);
+            startDate._flatpickr.set('maxDate', endDate?.value || baseMaxDate);
+        }
+
         if (endDate?._flatpickr) {
-            endDate._flatpickr.set('minDate', startDate?.value || 'today');
+            endDate._flatpickr.set('minDate', startDate?.value || baseMinDate);
+            endDate._flatpickr.set('maxDate', baseMaxDate);
         }
 
         updateTimeOptions?.();
@@ -2077,6 +2139,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             validateCustomizePeriodType(true);
+            validateCustomizeWorkdayRangeRule(true);
 
             if (customizeStartTime.value && customizeEndTime.value) {
                 validateEventTimes({
@@ -2201,6 +2264,14 @@ document.addEventListener('DOMContentLoaded', () => {
         relatedStartTime.value = '';
         relatedEndTime.value = '';
 
+        clearFieldError(relatedStartTime, relatedStartTimeError);
+        clearFieldError(relatedEndTime, relatedEndTimeError);
+        if (relatedPeriodType.value) {
+            clearFieldError(relatedPeriodType, relatedPeriodTypeError);
+        }
+
+        if (relatedTimeError) relatedTimeError.textContent = '';
+
         updateDateRestrictions({
             periodType: relatedPeriodType,
             startDate: relatedStartDate,
@@ -2300,6 +2371,7 @@ document.addEventListener('DOMContentLoaded', () => {
     markDirtyOnChange([
         editResponsible,
         editDescription,
+        editClassroom,
         editUtilities,
         editElectricity,
         editWater,
@@ -2354,12 +2426,23 @@ document.addEventListener('DOMContentLoaded', () => {
             .map(check => check.value);
     }
 
+    function updateConfigureClassroomSelectionError() {
+        if (!configClassroomSelectionError) return;
+
+        const hasSelectedClassrooms = getSelectedClassrooms().length > 0;
+        const shouldShowError = configClassroomSelectionTouched && !hasSelectedClassrooms;
+
+        configClassroomSelectionError.classList.toggle('d-none', !shouldShowError);
+    }
+
     /**
      * Enables or disables the discard selected classrooms button.
      *
      * The button is disabled until at least one classroom/area is selected.
      */
     function updateDiscardButtonState() {
+        if (!openDiscardSelectedClassroomsBtn) return;
+
         const selected = getSelectedClassrooms();
         openDiscardSelectedClassroomsBtn.disabled = selected.length === 0;
     }
@@ -2367,6 +2450,8 @@ document.addEventListener('DOMContentLoaded', () => {
     getConfigClassroomChecks().forEach(check => {
         check.addEventListener('change', updateDiscardButtonState);
     });
+
+    updateDiscardButtonState();
 
 
     /**
@@ -2509,12 +2594,19 @@ document.addEventListener('DOMContentLoaded', () => {
      *
      * @param {string[]} list - Classroom/area names that should be selected.
      */
-    function setSelectionByList(list) {
+    function setSelectionByList(list, markTouched = true) {
         getConfigClassroomChecks().forEach(check => {
             check.checked = list.includes(check.value);
         });
+
+        if (markTouched) {
+            configClassroomSelectionTouched = true;
+        }
+
         configureDirty = true;
+        updateConfigureClassroomSelectionError();
         updateConfigureSaveState();
+        updateDiscardButtonState();
     }
 
     /**
@@ -2697,18 +2789,13 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {HTMLElement|null} errorElement - Element where the error message is displayed.
      * @param {string} message - Validation message to display.
      */
-    function setFieldError(field, errorElement, message) {
-        if (!field) return;
+    function setFieldError(input, errorElement, message) {
+        input?.classList.add('is-invalid');
 
-        field.classList.add('is-invalid');
-
-        if (field._flatpickr?.altInput) {
-            field._flatpickr.altInput.classList.add('is-invalid');
+        if (errorElement) {
+            errorElement.textContent = message;
         }
-
-        if (errorElement) errorElement.textContent = message;
     }
-
     /**
      * Removes an invalid state and message from a form field.
      *
@@ -2852,16 +2939,10 @@ document.addEventListener('DOMContentLoaded', () => {
         input?.addEventListener('blur', () => {
             input.value = input.value.trim();
 
-            if (input.value.length === 40) {
+            validateFn(true);
 
-                setFieldError(
-                    input,
-                    errorElement,
-                    'Has alcanzado el máximo de 40 caracteres. Puedes someter el texto tal como está.'
-                );
-
-            } else {
-                validateFn(true);
+            if (input.value.length === 40 && errorElement) {
+                clearFieldError(input, errorElement);
             }
 
             saveStateFn();
@@ -3188,7 +3269,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (value.length > 40) {
             if (showError) {
-                setFieldError(input, errorElement, 'El responsable no puede exceder 40 caracteres.');
+                setFieldError(input, errorElement, 'Has alcanzado el máximo de 40 caracteres. No puedes escribir más.');
             }
             return false;
         }
@@ -3227,7 +3308,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if(!regex.test(value)) {
             if(showError) {
-                setFieldError(input, errorElement, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+                setFieldError(input, errorElement, 'Solo se permiten letras, números, espacios, puntos, comas y guiones.');
             }
             return false;
         }
@@ -3563,7 +3644,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (summary) {
             const firstItem = ((currentPage - 1) * itemsPerPage) + 1;
             const lastItem = Math.min(currentPage * itemsPerPage, totalItems);
-            summary.textContent = `Mostrando ${firstItem} a ${lastItem} de ${totalItems} resultados`;
+            summary.innerHTML = `
+            Mostrando <strong>${firstItem}</strong>
+            a <strong>${lastItem}</strong>
+            de <strong>${totalItems}</strong> resultados
+        `;
         }
 
         let paginationHTML = '';
@@ -4140,6 +4225,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 relatedEndDate.min = startDate;
                 relatedEndDate.max = endDate;
 
+                relatedStartDate.dataset.minDate = startDate;
+                relatedStartDate.dataset.maxDate = endDate;
+                relatedEndDate.dataset.minDate = startDate;
+                relatedEndDate.dataset.maxDate = endDate;
+
+                relatedStartDate._flatpickr?.set('minDate', startDate);
+                relatedStartDate._flatpickr?.set('maxDate', endDate);
+                relatedStartDate._flatpickr?.clear();
+
+                relatedEndDate._flatpickr?.set('minDate', startDate);
+                relatedEndDate._flatpickr?.set('maxDate', endDate);
+                relatedEndDate._flatpickr?.clear();
+
                 relatedArea.value = '';
                 relatedResponsible.value = row?.children[2]?.textContent.trim() || '';
                 relatedDescription.value = row?.children[4]?.textContent.trim() || '';
@@ -4267,11 +4365,27 @@ document.addEventListener('DOMContentLoaded', () => {
      * @returns {string} Customize range end date in YYYY-MM-DD format.
      */
     function getCustomizeRangeEndDate() {
-        if (customizeScope?.value === 'this_and_following' && currentCustomizeParentRow) {
-            return currentCustomizeParentRow.dataset.endDate || currentCustomizeParentRow.dataset.date || customizeDate.value;
+        if (customizeScope?.value !== 'this_and_following' || !currentCustomizeParentRow) {
+            return customizeDate.value;
         }
 
-        return customizeDate.value;
+        const parentEndDate =
+            currentCustomizeParentRow.dataset.endDate ||
+            currentCustomizeParentRow.dataset.date ||
+            customizeDate.value;
+
+        if (!customizeDate.value || !parentEndDate) {
+            return customizeDate.value;
+        }
+
+        const selectedDate = new Date(`${customizeDate.value}T00:00:00`);
+        const parentEnd = new Date(`${parentEndDate}T00:00:00`);
+
+        if (selectedDate >= parentEnd) {
+            return customizeDate.value;
+        }
+
+        return parentEndDate;
     }
 
     /**
@@ -4295,6 +4409,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedDay = new Date(`${customizeDate.value}T00:00:00`).getDay();
         const selectedPeriod = customizePeriodType.value;
         const customizeRangeEndDate = getCustomizeRangeEndDate();
+
+        if ((selectedDay === 0 || selectedDay === 6) && selectedPeriod === 'workday') {
+            if (showError) {
+                const message = 'No puedes seleccionar Laborable para sábado o domingo. Usa un período no laborable.';
+
+                setFieldError(customizePeriodType, customizePeriodTypeError, message);
+                setFieldError(customizeDate, customizeDateError, message);
+            }
+
+            return false;
+        }
 
         if (selectedDay === 6 && selectedPeriod === 'non_workday_sunday_holiday') {
             if (showError) {
@@ -4602,7 +4727,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!responsible) {
             valid = false;
-            if (showError) setFieldError(editResponsible, editResponsibleError, 'El responsable es obligatorio.');
+            if (showError) setFieldError(editResponsible, editResponsibleError, 'El responsable es un campo obligatorio para llenar.');
         } else if (!responsibleRegex.test(responsible)) {
             valid = false;
             if (showError) setFieldError(editResponsible, editResponsibleError, 'Solo se permiten letras y espacios.');
@@ -4619,7 +4744,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (showError) setFieldError(editDescription, editDescriptionError, 'La descripción es obligatoria.');
         } else if (!descriptionRegex.test(description)) {
             valid = false;
-            if (showError) setFieldError(editDescription, editDescriptionError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+            if (showError) setFieldError(editDescription, editDescriptionError, 'Solo se permiten letras, números, espacios, puntos, comas y guiones.');
         } else if (description.length < 10) {
             valid = false;
             if (showError) setFieldError(editDescription, editDescriptionError, 'La descripción debe tener al menos 10 caracteres.');
@@ -4749,7 +4874,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!responsible) {
             valid = false;
-            if (showError) setFieldError(relatedResponsible, relatedResponsibleError, 'El responsable es obligatorio.');
+            if (showError) setFieldError(relatedResponsible, relatedResponsibleError, 'El responsable es un campo obligatorio para llenar.');
         } else if (!responsibleRegex.test(responsible)) {
             valid = false;
             if (showError) setFieldError(relatedResponsible, relatedResponsibleError, 'Solo se permiten letras y espacios.');
@@ -4766,7 +4891,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (showError) setFieldError(relatedDescription, relatedDescriptionError, 'La descripción es obligatoria.');
         } else if (!descriptionRegex.test(description)) {
             valid = false;
-            if (showError) setFieldError(relatedDescription, relatedDescriptionError, 'Solo se permiten letras, números, espacios, punto, coma y guion.');
+            if (showError) setFieldError(relatedDescription, relatedDescriptionError, 'Solo se permiten letras, números, espacios, puntos, comas y guiones.');
         } else if (description.length < 10) {
             valid = false;
             if (showError) setFieldError(relatedDescription, relatedDescriptionError, 'La descripción debe tener al menos 10 caracteres.');
@@ -5122,7 +5247,9 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function resetConfigureFormState() {
         configureRatesForm.reset();
-        setSelectionByList([]);
+        configClassroomSelectionTouched = false;
+        setSelectionByList([], false);
+        configClassroomSelectionError?.classList.add('d-none');
         configureRatesForm.classList.remove('was-validated');
         configureDirty = false;
 
@@ -5156,6 +5283,11 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function resetRentalFormState() {
         addRentalForm.reset();
+        rentalStartDate?._flatpickr?.clear();
+        rentalEndDate?._flatpickr?.clear();
+
+        if (rentalStartDate) rentalStartDate.value = '';
+        if (rentalEndDate) rentalEndDate.value = '';
         addRentalForm.classList.remove('was-validated');
         rentalDirty = false;
 
@@ -5184,28 +5316,55 @@ document.addEventListener('DOMContentLoaded', () => {
      * Selects all rendered areas in the configure-rates modal.
      */
     $('selectAllClassroomsBtn').addEventListener('click', () => {
-    setSelectionByList(getAllRenderedClassrooms());
+        setSelectionByList(getAllRenderedClassrooms(), true);
     });
 
     /**
      * Selects only rendered academic classrooms in the configure-rates modal.
      */
     $('selectAcademicClassroomsBtn').addEventListener('click', () => {
-        setSelectionByList(getAcademicRenderedClassrooms());
+        setSelectionByList(getAcademicRenderedClassrooms(), true);
     });
 
     /**
      * Selects only rendered lateral classrooms in the configure-rates modal.
      */
     $('selectLateralClassroomsBtn').addEventListener('click', () => {
-        setSelectionByList(getLateralRenderedClassrooms());
+        setSelectionByList(getLateralRenderedClassrooms(), true);
     });
 
     /**
      * Clears all selected classrooms in the configure-rates modal.
      */
     $('clearClassroomsSelectionBtn').addEventListener('click', () => {
-        setSelectionByList([]);
+        setSelectionByList([], false);
+
+        configClassroomSelectionTouched = false;
+        configClassroomSelectionError?.classList.add('d-none');
+
+        clearRatesForm();
+
+        [
+            configClassroomArea,
+            configUtilities,
+            configElectricity,
+            configWater,
+            configDaily1,
+            configWeekly1,
+            configMonthly1,
+            configDaily2,
+            configWeekly2,
+            configMonthly2,
+            configDaily3,
+            configWeekly3,
+            configMonthly3,
+        ].forEach((input) => {
+            clearFieldError(input, document.getElementById(`${input.id}Error`));
+            input.closest('.money-input-group')?.classList.remove('is-invalid');
+        });
+
+        updateConfigureSaveState();
+        updateDiscardButtonState();
     });
 
     /**
@@ -5215,12 +5374,57 @@ document.addEventListener('DOMContentLoaded', () => {
      * the edit save button state.
      */
     function resetEditEventState() {
+        editDirty = false;
+        allowEditModalClose = false;
+
         if (editResponsible) editResponsible.value = '';
         if (editDescription) editDescription.value = '';
+        if (editClassroom) editClassroom.value = '';
+        if (editPeriodType) editPeriodType.value = '';
+        if (editRateMode) editRateMode.value = '';
+        if (editRateModeDisplay) editRateModeDisplay.value = 'Se calculará automáticamente';
+
+        if (editStartDate) editStartDate.value = '';
+        if (editEndDate) editEndDate.value = '';
+
+        editStartDate?._flatpickr?.set('disable', []);
+        editStartDate?._flatpickr?.set('minDate', 'today');
+        editStartDate?._flatpickr?.set('maxDate', null);
+        editStartDate?._flatpickr?.clear();
+
+        editEndDate?._flatpickr?.set('disable', []);
+        editEndDate?._flatpickr?.set('minDate', 'today');
+        editEndDate?._flatpickr?.set('maxDate', null);
+        editEndDate?._flatpickr?.clear();
+
+        if (editStartTime) {
+            editStartTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
+        }
+
+        if (editEndTime) {
+            editEndTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
+        }
+
+        editServiceChecks.forEach(input => {
+            if (input) input.checked = false;
+        });
+
+        if (editEstimatedTotal) editEstimatedTotal.textContent = '$0.00';
+        if (editDetectedPeriodLabel) editDetectedPeriodLabel.textContent = '—';
+        if (editDetectedHoursLabel) editDetectedHoursLabel.textContent = '0.00 horas';
 
         clearFieldError(editResponsible, editResponsibleError);
         clearFieldError(editDescription, editDescriptionError);
+        clearFieldError(editClassroom, editClassroomError);
+        clearFieldError(editPeriodType, editPeriodTypeError);
+        clearFieldError(editStartDate, editStartDateError);
+        clearFieldError(editEndDate, editEndDateError);
+        clearFieldError(editStartTime, editStartTimeError);
+        clearFieldError(editEndTime, editEndTimeError);
 
+        if (editTimeError) editTimeError.textContent = '';
+
+        toggleEditServicesError(false);
         updateEditSaveState();
     }
 
@@ -5282,6 +5486,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (relatedStartDate) relatedStartDate.value = '';
         if (relatedEndDate) relatedEndDate.value = '';
 
+        relatedStartDate?.removeAttribute('data-min-date');
+        relatedStartDate?.removeAttribute('data-max-date');
+        relatedEndDate?.removeAttribute('data-min-date');
+        relatedEndDate?.removeAttribute('data-max-date');
+
+        relatedStartDate?._flatpickr?.set('disable', []);
+        relatedStartDate?._flatpickr?.set('minDate', 'today');
+        relatedStartDate?._flatpickr?.set('maxDate', null);
+        relatedStartDate?._flatpickr?.clear();
+
+        relatedEndDate?._flatpickr?.set('disable', []);
+        relatedEndDate?._flatpickr?.set('minDate', 'today');
+        relatedEndDate?._flatpickr?.set('maxDate', null);
+        relatedEndDate?._flatpickr?.clear();
+
         if (relatedStartTime) {
             relatedStartTime.innerHTML = '<option value="" selected>Primero selecciona el tipo de período</option>';
         }
@@ -5332,6 +5551,8 @@ document.addEventListener('DOMContentLoaded', () => {
      * Marks the configure modal as dirty and refreshes the save state.
      */
     function handleClassroomCheckboxChange() {
+        configClassroomSelectionTouched = true;
+
         const selected = getSelectedClassrooms();
 
         if (selected.length === 1) {
@@ -5341,9 +5562,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         configureDirty = true;
+        updateConfigureClassroomSelectionError();
         updateConfigureSaveState();
     }
-
     /**
      * Binds configure-rates area checkboxes to the shared
      * area selection handler.
@@ -5416,6 +5637,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (el === rentalPeriodType) {
                 rentalStartTime.value = '';
                 rentalEndTime.value = '';
+
+                clearFieldError(rentalStartTime, rentalStartTimeError);
+                clearFieldError(rentalEndTime, rentalEndTimeError);
+                if (rentalPeriodType.value) {
+                    clearFieldError(rentalPeriodType, rentalPeriodTypeError);
+                }
+
                 updateRentalTimeOptions();
                 updateDateRestrictions({
                     periodType: rentalPeriodType,
@@ -5560,6 +5788,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (editStartTime) editStartTime.value = '';
         if (editEndTime) editEndTime.value = '';
+
+        clearFieldError(editStartTime, editStartTimeError);
+        clearFieldError(editEndTime, editEndTimeError);
+        if (editPeriodType.value) {
+            clearFieldError(editPeriodType, editPeriodTypeError);
+        }
+
+        if (editTimeError) editTimeError.textContent = '';
 
         updateDateRestrictions({
             periodType: editPeriodType,

@@ -21,11 +21,19 @@
             <div id="mockImportAutoTrigger"></div>
         @endif
 
+        @if(session('classroom_added'))
+            <div id="classroomAddedAutoTrigger"></div>
+        @endif
+
+        @if(session('classrooms_deleted'))
+            <div id="classroomsDeletedAutoTrigger"></div>
+        @endif
+
         {{-- Page header and cost estimate notice --}}
         <div class="mb-4">
             <h1 class="fw-bold mb-1">Gestión de Costos Operacionales</h1>
-            <p class="text mb-0">Aquí puedes ver, filtrar y exportar estimaciones de costos operacionales por área
-                dentro del Coliseo Rafael Mangual.</p>
+            <p class="text mb-0">Aquí puedes ver, filtrar, agregar y modificar eventos estimados, así como exportar estimaciones
+                de costos operacionales por áreas específicas dentro del Coliseo Rafael A. Mangual.</p>
         </div>
 
         {{-- Notice --}}
@@ -47,13 +55,13 @@
 
                     <br><br>
                     <strong>Nota normativa:</strong>
-                    El sistema sigue como referencia la Certificación 20-21-090 <strong>Procedimiento Para El Préstamo y Uso de Instalaciones Físicas
-                    Del Recinto Universitario de Mayagüez</strong>
+                    El sistema sigue como referencia la Certificación 20-21-090 <strong>Procedimiento para el Préstamo y Uso de Instalaciones Físicas
+                    del Recinto Universitario de Mayagüez</strong>
                     para la estructura de tarifas y
                     períodos.
                     Sin embargo, los horarios de días no laborables fueron ajustados operacionalmente en el sistema ya
                     que se esta utilizando
-                    la normas/certificaciones específicas del Departamento de Kinesiología;
+                    las normas/certificaciones específicas del Departamento de Kinesiología;
                     por tanto, los períodos no laborables se manejan de 8:00 AM a 9:30 PM.
                 </div>
             </div>
@@ -147,7 +155,7 @@
                     class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
                 >
                     <i class="bi bi-cloud-arrow-down"></i>
-                    Importar EventFlow
+                    Importar Data de EventFlow
                 </button>
             </form>
             </span>
@@ -171,7 +179,7 @@
                                 id="facilitySearch"
                                 name="search"
                                 class="form-control border-0"
-                                placeholder="Buscar por responsable o fecha..."
+                                placeholder="Buscar por nombre del responsable o por fecha del evento..."
                                 value="{{ request('search') }}"
                             >
                         </div>
@@ -261,7 +269,7 @@
                     {{-- Services filter --}}
                     <div class="col-md-3">
                         <select id="filterServices" name="filter_services" class="form-select border-2 border-dark">
-                            <option value="">Servicios</option>
+                            <option value=""> Tipo de Servicios</option>
                             <option value="Utilidades">Utilidades</option>
                             <option value="Electricidad">Electricidad</option>
                             <option value="Agua">Agua</option>
@@ -524,7 +532,7 @@
     </div>
 
 
-    <nav class="mt-4 d-flex justify-content-center align-items-center flex-wrap gap-3" aria-label="Paginación de costos">
+    <nav aria-label="Paginación de costos" class="mt-4 d-flex justify-content-center align-items-center flex-wrap gap-3">
         <p class="text-muted small mb-0" id="facilityCostPaginationSummary"></p>
         <ul class="pagination mb-0" id="facilityCostPagination"></ul>
     </nav>
@@ -628,6 +636,10 @@
                                 </div>
                             </div>
 
+                            <div id="configClassroomSelectionError" class="text-danger small d-none mt-2 mb-4 ps-3">
+                                Debes seleccionar al menos un área para configurar tarifas.
+                            </div>
+
                             <hr class="my-4">
 
                             <div class="mb-4">
@@ -663,11 +675,11 @@
                                                     required
                                                 >
                                             </div>
-                                            <div class="invalid-feedback d-block" id="configClassroomAreaError"></div>
                                             <small class="text-muted d-block mt-2">
-                                                Ingresa la medida en pies cuadrados (ft²). Solo números y hasta 2
+                                                Ingresa la medida en pies cuadrados (ft²). Solo números y hasta 2 lugares
                                                 decimales. El máximo permitido es 25,000,000.00 ft².
                                             </small>
+                                            <div class="invalid-feedback d-block" id="configClassroomAreaError"></div>
                                         </div>
                                     </div>
                                 </div>
@@ -694,12 +706,15 @@
                                                         required
                                                     >
                                                 </div>
-                                                <div class="invalid-feedback d-block"
-                                                     id="{{ $campo['id'] }}Error"></div>
+
                                                 <small class="text-muted d-block mt-2">
-                                                    Escribe solo números y hasta 2 decimales. El máximo permitido es
+                                                    Escribe solo números y hasta 2 lugares decimales. El máximo permitido es
                                                     $500.00
                                                 </small>
+
+                                                <div class="invalid-feedback d-block"
+                                                     id="{{ $campo['id'] }}Error"></div>
+
                                             </div>
                                         </div>
                                     @endforeach
@@ -760,12 +775,13 @@
                                                         required
                                                     >
                                                 </div>
-                                                <div class="invalid-feedback d-block"
-                                                     id="configDaily{{ $periodo['sufijo'] }}Error"></div>
-                                                <small class="text-muted d-block mt-2  mb-4">
-                                                    Escribe solo números y hasta 2 decimales. El máximo permitido es
+                                                <small class="text-muted d-block mt-2  mb-2">
+                                                    Escribe solo números y hasta 2 lugares decimales. El máximo permitido es
                                                     $500.00.
                                                 </small>
+
+                                                <div class="invalid-feedback d-block mb-3"
+                                                     id="configDaily{{ $periodo['sufijo'] }}Error"></div>
 
                                                 <label for="configWeekly{{ $periodo['sufijo'] }}"
                                                        class="form-label fw-semibold">
@@ -782,12 +798,13 @@
                                                         required
                                                     >
                                                 </div>
-                                                <div class="invalid-feedback d-block"
-                                                     id="configWeekly{{ $periodo['sufijo'] }}Error"></div>
-                                                <small class="text-muted d-block mt-2  mb-4">
-                                                    Escribe solo números y hasta 2 decimales. El máximo permitido es
+                                                <small class="text-muted d-block mt-2 mb-2">
+                                                    Escribe solo números y hasta 2 lugares decimales. El máximo permitido es
                                                     $500.00.
                                                 </small>
+
+                                                <div class="invalid-feedback d-block mb-3"
+                                                     id="configWeekly{{ $periodo['sufijo'] }}Error"></div>
 
                                                 <label for="configMonthly{{ $periodo['sufijo'] }}"
                                                        class="form-label fw-semibold">
@@ -804,12 +821,14 @@
                                                         required
                                                     >
                                                 </div>
-                                                <div class="invalid-feedback d-block"
-                                                     id="configMonthly{{ $periodo['sufijo'] }}Error"></div>
+
                                                 <small class="text-muted d-block mt-2">
-                                                    Escribe solo números y hasta 2 decimales. El máximo permitido es
+                                                    Escribe solo números y hasta 2 lugares decimales. El máximo permitido es
                                                     $500.00.
                                                 </small>
+
+                                                <div class="invalid-feedback d-block"
+                                                     id="configMonthly{{ $periodo['sufijo'] }}Error"></div>
                                             </div>
                                         </div>
                                     @endforeach
@@ -902,7 +921,7 @@
                                 </label>
                                 <select id="rentalClassroom" name="classroom" class="form-select form-select-lg"
                                         required>
-                                    <option value="" selected>Seleccionar área</option>
+                                    <option value="" selected>Selecciona el área</option>
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
                                         <option value="{{ $salon }}">{{ $salon }}</option>
@@ -948,7 +967,7 @@
                                 required
                             ></textarea>
                             <small class="text-muted d-block fst-italic">
-                                Entre 10 y 250 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                Entre 10 y 250 caracteres. Solo letras, números, espacios, puntos, comas y guiones.
                             </small>
                             <div class="invalid-feedback" id="rentalDescriptionError">
                                 La descripción debe tener entre 10 y 250 caracteres y solo usar caracteres permitidos.
@@ -1047,7 +1066,7 @@
 
                                 <select id="rentalPeriodType" name="period_type" class="form-select  form-select-lg"
                                         required>
-                                    <option value="" selected>Seleccionar tipo de período</option>
+                                    <option value="" selected>Selecciona el tipo de período</option>
 
                                     <option value="workday">
                                         Laborable
@@ -1226,7 +1245,7 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando
                     </button>
-                    <button type="button" class="btn btn-danger" id="confirmCancelConfigureBtn">Sí,Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelConfigureBtn">Sí, Cancelar</button>
                 </div>
             </div>
         </div>
@@ -1246,7 +1265,7 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando
                     </button>
-                    <button type="button" class="btn btn-danger" id="confirmCancelRentalBtn">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelRentalBtn">Sí, Cancelar</button>
                 </div>
             </div>
         </div>
@@ -1319,7 +1338,7 @@
                                     Área <span class="text-danger">*</span>
                                 </label>
                                 <select id="relatedArea" class="form-select form-select-lg" required>
-                                    <option value="" selected>Seleccionar área</option>
+                                    <option value="" selected>Selecciona el área</option>
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
                                         <option value="{{ $salon }}">{{ $salon }}</option>
@@ -1363,7 +1382,7 @@
                                 required
                             ></textarea>
                             <small class="text-muted d-block fst-italic">
-                                Escriba entre 10 y 250 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                Escriba entre 10 y 250 caracteres. Solo letras, números, espacios, puntos, comas y guiones.
                             </small>
                             <div class="invalid-feedback" id="relatedDescriptionError"></div>
                         </div>
@@ -1443,7 +1462,7 @@
                                         Tipo de período <span class="text-danger">*</span>
                                     </label>
                                     <select id="relatedPeriodType" class="form-select form-select-lg" required>
-                                        <option value="" selected>Seleccionar tipo de período</option>
+                                        <option value="" selected>Selecciona el tipo de período</option>
                                         <option value="workday">Laborable</option>
                                         <option value="non_workday_saturday">No laborable sábado</option>
                                         <option value="non_workday_sunday_holiday">No laborable domingo o festivo
@@ -1603,7 +1622,7 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando
                     </button>
-                    <button type="button" class="btn btn-danger" id="confirmCancelRelatedBtn">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelRelatedBtn"> Sí, Cancelar</button>
                 </div>
             </div>
         </div>
@@ -1734,12 +1753,12 @@
                                     Alcance <span class="text-danger">*</span>
                                 </label>
                                 <select id="customizeScope" class="form-select form-select-lg" required>
-                                    <option value="" selected>Seleccionar alcance</option>
+                                    <option value="" selected>Selecciona el alcance</option>
                                     <option value="single_day">Solo este día</option>
                                     <option value="this_and_following">Este día y siguientes</option>
                                 </select>
                                 <small class="text-muted d-block fst-italic">
-                                    Seleccione cómo desea aplicar la modificación.
+                                    Seleccione cómo desea aplicar la modificación de fecha.
                                 </small>
                                 <div class="invalid-feedback" id="customizeScopeError"></div>
                             </div>
@@ -1772,7 +1791,7 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando
                     </button>
-                    <button type="button" class="btn btn-danger" id="confirmCancelCustomizeBtn">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelCustomizeBtn"> Sí, Cancelar</button>
                 </div>
             </div>
         </div>
@@ -1821,7 +1840,7 @@
                                     Área <span class="text-danger">*</span>
                                 </label>
                                 <select id="editClassroom" class="form-select form-select-lg" required>
-                                    <option value="" selected>Seleccionar área</option>
+                                    <option value="" selected>Selecciona el área</option>
                                     @foreach ($facilityCosts as $cost)
                                         @php $salon = $cost->classroom_name; @endphp
                                         <option value="{{ $salon }}">{{ $salon }}</option>
@@ -1843,7 +1862,6 @@
                                     class="form-control form-control-lg"
                                     placeholder="Nombre del responsable"
                                     minlength="8"
-                                    maxlength="40"
                                     required
                                 >
                                 <small class="text-muted d-block fst-italic">
@@ -1863,11 +1881,10 @@
                                 rows="4"
                                 placeholder="Descripción del evento"
                                 minlength="10"
-                                maxlength="250"
                                 required
                             ></textarea>
                             <small class="text-muted d-block fst-italic">
-                                Entre 10 y 250 caracteres. Solo letras, números, espacios, punto, coma y guion.
+                                Entre 10 y 250 caracteres. Solo letras, números, espacios, puntos, comas y guiones.
                             </small>
                             <div class="invalid-feedback" id="editDescriptionError"></div>
                         </div>
@@ -1949,7 +1966,7 @@
                                 </label>
 
                                 <select id="editPeriodType" class="form-select form-select-lg" required>
-                                    <option value="" selected>Seleccionar tipo de período</option>
+                                    <option value="" selected>Selecciona el tipo de período</option>
                                     <option value="workday">
                                         Laborable
                                     </option>
@@ -2122,7 +2139,7 @@
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Seguir Editando
                     </button>
-                    <button type="button" class="btn btn-danger" id="confirmCancelEditBtn">Cancelar</button>
+                    <button type="button" class="btn btn-danger" id="confirmCancelEditBtn"> Sí, Cancelar</button>
                 </div>
             </div>
         </div>
@@ -2152,10 +2169,12 @@
                         Tipo de área <span class="text-danger">*</span>
                     </label>
                     <select id="newClassroomType" class="form-select border-2 border-dark mb-3">
-                        <option value="" selected>Seleccionar tipo de área</option>
+                        <option value="" selected>Selecciona el tipo de área</option>
                         <option value="classroom">Salón</option>
                         <option value="lateral">Lateral</option>
                     </select>
+
+                    <div class="invalid-feedback d-block" id="newClassroomTypeError"></div>
 
                     <label for="newClassroomName" class="form-label fw-semibold">
                         Nombre del área <span class="text-danger">*</span>
@@ -2167,7 +2186,7 @@
                         placeholder="Ejemplo: CM 211 o Lateral 3"
                     >
                     <small class="text-muted d-block fst-italic">
-                        Entre 6 y 40 caracteres. Solo letras, números, espacios, coma, punto y guion.
+                        Entre 6 y 40 caracteres. Solo letras, números, espacios, comas, puntos y guiones.
                     </small>
                     <div class="invalid-feedback d-block" id="newClassroomNameError"></div>
                 </div>
@@ -2327,6 +2346,28 @@
                     Evento creado correctamente.
                 </div>
                 <button type="button" class="btn-close ms-auto me-3" data-bs-dismiss="Cerrar"></button>
+            </div>
+        </div>
+
+        <div id="classroomAddedToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+             role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold pe-1">
+                    Área agregada correctamente.
+                </div>
+                <button type="button" class="btn-close ms-auto me-3" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+
+        <div id="classroomsDeletedToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+             role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold pe-1">
+                    Área(s) descartada(s) correctamente.
+                </div>
+                <button type="button" class="btn-close ms-auto me-3" data-bs-dismiss="toast"></button>
             </div>
         </div>
 
