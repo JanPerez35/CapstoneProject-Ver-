@@ -59,4 +59,23 @@ public function test_super_admin_can_update_user_status(): void
         'status' => 'Bloqueado',
     ]);
 }
+
+public function test_super_admin_cannot_change_own_status(): void
+{
+    $admin = User::factory()->create([
+        'role' => 'Super Administrador',
+        'status' => 'Activo',
+    ]);
+
+    $this->actingAs($admin)
+        ->put(route('users.updateStatus', $admin), [
+            'status' => 'Bloqueado',
+        ])
+        ->assertForbidden();
+
+    $this->assertDatabaseHas('users', [
+        'id' => $admin->id,
+        'status' => 'Activo',
+    ]);
+}
 }

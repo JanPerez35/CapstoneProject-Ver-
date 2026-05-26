@@ -1942,3 +1942,28 @@ a:has(#miChatsUnreadBadge) {
 #miChatsUnreadBadge {
     z-index: 1056;
 }
+
+/*-----------------------------------
+ * Section: Access logs table layout
+ *----------------------------------*/
+
+/* Adds spacing between the access logs pagination summary and buttons. */
+.access-logs-pagination nav > div.d-none.d-sm-flex {
+    gap: 1rem !important;
+    justify-content: center !important;
+}
+
+/* Makes the access logs table scrollable while keeping the header visible. */
+.access-logs-table-wrapper {
+    max-height: 550px;
+    overflow-y: auto;
+    overflow-x: auto;
+}
+
+/* Keeps the access logs table header visible while scrolling. */
+#accessLogsTable thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #f8f9fa;
+}

@@ -226,7 +226,7 @@ class FacilityCostController extends Controller
         }
 
         $this->logActivity(
-            'Guardar tarifas de facilidades',
+            'Guardar tarifas de Instalaciones',
             'Se guardaron/actualizaron tarifas para los salones: ' . implode(', ', $validated['classrooms'])
         );
 
@@ -367,7 +367,7 @@ class FacilityCostController extends Controller
     $item = $this->createFacilityReportItemFromPayload($payload);
 
     $this->logActivity(
-        'Agregar evento de facilidad',
+        'Agregar evento de Instalación',
         "Se agregó un evento para el salón {$validated['classroom']} en fecha {$validated['event_date']} con costo calculado de {$item->calculated_cost}"
     );
 
@@ -537,7 +537,7 @@ public function updateEvent(Request $request, FacilityCostReportItem $item)
     ]);
 
     $this->logActivity(
-        'Editar evento de facilidad',
+        'Editar evento de Instalación',
         "Se editó el evento principal {$item->id}."
     );
 
@@ -850,7 +850,7 @@ public function updateSubEvent(Request $request, FacilityCostReportItem $item)
     }
 
     $this->logActivity(
-        'Editar sub-evento de facilidad',
+        'Editar sub-evento de Instalación',
         "Se editó el sub-evento {$item->id} del grupo {$item->event_group_id}."
     );
 
@@ -1240,7 +1240,7 @@ private function calculateFacilityCostFromPayload(array $data): array
             $deleted = FacilityCostReportItem::where('event_group_id', $item->event_group_id)->delete();
 
             $this->logActivity(
-                'Eliminar evento principal de facilidad',
+                'Eliminar evento principal de Instalación',
                 "Se eliminó el evento principal {$item->id} y todos sus sub-eventos del grupo {$item->event_group_id}. Total eliminado: {$deleted}."
             );
 
@@ -1269,7 +1269,7 @@ private function calculateFacilityCostFromPayload(array $data): array
         $item->delete();
 
         $this->logActivity(
-            'Eliminar sub-evento de facilidad',
+            'Eliminar sub-evento de Instalación',
             $groupId
                 ? "Se eliminó el sub-evento {$itemId} del grupo {$groupId}."
                 : "Se eliminó el evento individual {$itemId}."

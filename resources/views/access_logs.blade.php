@@ -30,13 +30,12 @@
 
         {{-- Action buttons section --}}
         <div class="d-flex justify-content-start gap-3 mb-4">
-            <button
-                type="button"
-                id="downloadAccessLogsCsvBtn"
+            <a
+                href="{{ route('access_logs.export-csv', request()->only(['search', 'role', 'event', 'date'])) }}"
                 class="btn btn-success px-4 py-2 d-flex align-items-center gap-2 fw-semibold"
             >
                 <i class="bi bi-download"></i>  Exportar a CSV
-            </button>
+            </a>
         </div>
 
         {{--
@@ -99,7 +98,7 @@
                             <option value="Crear publicación" {{ request('event') == 'Crear publicación' ? 'selected' : '' }}>Crear publicación</option>
                             <option value="Eliminar publicación" {{ request('event') == 'Eliminar publicación' ? 'selected' : '' }}>Eliminar publicación</option>
                             <option value="Calificar usuario" {{ request('event') == 'Calificar usuario' ? 'selected' : '' }}>Calificar usuario</option>
-                            <option value="Crear reporte de usuario" {{ request('event') == 'Crear reporte de usuario' ? 'selected' : '' }}>Crear reporte de usuario</option>
+                            <option value="Crear querella a usuario" {{ request('event') == 'Crear querella a usuario' ? 'selected' : '' }}>Crear querella a usuario</option>
                             <option value="Crear chat" {{ request('event') == 'Crear chat' ? 'selected' : '' }}>Crear chat</option>
                             <option value="Enviar mensaje" {{ request('event') == 'Enviar mensaje' ? 'selected' : '' }}>Enviar mensaje</option>
                         </optgroup>
@@ -118,20 +117,25 @@
                         </optgroup>
 
                         {{-- Facility-related events --}}
-                        <optgroup label="Facilidades">
+                        <optgroup label="Instalaciones">
                             <option value="Agregar área" {{ request('event') == 'Agregar área' ? 'selected' : '' }}>Agregar área</option>
                             <option value="Eliminar área" {{ request('event') == 'Eliminar área' ? 'selected' : '' }}>Eliminar área</option>
-                            <option value="Agregar evento de facilidad" {{ request('event') == 'Agregar evento de facilidad' ? 'selected' : '' }}>Agregar evento de facilidad</option>
-                            <option value="Eliminar evento de facilidad" {{ request('event') == 'Eliminar evento de facilidad' ? 'selected' : '' }}>Eliminar evento de facilidad</option>
-                            <option value="Guardar tarifas de facilidades" {{ request('event') == 'Guardar tarifas de facilidades' ? 'selected' : '' }}>Guardar tarifas de facilidades</option>
-                            <option value="Importar eventos simulados" {{ request('event') == 'Importar eventos simulados' ? 'selected' : '' }}>Importar eventos simulados</option>
+                            <option value="Guardar tarifas de Instalaciones" {{ request('event') == 'Guardar tarifas de Instalaciones' ? 'selected' : '' }}>Guardar tarifas de Instalaciones</option>
+                            <option value="Agregar evento de Instalación" {{ request('event') == 'Agregar evento de Instalación' ? 'selected' : '' }}>Agregar evento de Instalación</option>
+                            <option value="Editar evento de Instalación" {{ request('event') == 'Editar evento de Instalación' ? 'selected' : '' }}>Editar evento de Instalación</option>
+                            <option value="Eliminar evento principal de Instalación" {{ request('event') == 'Eliminar evento principal de Instalación' ? 'selected' : '' }}>Eliminar evento principal de Instalación</option>
+                            <option value="Eliminar sub-evento de Instalación" {{ request('event') == 'Eliminar sub-evento de Instalación' ? 'selected' : '' }}>Eliminar sub-evento de Instalación</option>
+                            <option value="Editar sub-evento de Instalación" {{ request('event') == 'Editar sub-evento de Instalación' ? 'selected' : '' }}>Editar sub-evento de Instalación</option>
+                            <option value="Crear evento relacionado" {{ request('event') == 'Crear evento relacionado' ? 'selected' : '' }}>Crear evento relacionado</option>
+                            <option value="Modificar días de evento" {{ request('event') == 'Modificar días de evento' ? 'selected' : '' }}>Modificar días de evento</option>
+                            <option value="Importar eventos de EventFlow" {{ request('event') == 'Importar eventos de EventFlow' ? 'selected' : '' }}>Importar eventos de EventFlow</option>
                         </optgroup>
 
                         {{-- User-management events --}}
                         <optgroup label="Usuarios">
                             <option value="Cambiar rol de usuario" {{ request('event') == 'Cambiar rol de usuario' ? 'selected' : '' }}>Cambiar rol de usuario</option>
                             <option value="Cambiar estado de usuario" {{ request('event') == 'Cambiar estado de usuario' ? 'selected' : '' }}>Cambiar estado de usuario</option>
-                            <option value="Resolver reporte" {{ request('event') == 'Resolver reporte' ? 'selected' : '' }}>Resolver reporte</option>
+                            <option value="Resolver querella" {{ request('event') == 'Resolver querella' ? 'selected' : '' }}>Resolver querella</option>
                             <option value="Bloquear usuario" {{ request('event') == 'Bloquear usuario' ? 'selected' : '' }}>Bloquear usuario</option>
                         </optgroup>
 
@@ -197,7 +201,7 @@
                 <p class="text-muted mb-0 fs-5"> Historial de actividades y acciones realizadas dentro del sistema.</p>
             </div>
 
-            <div class="table-responsive">
+            <div class="table-responsive access-logs-table-wrapper">
                 <table class="table align-middle mb-0" id="accessLogsTable">
                     <thead class="table-light">
                         <tr>
@@ -236,7 +240,7 @@
                                     $formattedDate = \Carbon\Carbon::parse($log->created_at)
                                         ->timezone('America/Puerto_Rico')
                                         ->locale('es')
-                                        ->translatedFormat('j F Y, h:i A');
+                                        ->translatedFormat('j F Y, g:i A');
                                     $formattedDate = str_replace(
                                         ['A. M.', 'P. M.', 'A.M.', 'P.M.', 'a. m.', 'p. m.', 'a.m.', 'p.m.'],
                                          ['AM', 'PM', 'AM', 'PM', 'AM', 'PM', 'AM', 'PM'],
@@ -294,7 +298,7 @@
                             <td colspan="6" class="text-center py-5">
                                 <i class="bi bi-search fs-1 text-muted"></i>
                                 <h4 class="fw-bold mt-3">No se encontraron registros</h4>
-                                <p class="text-muted mb-0">Intenta cambiar los filtros o buscar otro término.</p>
+                                <p class="text-muted mb-0">Intenta cambiar los filtros o buscar por otro término.</p>
                             </td>
                         </tr>
                     </tbody>
@@ -304,7 +308,7 @@
 
         {{-- Pagination controls for multi-page log results --}}
         @if ($logs->hasPages())
-            <div class="mt-4 d-flex justify-content-center">
+            <div class="mt-4 d-flex justify-content-center access-logs-pagination">
                 {{ $logs->links('pagination::bootstrap-5') }}
             </div>
         @endif

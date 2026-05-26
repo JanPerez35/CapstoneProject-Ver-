@@ -214,9 +214,9 @@
                                 <i class="bi bi-arrow-down-circle"></i>
                             </div>
 
-                            <div class="alert alert-warning rounded-4 py-2 px-3 mb-3">
+                            <div class="alert alert-warning rounded-0 shadow-sm py-2 px-3 mb-3">
                                 <strong>Importante:</strong>
-                                Los equipos agregados al carrito se mantienen disponibles solo mientras tu sesión esté activa.
+                                Los equipos agregados al carrito se mantienen disponibles solo mientras la sesión esté activa.
                             </div>
                         @endif
 
@@ -224,7 +224,7 @@
                             Equipos Seleccionados ({{ count($cart) }} ítems)
                         </h4>
 
-                        <div class="border rounded-4 overflow-hidden">
+                        <div class="border border-dark border-1 rounded-4 overflow-hidden">
 
                             {{-- Cart table header --}}
                             <div class="row g-0 px-3 py-3 fw-semibold border-bottom bg-light">
@@ -273,7 +273,7 @@
                                                 <img
                                                     src="{{ !empty($item['equipment_photo_url']) ? asset('storage/' . $item['equipment_photo_url']) : asset('images/kinventory_images/default.jpg') }}"
                                                     style="width: 60px; height: 60px; object-fit: contain;"
-                                                    class="rounded border border-2 border-dark"
+                                                    class="rounded border border-1 border-dark"
                                                     alt="{{ $item['description'] ?? 'Equipo' }}"
                                                 >
                                                 <span class="fw-semibold">{{ $item['description'] ?? 'Sin descripción' }}</span>
@@ -349,17 +349,29 @@
 
 
                             {{-- Service rules and operating hours --}}
-                            <div class="border rounded-4 p-4 mb-4 bg-light-subtle">
+                            <div class="border border-dark border-2 rounded-4 p-4 mb-4 bg-light-subtle">
                                 <h5 class="fw-bold text-secondary mb-3">
-                                    Horario de Servicio:
+                                    Horario y Servicio:
                                 </h5>
 
-                                <p class="mb-2 text-muted">
-                                    Solicitud enviada fuera de horas laborables (8am-1pm) - préstamo disponible desde el siguiente día laborable
+                                <p class="mb-2 text-subtle ">
+                                    Solicitud enviada fuera de horas laborables (8am-1pm) permitira un préstamo disponible desde el siguiente día laborable
+                                </p>
+
+                                <p class="mb-2 fw-bold text">
+                                    El equipo debe ser recogido en COLI 109, ubicado en el Coliseo Rafael A. Mangual.
                                 </p>
 
                                 <p class="mb-2 fw-bold text-danger">
-                                    El equipo debe ser devuelto el mismo día, antes de las 3 PM.
+                                    El equipo debe ser devuelto entre las 8:00 AM y 3:00 PM del día de devolución asignado.
+                                </p>
+
+                                <p class="mb-2 fw-bold text-danger">
+                                    En una solicitud normal, el día de devolución es el mismo día de recogida.
+                                </p>
+
+                                <p class="mb-2 fw-bold text-danger">
+                                    En un caso especial, el usuario propone una fecha de devolución y el administrador aprueba o rechaza la solicitud.
                                 </p>
 
                                 <p class="mb-0 fw-bold text-warning-emphasis">
@@ -372,7 +384,7 @@
                             </div>
 
                             {{-- Required fields note --}}
-                            <p class="text-muted mb-4">
+                            <p class="text-bold mb-4">
                                 <span class="text-danger">*</span> Campos requeridos
                             </p>
 
@@ -383,7 +395,7 @@
                                 </label>
                                 <div class="date-picker-wrapper">
                                     <input type="text"
-                                           class="form-control form-control-lg date-picker-input"
+                                           class="form-control form-control-lg date-picker-input border border-dark border-1"
                                            id="pickup_date"
                                            name="pickup_date"
                                            placeholder="Día Mes Año"
@@ -411,7 +423,7 @@
                                 </label>
                                 <select id="pickup_time"
                                         name="pickup_time"
-                                        class="form-select form-select-lg"
+                                        class="form-select form-select-lg border border-dark border-1"
                                         required>
                                     <option value="">Selecciona una hora</option>
                                     <option value="08:00:00">8:00 AM</option>
@@ -456,7 +468,7 @@
                                     </label>
                                     <div class="date-picker-wrapper">
                                         <input type="text"
-                                               class="form-control form-control-lg date-picker-input"
+                                               class="form-control form-control-lg date-picker-input border border-dark border-1"
                                                id="return_date"
                                                name="return_date"
                                                placeholder="Día Mes Año"
@@ -479,7 +491,7 @@
                                         Razón del Caso Especial <span class="text-danger">*</span>
                                     </label>
                                     <textarea
-                                        class="form-control form-control-lg"
+                                        class="form-control form-control-lg border border-dark border-1"
                                         id="special_reason"
                                         name="special_reason"
                                         rows="4"
@@ -490,7 +502,7 @@
                                 </div>
 
                                 {{-- Warning reminding the user that the request needs manual approval --}}
-                                <div class="alert alert-warning border-warning-subtle rounded-4">
+                                <div class="alert alert-warning border-warning-subtle rounded-0 shadow-sm">
                                     <strong>Caso Especial:</strong>
                                     Tu solicitud requerirá aprobación manual del administrador de inventario.
                                 </div>
@@ -499,7 +511,7 @@
                             <hr class="my-4">
 
                             {{-- Loan conditions and acceptance checkbox --}}
-                            <div class="border rounded-4 p-4 bg-light-subtle">
+                            <div class="border border-dark border-1 rounded-4 p-4 bg-light-subtle">
                                 <h5 class="fw-bold text-secondary mb-3">
                                     <i class="bi bi-file-earmark-text me-2"></i>
                                     Condiciones de préstamo
@@ -512,7 +524,7 @@
 
 
                                 <p class="text-danger fw-semibold mb-2 mt-3">
-                                    Debes traer tu ID de estudiante para poder recoger tu pedido.
+                                    Debes traer tu ID de estudiante o empleado para poder recoger tu pedido.
                                 </p>
                                 <p class="text-danger fw-semibold mb-2 mt-3">
                                     No puedes cancelar una solicitud en ningún momento.
