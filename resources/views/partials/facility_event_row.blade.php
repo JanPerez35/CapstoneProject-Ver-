@@ -134,15 +134,17 @@
     </td>
 
     <td>
-        @foreach (($item->services ?? []) as $service)
+        
+
             @php
-                $badgeClass = match($service) {
-                    'electricity' => 'badge-electricidad',
-                    'water' => 'badge-agua',
-                    'utilities' => 'badge-available',
-                    default => 'badge-available',
-                };
+                $services = $item->services ?? [];
+
+                if (is_string($services)) {
+                    $services = json_decode($services, true) ?: [];
+                }
             @endphp
+
+            @foreach ($services as $service)
 
             <span class="label-badge {{ $badgeClass }} me-2 mb-1">
                 @if ($service === 'utilities')
