@@ -80,7 +80,7 @@ Route::post('/test-concurrency', function () {
         'category' => 'test',
         'condition' => 'nuevo',
         'status' => 'Disponible',
-        'photo_1_url' => 'posts/Eu7i1ebz6HzOV1l8x3yfLaIcQwwFfowCc0rbtMKu.jpg',
+        'photo_1_url' => "posts/ymCVHFQX5SXg7g4JA9mYlh4y2vbRCTbGicgeBa9z.jpg",
     ]);
 
     return response()->json(['ok' => true]);
