@@ -239,7 +239,7 @@ class LendingController extends Controller
         $returnDate = $this->formatSpanishDate($lending->end_time);
 
         return "Tu solicitud de equipo deportivo fue aprobada satisfactoriamente. Por favor entra a tu perfil de MAIKINE para más detalles.\n\n"
-            . "Detalles de tu solicitud:\n\n"
+            . "Resumen de tu solicitud:\n\n"
             . "Equipos solicitados:\n"
             . $itemsText . "\n\n"
             . "Lugar de recogida: COLI 109 en el Coliseo Rafael A. Mangual\n"

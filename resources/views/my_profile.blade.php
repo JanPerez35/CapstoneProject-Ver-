@@ -523,16 +523,18 @@
                         </div>
                     @endforelse
 
-                    {{-- Empty state shown when no posts match filters --}}
-                    <div id="postsEmptyState" class="col-12 d-none">
-                        <div class="card border-0 shadow-sm rounded-4">
-                            <div class="card-body py-5 text-center">
-                                <i class="bi bi-search fs-1 text-muted"></i>
-                                <h4 class="fw-bold mt-3">No se encontraron publicaciones</h4>
-                                <p class="text-muted mb-0">Intenta cambiar los filtros o buscar otro artículo.</p>
-                            </div>
-                        </div>
-                    </div>
+                            {{-- Empty state shown only when existing posts do not match filters --}}
+                            @if($posts->count() > 0)
+                                <div id="postsEmptyState" class="col-12 d-none">
+                                    <div class="card border-0 shadow-sm rounded-4">
+                                        <div class="card-body py-5 text-center">
+                                            <i class="bi bi-search fs-1 text-muted"></i>
+                                            <h4 class="fw-bold mt-3">No se encontraron publicaciones</h4>
+                                            <p class="text-muted mb-0">Intenta cambiar los filtros o buscar otro artículo.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                 </div>
 
                         <nav aria-label="Paginación de publicaciones" class="mt-4 d-flex justify-content-center align-items-center flex-wrap">
@@ -558,7 +560,8 @@
 
                         <div class="alert alert-warning  rounded-0 mb-0">
                             <strong>Importante:</strong>
-                            El equipo deportivo debe ser recogido en COLI 109, ubicado en el Coliseo Rafael A. Mangual.                             Para poder recoger su equipo deportivo debe entregar su tarjeta de estudiante o empleado.
+
+                            El equipo deportivo debe ser recogido en <strong> COLI 109</strong>, ubicado en el  <strong> Coliseo Rafael A. Mangual.</strong>                            Para poder recoger su equipo deportivo debe entregar su tarjeta de estudiante o empleado.
                         </div>
 
                     </div>
@@ -598,7 +601,7 @@
                                         <option value="">Todos los Estados</option>
                                         <option value="pending" {{ request('request_status') == 'pending' ? 'selected' : '' }}>Pendiente</option>
                                         <option value="approved" {{ request('request_status') == 'approved' ? 'selected' : '' }}>Aprobada</option>
-                                        <option value="rejected" {{ request('request_status') == 'rejected' ? 'selected' : '' }}>Rechazada</option>
+                                        <option value="rejected" {{ request('request_status') == 'rejected' ? 'selected' : '' }}>Denegada</option>
                                         <option value="finished" {{ request('request_status') == 'finished' ? 'selected' : '' }}>Finalizado</option>
                                     </select>
                                 </div>
@@ -643,7 +646,7 @@
 
                                 <div>
                     <span class="label-badge badge-request-rejected">
-                        Solicitud Rechazada
+                        Solicitud Denegada
                     </span>
                                     <small class="text-muted d-block">
                                         La solicitud no fue aprobada.
@@ -703,7 +706,7 @@
                                             'pending' => 'Solicitud Pendiente',
                                             'approved' => 'Solicitud Aprobada',
                                             'active' => 'Solicitud Aprobada',
-                                            'rejected' => 'Solicitud Rechazada',
+                                            'rejected' => 'Solicitud Denegada',
                                             'returned' => 'Solicitud Finalizada',
                                             'finished' => 'Solicitud Finalizada',
                                             default => ucfirst($request->status),
@@ -778,7 +781,7 @@
                                         </td>
 
                                         <td>
-                                            Entre 8:00 AM y 1:00 PM
+                                            Entre las 8:00 AM y 3:00 PM
                                         </td>
 
                                         <td class="text-center">
