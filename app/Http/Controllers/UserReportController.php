@@ -124,6 +124,14 @@ class UserReportController extends Controller
             'post:id,user_id,title'
         ])
         ->where('status', 'pending')
+        ->whereHas('reportedUser', function ($query) {
+                $query->where('status', 'Activo');
+            })
+             ->whereHas('post', function ($query) {
+                $query->whereHas('user', function ($query) {
+                    $query->where('status', 'Activo');
+                });
+             })
         ->orderByRaw('report_reason = "Contenido inapropiado" DESC')
         ->latest()
         ->get();
@@ -201,6 +209,11 @@ class UserReportController extends Controller
         ]);
 
         $report->update([
+            'status' => 'resolved',
+            'resolved_at' => now()
+        ]);
+
+        UserReport::where('reported_user_id', $report->reported_user_id)->update([
             'status' => 'resolved',
             'resolved_at' => now()
         ]);
