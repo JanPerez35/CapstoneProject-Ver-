@@ -3977,6 +3977,14 @@ document.addEventListener('DOMContentLoaded', () => {
         editRateMode.value = row.dataset.rateMode || '';
         editRateModeDisplay.value = rateModeLabel(row.dataset.rateMode || '');
 
+        updateDateRestrictions({
+            periodType: editPeriodType,
+            startDate: editStartDate,
+            endDate: editEndDate,
+            updateTimeOptions: updateEditTimeOptions,
+            updateSummary: updateEditSummary
+        });
+
         updateEditTimeOptions();
 
         editStartTime.value = row.dataset.startTime || '';
@@ -4135,12 +4143,34 @@ document.addEventListener('DOMContentLoaded', () => {
         const startDate = parentRow.dataset.date || '';
         const endDate = parentRow.dataset.endDate || startDate;
         const groupKey = parentRow.dataset.groupKey || '';
+        const basePeriodType = parentRow.dataset.periodType || '';
 
         const alreadyModifiedDates = getAlreadyModifiedDatesForGroup(groupKey);
 
+        const disabledRules = [
+            ...alreadyModifiedDates,
+            function (date) {
+                const day = date.getDay();
+
+                if (basePeriodType === 'workday') {
+                    return day === 0 || day === 6;
+                }
+
+                if (basePeriodType === 'non_workday_saturday') {
+                    return day === 0;
+                }
+
+                if (basePeriodType === 'non_workday_sunday_holiday') {
+                    return day === 6;
+                }
+
+                return false;
+            }
+        ];
+
         customizeDate._flatpickr.set('minDate', startDate);
         customizeDate._flatpickr.set('maxDate', endDate);
-        customizeDate._flatpickr.set('disable', alreadyModifiedDates);
+        customizeDate._flatpickr.set('disable', disabledRules);
         customizeDate._flatpickr.clear();
 
         if (startDate) {
