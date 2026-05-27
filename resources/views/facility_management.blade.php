@@ -955,7 +955,7 @@
 
                         <div class="mb-3">
                             <label for="rentalDescription" class="form-label fw-semibold">
-                                Descripción del evento <span class="text-danger">*</span>
+                                Descripción <span class="text-danger">*</span>
                             </label>
                             <textarea
                                 id="rentalDescription"
@@ -1106,7 +1106,7 @@
 
                                 <input type="hidden" id="rentalRangeType" name="rate_mode">
 
-                                <small class="text-muted d-block mt-1">
+                                <small class="text-muted fw-bold d-block mt-1">
                                     El tipo de tarifa se calcula automáticamente según la duración del evento.
                                 </small>
                             </div>
@@ -1371,7 +1371,7 @@
 
                         <div class="mb-3">
                             <label for="relatedDescription" class="form-label fw-semibold">
-                                Descripción del evento <span class="text-danger">*</span>
+                                Descripción<span class="text-danger">*</span>
                             </label>
                             <textarea
                                 id="relatedDescription"
@@ -1490,8 +1490,8 @@
                                         tabindex="-1"
                                         onfocus="this.blur()"
                                     >
-                                    <small class="text-muted d-block fst-italic">
-                                        El tipo se calcula automáticamente según la duración del evento.
+                                    <small class="text-muted fw-bold d-block fst-italic">
+                                        El tipo de tarifa se calcula automáticamente según la duración del evento.
                                     </small>
                                 </div>
 
@@ -1873,7 +1873,7 @@
 
                         <div class="mb-3">
                             <label for="editDescription" class="form-label fw-semibold">
-                                Descripción del evento <span class="text-danger">*</span>
+                                Descripción <span class="text-danger">*</span>
                             </label>
                             <textarea
                                 id="editDescription"
@@ -2000,9 +2000,8 @@
                                     onfocus="this.blur()"
                                 >
 
-                                <small class="text-muted d-block mt-1">
-                                    El tipo de tarifa se calcula automáticamente según las fechas inicial y final
-                                    seleccionadas.
+                                <small class="text-muted fw-bold d-block mt-1">
+                                    El tipo de tarifa se calcula automáticamente según la duración del evento.
                                 </small>
                             </div>
 
