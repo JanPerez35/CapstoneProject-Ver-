@@ -1730,14 +1730,14 @@ private function getGroupParent(FacilityCostReportItem $item): FacilityCostRepor
             * Main data table.
             */
             fputcsv($handle, [
-                'Fecha Inicio',
+                'Fecha Inicial del Evento',
                 'Fecha Final del Evento',
                 'Responsable',
                 'Área',
                 'Descripción',
-                'Hora Inicio',
-                'Hora Final del Evento',
-                'Horas',
+                'Horario Inicial del Evento',
+                'Horario Final del Evento',
+                'Horas Totales',
                 'Período',
                 'Tipo de Tarifa',
                 'Servicios',
