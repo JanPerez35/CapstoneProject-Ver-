@@ -526,7 +526,10 @@
                                         </button>
                                     </div>
 
-                                    <div class="form-text">Debe ser una fecha futura. No se permiten sábados ni domingos.</div>                                    <div class="invalid-feedback d-block" id="return_date_error"></div>
+                                    <div class="form-text">
+                                        Debe ser al menos un día después de la fecha de recogida. No se permiten sábados ni domingos.
+                                    </div>
+                                    <div class="invalid-feedback d-block" id="return_date_error"></div>
                                 </div>
 
                                 <div class="mb-3">

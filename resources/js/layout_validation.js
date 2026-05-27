@@ -409,7 +409,14 @@ document.addEventListener('DOMContentLoaded', function () {
                     validatePickupDate(true);
 
                     if (returnDate?._flatpickr && pickupDate.value) {
-                        returnDate._flatpickr.set('minDate', pickupDate.value);
+                        const nextDay = new Date(`${pickupDate.value}T00:00:00`);
+                        nextDay.setDate(nextDay.getDate() + 1);
+
+                        returnDate._flatpickr.set('minDate', formatDateToInputValue(nextDay));
+
+                        if (returnDate.value && returnDate.value <= pickupDate.value) {
+                            returnDate._flatpickr.clear();
+                        }
                     }
 
                     validateReturnDate(true);
@@ -578,8 +585,8 @@ document.addEventListener('DOMContentLoaded', function () {
      * Rules:
      * - required only for special cases
      * - must be in the future
-     * - cannot be Friday, Saturday, or Sunday
-     * - cannot be earlier than the pickup date
+     * - Saturdays and Sundays are not allowed
+     * - must be at least one day after the pickup date
      *
      * @param {boolean} showErrors - Whether to display inline messages.
      * @returns {boolean} True when valid.
@@ -611,8 +618,14 @@ document.addEventListener('DOMContentLoaded', function () {
             return false;
         }
 
-        if (pickupDate?.value && returnDate.value < pickupDate.value) {
-            if (showErrors) setError(returnDate, returnDateError, 'La devolución no puede ser antes de la recogida.');
+        if (pickupDate?.value && returnDate.value <= pickupDate.value) {
+            if (showErrors) {
+                setError(
+                    returnDate,
+                    returnDateError,
+                    'En un caso especial, la devolución debe ser al menos un día después de la recogida.'
+                );
+            }
             return false;
         }
 
