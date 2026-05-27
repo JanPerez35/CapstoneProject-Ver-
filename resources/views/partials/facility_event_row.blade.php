@@ -63,20 +63,20 @@
             </span>
 
                 @if($item->sub_event_type === 'related_area')
-                    <span class="badge bg-info-subtle text-info-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
+                    <span class="label-badge bg-info-subtle text-info-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
                     Área relacionada
                 </span>
                 @elseif($item->sub_event_type === 'custom_day')
-                    <span class="badge bg-warning-subtle text-warning-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
+                    <span class="label-badge bg-warning-subtle text-warning-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
                     Modificación
                 </span>
                 @else
-                    <span class="badge bg-secondary-subtle text-secondary-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
+                    <span class="label-badge bg-secondary-subtle text-secondary-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
                     Sub-evento
                 </span>
                 @endif
             @else
-                <span class="badge bg-success-subtle text-success-emphasis position-absolute text-nowrap" style="top: -26px; left: 0;">
+                <span class="label-badge bg-success-subtle text-success-emphasis position-absolute text-nowrap" style="top: -26px; left: 0;">
                 Principal
             </span>
             @endif
@@ -145,7 +145,13 @@
             @endphp
 
             @foreach ($services as $service)
-
+            @php
+                $badgeClass = match($service) {
+                    'electricity' => 'badge-electricidad',
+                    'water'       => 'badge-agua',
+                    default       => 'badge-available',
+                };
+            @endphp
             <span class="label-badge {{ $badgeClass }} me-2 mb-1">
                 @if ($service === 'utilities')
                     Utilidades

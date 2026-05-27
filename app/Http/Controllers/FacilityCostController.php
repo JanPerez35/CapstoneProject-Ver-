@@ -1644,15 +1644,15 @@ private function getGroupParent(FacilityCostReportItem $item): FacilityCostRepor
             */
             fputcsv($handle, [
                 'Fecha Inicio',
-                'Fecha Fin',
+                'Fecha Final del Evento',
                 'Responsable',
                 'Área',
                 'Descripción',
                 'Hora Inicio',
-                'Hora Fin',
+                'Hora Final del Evento',
                 'Horas',
                 'Período',
-                'Modo de tarifa',
+                'Tipo de Tarifa',
                 'Servicios',
                 'Costo',
             ]);

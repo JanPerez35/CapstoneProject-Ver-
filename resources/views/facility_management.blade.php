@@ -426,19 +426,19 @@
                                         @endphp
 
                                         @if($relatedAreasCount > 0)
-                                            <span class="badge bg-info-subtle text-info-emphasis ms-2">
+                                            <span class="label-badge label-badge-on-header bg-info-subtle text-info-emphasis ms-2">
                                                     {{ $relatedAreasCount }} área(s) relacionada(s)
                                                 </span>
                                         @endif
 
                                         @if($modificationsCount > 0)
-                                            <span class="badge bg-warning-subtle text-warning-emphasis ms-2">
+                                            <span class="label-badge label-badge-on-header bg-warning-subtle text-warning-emphasis ms-2">
                                                     {{ $modificationsCount }} modificación(es)
                                                 </span>
                                         @endif
 
                                         @if($children->count() === 0)
-                                            <span class="badge bg-secondary-subtle text-secondary-emphasis ms-2">
+                                            <span class="label-badge label-badge-on-header bg-secondary-subtle text-secondary-emphasis ms-2">
                                                     Sin elementos relacionados
                                                 </span>
                                         @endif

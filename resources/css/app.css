@@ -576,6 +576,11 @@
     border-right: 10px solid transparent;
 }
 
+/* Triangle matches the event group header background so it blends in. */
+.label-badge-on-header::before {
+    border-top-color: #eaf7ef;
+}
+
 /* Active user status badge. */
 .badge-active {
     background-color: #acffd1;
