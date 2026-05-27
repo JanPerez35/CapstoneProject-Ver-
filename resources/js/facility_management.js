@@ -877,6 +877,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
+    /**
+     * Validates the area type select in the add-classroom modal.
+     *
+     * @param {boolean} showError - Determines whether validation errors should be displayed.
+     * @returns {boolean} True when an area type is selected.
+     */
     function validateNewClassroomType(showError = true) {
         if (!newClassroomType || !newClassroomTypeError) return true;
 
@@ -912,8 +918,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Revalidates the classroom name while the user types
-     * Also updates the confirmation button state dynamically.
+     * Returns the names of all classroom/area cards currently rendered on the page.
+     *
+     * @returns {string[]} Array of rendered classroom/area names.
      */
     function getAllRenderedClassrooms() {
         return [...document.querySelectorAll('.classroom-card-col')]
@@ -1573,6 +1580,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return editPeriodType?.value === 'workday';
     }
 
+    /**
+     * Trims a time value to HH:MM format.
+     *
+     * @param {string|null|undefined} value - Raw time value to normalize.
+     * @returns {string} First five characters of the value, or an empty string.
+     */
     function normalizeTimeValue(value) {
         return String(value || '').slice(0, 5);
     }
@@ -1745,6 +1758,15 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
+    /**
+     * Finds the direct parent row for a sub-event or custom-day modification row.
+     *
+     * Prefers the explicit parent entry ID stored on the row. Falls back to
+     * searching the group for the parent event row when no direct parent is set.
+     *
+     * @param {HTMLTableRowElement|null} row - Sub-event or custom-day row.
+     * @returns {HTMLTableRowElement|null} Direct parent row, or null when unavailable.
+     */
     function getDirectParentRowForModification(row) {
         if (!row) return null;
 
@@ -2497,6 +2519,12 @@ document.addEventListener('DOMContentLoaded', () => {
             .map(check => check.value);
     }
 
+    /**
+     * Shows or hides the classroom selection error in the configure-rates modal.
+     *
+     * The error is only shown after the user has interacted with the
+     * classroom checkboxes and then deselected all of them.
+     */
     function updateConfigureClassroomSelectionError() {
         if (!configClassroomSelectionError) return;
 
@@ -4477,6 +4505,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
 
+    /**
+     * Checks whether a date range contains at least one day that is valid
+     * for the selected period type.
+     *
+     * Used to prevent saving a customize-days period when no eligible day
+     * exists within the selected range.
+     *
+     * @param {string} startValue - Start date in YYYY-MM-DD format.
+     * @param {string} endValue - End date in YYYY-MM-DD format.
+     * @param {string} periodType - Selected operational period type.
+     * @returns {boolean} True when the range contains at least one allowed day.
+     */
     function dateRangeHasAllowedDayForPeriod(startValue, endValue, periodType) {
         const start = new Date(`${startValue}T00:00:00`);
         const end = new Date(`${endValue}T00:00:00`);
@@ -5328,6 +5368,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /**
+     * Sends a create or update request for a related or custom sub-event.
+     *
+     * Selects the correct endpoint and HTTP method based on whether the
+     * related-event modal is in create or edit mode. If the backend responds
+     * with a custom-day conflict, the pending payload is stored and a warning
+     * modal is shown before retrying with the delete flags enabled.
+     *
+     * @param {Object} payload - Validated related-event form data.
+     * @param {boolean} deleteOutOfRangeCustomDays - Whether to delete custom days outside the new date range.
+     * @param {boolean} deleteCustomDaysOnAreaChange - Whether to delete custom days when the area changes.
+     * @returns {Promise<void>}
+     */
     async function submitRelatedEvent(
         payload,
         deleteOutOfRangeCustomDays = false,

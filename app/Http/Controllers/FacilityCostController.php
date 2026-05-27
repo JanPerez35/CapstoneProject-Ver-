@@ -38,6 +38,9 @@ class FacilityCostController extends Controller
      *
      * filter_period_type, filter_rate_mode, and filter_services accept the Spanish
      * display labels sent by the JS (matching the select option values in the blade).
+     *
+     * @param Request $request
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     private function buildFilteredQuery(Request $request)
     {
@@ -114,8 +117,10 @@ class FacilityCostController extends Controller
      * Retrieves all classrooms and applies optional filters (report type,
      * month, year, classroom) to the cost report items query. Passes the
      * filtered results, grand total, and year range to the view.
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
      */
-
     public function index(Request $request)
     {
         $reportType      = $request->input('report_type', '');
@@ -176,6 +181,9 @@ class FacilityCostController extends Controller
      * Validates the submitted rates and upserts a FacilityCost record
      * for each selected classroom, covering all three period types
      * (workday, Saturday, Sunday/holiday) across daily, weekly, and monthly modes.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function saveRates(Request $request)
     {
@@ -239,6 +247,9 @@ class FacilityCostController extends Controller
      *
      * Validates that the classroom name is unique and between 6–40 characters,
      * then creates a FacilityCost entry with all rates initialized to zero.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function storeClassroom(Request $request)
     {
@@ -279,6 +290,9 @@ class FacilityCostController extends Controller
      *
      * Accepts an array of classroom names and removes all matching
      * FacilityCost entries from the database.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroyClassrooms(Request $request)
     {
@@ -334,6 +348,9 @@ class FacilityCostController extends Controller
      * Validates the submitted event data, delegates cost calculation to
      * createFacilityReportItemFromPayload, and returns a JSON response
      * for API callers or a redirect for browser requests.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
     public function storeEvent(Request $request)
     {
@@ -712,6 +729,9 @@ private function calculateParentDeductionForCustomPeriod(
      * the date range, computes the base rental cost and per-hour service costs
      * (utilities, electricity, water), then persists the result under the
      * authenticated user's cost report.
+     *
+     * @param array $data
+     * @return FacilityCostReportItem
      */
     private function createFacilityReportItemFromPayload(array $data)
 {
@@ -1066,6 +1086,11 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * Returns the count of days, weeks (rounded up), or calendar months crossed,
      * depending on the rate mode (daily, weekly, monthly).
+     *
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @param string $rateMode
+     * @return int
      */
     private function getUnitsUsed(Carbon $startDate, Carbon $endDate, string $rateMode): int
 {
@@ -1084,6 +1109,10 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * Custom-day modifications should be billed by their own duration instead
      * of inheriting the parent event's weekly or monthly mode.
+     *
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @return string
      */
     private function resolveRateModeForDateRange(Carbon $startDate, Carbon $endDate): string
 {
@@ -1105,6 +1134,10 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * Both the start and end months are counted, so a range within
      * the same month returns 1.
+     *
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @return int
      */
     private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
 {
@@ -1120,6 +1153,11 @@ private function calculateFacilityCostFromPayload(array $data): array
      * Maps the combination of period type (workday, Saturday, Sunday/holiday)
      * and rate mode (daily, weekly, monthly) to the corresponding cost column
      * on the FacilityCost model. Returns 0 for unknown combinations.
+     *
+     * @param FacilityCost $facilityCost
+     * @param string $periodType
+     * @param string $rateMode
+     * @return float
      */
     private function getRateByPeriodAndMode($facilityCost, $periodType, $rateMode)
     {
@@ -1151,6 +1189,8 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * Reads simulated EventFlow events from storage and exposes them
      * as a JSON endpoint for preview or debugging purposes.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function mockExternalEvents()
     {
@@ -1164,6 +1204,8 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * Looks for storage/app/mock_eventflow_events.json and decodes it.
      * Returns an empty array if the file is missing or contains invalid JSON.
+     *
+     * @return array
      */
     private function getMockExternalEvents(): array
     {
@@ -1189,6 +1231,8 @@ private function calculateFacilityCostFromPayload(array $data): array
      * Iterates over simulated EventFlow events, skips any whose classroom
      * does not exist in the database, and creates a report item for each
      * valid event. Redirects with a count of successfully imported events.
+     *
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function importMockEvents()
     {
@@ -1210,6 +1254,8 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * The API key and URL are read from config/services.php so the credential
      * stays server-side and never reaches browser JavaScript.
+     *
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function importEventFlowEvents()
     {
@@ -1252,6 +1298,9 @@ private function calculateFacilityCostFromPayload(array $data): array
 
     /**
      * Normalizes EventFlow API response shapes into a plain event list.
+     *
+     * @param mixed $payload
+     * @return array
      */
     private function extractEventFlowEvents($payload): array
     {
@@ -1274,6 +1323,9 @@ private function calculateFacilityCostFromPayload(array $data): array
 
     /**
      * Imports external facility events using the existing cost calculation path.
+     *
+     * @param array $events
+     * @return int
      */
     private function importExternalFacilityEvents(array $events): int
     {
@@ -1303,6 +1355,9 @@ private function calculateFacilityCostFromPayload(array $data): array
 
     /**
      * Applies defaults for fields EventFlow may not send yet.
+     *
+     * @param array $event
+     * @return array
      */
     private function normalizeExternalFacilityEvent(array $event): array
     {
@@ -1342,6 +1397,9 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * Removes the given report item from the database and redirects
      * back to the facility management view with a success message.
+     *
+     * @param FacilityCostReportItem $item
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(FacilityCostReportItem $item)
     {
@@ -1688,6 +1746,9 @@ private function getGroupParent(FacilityCostReportItem $item): FacilityCostRepor
      *
      * Applies the same report type, month, year, and classroom filters as
      * the index view, then streams a downloadable CSV with a timestamped filename.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
      */
     public function exportCsv(Request $request)
     {
@@ -1915,6 +1976,9 @@ private function getGroupParent(FacilityCostReportItem $item): FacilityCostRepor
      * Applies the same filters as the CSV export, renders the
      * facility_cost_pdf view in landscape A4 format, and returns
      * it as a downloadable PDF with a timestamped filename.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function exportPdf(Request $request)
     {

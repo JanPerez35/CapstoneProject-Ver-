@@ -138,6 +138,7 @@
 
 
             @php
+                /* Normalize services: the column may be stored as a JSON string or already decoded array */
                 $services = $item->services ?? [];
 
                 if (is_string($services)) {

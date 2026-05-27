@@ -1609,6 +1609,7 @@
         </div>
     </div>
 
+    {{-- Confirm cancellation modal for unsaved related-event changes --}}
     <div class="modal fade" id="confirmCancelRelatedModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -1778,6 +1779,7 @@
         </div>
     </div>
 
+    {{-- Confirm cancellation modal for unsaved customize-days changes --}}
     <div class="modal fade" id="confirmCancelCustomizeModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -2125,6 +2127,7 @@
         </div>
     </div>
 
+    {{-- Confirm cancellation modal for unsaved edit-event changes --}}
     <div class="modal fade" id="confirmCancelEditModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -2428,6 +2431,7 @@
         </div>
     </div>
 
+    {{-- Hidden forms used by JavaScript to perform CSRF-protected DELETE submissions --}}
     <form id="deleteCostEntryForm" method="POST" class="d-none">
         @csrf
         @method('DELETE')
@@ -2438,6 +2442,11 @@
         @method('DELETE')
     </form>
 
+    {{--
+        Build the ratesByClassroom lookup array used by facility_management.js.
+        Maps each classroom name to its configured rate values (or null if not yet configured).
+        Passed to the front end via window.facilityManagementConfig below.
+    --}}
     @php
         $ratesByClassroom = $facilityCosts->mapWithKeys(function ($cost) {
         $isConfigured =
@@ -2476,6 +2485,7 @@
     })->toArray();
     @endphp
 
+    {{-- Expose server-side config and rate data to facility_management.js --}}
     <script>
 
         window.facilityManagementConfig = {
