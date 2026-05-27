@@ -183,22 +183,22 @@ class FacilityCostController extends Controller
             'classrooms' => ['required', 'array', 'min:1'],
             'classrooms.*' => ['string'],
 
-            'classroom_space' => ['required', 'numeric', 'min:0'],
-            'supply_cost' => ['required', 'numeric', 'min:0'],
-            'electricity_cost' => ['required', 'numeric', 'min:0'],
-            'water_cost' => ['required', 'numeric', 'min:0'],
+            'classroom_space' => ['required', 'numeric', 'gt:0', 'max:25000000', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'supply_cost' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'electricity_cost' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'water_cost' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
 
-            'daily_cost_1' => ['required', 'numeric', 'min:0'],
-            'weekly_cost_1' => ['required', 'numeric', 'min:0'],
-            'monthly_cost_1' => ['required', 'numeric', 'min:0'],
+            'daily_cost_1' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'weekly_cost_1' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'monthly_cost_1' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
 
-            'daily_cost_2' => ['required', 'numeric', 'min:0'],
-            'weekly_cost_2' => ['required', 'numeric', 'min:0'],
-            'monthly_cost_2' => ['required', 'numeric', 'min:0'],
+            'daily_cost_2' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'weekly_cost_2' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'monthly_cost_2' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
 
-            'daily_cost_3' => ['required', 'numeric', 'min:0'],
-            'weekly_cost_3' => ['required', 'numeric', 'min:0'],
-            'monthly_cost_3' => ['required', 'numeric', 'min:0'],
+            'daily_cost_3' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'weekly_cost_3' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'monthly_cost_3' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
         ]);
 
         foreach ($validated['classrooms'] as $classroomName) {
@@ -340,15 +340,31 @@ class FacilityCostController extends Controller
 
     $validated = $request->validate([
         'classroom' => ['required', 'string'],
-        'event_date' => ['required', 'date'],
+        'event_date' => ['required', 'date', 'after_or_equal:today'],
         'event_end_date' => ['nullable', 'date', 'after_or_equal:event_date'],
-        'start_time' => ['required'],
-        'end_time' => ['required'],
-        'description' => ['required', 'string', 'min:10', 'max:1000'],
-        'responsible' => ['required', 'string', 'min:5', 'max:60'],
-        'period_type' => ['required', 'string'],
+        'start_time' => ['required', 'date_format:H:i'],
+        'end_time' => ['required', 'date_format:H:i', function ($attr, $value, $fail) use ($request) {
+            $start = $request->input('start_time');
+            if (!$start) return;
+            $endMin   = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+            $startMin = (int) substr($start,  0, 2) * 60 + (int) substr($start,  3, 2);
+            if ($endMin <= $startMin) {
+                $fail('El horario final del evento debe ser mayor que la hora inicial del evento.');
+                return;
+            }
+            $period = $request->input('period_type');
+            if ($period === 'workday' && ($startMin < 450 || $endMin > 990)) {
+                $fail('Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.');
+            } elseif (in_array($period, ['non_workday_saturday', 'non_workday_sunday_holiday']) && ($startMin < 480 || $endMin > 1290)) {
+                $fail('Para períodos no laborables solo se permiten horarios de 8:00 a.m. a 9:30 p.m.');
+            }
+        }],
+        'description' => ['required', 'string', 'min:10', 'max:250', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/u'],
+        'responsible' => ['required', 'string', 'min:8', 'max:40', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/u'],
+        'period_type' => ['required', 'in:workday,non_workday_saturday,non_workday_sunday_holiday'],
         'rate_mode' => ['required', 'in:daily,weekly,monthly'],
         'services' => ['required', 'array', 'min:1'],
+        'services.*' => ['in:electricity,water,utilities'],
     ]);
 
     $payload = [
@@ -414,13 +430,29 @@ public function updateEvent(Request $request, FacilityCostReportItem $item)
         'classroom' => ['required', 'string'],
         'event_date' => ['required', 'date'],
         'event_end_date' => ['required', 'date', 'after_or_equal:event_date'],
-        'start_time' => ['required'],
-        'end_time' => ['required'],
-        'description' => ['required', 'string', 'min:10', 'max:1000'],
-        'responsible' => ['required', 'string', 'min:5', 'max:60'],
-        'period_type' => ['required', 'string'],
+        'start_time' => ['required', 'date_format:H:i'],
+        'end_time' => ['required', 'date_format:H:i', function ($attr, $value, $fail) use ($request) {
+            $start = $request->input('start_time');
+            if (!$start) return;
+            $endMin   = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+            $startMin = (int) substr($start,  0, 2) * 60 + (int) substr($start,  3, 2);
+            if ($endMin <= $startMin) {
+                $fail('El horario final del evento debe ser mayor que la hora inicial del evento.');
+                return;
+            }
+            $period = $request->input('period_type');
+            if ($period === 'workday' && ($startMin < 450 || $endMin > 990)) {
+                $fail('Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.');
+            } elseif (in_array($period, ['non_workday_saturday', 'non_workday_sunday_holiday']) && ($startMin < 480 || $endMin > 1290)) {
+                $fail('Para períodos no laborables solo se permiten horarios de 8:00 a.m. a 9:30 p.m.');
+            }
+        }],
+        'description' => ['required', 'string', 'min:10', 'max:250', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/u'],
+        'responsible' => ['required', 'string', 'min:8', 'max:40', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/u'],
+        'period_type' => ['required', 'in:workday,non_workday_saturday,non_workday_sunday_holiday'],
         'rate_mode' => ['required', 'in:daily,weekly,monthly'],
         'services' => ['required', 'array', 'min:1'],
+        'services.*' => ['in:electricity,water,utilities'],
 
         'delete_out_of_range_custom_days' => ['nullable', 'boolean'],
         'delete_custom_days_on_area_change' => ['nullable', 'boolean'],
@@ -565,8 +597,16 @@ public function updateEvent(Request $request, FacilityCostReportItem $item)
 public function updateEventSchedule(Request $request, FacilityCostReportItem $item)
 {
     $validated = $request->validate([
-        'start_time' => ['required'],
-        'end_time' => ['required'],
+        'start_time' => ['required', 'date_format:H:i'],
+        'end_time' => ['required', 'date_format:H:i', function ($attr, $value, $fail) use ($request) {
+            $start = $request->input('start_time');
+            if (!$start) return;
+            $endMin   = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+            $startMin = (int) substr($start,  0, 2) * 60 + (int) substr($start,  3, 2);
+            if ($endMin <= $startMin) {
+                $fail('El horario final del evento debe ser mayor que la hora inicial del evento.');
+            }
+        }],
     ]);
 
     $parent = $this->getGroupParent($item);
@@ -781,13 +821,29 @@ public function updateSubEvent(Request $request, FacilityCostReportItem $item)
         'classroom' => ['required', 'string'],
         'event_date' => ['required', 'date'],
         'event_end_date' => ['required', 'date', 'after_or_equal:event_date'],
-        'start_time' => ['required'],
-        'end_time' => ['required'],
-        'description' => ['required', 'string', 'min:10', 'max:1000'],
-        'responsible' => ['required', 'string', 'min:5', 'max:60'],
-        'period_type' => ['required', 'string'],
+        'start_time' => ['required', 'date_format:H:i'],
+        'end_time' => ['required', 'date_format:H:i', function ($attr, $value, $fail) use ($request) {
+            $start = $request->input('start_time');
+            if (!$start) return;
+            $endMin   = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+            $startMin = (int) substr($start,  0, 2) * 60 + (int) substr($start,  3, 2);
+            if ($endMin <= $startMin) {
+                $fail('El horario final del evento debe ser mayor que la hora inicial del evento.');
+                return;
+            }
+            $period = $request->input('period_type');
+            if ($period === 'workday' && ($startMin < 450 || $endMin > 990)) {
+                $fail('Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.');
+            } elseif (in_array($period, ['non_workday_saturday', 'non_workday_sunday_holiday']) && ($startMin < 480 || $endMin > 1290)) {
+                $fail('Para períodos no laborables solo se permiten horarios de 8:00 a.m. a 9:30 p.m.');
+            }
+        }],
+        'description' => ['required', 'string', 'min:10', 'max:250', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/u'],
+        'responsible' => ['required', 'string', 'min:8', 'max:40', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/u'],
+        'period_type' => ['required', 'in:workday,non_workday_saturday,non_workday_sunday_holiday'],
         'rate_mode' => ['required', 'in:daily,weekly,monthly'],
         'services' => ['required', 'array', 'min:1'],
+        'services.*' => ['in:electricity,water,utilities'],
     ]);
 
     $parent = $item->sub_event_type === 'custom_day' && $item->custom_parent_item_id
@@ -1297,15 +1353,31 @@ private function calculateFacilityCostFromPayload(array $data): array
 {
     $validated = $request->validate([
         'classroom' => ['required', 'string'],
-        'event_date' => ['required', 'date'],
+        'event_date' => ['required', 'date', 'after_or_equal:today'],
         'event_end_date' => ['required', 'date', 'after_or_equal:event_date'],
-        'start_time' => ['required'],
-        'end_time' => ['required'],
-        'description' => ['required', 'string', 'min:10', 'max:1000'],
-        'responsible' => ['required', 'string', 'min:5', 'max:60'],
-        'period_type' => ['required', 'string'],
+        'start_time' => ['required', 'date_format:H:i'],
+        'end_time' => ['required', 'date_format:H:i', function ($attr, $value, $fail) use ($request) {
+            $start = $request->input('start_time');
+            if (!$start) return;
+            $endMin   = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+            $startMin = (int) substr($start,  0, 2) * 60 + (int) substr($start,  3, 2);
+            if ($endMin <= $startMin) {
+                $fail('El horario final del evento debe ser mayor que la hora inicial del evento.');
+                return;
+            }
+            $period = $request->input('period_type');
+            if ($period === 'workday' && ($startMin < 450 || $endMin > 990)) {
+                $fail('Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.');
+            } elseif (in_array($period, ['non_workday_saturday', 'non_workday_sunday_holiday']) && ($startMin < 480 || $endMin > 1290)) {
+                $fail('Para períodos no laborables solo se permiten horarios de 8:00 a.m. a 9:30 p.m.');
+            }
+        }],
+        'description' => ['required', 'string', 'min:10', 'max:250', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/u'],
+        'responsible' => ['required', 'string', 'min:8', 'max:40', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/u'],
+        'period_type' => ['required', 'in:workday,non_workday_saturday,non_workday_sunday_holiday'],
         'rate_mode' => ['required', 'in:daily,weekly,monthly'],
         'services' => ['required', 'array', 'min:1'],
+        'services.*' => ['in:electricity,water,utilities'],
     ]);
 
     $parent = $this->getGroupParent($item);
@@ -1367,8 +1439,23 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
     $validated = $request->validate([
         'scope' => ['required', 'in:single_day,this_and_following'],
         'date' => ['required', 'date'],
-        'start_time' => ['required'],
-        'end_time' => ['required'],
+        'start_time' => ['required', 'date_format:H:i'],
+        'end_time' => ['required', 'date_format:H:i', function ($attr, $value, $fail) use ($request) {
+            $start = $request->input('start_time');
+            if (!$start) return;
+            $endMin   = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+            $startMin = (int) substr($start,  0, 2) * 60 + (int) substr($start,  3, 2);
+            if ($endMin <= $startMin) {
+                $fail('El horario final del evento debe ser mayor que la hora inicial del evento.');
+                return;
+            }
+            $period = $request->input('period_type');
+            if ($period === 'workday' && ($startMin < 450 || $endMin > 990)) {
+                $fail('Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.');
+            } elseif (in_array($period, ['non_workday_saturday', 'non_workday_sunday_holiday']) && ($startMin < 480 || $endMin > 1290)) {
+                $fail('Para períodos no laborables solo se permiten horarios de 8:00 a.m. a 9:30 p.m.');
+            }
+        }],
         'period_type' => ['required', 'in:workday,non_workday_saturday,non_workday_sunday_holiday'],
         'force_overwrite' => ['nullable', 'boolean'],
     ]);

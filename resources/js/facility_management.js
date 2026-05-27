@@ -4216,26 +4216,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 relatedParentEventId.value = btn.dataset.entryId;
 
-                const startDate = row?.dataset.date || '';
-                const endDate = row?.dataset.endDate || startDate;
+                relatedStartDate.min = '';
+                relatedStartDate.max = '';
+                relatedEndDate.min = '';
+                relatedEndDate.max = '';
 
-                relatedStartDate.min = startDate;
-                relatedStartDate.max = endDate;
+                relatedStartDate.dataset.minDate = 'today';
+                relatedStartDate.dataset.maxDate = '';
+                relatedEndDate.dataset.minDate = 'today';
+                relatedEndDate.dataset.maxDate = '';
 
-                relatedEndDate.min = startDate;
-                relatedEndDate.max = endDate;
-
-                relatedStartDate.dataset.minDate = startDate;
-                relatedStartDate.dataset.maxDate = endDate;
-                relatedEndDate.dataset.minDate = startDate;
-                relatedEndDate.dataset.maxDate = endDate;
-
-                relatedStartDate._flatpickr?.set('minDate', startDate);
-                relatedStartDate._flatpickr?.set('maxDate', endDate);
+                relatedStartDate._flatpickr?.set('minDate', 'today');
+                relatedStartDate._flatpickr?.set('maxDate', null);
                 relatedStartDate._flatpickr?.clear();
 
-                relatedEndDate._flatpickr?.set('minDate', startDate);
-                relatedEndDate._flatpickr?.set('maxDate', endDate);
+                relatedEndDate._flatpickr?.set('minDate', 'today');
+                relatedEndDate._flatpickr?.set('maxDate', null);
                 relatedEndDate._flatpickr?.clear();
 
                 relatedArea.value = '';
