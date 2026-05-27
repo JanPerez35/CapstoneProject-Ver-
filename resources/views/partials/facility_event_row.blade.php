@@ -1,4 +1,4 @@
-{{-- 
+{{--
     Facility Cost Event Row Partial
 
     Renders one table row for a facility cost report item. The row can represent:
@@ -41,6 +41,7 @@
     class="{{ $isChild ? 'sub-event-row sub-event-' . ($item->sub_event_type ?? 'default') : 'parent-event-row' }}"
     data-group-key="{{ $groupKey }}"
     data-entry-id="{{ $item->id }}"
+    data-parent-entry-id="{{ $item->custom_parent_item_id ?? '' }}"
     data-sub-event-type="{{ $item->sub_event_type }}"
     data-date="{{ \Carbon\Carbon::parse($item->event_date)->format('Y-m-d') }}"
     data-end-date="{{ \Carbon\Carbon::parse($item->end_date ?? $item->event_date)->format('Y-m-d') }}"
@@ -134,7 +135,7 @@
     </td>
 
     <td>
-        
+
 
             @php
                 $services = $item->services ?? [];

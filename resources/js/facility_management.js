@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * pagination page, the current pagination page, and the base period type
      * used when customizing event days.
      */
-    const FACILITY_COSTS_PER_PAGE = 10;
+    const FACILITY_COSTS_PER_PAGE = 3;
     let currentFacilityCostsPage = 1;
     let customizeBasePeriodType = '';
 
@@ -644,7 +644,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-            throw new Error(data.message || 'Ocurrió un error procesando la solicitud.');
+            const error = new Error(data.message || 'Ocurrió un error procesando la solicitud.');
+            error.data = data;
+            throw error;
         }
 
         return data;
@@ -1478,7 +1480,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ampm = hours >= 12 ? 'PM' : 'AM';
                 hours = hours % 12 || 12;
 
-                return `${String(hours).padStart(2, '0')}:${minutes} ${ampm}`;
+                return `${hours}:${minutes} ${ampm}`;
             }
             option.textContent = formatTime12h(current);
             select.appendChild(option);
@@ -1743,6 +1745,21 @@ document.addEventListener('DOMContentLoaded', () => {
         );
     }
 
+    function getDirectParentRowForModification(row) {
+        if (!row) return null;
+
+        const parentEntryId = row.dataset.parentEntryId || row.dataset.parentId || '';
+
+        if (parentEntryId) {
+            return facilityCostTableBody.querySelector(
+                `tr[data-entry-id="${parentEntryId}"]`
+            );
+        }
+
+        return getParentRowForGroup(row);
+    }
+
+
     const classroomAddedAutoTrigger = document.getElementById('classroomAddedAutoTrigger');
     const classroomsDeletedAutoTrigger = document.getElementById('classroomsDeletedAutoTrigger');
 
@@ -1880,6 +1897,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.reload();
                 }, 2000);
             } catch (error) {
+                if (error.data?.out_of_range_custom_days > 0) {
+                    pendingEditPayload = payload;
+                    pendingDeleteOutOfRangeCustomDays = true;
+                    pendingDeleteCustomDaysOnAreaChange = false;
+
+                    showParentEditWarning(error.message);
+                    return;
+                }
+
+                if (error.data?.area_change_custom_days > 0) {
+                    pendingEditPayload = payload;
+                    pendingDeleteOutOfRangeCustomDays = false;
+                    pendingDeleteCustomDaysOnAreaChange = true;
+
+                    showParentEditWarning(error.message);
+                    return;
+                }
+
                 alert(error.message);
             }
         }
@@ -1900,7 +1935,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * @returns {HTMLTableRowElement[]} Custom-day rows outside the edited range.
      */
     function getCustomDaysOutsideEditedParentRange(parentId, newStart, newEnd) {
-        const parentRow = document.querySelector(`tr.parent-event-row[data-entry-id="${parentId}"]`);
+        const parentRow = document.querySelector(`tr[data-entry-id="${parentId}"]`);
         const groupKey = parentRow?.dataset.groupKey;
 
         if (!groupKey) return [];
@@ -1909,9 +1944,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const end = new Date(`${newEnd}T00:00:00`);
 
         return [...document.querySelectorAll(`tr.sub-event-row[data-group-key="${groupKey}"][data-sub-event-type="custom_day"]`)]
+            .filter(row => row.dataset.parentEntryId === String(parentId))
             .filter(row => {
-                const customDate = new Date(`${row.dataset.date}T00:00:00`);
-                return customDate < start || customDate > end;
+                const customStart = new Date(`${row.dataset.date}T00:00:00`);
+                const customEnd = new Date(`${row.dataset.endDate || row.dataset.date}T00:00:00`);
+
+                return customStart < start || customEnd > end;
             });
     }
 
@@ -1922,14 +1960,14 @@ document.addEventListener('DOMContentLoaded', () => {
      * @returns {HTMLTableRowElement[]} Custom-day rows for the parent event.
      */
     function getCustomDaysForParent(parentId) {
-        const parentRow = document.querySelector(`tr.parent-event-row[data-entry-id="${parentId}"]`);
+        const parentRow = document.querySelector(`tr[data-entry-id="${parentId}"]`);
         const groupKey = parentRow?.dataset.groupKey;
 
         if (!groupKey) return [];
 
         return [...document.querySelectorAll(
             `tr.sub-event-row[data-group-key="${groupKey}"][data-sub-event-type="custom_day"]`
-        )];
+        )].filter(row => row.dataset.parentEntryId === String(parentId));
     }
 
     /**
@@ -1941,7 +1979,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * @returns {boolean} True when the parent area changed.
      */
     function parentAreaChanged(parentId, newClassroom) {
-        const parentRow = document.querySelector(`tr.parent-event-row[data-entry-id="${parentId}"]`);
+        const parentRow = document.querySelector(`tr[data-entry-id="${parentId}"]`);
 
         if (!parentRow) return false;
 
@@ -1973,11 +2011,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         bootstrap.Modal.getOrCreateInstance($('parentRangeWarningModal')).hide();
 
-        await submitEditEvent(
-            pendingEditPayload,
-            pendingDeleteOutOfRangeCustomDays,
-            pendingDeleteCustomDaysOnAreaChange
-        );
+        if (pendingEditPayload.is_related_event) {
+            await submitRelatedEvent(
+                pendingEditPayload,
+                pendingDeleteOutOfRangeCustomDays,
+                pendingDeleteCustomDaysOnAreaChange
+            );
+        } else {
+            await submitEditEvent(
+                pendingEditPayload,
+                pendingDeleteOutOfRangeCustomDays,
+                pendingDeleteCustomDaysOnAreaChange
+            );
+        }
 
         pendingEditPayload = null;
         pendingDeleteOutOfRangeCustomDays = false;
@@ -2104,7 +2150,9 @@ document.addEventListener('DOMContentLoaded', () => {
              */
             startDate._flatpickr.set(
                 'maxDate',
-                editingIsSubEvent ? baseMaxDate : (endDate?.value || baseMaxDate)
+                (startDate === editStartDate && editingIsCustomDay)
+                    ? baseMaxDate
+                    : (endDate?.value || baseMaxDate)
             );
         }
 
@@ -2133,13 +2181,16 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     customizeScope?.addEventListener('change', () => {
         clearFieldError(customizeScope, customizeScopeError);
+        clearFieldError(customizePeriodType, customizePeriodTypeError);
+        clearFieldError(customizeDate, customizeDateError);
 
         if (!customizeScope.value) {
             setFieldError(customizeScope, customizeScopeError, 'Selecciona el alcance de la modificación.');
         }
 
-        updateCustomizeSaveState();
         validateCustomizeWorkdayRangeRule(true);
+        updateCustomizeSaveState();
+        customizeDirty = true;
     });
 
     /**
@@ -2209,6 +2260,7 @@ document.addEventListener('DOMContentLoaded', () => {
     customizePeriodType?.addEventListener('change', () => {
         clearFieldError(customizeDate, customizeDateError);
         clearFieldError(customizePeriodType, customizePeriodTypeError);
+        clearFieldError(customizeScope, customizeScopeError);
 
         resetCustomizeTimesAndErrors();
         updateCustomizeTimeOptions();
@@ -3977,32 +4029,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const originalStartDate = row.dataset.date || '';
         const originalEndDate = row.dataset.endDate || originalStartDate;
 
-        editStartDate.value = originalStartDate;
-        editEndDate.value = originalEndDate;
-
-        if (editStartDate?._flatpickr) {
-            editStartDate._flatpickr.set('minDate', originalStartDate);
-            editStartDate._flatpickr.setDate(originalStartDate, false);
-            editStartDate._flatpickr.jumpToDate(originalStartDate);
-        }
-
-        if (editEndDate?._flatpickr) {
-            editEndDate._flatpickr.set('minDate', originalStartDate);
-            editEndDate._flatpickr.setDate(originalEndDate, false);
-            editEndDate._flatpickr.jumpToDate(originalEndDate);
-        }
-
         editPeriodType.value = row.dataset.periodType || '';
         editRateMode.value = row.dataset.rateMode || '';
         editRateModeDisplay.value = rateModeLabel(row.dataset.rateMode || '');
 
-        const parentRow = editingIsSubEvent ? getParentRowForGroup(row) : null;
+        const parentRow = editingIsCustomDay ? getDirectParentRowForModification(row) : null;
 
-        const allowedStartDate = editingIsSubEvent
+        const allowedStartDate = editingIsCustomDay
             ? parentRow?.dataset.date || originalStartDate
             : 'today';
 
-        const allowedEndDate = editingIsSubEvent
+        const allowedEndDate = editingIsCustomDay
             ? parentRow?.dataset.endDate || parentRow?.dataset.date || originalEndDate
             : '';
 
@@ -4018,6 +4055,21 @@ document.addEventListener('DOMContentLoaded', () => {
             updateTimeOptions: updateEditTimeOptions,
             updateSummary: updateEditSummary
         });
+
+        editStartDate.value = originalStartDate;
+        editEndDate.value = originalEndDate;
+
+        if (editStartDate?._flatpickr) {
+            editStartDate._flatpickr.set('minDate', originalStartDate);
+            editStartDate._flatpickr.setDate(originalStartDate, false);
+            editStartDate._flatpickr.jumpToDate(originalStartDate);
+        }
+
+        if (editEndDate?._flatpickr) {
+            editEndDate._flatpickr.set('minDate', originalStartDate);
+            editEndDate._flatpickr.setDate(originalEndDate, false);
+            editEndDate._flatpickr.jumpToDate(originalEndDate);
+        }
 
         updateEditTimeOptions();
 
@@ -4111,27 +4163,34 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} groupKey - Event group key used to find related custom-day rows.
      * @returns {string[]} Array of already modified dates formatted as YYYY-MM-DD.
      */
-    function getAlreadyModifiedDatesForGroup(groupKey) {
-        if (!groupKey) return [];
+    function getAlreadyModifiedDatesForGroup(groupKey, parentEntryId = '') {
+        const dates = [];
 
-        const customDayRows = [
+        [
             ...document.querySelectorAll(
                 `tr.sub-event-row[data-group-key="${groupKey}"][data-sub-event-type="custom_day"]`
             )
-        ];
+        ]
+            .filter(row =>
+                !parentEntryId ||
+                row.dataset.parentEntryId === String(parentEntryId)
+            )
+            .forEach(row => {
+                const start = row.dataset.date;
+                const end = row.dataset.endDate || start;
 
-        const disabledDates = new Set();
+                if (!start) return;
 
-        customDayRows.forEach((row) => {
-            const startDate = row.dataset.date;
-            const endDate = row.dataset.endDate || startDate;
+                let current = new Date(`${start}T00:00:00`);
+                const last = new Date(`${end}T00:00:00`);
 
-            getDatesBetween(startDate, endDate).forEach((date) => {
-                disabledDates.add(date);
+                while (current <= last) {
+                    dates.push(formatDateLocal(current));
+                    current.setDate(current.getDate() + 1);
+                }
             });
-        });
 
-        return [...disabledDates];
+        return dates;
     }
 
     /**
@@ -4142,8 +4201,8 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} groupKey - Event group key used to find custom-day rows.
      * @returns {string[]} Modified dates that fall inside the selected range.
      */
-    function getOverlappingModifiedDatesInRange(selectedDate, endDate, groupKey) {
-        const allModified = getAlreadyModifiedDatesForGroup(groupKey);
+    function getOverlappingModifiedDatesInRange(selectedDate, endDate, groupKey, parentEntryId = '') {
+        const allModified = getAlreadyModifiedDatesForGroup(groupKey, parentEntryId);
         return allModified.filter(d => d >= selectedDate && d <= endDate);
     }
 
@@ -4179,7 +4238,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const groupKey = parentRow.dataset.groupKey || '';
         const basePeriodType = parentRow.dataset.periodType || '';
 
-        const alreadyModifiedDates = getAlreadyModifiedDatesForGroup(groupKey);
+        const alreadyModifiedDates = getAlreadyModifiedDatesForGroup(
+            groupKey,
+            customizeEventId?.value || parentRow.dataset.entryId
+        );
 
         const disabledRules = [
             ...alreadyModifiedDates,
@@ -4415,6 +4477,21 @@ document.addEventListener('DOMContentLoaded', () => {
         return false;
     }
 
+    function dateRangeHasAllowedDayForPeriod(startValue, endValue, periodType) {
+        const start = new Date(`${startValue}T00:00:00`);
+        const end = new Date(`${endValue}T00:00:00`);
+
+        for (let date = new Date(start); date <= end; date.setDate(date.getDate() + 1)) {
+            const day = date.getDay();
+
+            if (periodType === 'workday' && day >= 1 && day <= 5) return true;
+            if (periodType === 'non_workday_saturday' && day === 6) return true;
+            if (periodType === 'non_workday_sunday_holiday' && day !== 6) return true;
+        }
+
+        return false;
+    }
+
     /**
      * Gets the ending date for the customize-days range.
      *
@@ -4511,6 +4588,24 @@ document.addEventListener('DOMContentLoaded', () => {
         ) {
             if (showError) {
                 const message = 'No puedes aplicar Laborable a este día y siguientes porque el rango incluye sábado o domingo.';
+
+                setFieldError(customizePeriodType, customizePeriodTypeError, message);
+                setFieldError(customizeScope, customizeScopeError, message);
+            }
+
+            return false;
+        }
+
+        if (
+            customizeScope?.value === 'this_and_following' &&
+            customizeRangeEndDate &&
+            !dateRangeHasAllowedDayForPeriod(customizeDate.value, customizeRangeEndDate, selectedPeriod)
+        ) {
+            if (showError) {
+                const message =
+                    selectedPeriod === 'non_workday_saturday'
+                        ? 'No puedes aplicar No laborable sábado porque el rango no incluye sábados disponibles.'
+                        : 'No puedes aplicar este tipo de período porque el rango no incluye días disponibles para esa selección.';
 
                 setFieldError(customizePeriodType, customizePeriodTypeError, message);
                 setFieldError(customizeScope, customizeScopeError, message);
@@ -5060,7 +5155,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {Object} payload - Validated customize-days payload.
      * @param {boolean} forceOverwrite - Whether existing custom-day changes should be overwritten.
      */
-    async function submitCustomizeDays(payload, forceOverwrite = false) {
+    async function submitCustomizeDays(payload, forceOverwrite = false, deleteOnly = false) {
         const body = {
             scope: payload.scope,
             date: payload.date,
@@ -5068,6 +5163,7 @@ document.addEventListener('DOMContentLoaded', () => {
             end_time: payload.end_time,
             period_type: payload.period_type,
             force_overwrite: forceOverwrite,
+            delete_only: deleteOnly,
         };
 
         const isEntireEvent = payload.scope === 'entire_event';
@@ -5091,6 +5187,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.reload();
             }, 2000);
         } catch (error) {
+            if (!forceOverwrite && error.data?.conflicting_count > 0) {
+                pendingCustomizePayload = payload;
+                showCustomizeOverwriteWarning(error.data.conflicting_count);
+                return;
+            }
+
             alert(error.message);
         }
     }
@@ -5114,7 +5216,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (payload.scope === 'this_and_following' && currentCustomizeParentRow) {
                 const endDate = currentCustomizeParentRow.dataset.endDate || currentCustomizeParentRow.dataset.date || '';
                 const groupKey = currentCustomizeParentRow.dataset.groupKey || '';
-                const conflicting = getOverlappingModifiedDatesInRange(payload.date, endDate, groupKey);
+                const conflicting = getOverlappingModifiedDatesInRange(
+                    payload.date,
+                    endDate,
+                    groupKey,
+                    payload.event_id
+                );
 
                 if (conflicting.length > 0) {
                     pendingCustomizePayload = payload;
@@ -5141,7 +5248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const payload = pendingCustomizePayload;
         pendingCustomizePayload = null;
 
-        await submitCustomizeDays(payload, true);
+        await submitCustomizeDays(payload, true, true);
     });
 
     /**
@@ -5160,7 +5267,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (!payload.is_sub_event) {
+            if (!editingIsCustomDay) {
                 const outOfRangeCustomDays = getCustomDaysOutsideEditedParentRange(
                     payload.event_id,
                     payload.event_date,
@@ -5217,41 +5324,77 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const body = {
-                classroom: payload.classroom,
-                responsible: payload.responsible,
-                description: payload.description,
-                services: payload.services,
-                period_type: payload.period_type,
-                rate_mode: payload.rate_mode,
-                event_date: payload.event_date,
-                event_end_date: payload.end_date,
-                start_time: payload.start_time,
-                end_time: payload.end_time,
-            };
-
-            const url = relatedModalMode === 'edit'
-                ? `/facility/events/${editingSubEventId}/sub-event`
-                : `/facility/events/${payload.parent_event_id}/related`;
-
-            const method = relatedModalMode === 'edit' ? 'PUT' : 'POST';
-
-            try {
-                await sendJson(url, method, body);
-
-                relatedDirty = false;
-                allowRelatedModalClose = true;
-                bootstrap.Modal.getOrCreateInstance($('createRelatedModal')).hide();
-                toasts.relatedSaved?.show();
-
-                setTimeout(() => {
-                    saveFacilityScroll();
-                    window.location.reload();
-                }, 2000);
-            } catch (error) {
-                alert(error.message);
-            }
+            await submitRelatedEvent(payload);
         });
+    }
+
+    async function submitRelatedEvent(
+        payload,
+        deleteOutOfRangeCustomDays = false,
+        deleteCustomDaysOnAreaChange = false
+    ) {
+        const body = {
+            classroom: payload.classroom,
+            responsible: payload.responsible,
+            description: payload.description,
+            services: payload.services,
+            period_type: payload.period_type,
+            rate_mode: payload.rate_mode,
+            event_date: payload.event_date,
+            event_end_date: payload.end_date,
+            start_time: payload.start_time,
+            end_time: payload.end_time,
+            delete_out_of_range_custom_days: deleteOutOfRangeCustomDays,
+            delete_custom_days_on_area_change: deleteCustomDaysOnAreaChange,
+        };
+
+        const url = relatedModalMode === 'edit'
+            ? `/facility/events/${editingSubEventId}/sub-event`
+            : `/facility/events/${payload.parent_event_id}/related`;
+
+        const method = relatedModalMode === 'edit' ? 'PUT' : 'POST';
+
+        try {
+            await sendJson(url, method, body);
+
+            relatedDirty = false;
+            allowRelatedModalClose = true;
+            bootstrap.Modal.getOrCreateInstance($('createRelatedModal')).hide();
+            toasts.relatedSaved?.show();
+
+            setTimeout(() => {
+                saveFacilityScroll();
+                window.location.reload();
+            }, 2000);
+        } catch (error) {
+            if (error.data?.out_of_range_custom_days > 0) {
+                pendingEditPayload = {
+                    ...payload,
+                    is_related_event: true,
+                };
+
+                pendingDeleteOutOfRangeCustomDays = true;
+                pendingDeleteCustomDaysOnAreaChange = false;
+
+                showParentEditWarning(error.message);
+                return;
+            }
+
+            if (error.data?.area_change_custom_days > 0) {
+                pendingEditPayload = {
+                    ...payload,
+                    is_related_event: true,
+                };
+
+                pendingDeleteOutOfRangeCustomDays = false;
+                pendingDeleteCustomDaysOnAreaChange = true;
+
+                showParentEditWarning(error.message);
+                return;
+            }
+
+            alert(error.message);
+        }
     }
 
     /**

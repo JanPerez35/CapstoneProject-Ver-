@@ -471,10 +471,10 @@ public function updateEvent(Request $request, FacilityCostReportItem $item)
     if ($item->event_group_id) {
         $outOfRangeCustomDays = FacilityCostReportItem::where('event_group_id', $item->event_group_id)
             ->where('sub_event_type', 'custom_day')
-            ->where('id', '!=', $item->id)
+            ->where('custom_parent_item_id', $item->id)
             ->where(function ($query) use ($newStart, $newEnd) {
                 $query->whereDate('event_date', '<', $newStart)
-                    ->orWhereDate('event_date', '>', $newEnd);
+                    ->orWhereDate('end_date', '>', $newEnd);
             })
             ->get();
 
@@ -501,7 +501,7 @@ public function updateEvent(Request $request, FacilityCostReportItem $item)
     if ($areaChanged && $item->event_group_id) {
         $customDays = FacilityCostReportItem::where('event_group_id', $item->event_group_id)
             ->where('sub_event_type', 'custom_day')
-            ->where('id', '!=', $item->id)
+            ->where('custom_parent_item_id', $item->id)
             ->get();
 
         if ($customDays->isNotEmpty() && !$request->boolean('delete_custom_days_on_area_change')) {
@@ -844,6 +844,9 @@ public function updateSubEvent(Request $request, FacilityCostReportItem $item)
         'rate_mode' => ['required', 'in:daily,weekly,monthly'],
         'services' => ['required', 'array', 'min:1'],
         'services.*' => ['in:electricity,water,utilities'],
+
+        'delete_out_of_range_custom_days' => ['nullable', 'boolean'],
+        'delete_custom_days_on_area_change' => ['nullable', 'boolean'],
     ]);
 
     $parent = $item->sub_event_type === 'custom_day' && $item->custom_parent_item_id
@@ -852,6 +855,54 @@ public function updateSubEvent(Request $request, FacilityCostReportItem $item)
 
     $subStart = Carbon::parse($validated['event_date'])->startOfDay();
     $subEnd = Carbon::parse($validated['event_end_date'])->startOfDay();
+
+    if ($item->sub_event_type === 'related_area' && $item->event_group_id) {
+        $areaChanged = $item->facilityCost?->classroom_name !== $validated['classroom'];
+
+        $outOfRangeCustomDays = FacilityCostReportItem::where('event_group_id', $item->event_group_id)
+            ->where('sub_event_type', 'custom_day')
+            ->where('custom_parent_item_id', $item->id)
+            ->where(function ($query) use ($subStart, $subEnd) {
+                $query->whereDate('event_date', '<', $subStart)
+                    ->orWhereDate('end_date', '>', $subEnd);
+            })
+            ->get();
+
+        $customDays = FacilityCostReportItem::where('event_group_id', $item->event_group_id)
+            ->where('sub_event_type', 'custom_day')
+            ->where('custom_parent_item_id', $item->id)
+            ->get();
+
+        if ($outOfRangeCustomDays->isNotEmpty() && !$request->boolean('delete_out_of_range_custom_days')) {
+            return response()->json([
+                'message' => 'Hay modificaciones fuera del nuevo rango del evento relacionado.',
+                'out_of_range_custom_days' => $outOfRangeCustomDays->count(),
+            ], 422);
+        }
+
+        if ($areaChanged && $customDays->isNotEmpty() && !$request->boolean('delete_custom_days_on_area_change')) {
+            return response()->json([
+                'message' => 'Cambiar el área del evento relacionado eliminará sus modificaciones existentes.',
+                'area_change_custom_days' => $customDays->count(),
+            ], 422);
+        }
+
+        foreach ($outOfRangeCustomDays as $customDay) {
+            $this->restoreSubEventCostToParent($item, $customDay);
+            $customDay->delete();
+        }
+
+        if ($areaChanged) {
+            foreach ($customDays as $customDay) {
+                if ($customDay->exists) {
+                    $this->restoreSubEventCostToParent($item, $customDay);
+                    $customDay->delete();
+                }
+            }
+        }
+
+        $item->refresh();
+    }
 
     if ($item->sub_event_type === 'custom_day') {
         $parentStart = Carbon::parse($parent->event_date)->startOfDay();
@@ -1457,7 +1508,7 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
             }
         }],
         'period_type' => ['required', 'in:workday,non_workday_saturday,non_workday_sunday_holiday'],
-        'force_overwrite' => ['nullable', 'boolean'],
+        'delete_only' => ['nullable', 'boolean'],
     ]);
 
     $parent = $this->getCustomizableTarget($item);
@@ -1500,7 +1551,7 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
         ]);
     }
 
-    $overlappingCustomDays = FacilityCostReportItem::where('event_group_id', $parent->event_group_id)
+    $overlappingCustomDays = FacilityCostReportItem::where('event_group_id', $groupId)
         ->where('sub_event_type', 'custom_day')
         ->where('custom_parent_item_id', $parent->id)
         ->where(function ($query) use ($customStartDate, $customEndDate) {
@@ -1523,6 +1574,17 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
         }
 
         $parent->refresh();
+    }
+
+    if ($request->boolean('delete_only')) {
+        $this->logActivity(
+            'Eliminar modificaciones de días',
+            "Se eliminaron modificaciones existentes desde {$customStartDate->toDateString()} hasta {$customEndDate->toDateString()} en el grupo {$groupId}."
+        );
+
+        return response()->json([
+            'message' => 'Modificaciones eliminadas correctamente.',
+        ]);
     }
 
     $payload = [

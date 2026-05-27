@@ -2259,11 +2259,11 @@
 
                 <div class="modal-footer border-0 d-flex flex-nowrap justify-content-end gap-2">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        Arreglar evento principal
+                        Arreglar Evento Principal
                     </button>
 
                     <button type="button" class="btn btn-danger" id="confirmParentRangeDeleteBtn">
-                        Continuar y borrar modificaciones
+                        Continuar y Borrar Modificaciones
                     </button>
                 </div>
             </div>
