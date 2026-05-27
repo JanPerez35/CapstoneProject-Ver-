@@ -1571,6 +1571,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return editPeriodType?.value === 'workday';
     }
 
+    function normalizeTimeValue(value) {
+        return String(value || '').slice(0, 5);
+    }
+
     /**
      * Updates the edit-event start and end time options based on the selected period type.
      *
@@ -2093,14 +2097,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (startDate?._flatpickr) {
             startDate._flatpickr.set('minDate', baseMinDate);
-            startDate._flatpickr.set('maxDate', endDate?.value || baseMaxDate);
+
+            /**
+             * For sub-event modifications, the start date must stay within
+             * the parent event range instead of being limited by the selected end date.
+             */
+            startDate._flatpickr.set(
+                'maxDate',
+                editingIsSubEvent ? baseMaxDate : (endDate?.value || baseMaxDate)
+            );
         }
 
         if (endDate?._flatpickr) {
-            endDate._flatpickr.set('minDate', startDate?.value || baseMinDate);
+            /**
+             * The end date must always start from the selected start date
+             * and stay within the parent event range.
+             */
+            endDate._flatpickr.set(
+                'minDate',
+                startDate?.value || baseMinDate
+            );
+
             endDate._flatpickr.set('maxDate', baseMaxDate);
         }
-
         updateTimeOptions?.();
         updateSummary?.();
     }
@@ -3977,6 +3996,21 @@ document.addEventListener('DOMContentLoaded', () => {
         editRateMode.value = row.dataset.rateMode || '';
         editRateModeDisplay.value = rateModeLabel(row.dataset.rateMode || '');
 
+        const parentRow = editingIsSubEvent ? getParentRowForGroup(row) : null;
+
+        const allowedStartDate = editingIsSubEvent
+            ? parentRow?.dataset.date || originalStartDate
+            : 'today';
+
+        const allowedEndDate = editingIsSubEvent
+            ? parentRow?.dataset.endDate || parentRow?.dataset.date || originalEndDate
+            : '';
+
+        editStartDate.dataset.minDate = allowedStartDate;
+        editStartDate.dataset.maxDate = allowedEndDate;
+        editEndDate.dataset.minDate = allowedStartDate;
+        editEndDate.dataset.maxDate = allowedEndDate;
+
         updateDateRestrictions({
             periodType: editPeriodType,
             startDate: editStartDate,
@@ -3987,8 +4021,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateEditTimeOptions();
 
-        editStartTime.value = row.dataset.startTime || '';
-        editEndTime.value = row.dataset.endTime || '';
+        editStartTime.value = normalizeTimeValue(row.dataset.startTime);
+        editEndTime.value = normalizeTimeValue(row.dataset.endTime);
 
         if (editUtilities) editUtilities.checked = false;
         if (editElectricity) editElectricity.checked = false;
@@ -4472,15 +4506,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (
             customizeScope?.value === 'this_and_following' &&
             customizeRangeEndDate &&
+            selectedPeriod === 'workday' &&
             dateRangeHasInvalidDayForPeriod(customizeDate.value, customizeRangeEndDate, selectedPeriod)
         ) {
             if (showError) {
-                const message =
-                    selectedPeriod === 'workday'
-                        ? 'No puedes aplicar Laborable a este día y siguientes porque el rango incluye sábado o domingo.'
-                        : selectedPeriod === 'non_workday_saturday'
-                            ? 'No puedes aplicar No laborable sábado a este día y siguientes porque el rango incluye domingo.'
-                            : 'No puedes aplicar Domingo/Festivo a este día y siguientes porque el rango incluye sábado.';
+                const message = 'No puedes aplicar Laborable a este día y siguientes porque el rango incluye sábado o domingo.';
 
                 setFieldError(customizePeriodType, customizePeriodTypeError, message);
                 setFieldError(customizeScope, customizeScopeError, message);
@@ -4491,7 +4521,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         return true;
     }
-
     /**
      * Validates the customize-days form and returns its submission data.
      *
@@ -5879,6 +5908,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateTimeOptions: updateEditTimeOptions,
                 updateSummary: updateEditSummary
             });
+
+            if (input === editStartDate && editEndDate?._flatpickr) {
+                const minDate = editStartDate.value || editEndDate.dataset.minDate || 'today';
+                const maxDate = editEndDate.dataset.maxDate || null;
+
+                editEndDate._flatpickr.set('minDate', minDate);
+                editEndDate._flatpickr.set('maxDate', maxDate);
+            }
+
+            if (
+                editEndDate.value &&
+                editStartDate.value &&
+                editEndDate.value < editStartDate.value
+            ) {
+                editEndDate._flatpickr.clear();
+            }
 
             updateEditSummary();
             updateEditSaveState();
