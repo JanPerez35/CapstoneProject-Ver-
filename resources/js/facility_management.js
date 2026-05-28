@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * pagination page, the current pagination page, and the base period type
      * used when customizing event days.
      */
-    const FACILITY_COSTS_PER_PAGE = 3;
+    const FACILITY_COSTS_PER_PAGE = 10;
     let currentFacilityCostsPage = 1;
     let customizeBasePeriodType = '';
 
@@ -3720,6 +3720,48 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
+     * Builds a compact pagination list with ellipsis.
+     *
+     * @param {number} currentPage
+     * @param {number} totalPages
+     * @returns {(number|string)[]}
+     */
+    function getPaginationPages(currentPage, totalPages) {
+        const pages = [];
+        const delta = 2;
+
+        for (let page = 1; page <= totalPages; page++) {
+            const isFirstPage = page === 1;
+            const isLastPage = page === totalPages;
+            const isNearCurrentPage =
+                page >= currentPage - delta &&
+                page <= currentPage + delta;
+
+            if (isFirstPage || isLastPage || isNearCurrentPage) {
+                pages.push(page);
+            }
+        }
+
+        const pagesWithDots = [];
+        let previousPage = null;
+
+        pages.forEach((page) => {
+            if (previousPage !== null) {
+                if (page - previousPage === 2) {
+                    pagesWithDots.push(previousPage + 1);
+                } else if (page - previousPage > 2) {
+                    pagesWithDots.push('...');
+                }
+            }
+
+            pagesWithDots.push(page);
+            previousPage = page;
+        });
+
+        return pagesWithDots;
+    }
+
+    /**
      * Renders local pagination controls for a visible list of items.
      *
      * @param {HTMLElement} container - Pagination container element.
@@ -3732,49 +3774,60 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container) return;
 
         const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
-        const summary = container === facilityCostPagination ? facilityCostPaginationSummary : null;
+        const summary = container === facilityCostPagination
+            ? facilityCostPaginationSummary
+            : null;
 
-        if (totalItems <= 0) {
+        if (summary) {
+            if (totalItems === 0) {
+                summary.textContent = 'No hay resultados para mostrar.';
+            } else {
+                const startItem = ((currentPage - 1) * itemsPerPage) + 1;
+                const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+
+                summary.textContent = `Mostrando ${startItem}-${endItem} de ${totalItems} evento(s).`;
+            }
+        }
+
+        if (totalPages <= 1) {
             container.innerHTML = '';
-            if (summary) summary.textContent = '';
             return;
         }
 
-        if (summary) {
-            const firstItem = ((currentPage - 1) * itemsPerPage) + 1;
-            const lastItem = Math.min(currentPage * itemsPerPage, totalItems);
-            summary.innerHTML = `
-            Mostrando <strong>${firstItem}</strong>
-            a <strong>${lastItem}</strong>
-            de <strong>${totalItems}</strong> resultados
-        `;
-        }
+        const visiblePages = getPaginationPages(currentPage, totalPages);
 
-        let paginationHTML = '';
-
-        paginationHTML += `
-        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-            <button type="button" class="page-link" data-page="prev">&laquo;</button>
-        </li>
-    `;
-
-        for (let page = 1; page <= totalPages; page++) {
-            paginationHTML += `
-            <li class="page-item ${page === currentPage ? 'active' : ''}">
-                <button type="button" class="page-link" data-page="${page}">${page}</button>
+        let paginationHTML = `
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <button type="button" class="page-link" data-page="prev">&laquo;</button>
             </li>
         `;
-        }
+
+        visiblePages.forEach((page) => {
+            if (page === '...') {
+                paginationHTML += `
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                `;
+                return;
+            }
+
+            paginationHTML += `
+                <li class="page-item ${page === currentPage ? 'active' : ''}">
+                    <button type="button" class="page-link" data-page="${page}">${page}</button>
+                </li>
+            `;
+        });
 
         paginationHTML += `
-        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-            <button type="button" class="page-link" data-page="next">&raquo;</button>
-        </li>
-    `;
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <button type="button" class="page-link" data-page="next">&raquo;</button>
+            </li>
+        `;
 
         container.innerHTML = paginationHTML;
 
-        container.querySelectorAll('.page-link').forEach((button) => {
+        container.querySelectorAll('.page-link[data-page]').forEach((button) => {
             button.addEventListener('click', () => {
                 const action = button.dataset.page;
                 let newPage = currentPage;
