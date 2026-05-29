@@ -426,19 +426,19 @@
                                         @endphp
 
                                         @if($relatedAreasCount > 0)
-                                            <span class="badge bg-info-subtle text-info-emphasis ms-2">
+                                            <span class="label-badge label-badge-on-header bg-info-subtle text-info-emphasis ms-2">
                                                     {{ $relatedAreasCount }} área(s) relacionada(s)
                                                 </span>
                                         @endif
 
                                         @if($modificationsCount > 0)
-                                            <span class="badge bg-warning-subtle text-warning-emphasis ms-2">
+                                            <span class="label-badge label-badge-on-header bg-warning-subtle text-warning-emphasis ms-2">
                                                     {{ $modificationsCount }} modificación(es)
                                                 </span>
                                         @endif
 
                                         @if($children->count() === 0)
-                                            <span class="badge bg-secondary-subtle text-secondary-emphasis ms-2">
+                                            <span class="label-badge label-badge-on-header bg-secondary-subtle text-secondary-emphasis ms-2">
                                                     Sin elementos relacionados
                                                 </span>
                                         @endif
@@ -955,7 +955,7 @@
 
                         <div class="mb-3">
                             <label for="rentalDescription" class="form-label fw-semibold">
-                                Descripción del evento <span class="text-danger">*</span>
+                                Descripción <span class="text-danger">*</span>
                             </label>
                             <textarea
                                 id="rentalDescription"
@@ -1106,7 +1106,7 @@
 
                                 <input type="hidden" id="rentalRangeType" name="rate_mode">
 
-                                <small class="text-muted d-block mt-1">
+                                <small class="text-muted fw-bold d-block mt-1">
                                     El tipo de tarifa se calcula automáticamente según la duración del evento.
                                 </small>
                             </div>
@@ -1371,7 +1371,7 @@
 
                         <div class="mb-3">
                             <label for="relatedDescription" class="form-label fw-semibold">
-                                Descripción del evento <span class="text-danger">*</span>
+                                Descripción<span class="text-danger">*</span>
                             </label>
                             <textarea
                                 id="relatedDescription"
@@ -1490,8 +1490,8 @@
                                         tabindex="-1"
                                         onfocus="this.blur()"
                                     >
-                                    <small class="text-muted d-block fst-italic">
-                                        El tipo se calcula automáticamente según la duración del evento.
+                                    <small class="text-muted fw-bold d-block fst-italic">
+                                        El tipo de tarifa se calcula automáticamente según la duración del evento.
                                     </small>
                                 </div>
 
@@ -1609,6 +1609,7 @@
         </div>
     </div>
 
+    {{-- Confirm cancellation modal for unsaved related-event changes --}}
     <div class="modal fade" id="confirmCancelRelatedModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -1778,6 +1779,7 @@
         </div>
     </div>
 
+    {{-- Confirm cancellation modal for unsaved customize-days changes --}}
     <div class="modal fade" id="confirmCancelCustomizeModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -1873,7 +1875,7 @@
 
                         <div class="mb-3">
                             <label for="editDescription" class="form-label fw-semibold">
-                                Descripción del evento <span class="text-danger">*</span>
+                                Descripción <span class="text-danger">*</span>
                             </label>
                             <textarea
                                 id="editDescription"
@@ -2000,9 +2002,8 @@
                                     onfocus="this.blur()"
                                 >
 
-                                <small class="text-muted d-block mt-1">
-                                    El tipo de tarifa se calcula automáticamente según las fechas inicial y final
-                                    seleccionadas.
+                                <small class="text-muted fw-bold d-block mt-1">
+                                    El tipo de tarifa se calcula automáticamente según la duración del evento.
                                 </small>
                             </div>
 
@@ -2126,6 +2127,7 @@
         </div>
     </div>
 
+    {{-- Confirm cancellation modal for unsaved edit-event changes --}}
     <div class="modal fade" id="confirmCancelEditModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
@@ -2260,11 +2262,11 @@
 
                 <div class="modal-footer border-0 d-flex flex-nowrap justify-content-end gap-2">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        Arreglar evento principal
+                        Arreglar Evento Principal
                     </button>
 
                     <button type="button" class="btn btn-danger" id="confirmParentRangeDeleteBtn">
-                        Continuar y borrar modificaciones
+                        Continuar y Borrar Modificaciones
                     </button>
                 </div>
             </div>
@@ -2429,6 +2431,7 @@
         </div>
     </div>
 
+    {{-- Hidden forms used by JavaScript to perform CSRF-protected DELETE submissions --}}
     <form id="deleteCostEntryForm" method="POST" class="d-none">
         @csrf
         @method('DELETE')
@@ -2439,6 +2442,11 @@
         @method('DELETE')
     </form>
 
+    {{--
+        Build the ratesByClassroom lookup array used by facility_management.js.
+        Maps each classroom name to its configured rate values (or null if not yet configured).
+        Passed to the front end via window.facilityManagementConfig below.
+    --}}
     @php
         $ratesByClassroom = $facilityCosts->mapWithKeys(function ($cost) {
         $isConfigured =
@@ -2477,6 +2485,7 @@
     })->toArray();
     @endphp
 
+    {{-- Expose server-side config and rate data to facility_management.js --}}
     <script>
 
         window.facilityManagementConfig = {

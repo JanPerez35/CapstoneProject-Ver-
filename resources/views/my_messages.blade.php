@@ -77,7 +77,7 @@
                                         type="text"
                                         id="messagesSearchInput"
                                         class="form-control border-start-0"
-                                        placeholder="Buscar por nombre o por título..."
+                                        placeholder="Buscar por nombre o título de publicación..."
                                         autocomplete="off"
                                     >
                                 </div>

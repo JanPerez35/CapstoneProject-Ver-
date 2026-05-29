@@ -60,7 +60,20 @@ class AccessLogController extends Controller
             foreach ($logs as $log) {
                 $timestamp = \Carbon\Carbon::parse($log->created_at)
                     ->timezone('America/Puerto_Rico')
-                    ->format('Y-m-d H:i:s');
+                    ->locale('es')
+                    ->translatedFormat('j F Y, g:i A');
+
+                $timestamp = str_replace(
+                    ['A. M.', 'P. M.', 'A.M.', 'P.M.', 'a. m.', 'p. m.', 'a.m.', 'p.m.'],
+                    ['AM', 'PM', 'AM', 'PM', 'AM', 'PM', 'AM', 'PM'],
+                    $timestamp
+                );
+
+                $timestamp = preg_replace_callback(
+                    '/\b([a-záéíóúñ]+)\b/u',
+                    fn($m) => ucfirst($m[1]),
+                    $timestamp
+                );
 
                 $user = trim(($log->user->first_name ?? '') . ' ' . ($log->user->last_name ?? '')) ?: 'Usuario';
 

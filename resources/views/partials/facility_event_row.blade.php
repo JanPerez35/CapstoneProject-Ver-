@@ -1,4 +1,4 @@
-{{-- 
+{{--
     Facility Cost Event Row Partial
 
     Renders one table row for a facility cost report item. The row can represent:
@@ -41,6 +41,7 @@
     class="{{ $isChild ? 'sub-event-row sub-event-' . ($item->sub_event_type ?? 'default') : 'parent-event-row' }}"
     data-group-key="{{ $groupKey }}"
     data-entry-id="{{ $item->id }}"
+    data-parent-entry-id="{{ $item->custom_parent_item_id ?? '' }}"
     data-sub-event-type="{{ $item->sub_event_type }}"
     data-date="{{ \Carbon\Carbon::parse($item->event_date)->format('Y-m-d') }}"
     data-end-date="{{ \Carbon\Carbon::parse($item->end_date ?? $item->event_date)->format('Y-m-d') }}"
@@ -63,20 +64,20 @@
             </span>
 
                 @if($item->sub_event_type === 'related_area')
-                    <span class="badge bg-info-subtle text-info-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
+                    <span class="label-badge bg-info-subtle text-info-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
                     Área relacionada
                 </span>
                 @elseif($item->sub_event_type === 'custom_day')
-                    <span class="badge bg-warning-subtle text-warning-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
+                    <span class="label-badge bg-warning-subtle text-warning-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
                     Modificación
                 </span>
                 @else
-                    <span class="badge bg-secondary-subtle text-secondary-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
+                    <span class="label-badge bg-secondary-subtle text-secondary-emphasis position-absolute text-nowrap" style="top: -26px; left: 15px;">
                     Sub-evento
                 </span>
                 @endif
             @else
-                <span class="badge bg-success-subtle text-success-emphasis position-absolute text-nowrap" style="top: -26px; left: 0;">
+                <span class="label-badge bg-success-subtle text-success-emphasis position-absolute text-nowrap" style="top: -26px; left: 0;">
                 Principal
             </span>
             @endif
@@ -134,9 +135,10 @@
     </td>
 
     <td>
-        
+
 
             @php
+                /* Normalize services: the column may be stored as a JSON string or already decoded array */
                 $services = $item->services ?? [];
 
                 if (is_string($services)) {
@@ -145,7 +147,13 @@
             @endphp
 
             @foreach ($services as $service)
-
+            @php
+                $badgeClass = match($service) {
+                    'electricity' => 'badge-electricidad',
+                    'water'       => 'badge-agua',
+                    default       => 'badge-available',
+                };
+            @endphp
             <span class="label-badge {{ $badgeClass }} me-2 mb-1">
                 @if ($service === 'utilities')
                     Utilidades

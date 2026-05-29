@@ -152,10 +152,13 @@ public function test_super_admin_can_export_facility_csv(): void
             'monthly_cost_3' => 30,
         ]);
 
+        $today = now()->toDateString();
+        $tomorrow = now()->addDay()->toDateString();
+
         $parentResponse = $this->actingAs($admin)->postJson(route('facility.events.store'), [
             'classroom' => 'CM 204',
-            'event_date' => '2026-05-20',
-            'event_end_date' => '2026-05-21',
+            'event_date' => $today,
+            'event_end_date' => $tomorrow,
             'start_time' => '08:30',
             'end_time' => '10:00',
             'description' => 'prueba costo pocos dias',
@@ -171,7 +174,7 @@ public function test_super_admin_can_export_facility_csv(): void
 
         $this->actingAs($admin)->postJson(route('facility.events.customize-days', $parent), [
             'scope' => 'single_day',
-            'date' => '2026-05-21',
+            'date' => $tomorrow,
             'start_time' => '09:00',
             'end_time' => '10:00',
             'period_type' => 'workday',
@@ -181,8 +184,8 @@ public function test_super_admin_can_export_facility_csv(): void
 
         $this->actingAs($admin)->putJson(route('facility.events.update', $parent), [
             'classroom' => 'CM 204',
-            'event_date' => '2026-05-20',
-            'event_end_date' => '2026-05-21',
+            'event_date' => $today,
+            'event_end_date' => $tomorrow,
             'start_time' => '08:30',
             'end_time' => '08:45',
             'description' => 'prueba costo pocos dias',

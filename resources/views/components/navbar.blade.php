@@ -132,7 +132,7 @@
                            data-bs-toggle="tooltip"
                            data-bs-placement="bottom"
                            data-bs-custom-class="custom-tooltip"
-                           data-bs-title="Gestiona tarifas, alquileres y reportes de costos operacionales de las áreas dentro del Coliseo Rafael Mangual!"
+                           data-bs-title="Gestiona tarifas, eventos y reportes de costos operacionales de las áreas internas del Coliseo Rafael Mangual!"
                             >
 
                             <i class="bi bi-currency-dollar"></i>

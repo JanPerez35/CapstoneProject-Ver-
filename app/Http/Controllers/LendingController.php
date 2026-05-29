@@ -577,7 +577,7 @@ class LendingController extends Controller
             );
         }
         $this->logActivity(
-            'Rechazó solicitud',
+            'Solicitud Denegada',
             'Solicitud ID ' . $lending->id . ' rechazada'
         );
 

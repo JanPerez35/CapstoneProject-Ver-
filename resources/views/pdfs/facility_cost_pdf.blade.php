@@ -173,16 +173,16 @@
 <table>
     <thead>
     <tr>
-        <th>Fecha Inicio</th>
-        <th>Fecha Fin</th>
+        <th>Fecha Inicial del Evento</th>
+        <th>Fecha Final del Evento</th>
         <th>Responsable</th>
         <th>Área</th>
         <th>Descripción</th>
-        <th>Hora Inicio</th>
-        <th>Hora Fin</th>
-        <th>Horas</th>
+        <th>Horario Inicial del Evento</th>
+        <th>Horario Final del Evento</th>
+        <th>Horas Totales</th>
         <th>Período</th>
-        <th>Modo de tarifa</th>
+        <th>Tipo de tarifa</th>
         <th>Servicios</th>
         <th>Costo</th>
     </tr>

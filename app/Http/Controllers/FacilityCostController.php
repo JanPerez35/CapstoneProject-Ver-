@@ -38,6 +38,9 @@ class FacilityCostController extends Controller
      *
      * filter_period_type, filter_rate_mode, and filter_services accept the Spanish
      * display labels sent by the JS (matching the select option values in the blade).
+     *
+     * @param Request $request
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     private function buildFilteredQuery(Request $request)
     {
@@ -114,8 +117,10 @@ class FacilityCostController extends Controller
      * Retrieves all classrooms and applies optional filters (report type,
      * month, year, classroom) to the cost report items query. Passes the
      * filtered results, grand total, and year range to the view.
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
      */
-
     public function index(Request $request)
     {
         $reportType      = $request->input('report_type', '');
@@ -176,6 +181,9 @@ class FacilityCostController extends Controller
      * Validates the submitted rates and upserts a FacilityCost record
      * for each selected classroom, covering all three period types
      * (workday, Saturday, Sunday/holiday) across daily, weekly, and monthly modes.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function saveRates(Request $request)
     {
@@ -183,22 +191,22 @@ class FacilityCostController extends Controller
             'classrooms' => ['required', 'array', 'min:1'],
             'classrooms.*' => ['string'],
 
-            'classroom_space' => ['required', 'numeric', 'min:0'],
-            'supply_cost' => ['required', 'numeric', 'min:0'],
-            'electricity_cost' => ['required', 'numeric', 'min:0'],
-            'water_cost' => ['required', 'numeric', 'min:0'],
+            'classroom_space' => ['required', 'numeric', 'gt:0', 'max:25000000', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'supply_cost' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'electricity_cost' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'water_cost' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
 
-            'daily_cost_1' => ['required', 'numeric', 'min:0'],
-            'weekly_cost_1' => ['required', 'numeric', 'min:0'],
-            'monthly_cost_1' => ['required', 'numeric', 'min:0'],
+            'daily_cost_1' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'weekly_cost_1' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'monthly_cost_1' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
 
-            'daily_cost_2' => ['required', 'numeric', 'min:0'],
-            'weekly_cost_2' => ['required', 'numeric', 'min:0'],
-            'monthly_cost_2' => ['required', 'numeric', 'min:0'],
+            'daily_cost_2' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'weekly_cost_2' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'monthly_cost_2' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
 
-            'daily_cost_3' => ['required', 'numeric', 'min:0'],
-            'weekly_cost_3' => ['required', 'numeric', 'min:0'],
-            'monthly_cost_3' => ['required', 'numeric', 'min:0'],
+            'daily_cost_3' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'weekly_cost_3' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'monthly_cost_3' => ['required', 'numeric', 'min:0', 'max:500', 'regex:/^\d+(\.\d{1,2})?$/'],
         ]);
 
         foreach ($validated['classrooms'] as $classroomName) {
@@ -239,6 +247,9 @@ class FacilityCostController extends Controller
      *
      * Validates that the classroom name is unique and between 6–40 characters,
      * then creates a FacilityCost entry with all rates initialized to zero.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function storeClassroom(Request $request)
     {
@@ -279,6 +290,9 @@ class FacilityCostController extends Controller
      *
      * Accepts an array of classroom names and removes all matching
      * FacilityCost entries from the database.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroyClassrooms(Request $request)
     {
@@ -334,21 +348,40 @@ class FacilityCostController extends Controller
      * Validates the submitted event data, delegates cost calculation to
      * createFacilityReportItemFromPayload, and returns a JSON response
      * for API callers or a redirect for browser requests.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
      */
     public function storeEvent(Request $request)
     {
 
     $validated = $request->validate([
         'classroom' => ['required', 'string'],
-        'event_date' => ['required', 'date'],
+        'event_date' => ['required', 'date', 'after_or_equal:today'],
         'event_end_date' => ['nullable', 'date', 'after_or_equal:event_date'],
-        'start_time' => ['required'],
-        'end_time' => ['required'],
-        'description' => ['required', 'string', 'min:10', 'max:1000'],
-        'responsible' => ['required', 'string', 'min:5', 'max:60'],
-        'period_type' => ['required', 'string'],
+        'start_time' => ['required', 'date_format:H:i'],
+        'end_time' => ['required', 'date_format:H:i', function ($attr, $value, $fail) use ($request) {
+            $start = $request->input('start_time');
+            if (!$start) return;
+            $endMin   = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+            $startMin = (int) substr($start,  0, 2) * 60 + (int) substr($start,  3, 2);
+            if ($endMin <= $startMin) {
+                $fail('El horario final del evento debe ser mayor que la hora inicial del evento.');
+                return;
+            }
+            $period = $request->input('period_type');
+            if ($period === 'workday' && ($startMin < 450 || $endMin > 990)) {
+                $fail('Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.');
+            } elseif (in_array($period, ['non_workday_saturday', 'non_workday_sunday_holiday']) && ($startMin < 480 || $endMin > 1290)) {
+                $fail('Para períodos no laborables solo se permiten horarios de 8:00 a.m. a 9:30 p.m.');
+            }
+        }],
+        'description' => ['required', 'string', 'min:10', 'max:250', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/u'],
+        'responsible' => ['required', 'string', 'min:8', 'max:40', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/u'],
+        'period_type' => ['required', 'in:workday,non_workday_saturday,non_workday_sunday_holiday'],
         'rate_mode' => ['required', 'in:daily,weekly,monthly'],
         'services' => ['required', 'array', 'min:1'],
+        'services.*' => ['in:electricity,water,utilities'],
     ]);
 
     $payload = [
@@ -414,13 +447,29 @@ public function updateEvent(Request $request, FacilityCostReportItem $item)
         'classroom' => ['required', 'string'],
         'event_date' => ['required', 'date'],
         'event_end_date' => ['required', 'date', 'after_or_equal:event_date'],
-        'start_time' => ['required'],
-        'end_time' => ['required'],
-        'description' => ['required', 'string', 'min:10', 'max:1000'],
-        'responsible' => ['required', 'string', 'min:5', 'max:60'],
-        'period_type' => ['required', 'string'],
+        'start_time' => ['required', 'date_format:H:i'],
+        'end_time' => ['required', 'date_format:H:i', function ($attr, $value, $fail) use ($request) {
+            $start = $request->input('start_time');
+            if (!$start) return;
+            $endMin   = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+            $startMin = (int) substr($start,  0, 2) * 60 + (int) substr($start,  3, 2);
+            if ($endMin <= $startMin) {
+                $fail('El horario final del evento debe ser mayor que la hora inicial del evento.');
+                return;
+            }
+            $period = $request->input('period_type');
+            if ($period === 'workday' && ($startMin < 450 || $endMin > 990)) {
+                $fail('Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.');
+            } elseif (in_array($period, ['non_workday_saturday', 'non_workday_sunday_holiday']) && ($startMin < 480 || $endMin > 1290)) {
+                $fail('Para períodos no laborables solo se permiten horarios de 8:00 a.m. a 9:30 p.m.');
+            }
+        }],
+        'description' => ['required', 'string', 'min:10', 'max:250', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/u'],
+        'responsible' => ['required', 'string', 'min:8', 'max:40', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/u'],
+        'period_type' => ['required', 'in:workday,non_workday_saturday,non_workday_sunday_holiday'],
         'rate_mode' => ['required', 'in:daily,weekly,monthly'],
         'services' => ['required', 'array', 'min:1'],
+        'services.*' => ['in:electricity,water,utilities'],
 
         'delete_out_of_range_custom_days' => ['nullable', 'boolean'],
         'delete_custom_days_on_area_change' => ['nullable', 'boolean'],
@@ -439,10 +488,10 @@ public function updateEvent(Request $request, FacilityCostReportItem $item)
     if ($item->event_group_id) {
         $outOfRangeCustomDays = FacilityCostReportItem::where('event_group_id', $item->event_group_id)
             ->where('sub_event_type', 'custom_day')
-            ->where('id', '!=', $item->id)
+            ->where('custom_parent_item_id', $item->id)
             ->where(function ($query) use ($newStart, $newEnd) {
                 $query->whereDate('event_date', '<', $newStart)
-                    ->orWhereDate('event_date', '>', $newEnd);
+                    ->orWhereDate('end_date', '>', $newEnd);
             })
             ->get();
 
@@ -469,7 +518,7 @@ public function updateEvent(Request $request, FacilityCostReportItem $item)
     if ($areaChanged && $item->event_group_id) {
         $customDays = FacilityCostReportItem::where('event_group_id', $item->event_group_id)
             ->where('sub_event_type', 'custom_day')
-            ->where('id', '!=', $item->id)
+            ->where('custom_parent_item_id', $item->id)
             ->get();
 
         if ($customDays->isNotEmpty() && !$request->boolean('delete_custom_days_on_area_change')) {
@@ -565,8 +614,16 @@ public function updateEvent(Request $request, FacilityCostReportItem $item)
 public function updateEventSchedule(Request $request, FacilityCostReportItem $item)
 {
     $validated = $request->validate([
-        'start_time' => ['required'],
-        'end_time' => ['required'],
+        'start_time' => ['required', 'date_format:H:i'],
+        'end_time' => ['required', 'date_format:H:i', function ($attr, $value, $fail) use ($request) {
+            $start = $request->input('start_time');
+            if (!$start) return;
+            $endMin   = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+            $startMin = (int) substr($start,  0, 2) * 60 + (int) substr($start,  3, 2);
+            if ($endMin <= $startMin) {
+                $fail('El horario final del evento debe ser mayor que la hora inicial del evento.');
+            }
+        }],
     ]);
 
     $parent = $this->getGroupParent($item);
@@ -672,6 +729,9 @@ private function calculateParentDeductionForCustomPeriod(
      * the date range, computes the base rental cost and per-hour service costs
      * (utilities, electricity, water), then persists the result under the
      * authenticated user's cost report.
+     *
+     * @param array $data
+     * @return FacilityCostReportItem
      */
     private function createFacilityReportItemFromPayload(array $data)
 {
@@ -781,13 +841,32 @@ public function updateSubEvent(Request $request, FacilityCostReportItem $item)
         'classroom' => ['required', 'string'],
         'event_date' => ['required', 'date'],
         'event_end_date' => ['required', 'date', 'after_or_equal:event_date'],
-        'start_time' => ['required'],
-        'end_time' => ['required'],
-        'description' => ['required', 'string', 'min:10', 'max:1000'],
-        'responsible' => ['required', 'string', 'min:5', 'max:60'],
-        'period_type' => ['required', 'string'],
+        'start_time' => ['required', 'date_format:H:i'],
+        'end_time' => ['required', 'date_format:H:i', function ($attr, $value, $fail) use ($request) {
+            $start = $request->input('start_time');
+            if (!$start) return;
+            $endMin   = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+            $startMin = (int) substr($start,  0, 2) * 60 + (int) substr($start,  3, 2);
+            if ($endMin <= $startMin) {
+                $fail('El horario final del evento debe ser mayor que la hora inicial del evento.');
+                return;
+            }
+            $period = $request->input('period_type');
+            if ($period === 'workday' && ($startMin < 450 || $endMin > 990)) {
+                $fail('Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.');
+            } elseif (in_array($period, ['non_workday_saturday', 'non_workday_sunday_holiday']) && ($startMin < 480 || $endMin > 1290)) {
+                $fail('Para períodos no laborables solo se permiten horarios de 8:00 a.m. a 9:30 p.m.');
+            }
+        }],
+        'description' => ['required', 'string', 'min:10', 'max:250', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/u'],
+        'responsible' => ['required', 'string', 'min:8', 'max:40', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/u'],
+        'period_type' => ['required', 'in:workday,non_workday_saturday,non_workday_sunday_holiday'],
         'rate_mode' => ['required', 'in:daily,weekly,monthly'],
         'services' => ['required', 'array', 'min:1'],
+        'services.*' => ['in:electricity,water,utilities'],
+
+        'delete_out_of_range_custom_days' => ['nullable', 'boolean'],
+        'delete_custom_days_on_area_change' => ['nullable', 'boolean'],
     ]);
 
     $parent = $item->sub_event_type === 'custom_day' && $item->custom_parent_item_id
@@ -796,6 +875,54 @@ public function updateSubEvent(Request $request, FacilityCostReportItem $item)
 
     $subStart = Carbon::parse($validated['event_date'])->startOfDay();
     $subEnd = Carbon::parse($validated['event_end_date'])->startOfDay();
+
+    if ($item->sub_event_type === 'related_area' && $item->event_group_id) {
+        $areaChanged = $item->facilityCost?->classroom_name !== $validated['classroom'];
+
+        $outOfRangeCustomDays = FacilityCostReportItem::where('event_group_id', $item->event_group_id)
+            ->where('sub_event_type', 'custom_day')
+            ->where('custom_parent_item_id', $item->id)
+            ->where(function ($query) use ($subStart, $subEnd) {
+                $query->whereDate('event_date', '<', $subStart)
+                    ->orWhereDate('end_date', '>', $subEnd);
+            })
+            ->get();
+
+        $customDays = FacilityCostReportItem::where('event_group_id', $item->event_group_id)
+            ->where('sub_event_type', 'custom_day')
+            ->where('custom_parent_item_id', $item->id)
+            ->get();
+
+        if ($outOfRangeCustomDays->isNotEmpty() && !$request->boolean('delete_out_of_range_custom_days')) {
+            return response()->json([
+                'message' => 'Hay modificaciones fuera del nuevo rango del evento relacionado.',
+                'out_of_range_custom_days' => $outOfRangeCustomDays->count(),
+            ], 422);
+        }
+
+        if ($areaChanged && $customDays->isNotEmpty() && !$request->boolean('delete_custom_days_on_area_change')) {
+            return response()->json([
+                'message' => 'Cambiar el área del evento relacionado eliminará sus modificaciones existentes.',
+                'area_change_custom_days' => $customDays->count(),
+            ], 422);
+        }
+
+        foreach ($outOfRangeCustomDays as $customDay) {
+            $this->restoreSubEventCostToParent($item, $customDay);
+            $customDay->delete();
+        }
+
+        if ($areaChanged) {
+            foreach ($customDays as $customDay) {
+                if ($customDay->exists) {
+                    $this->restoreSubEventCostToParent($item, $customDay);
+                    $customDay->delete();
+                }
+            }
+        }
+
+        $item->refresh();
+    }
 
     if ($item->sub_event_type === 'custom_day') {
         $parentStart = Carbon::parse($parent->event_date)->startOfDay();
@@ -959,6 +1086,11 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * Returns the count of days, weeks (rounded up), or calendar months crossed,
      * depending on the rate mode (daily, weekly, monthly).
+     *
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @param string $rateMode
+     * @return int
      */
     private function getUnitsUsed(Carbon $startDate, Carbon $endDate, string $rateMode): int
 {
@@ -977,6 +1109,10 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * Custom-day modifications should be billed by their own duration instead
      * of inheriting the parent event's weekly or monthly mode.
+     *
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @return string
      */
     private function resolveRateModeForDateRange(Carbon $startDate, Carbon $endDate): string
 {
@@ -998,6 +1134,10 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * Both the start and end months are counted, so a range within
      * the same month returns 1.
+     *
+     * @param Carbon $startDate
+     * @param Carbon $endDate
+     * @return int
      */
     private function calculateMonthsCrossed(Carbon $startDate, Carbon $endDate): int
 {
@@ -1013,6 +1153,11 @@ private function calculateFacilityCostFromPayload(array $data): array
      * Maps the combination of period type (workday, Saturday, Sunday/holiday)
      * and rate mode (daily, weekly, monthly) to the corresponding cost column
      * on the FacilityCost model. Returns 0 for unknown combinations.
+     *
+     * @param FacilityCost $facilityCost
+     * @param string $periodType
+     * @param string $rateMode
+     * @return float
      */
     private function getRateByPeriodAndMode($facilityCost, $periodType, $rateMode)
     {
@@ -1044,6 +1189,8 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * Reads simulated EventFlow events from storage and exposes them
      * as a JSON endpoint for preview or debugging purposes.
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
     public function mockExternalEvents()
     {
@@ -1057,6 +1204,8 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * Looks for storage/app/mock_eventflow_events.json and decodes it.
      * Returns an empty array if the file is missing or contains invalid JSON.
+     *
+     * @return array
      */
     private function getMockExternalEvents(): array
     {
@@ -1082,6 +1231,8 @@ private function calculateFacilityCostFromPayload(array $data): array
      * Iterates over simulated EventFlow events, skips any whose classroom
      * does not exist in the database, and creates a report item for each
      * valid event. Redirects with a count of successfully imported events.
+     *
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function importMockEvents()
     {
@@ -1103,6 +1254,8 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * The API key and URL are read from config/services.php so the credential
      * stays server-side and never reaches browser JavaScript.
+     *
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function importEventFlowEvents()
     {
@@ -1145,6 +1298,9 @@ private function calculateFacilityCostFromPayload(array $data): array
 
     /**
      * Normalizes EventFlow API response shapes into a plain event list.
+     *
+     * @param mixed $payload
+     * @return array
      */
     private function extractEventFlowEvents($payload): array
     {
@@ -1167,6 +1323,9 @@ private function calculateFacilityCostFromPayload(array $data): array
 
     /**
      * Imports external facility events using the existing cost calculation path.
+     *
+     * @param array $events
+     * @return int
      */
     private function importExternalFacilityEvents(array $events): int
     {
@@ -1196,6 +1355,9 @@ private function calculateFacilityCostFromPayload(array $data): array
 
     /**
      * Applies defaults for fields EventFlow may not send yet.
+     *
+     * @param array $event
+     * @return array
      */
     private function normalizeExternalFacilityEvent(array $event): array
     {
@@ -1235,6 +1397,9 @@ private function calculateFacilityCostFromPayload(array $data): array
      *
      * Removes the given report item from the database and redirects
      * back to the facility management view with a success message.
+     *
+     * @param FacilityCostReportItem $item
+     * @return \Illuminate\Http\RedirectResponse
      */
     public function destroy(FacilityCostReportItem $item)
     {
@@ -1297,15 +1462,31 @@ private function calculateFacilityCostFromPayload(array $data): array
 {
     $validated = $request->validate([
         'classroom' => ['required', 'string'],
-        'event_date' => ['required', 'date'],
+        'event_date' => ['required', 'date', 'after_or_equal:today'],
         'event_end_date' => ['required', 'date', 'after_or_equal:event_date'],
-        'start_time' => ['required'],
-        'end_time' => ['required'],
-        'description' => ['required', 'string', 'min:10', 'max:1000'],
-        'responsible' => ['required', 'string', 'min:5', 'max:60'],
-        'period_type' => ['required', 'string'],
+        'start_time' => ['required', 'date_format:H:i'],
+        'end_time' => ['required', 'date_format:H:i', function ($attr, $value, $fail) use ($request) {
+            $start = $request->input('start_time');
+            if (!$start) return;
+            $endMin   = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+            $startMin = (int) substr($start,  0, 2) * 60 + (int) substr($start,  3, 2);
+            if ($endMin <= $startMin) {
+                $fail('El horario final del evento debe ser mayor que la hora inicial del evento.');
+                return;
+            }
+            $period = $request->input('period_type');
+            if ($period === 'workday' && ($startMin < 450 || $endMin > 990)) {
+                $fail('Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.');
+            } elseif (in_array($period, ['non_workday_saturday', 'non_workday_sunday_holiday']) && ($startMin < 480 || $endMin > 1290)) {
+                $fail('Para períodos no laborables solo se permiten horarios de 8:00 a.m. a 9:30 p.m.');
+            }
+        }],
+        'description' => ['required', 'string', 'min:10', 'max:250', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9 .,\-]+$/u'],
+        'responsible' => ['required', 'string', 'min:8', 'max:40', 'regex:/^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/u'],
+        'period_type' => ['required', 'in:workday,non_workday_saturday,non_workday_sunday_holiday'],
         'rate_mode' => ['required', 'in:daily,weekly,monthly'],
         'services' => ['required', 'array', 'min:1'],
+        'services.*' => ['in:electricity,water,utilities'],
     ]);
 
     $parent = $this->getGroupParent($item);
@@ -1367,10 +1548,25 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
     $validated = $request->validate([
         'scope' => ['required', 'in:single_day,this_and_following'],
         'date' => ['required', 'date'],
-        'start_time' => ['required'],
-        'end_time' => ['required'],
+        'start_time' => ['required', 'date_format:H:i'],
+        'end_time' => ['required', 'date_format:H:i', function ($attr, $value, $fail) use ($request) {
+            $start = $request->input('start_time');
+            if (!$start) return;
+            $endMin   = (int) substr($value, 0, 2) * 60 + (int) substr($value, 3, 2);
+            $startMin = (int) substr($start,  0, 2) * 60 + (int) substr($start,  3, 2);
+            if ($endMin <= $startMin) {
+                $fail('El horario final del evento debe ser mayor que la hora inicial del evento.');
+                return;
+            }
+            $period = $request->input('period_type');
+            if ($period === 'workday' && ($startMin < 450 || $endMin > 990)) {
+                $fail('Para el período laborable solo se permiten horarios de 7:30 a.m. a 4:30 p.m.');
+            } elseif (in_array($period, ['non_workday_saturday', 'non_workday_sunday_holiday']) && ($startMin < 480 || $endMin > 1290)) {
+                $fail('Para períodos no laborables solo se permiten horarios de 8:00 a.m. a 9:30 p.m.');
+            }
+        }],
         'period_type' => ['required', 'in:workday,non_workday_saturday,non_workday_sunday_holiday'],
-        'force_overwrite' => ['nullable', 'boolean'],
+        'delete_only' => ['nullable', 'boolean'],
     ]);
 
     $parent = $this->getCustomizableTarget($item);
@@ -1413,7 +1609,7 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
         ]);
     }
 
-    $overlappingCustomDays = FacilityCostReportItem::where('event_group_id', $parent->event_group_id)
+    $overlappingCustomDays = FacilityCostReportItem::where('event_group_id', $groupId)
         ->where('sub_event_type', 'custom_day')
         ->where('custom_parent_item_id', $parent->id)
         ->where(function ($query) use ($customStartDate, $customEndDate) {
@@ -1436,6 +1632,17 @@ public function customizeDays(Request $request, FacilityCostReportItem $item)
         }
 
         $parent->refresh();
+    }
+
+    if ($request->boolean('delete_only')) {
+        $this->logActivity(
+            'Eliminar modificaciones de días',
+            "Se eliminaron modificaciones existentes desde {$customStartDate->toDateString()} hasta {$customEndDate->toDateString()} en el grupo {$groupId}."
+        );
+
+        return response()->json([
+            'message' => 'Modificaciones eliminadas correctamente.',
+        ]);
     }
 
     $payload = [
@@ -1539,6 +1746,9 @@ private function getGroupParent(FacilityCostReportItem $item): FacilityCostRepor
      *
      * Applies the same report type, month, year, and classroom filters as
      * the index view, then streams a downloadable CSV with a timestamped filename.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
      */
     public function exportCsv(Request $request)
     {
@@ -1643,16 +1853,16 @@ private function getGroupParent(FacilityCostReportItem $item): FacilityCostRepor
             * Main data table.
             */
             fputcsv($handle, [
-                'Fecha Inicio',
-                'Fecha Fin',
+                'Fecha Inicial del Evento',
+                'Fecha Final del Evento',
                 'Responsable',
                 'Área',
                 'Descripción',
-                'Hora Inicio',
-                'Hora Fin',
-                'Horas',
+                'Horario Inicial del Evento',
+                'Horario Final del Evento',
+                'Horas Totales',
                 'Período',
-                'Modo de tarifa',
+                'Tipo de Tarifa',
                 'Servicios',
                 'Costo',
             ]);
@@ -1766,6 +1976,9 @@ private function getGroupParent(FacilityCostReportItem $item): FacilityCostRepor
      * Applies the same filters as the CSV export, renders the
      * facility_cost_pdf view in landscape A4 format, and returns
      * it as a downloadable PDF with a timestamped filename.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function exportPdf(Request $request)
     {
