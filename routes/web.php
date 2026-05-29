@@ -74,13 +74,13 @@ Route::get('/', function () {
 Route::post('/test-concurrency', function () {
     \App\Models\Post::create([
         'user_id' => 1,
-        'title' => 'k6 test',
-        'description' => 'concurrency',
-        'cost' => 10,
-        'category' => 'test',
+        'title' => 'KIneJD',
+        'description' => 'Equipo conformado por 4 posibles ingenieros de computadoras con ganas de cambiar al mundo.',
+        'cost' => 100,
+        'category' => 'otro',
         'condition' => 'nuevo',
         'status' => 'Disponible',
-        'photo_1_url' => "posts/ymCVHFQX5SXg7g4JA9mYlh4y2vbRCTbGicgeBa9z.jpg",
+        'photo_1_url' => "posts/Ipz6Dba44Rd0Txxn2vNcNj4ku44RUHAYEu8wLI6c.jpg",
     ]);
 
     return response()->json(['ok' => true]);
