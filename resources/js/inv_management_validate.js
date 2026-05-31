@@ -106,6 +106,74 @@ document.addEventListener('DOMContentLoaded', function () {
         searchBtn.disabled = searchInput.value.trim().length === 0;
     }
 
+    function updateSubtleSelectText(select) {
+        if (!select) return;
+
+        if (select.value) {
+            select.classList.remove('text-muted');
+            select.classList.add('text-dark');
+        } else {
+            select.classList.add('text-muted');
+            select.classList.remove('text-dark');
+        }
+    }
+
+    function initializeSubtleSelects() {
+        document.querySelectorAll('.inventory-subtle-select').forEach(function (select) {
+            updateSubtleSelectText(select);
+
+            select.addEventListener('change', function () {
+                updateSubtleSelectText(select);
+            });
+        });
+    }
+
+    function renderMissingFieldsAlert(alertElement, listElement, missingFields) {
+        if (!alertElement || !listElement) return;
+
+        listElement.innerHTML = '';
+
+        missingFields.forEach(function (fieldName) {
+            const item = document.createElement('li');
+            item.textContent = fieldName;
+            listElement.appendChild(item);
+        });
+
+        alertElement.classList.remove('d-none');
+    }
+
+    function hideMissingFieldsAlert(alertElement) {
+        if (alertElement) {
+            alertElement.classList.add('d-none');
+        }
+    }
+
+    function scrollToFirstInvalidField(form, fallbackElement) {
+        const firstInvalidField = form.querySelector('.is-invalid');
+
+        if (firstInvalidField) {
+            firstInvalidField.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+
+            firstInvalidField.classList.add('border-danger');
+
+            setTimeout(function () {
+                firstInvalidField.classList.remove('border-danger');
+            }, 1500);
+
+            return;
+        }
+
+        if (fallbackElement) {
+            fallbackElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+    }
+
     /*
      * Preserves scroll position across most form submissions and links,
      * except for pagination where the page should behave normally.
@@ -131,6 +199,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     updateSearchButtonState();
+    initializeSubtleSelects();
 
     /*
      * Helper functions to safely retrieve Bootstrap toast and modal
@@ -583,6 +652,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const imagePreview = document.getElementById('imagePreview');
         const submitAddItemBtn = document.getElementById('submitAddItemBtn');
 
+        const submitAddItemWrapper = document.getElementById('submitAddItemWrapper');
+        const addItemMissingFieldsAlert = document.getElementById('addItemMissingFieldsAlert');
+        const addItemMissingFieldsList = document.getElementById('addItemMissingFieldsList');
+
         /*
          * Field-specific validation helpers for the add item form.
          */
@@ -754,6 +827,60 @@ document.addEventListener('DOMContentLoaded', function () {
             reader.readAsDataURL(file);
         }
 
+        function getAddMissingFields() {
+            const missing = [];
+
+            if (!validateName(false)) {
+                missing.push('Nombre del equipo');
+            }
+
+            if (!validateCategory(false)) {
+                missing.push('Categoría');
+            }
+
+            if (!validateLocation(false)) {
+                missing.push('Ubicación');
+            }
+
+            if (!validateTotalQuantity(false)) {
+                missing.push('Cantidad total');
+            }
+
+            if (!validateAvailableQuantity(false)) {
+                missing.push('Cantidad disponible');
+            }
+
+            if (!validateImage(false)) {
+                missing.push('Imagen del equipo');
+            }
+
+            return missing;
+        }
+
+        function showAddItemMissingFieldsIndicator() {
+            const valid =
+                validateName(true) &&
+                validateCategory(true) &&
+                validateTotalQuantity(true) &&
+                validateAvailableQuantity(true) &&
+                validateLocation(true) &&
+                validateImage(true);
+
+            if (valid) {
+                hideMissingFieldsAlert(addItemMissingFieldsAlert);
+                addItemForm.requestSubmit();
+                return;
+            }
+
+            renderMissingFieldsAlert(
+                addItemMissingFieldsAlert,
+                addItemMissingFieldsList,
+                getAddMissingFields()
+            );
+
+            scrollToFirstInvalidField(addItemForm, addItemMissingFieldsAlert);
+        }
+
         /*
          * Enables the add button only when every required field
          * currently satisfies validation rules.
@@ -768,6 +895,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 validateImage(false);
 
             submitAddItemBtn.disabled = !valid;
+
+            /*
+             * When disabled, pointer events are removed from the button so the wrapper
+             * can catch the click and show the visual validation indicator.
+             */
+            submitAddItemBtn.style.pointerEvents = valid ? '' : 'none';
+
+            if (valid) {
+                hideMissingFieldsAlert(addItemMissingFieldsAlert);
+            }
         }
 
         /*
@@ -873,6 +1010,15 @@ document.addEventListener('DOMContentLoaded', function () {
             updateAddButtonState();
         });
 
+        if (submitAddItemWrapper) {
+            submitAddItemWrapper.addEventListener('click', function (event) {
+                if (submitAddItemBtn && submitAddItemBtn.disabled) {
+                    event.preventDefault();
+                    showAddItemMissingFieldsIndicator();
+                }
+            });
+        }
+
         /*
          * Final validation before submitting a new inventory item.
          */
@@ -887,6 +1033,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!valid) {
                 e.preventDefault();
+                showAddItemMissingFieldsIndicator();
                 return;
             }
 
@@ -931,6 +1078,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const editImagePreview = form.querySelector('.edit-image-preview');
 
         const submitEditBtn = form.querySelector('button[type="submit"]');
+
+        const submitEditWrapper = form.querySelector('.submit-edit-item-wrapper');
+        const editMissingFieldsAlert = form.querySelector('.edit-missing-fields-alert');
+        const editMissingFieldsList = form.querySelector('.edit-missing-fields-list');
 
         /*
  * Field-specific validation helpers for the edit item form.
@@ -1081,6 +1232,59 @@ document.addEventListener('DOMContentLoaded', function () {
             reader.readAsDataURL(file);
         }
 
+        function getEditMissingFields() {
+            const missing = [];
+
+            if (!validateDescription(false)) {
+                missing.push('Nombre del equipo');
+            }
+
+            if (!validateCategory(false)) {
+                missing.push('Categoría');
+            }
+
+            if (!validateLocation(false)) {
+                missing.push('Ubicación');
+            }
+
+            if (!validateQuantity(false)) {
+                missing.push('Cantidad total');
+            }
+
+            if (!validateAvailable(false)) {
+                missing.push('Cantidad disponible');
+            }
+
+            if (!validateEditImage(false)) {
+                missing.push('Imagen del equipo');
+            }
+
+            return missing;
+        }
+
+        function showEditMissingFieldsIndicator() {
+            const valid =
+                validateDescription(true) &&
+                validateCategory(true) &&
+                validateLocation(true) &&
+                validateQuantity(true) &&
+                validateAvailable(true) &&
+                validateEditImage(true);
+
+            if (valid) {
+                hideMissingFieldsAlert(editMissingFieldsAlert);
+                form.requestSubmit();
+                return;
+            }
+
+            renderMissingFieldsAlert(
+                editMissingFieldsAlert,
+                editMissingFieldsList,
+                getEditMissingFields()
+            );
+
+            scrollToFirstInvalidField(form, editMissingFieldsAlert);
+        }
 
         function updateEditButtonState() {
             const valid =
@@ -1092,6 +1296,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 validateEditImage(false);
 
             submitEditBtn.disabled = !valid;
+
+            /*
+             * When disabled, the wrapper catches the click and shows the visual validation.
+             */
+            submitEditBtn.style.pointerEvents = valid ? '' : 'none';
+
+            if (valid) {
+                hideMissingFieldsAlert(editMissingFieldsAlert);
+            }
         }
 
         /*
@@ -1188,6 +1401,15 @@ document.addEventListener('DOMContentLoaded', function () {
             updateEditButtonState();
         });
 
+        if (submitEditWrapper) {
+            submitEditWrapper.addEventListener('click', function (event) {
+                if (submitEditBtn && submitEditBtn.disabled) {
+                    event.preventDefault();
+                    showEditMissingFieldsIndicator();
+                }
+            });
+        }
+
         /*
          * Final validation for edit submissions.
          * If valid, submission is paused until the user confirms the edit.
@@ -1209,6 +1431,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (!valid) {
                 e.preventDefault();
+                showEditMissingFieldsIndicator();
                 return;
             }
 

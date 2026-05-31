@@ -237,6 +237,16 @@
                                     @csrf
                                     @method('PUT')
 
+                                    <div class="edit-missing-fields-alert alert alert-danger border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 shadow-sm d-none mx-auto text-start"
+                                         style="max-width: 520px;"
+                                         role="alert">
+                                        <div class="fw-bold mb-2 text-center">
+                                            Faltan campos requeridos para guardar los cambios
+                                        </div>
+
+                                        <ul class="mb-0 ps-3 edit-missing-fields-list"></ul>
+                                    </div>
+
                                     {{-- Original item descripiton display on the card and the from to edit it --}}
                                     <div class="mb-3">
                                         <label class="form-label fw-semibold">
@@ -264,7 +274,7 @@
                                             Categoría<span class="text-danger">*</span>
                                         </label>
 
-                                        <select class="form-select form-select-lg mb-2 edit-category-existing">
+                                        <select class="form-select form-select-lg mb-2 edit-category-existing inventory-subtle-select text-dark">
                                             <option value="">Selecciona una categoría existente</option>
                                             @foreach($categories as $category)
                                                 <option value="{{ $category }}" {{ $item->category === $category ? 'selected' : '' }}>
@@ -302,7 +312,7 @@
                                             Ubicación<span class="text-danger">*</span>
                                         </label>
 
-                                        <select class="form-select form-select-lg mb-2 edit-location-existing">
+                                        <select class="form-select form-select-lg mb-2 edit-location-existing inventory-subtle-select text-dark">
                                             <option value="">Selecciona una ubicación existente</option>
                                             @foreach($locations as $location)
                                                 <option value="{{ $location }}" {{ $item->location === $location ? 'selected' : '' }}>
@@ -426,9 +436,17 @@
                                         </button>
 
                                         {{-- Make the PUT method to the database --}}
-                                        <button type="submit" class="btn btn-warning">
-                                            Guardar Cambios
-                                        </button>
+                                        <div class="submit-edit-item-wrapper d-inline-block"
+                                             style="cursor: pointer;"
+                                             data-bs-toggle="tooltip"
+                                             data-bs-placement="top"
+                                             data-bs-custom-class="custom-tooltip"
+                                             data-bs-title="Completa los campos requeridos para guardar los cambios.">
+
+                                            <button type="submit" class="btn btn-warning">
+                                                Guardar Cambios
+                                            </button>
+                                        </div>
                                     </div>
                                 </form>
                             </div>
@@ -495,6 +513,17 @@
                           novalidate>
                         @csrf
 
+                        <div id="addItemMissingFieldsAlert"
+                             class="alert alert-danger border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 shadow-sm d-none mx-auto text-start"
+                             style="max-width: 520px;"
+                             role="alert">
+                            <div class="fw-bold mb-2 text-center">
+                                Faltan campos requeridos para agregar el equipo
+                            </div>
+
+                            <ul class="mb-0 ps-3" id="addItemMissingFieldsList"></ul>
+                        </div>
+
                         {{-- New item description --}}
                         <div class="mb-3">
                             <label for="nombre_item" class="form-label fw-semibold">
@@ -523,7 +552,8 @@
                             </label>
 
                             {{-- Select new item from existing category dropdown --}}
-                            <select id="categoria_existente" class="form-select form-select-lg mb-2">
+                            <select id="categoria_existente"
+                                    class="form-select form-select-lg mb-2 text-muted inventory-subtle-select">
                                 <option value="">Selecciona una categoría existente</option>
                                 @foreach($categories as $category)
                                     <option value="{{ $category }}">{{ $category }}</option>
@@ -556,7 +586,7 @@
                             </label>
 
                             {{-- Choose new item location from existing locations --}}
-                            <select id="ubicacion_existente" class="form-select form-select-lg mb-2">
+                            <select id="ubicacion_existente" class="form-select form-select-lg mb-2 text-muted inventory-subtle-select">
                                 <option value="">Selecciona una ubicación existente</option>
                                 @foreach($locations as $location)
                                     <option value="{{ $location }}">{{ $location }}</option>
@@ -670,9 +700,18 @@
                                 Cancelar
                             </button>
                             {{-- Add new item with completed fields to the database --}}
-                            <button type="submit" class="btn btn-success" id="submitAddItemBtn" disabled>
-                                <i class="bi bi-plus-lg me-1 "></i> Agregar Equipo
-                            </button>
+                            <div id="submitAddItemWrapper"
+                                 class="d-inline-block"
+                                 style="cursor: pointer;"
+                                 data-bs-toggle="tooltip"
+                                 data-bs-placement="top"
+                                 data-bs-custom-class="custom-tooltip"
+                                 data-bs-title="Completa los campos requeridos para agregar el equipo.">
+
+                                <button type="submit" class="btn btn-success" id="submitAddItemBtn" disabled>
+                                    <i class="bi bi-plus-lg me-1"></i> Agregar Equipo
+                                </button>
+                            </div>
                         </div>
                     </form>
                 </div>
