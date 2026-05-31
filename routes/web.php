@@ -67,6 +67,39 @@ Route::get('/', function () {
 });
 
 /**
+ * Checks if account is active to force logout
+ */
+
+Route::get('/check-account-status', function (Illuminate\Http\Request $request) {
+    if (!Auth::check()) {
+        return response()->json([
+            'authenticated' => false,
+            'blocked' => false,
+        ]);
+    }
+
+    $user = Auth::user()->fresh();
+
+    if (!$user || in_array($user->status, ['Bloqueado', 'Blocked'])) {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return response()->json([
+            'authenticated' => false,
+            'blocked' => true,
+            'redirect' => url('/?blocked=1'),
+        ], 403);
+    }
+
+    return response()->json([
+        'authenticated' => true,
+        'blocked' => false,
+    ]);
+})->middleware('auth')->name('account.status');
+
+/**
  * Temporary concurrency testing route.
  *
  * Used for load testing post creation with tools like k6.

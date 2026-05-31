@@ -683,9 +683,9 @@
                                     <th class="text-center">Estado</th>
                                     <th class="requests-date-cell">Fecha de Creación</th>
                                     <th class="requests-date-cell">Fecha y Hora de Recogida</th>
-                                    <th class="requests-date-cell">Fecha y Hora de Devolución</th>
+                                    <th class="requests-date-cell">Fecha y Hora a Devolver</th>
                                     <th class="requests-returned-cell text-center">¿Devuelto?</th>
-                                    <th class="requests-date-cell">Devuelto en</th>                                </tr>
+                                    <th class="requests-date-cell">Fecha y Hora en que se Devolvió</th>                                </tr>
                                 </thead>
 
                                 <tbody>

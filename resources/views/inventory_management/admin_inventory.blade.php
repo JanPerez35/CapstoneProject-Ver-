@@ -410,13 +410,13 @@
                                     </small>
                                     <div class="invalid-feedback d-block error-image"></div>
 
-                                    <div class="mb-3 d-none edit-preview-wrapper">
-                                        <label class="form-label fw-semibold">Vista previa</label>
+                                    <div class="mb-3 edit-preview-wrapper">
+                                        <label class="form-label fw-semibold">Imagen actual / Vista previa</label>
                                         <img
-                                            src=""
-                                            alt="Vista previa"
+                                            src="{{ $item->equipment_photo_url ? asset('storage/' . $item->equipment_photo_url) : asset('images/kinventory_images/default.jpg') }}"
+                                            alt="Vista previa de {{ $item->description }}"
                                             class="img-fluid rounded-4 w-100 edit-image-preview"
-                                            style="height: 220px; object-fit: cover; object-position: center;"
+                                            style="height: 220px; object-fit: contain; object-position: center;"
                                         >
                                     </div>
 
@@ -809,5 +809,31 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('input[type="file"][id^="edit_image_"]').forEach(function (input) {
+                input.addEventListener('change', function () {
+                    const form = input.closest('form');
+                    const previewWrapper = form.querySelector('.edit-preview-wrapper');
+                    const previewImage = form.querySelector('.edit-image-preview');
+                    const file = input.files && input.files[0];
+
+                    if (!previewWrapper || !previewImage || !file) {
+                        return;
+                    }
+
+                    const reader = new FileReader();
+
+                    reader.onload = function (event) {
+                        previewImage.src = event.target.result;
+                        previewWrapper.classList.remove('d-none');
+                    };
+
+                    reader.readAsDataURL(file);
+                });
+            });
+        });
+    </script>
 
 </x-layout>

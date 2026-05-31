@@ -69,9 +69,13 @@ class EnsureUserIsStillActive
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
 
-                return redirect('/')->withErrors([
-                    'auth' => 'Tu cuenta ha sido bloqueada. No puedes acceder al sistema.'
-                ]);
+                return redirect('/')
+                    ->with('toast_error', 'Tu cuenta está bloqueada.')
+                    ->withHeaders([
+                        'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+                        'Pragma' => 'no-cache',
+                        'Expires' => 'Sat, 01 Jan 2000 00:00:00 GMT',
+                    ]);
             }
 
             /**

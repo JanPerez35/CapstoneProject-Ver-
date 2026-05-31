@@ -104,7 +104,7 @@ class UserController extends Controller
         if ($request->status === 'Bloqueado' && $previousStatus !== 'Bloqueado') {
             $this->emailService->send(
                 $user->email,
-                'Cuenta bloqueada',
+                'Cuenta bloqueada en MAIKINE',
                 'Tu cuenta ha sido bloqueada de la plataforma MAIKINE. Si entiendes que esto fue un error, comunícate con el Super Administrador (' . $superAdminEmail . ').'
             );
         }
@@ -116,7 +116,7 @@ class UserController extends Controller
         if ($request->status === 'Activo' && $previousStatus !== 'Activo') {
             $this->emailService->send(
                 $user->email,
-                'Cuenta desbloqueada',
+                'Cuenta desbloqueada en MAIKINE',
                 'Tu cuenta ha sido desbloqueada en la plataforma MAIKINE. Ya puedes acceder nuevamente y continuar utilizando los servicios con normalidad.'
             );
         }

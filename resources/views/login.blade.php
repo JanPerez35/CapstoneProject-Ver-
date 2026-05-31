@@ -158,7 +158,7 @@
 
     {{-- Portal title and subtitle --}}
     <h1 class="main-title">MAIKINE</h1>
-    <p class="subtitle">Portal del Departamento de Kinesiología</p>
+    <p class="subtitle">Sistema de Mercado e Inventario para el Departamento de Kinesiología</p>
 
     {{-- Authentication button using institutional UPRM login --}}
     <div class="mt-4">
@@ -169,17 +169,51 @@
 
     {{-- Institutional access restriction notice --}}
     <p class="footer-text fw-bold">
-        *El portal del Departamento de Kinesiología llamado MAIKINE <br>
-        es de uso exclusivo para usuarios registrados en la Universidad <br>
-        de Puerto Rico Recinto de Mayagüez (UPRM)
+        *El sistema de mercado e Inventario para el Departamento de Kinesiología llamado MAIKINE <br>
+        es de uso exclusivo para usuarios registrados en la Universidad
+        de <br>  Puerto Rico Recinto de Mayagüez (UPRM)
     </p>
 
     {{-- Short system description --}}
     <p class="footer-text">
-        Sistema de Mercado e Inventario de Kinesiología
+        Portal para del Departamento de Kinesiología
     </p>
 
 </main>
 
+@if (session('toast_error'))
+    <div class="toast-container position-fixed bottom-0 start-0 p-3" style="z-index: 9999;">
+        <div id="blockedAccountToast"
+             class="toast align-items-center bg-danger-subtle text-danger-emphasis border border-danger-subtle border-0 shadow"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body fw-semibold">
+                    {{ session('toast_error') }}
+                </div>
+
+                <button type="button"
+                        class="btn-close  me-2 m-auto"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toastElement = document.getElementById('blockedAccountToast');
+
+            if (toastElement && window.bootstrap) {
+                const toast = new bootstrap.Toast(toastElement, {
+                    delay: 5000
+                });
+
+                toast.show();
+            }
+        });
+    </script>
+@endif
 </body>
 </html>

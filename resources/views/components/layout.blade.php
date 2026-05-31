@@ -177,9 +177,13 @@
                 </button>
 
                 {{-- Logout form --}}
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" id="logoutForm">
                     @csrf
-                    <button type="submit" class="btn btn-success">
+
+                    <button type="button"
+                            class="btn btn-success"
+                            data-bs-toggle="modal"
+                            data-bs-target="#logoutConfirmModal">
                         <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
                     </button>
                 </form>
@@ -227,6 +231,8 @@
                         </ul>
                     </div>
                 @endif
+
+
 
                 {{-- Cart Modal title and short description for user --}}
                 <div class="modal-header border-0 pb-0 align-items-start">
@@ -495,7 +501,7 @@
                                        name="special_case"
                                        value="1">
                                 <label class="form-check-label fw-semibold" for="special_case">
-                                    Caso Especial (Necesito el equipo fuera del horario regular)
+                                    Caso Especial (Necesito devolver el equipo un dia diferente al de recogida)
                                 </label>
                             </div>
 
@@ -642,6 +648,48 @@
                     @endif
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+{{-- Confirmation modal shown before logging out --}}
+<div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-labelledby="logoutConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow">
+
+            <div class="modal-header border-0 pb-0 align-items-start">
+                <div class="w-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="modal-title fw-bold mb-0" id="logoutConfirmModalLabel">
+                            Cerrar sesión
+                        </h4>
+
+                        <button type="button"
+                                class="btn-close ms-3"
+                                data-bs-dismiss="modal"
+                                aria-label="Cerrar"></button>
+                    </div>
+
+                    <p class="text-muted mt-2 mb-0">
+                        ¿Estás seguro que quieres cerrar sesión?
+                    </p>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 pt-2">
+                <button type="button"
+                        class="btn btn-outline-secondary"
+                        data-bs-dismiss="modal">
+                    Cancelar
+                </button>
+
+                <button type="button"
+                        class="btn btn-success"
+                        id="confirmLogoutBtn">
+                    Sí, cerrar sesión
+                </button>
+            </div>
+
         </div>
     </div>
 </div>
@@ -1038,6 +1086,39 @@
         </div>
     </div>
 </div>
+<script>
+    setInterval(function () {
+        fetch('{{ route('account.status') }}', {
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(async function (response) {
+                const data = await response.json().catch(() => null);
+
+                if (data && data.blocked && data.redirect) {
+                    window.location.href = data.redirect;
+                }
+            })
+            .catch(function () {
+
+            });
+    }, 5000);
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+        const logoutForm = document.getElementById('logoutForm');
+
+        if (confirmLogoutBtn && logoutForm) {
+            confirmLogoutBtn.addEventListener('click', function () {
+                logoutForm.submit();
+            });
+        }
+    });
+</script>
 
 </body>
 </html>
