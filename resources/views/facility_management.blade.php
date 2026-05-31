@@ -270,7 +270,7 @@
                     <div class="col-md-3">
                         <select id="filterServices" name="filter_services" class="form-select border-2 border-dark">
                             <option value=""> Tipo de Servicios</option>
-                            <option value="Utilidades">Utilidades</option>
+                            <option value="Material de Limpieza">Material de Limpieza</option>
                             <option value="Electricidad">Electricidad</option>
                             <option value="Agua">Agua</option>
                         </select>
@@ -686,7 +686,7 @@
 
                                 <div class="row g-3">
                                     @foreach ([
-                                        ['id' => 'configUtilities', 'label' => 'Utilidades', 'name' => 'supply_cost'],
+                                        ['id' => 'configUtilities', 'label' => 'Material de Limpieza', 'name' => 'supply_cost'],
                                         ['id' => 'configElectricity', 'label' => 'Electricidad', 'name' => 'electricity_cost'],
                                         ['id' => 'configWater', 'label' => 'Agua', 'name' => 'water_cost'],
                                     ] as $campo)
@@ -991,11 +991,11 @@
                                                 name="services[]"
                                             >
                                             <label class="form-check-label fw-semibold" for="rentalUtilities">
-                                                Utilidades
+                                                Material de Limpieza
                                             </label>
                                         </div>
                                         <small class="text-muted d-block mt-2">
-                                            Seleccione si el evento incluye costos generales de utilidades asociados al
+                                            Seleccione si el evento incluye costos de material de limpieza asociados al
                                             uso del área.
                                         </small>
                                     </div>
@@ -1399,11 +1399,11 @@
                                             <input class="form-check-input" type="checkbox" id="relatedUtilities"
                                                    value="utilities">
                                             <label class="form-check-label fw-semibold" for="relatedUtilities">
-                                                Utilidades
+                                                Material de Limpieza
                                             </label>
                                         </div>
                                         <small class="text-muted d-block mt-2">
-                                            Seleccione si el evento incluye costos generales de utilidades asociados al
+                                            Seleccione si el evento incluye costos de material de limpieza asociados al
                                             uso del área.
                                         </small>
                                     </div>
@@ -1903,11 +1903,11 @@
                                             <input class="form-check-input" type="checkbox" id="editUtilities"
                                                    value="utilities">
                                             <label class="form-check-label fw-semibold" for="editUtilities">
-                                                Utilidades
+                                                Material de Limpieza
                                             </label>
                                         </div>
                                         <small class="text-muted d-block mt-2">
-                                            Seleccione si el evento incluye costos generales de utilidades asociados al
+                                            Seleccione si el evento incluye costos de material de limpieza asociados al
                                             uso del área.
                                         </small>
                                     </div>

@@ -130,7 +130,7 @@
 
         $translated = array_map(function ($service) {
             return match($service) {
-                'utilities' => 'Utilidades',
+                'utilities' => 'Material de Limpieza',
                 'electricity' => 'Electricidad',
                 'water' => 'Agua',
                 default => ucfirst($service),

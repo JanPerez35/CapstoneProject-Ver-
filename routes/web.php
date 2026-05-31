@@ -139,19 +139,19 @@ Route::middleware(['auth', 'user.active'])->group(function () {
      *
      * Equipment browsing, borrowing, and cart management.
      */
-    Route::get('/kinventory', [EquipmentController::class, 'kinventory'])
+    Route::get('/kinventario', [EquipmentController::class, 'kinventory'])
         ->name('kinventory');
 
-Route::post('/cart/add', [LendingController::class, 'addToCart'])
+Route::post('/carrito/agregar', [LendingController::class, 'addToCart'])
         ->name('cart.add');
 
-    Route::get('/cart', [LendingController::class, 'cart'])
+    Route::get('/carrito', [LendingController::class, 'cart'])
         ->name('cart.index');
 
-    Route::delete('/cart/remove/{id}', [LendingController::class, 'removeFromCart'])
+    Route::delete('/carrito/eliminar/{id}', [LendingController::class, 'removeFromCart'])
         ->name('cart.remove');
 
-    Route::post('/cart/checkout', [LendingController::class, 'checkoutCart'])
+    Route::post('/carrito/pagar', [LendingController::class, 'checkoutCart'])
         ->name('cart.checkout');
 
     /**
@@ -160,7 +160,7 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
      * Used for user search, role updates,
      * and account status changes.
      */
-    Route::get('/search_user', [UserController::class, 'index'])
+    Route::get('/buscar-usuario', [UserController::class, 'index'])
         ->name('search_user')->middleware('role:Super Administrador');
 
     Route::put('/users/{user}/role', [UserController::class, 'updateRole'])
@@ -179,43 +179,43 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
      * and statistics export by csv and pdf.
      */
 
-    Route::get('/inventory_management', [EquipmentController::class, 'index'])
+    Route::get('/gestion-inventario', [EquipmentController::class, 'index'])
         ->name('inventory_management')
         ->middleware('role:Super Administrador,Administrador de Inventario');
 
-    Route::post('/inventory_management', [EquipmentController::class, 'store'])
+    Route::post('/gestion-inventario', [EquipmentController::class, 'store'])
         ->name('inventory.store')
         ->middleware('role:Super Administrador,Administrador de Inventario');
 
-    Route::put('/equipment/{id}', [EquipmentController::class, 'update'])
+    Route::put('/equipo/{id}', [EquipmentController::class, 'update'])
         ->name('equipment.update')
         ->middleware('role:Super Administrador,Administrador de Inventario');
 
-    Route::delete('/equipment/{id}', [EquipmentController::class, 'destroy'])
+    Route::delete('/equipo/{id}', [EquipmentController::class, 'destroy'])
         ->name('equipment.destroy')
         ->middleware('role:Super Administrador,Administrador de Inventario');
 
-    Route::get('/inventory_management/borrows', [LendingController::class, 'borrows'])
+    Route::get('/gestion-inventario/prestamos', [LendingController::class, 'borrows'])
         ->name('inventory_management.borrows')
         ->middleware('role:Super Administrador,Administrador de Inventario');
 
-    Route::post('/inventory_management/requests/{id}/approve', [LendingController::class, 'approveRequest'])
+    Route::post('/gestion-inventario/solicitudes/{id}/aprobar', [LendingController::class, 'approveRequest'])
         ->name('inventory_management.requests.approve')
         ->middleware('role:Super Administrador,Administrador de Inventario');
 
-    Route::post('/inventory_management/requests/{id}/reject', [LendingController::class, 'rejectRequest'])
+    Route::post('/gestion-inventario/solicitudes/{id}/rechazar', [LendingController::class, 'rejectRequest'])
         ->name('inventory_management.requests.reject')
         ->middleware('role:Super Administrador,Administrador de Inventario');
 
-    Route::post('/inventory_management/requests/{id}/return', [LendingController::class, 'markReturned'])
+    Route::post('/gestion-inventario/solicitudes/{id}/devolver', [LendingController::class, 'markReturned'])
         ->name('inventory_management.requests.return')
         ->middleware('role:Super Administrador,Administrador de Inventario');
 
-    Route::get('/inventory_management/inventory_statistics', [InventoryStatisticsController::class, 'statistics'])
+    Route::get('/gestion-inventario/estadisticas', [InventoryStatisticsController::class, 'statistics'])
         ->name('inventory_management.inventory_statistics')
         ->middleware('role:Super Administrador,Administrador de Inventario');
 
-    Route::get('/inventory_management/inventory_statistics/export', [InventoryStatisticsController::class, 'exportStatistics'])
+    Route::get('/gestion-inventario/estadisticas/exportar', [InventoryStatisticsController::class, 'exportStatistics'])
         ->name('inventory_management.inventory_statistics.export')
         ->middleware('role:Super Administrador,Administrador de Inventario');
 
@@ -227,7 +227,7 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
      * detail view, reviews, and moderation reports.
      */
 
-    Route::get('/kinemarket', [PostController::class, 'index'])
+    Route::get('/kinemercado', [PostController::class, 'index'])
         ->name('kinemarket');
 
     Route::post('/posts', [PostController::class, 'store'])
@@ -248,7 +248,7 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
     Route::post('/reports', [UserReportController::class, 'store']);
 
     Route::middleware('role:Super Administrador,Administrador de Mercado')->group(function () {
-        Route::get('/marketplace_management', [UserReportController::class, 'index'])
+        Route::get('/gestion-mercado', [UserReportController::class, 'index'])
             ->name('marketplace_management');
 
         Route::get('/reports', [UserReportController::class, 'index'])
@@ -273,10 +273,10 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
      * message sending, and message retrieval.
      */
 
-    Route::get('/my_messages', [ChatController::class, 'index'])
+    Route::get('/mis-mensajes', [ChatController::class, 'index'])
         ->name('my_messages');
 
-    Route::get('/chat/{chatId}', [ChatController::class, 'show'])
+    Route::get('/conversacion/{chatId}', [ChatController::class, 'show'])
         ->name('chat.show');
 
     Route::post('/chats/open', [ChatController::class, 'openOrCreate'])
@@ -296,7 +296,7 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
      * imports, and exports for facility administration.
      */
     Route::middleware('role:Super Administrador,Administrador de Instalaciones')->group(function () {
-    Route::get('/facility_management', [FacilityCostController::class, 'index'])
+    Route::get('/gestion-instalaciones', [FacilityCostController::class, 'index'])
         ->name('facility_management');
 
     Route::post('/facility/rates', [FacilityCostController::class, 'saveRates'])
@@ -314,10 +314,10 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
     Route::delete('/facility/classrooms', [FacilityCostController::class, 'destroyClassrooms'])
         ->name('facility.classrooms.destroy');
 
-    Route::get('/facility_management/export/csv', [FacilityCostController::class, 'exportCsv'])
+    Route::get('/gestion-instalaciones/exportar/csv', [FacilityCostController::class, 'exportCsv'])
         ->name('facility.export.csv');
 
-    Route::get('/facility_management/export/pdf', [FacilityCostController::class, 'exportPdf'])
+    Route::get('/gestion-instalaciones/exportar/pdf', [FacilityCostController::class, 'exportPdf'])
         ->name('facility.export.pdf');
 
     Route::post('/facility/import-eventflow-events', [FacilityCostController::class, 'importEventFlowEvents'])
@@ -343,7 +343,7 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
      *
      * Showcases the individual user profile.
      */
-    Route::get('/my_profile', [ProfileController::class, 'profile'])
+    Route::get('/mi-perfil', [ProfileController::class, 'profile'])
         ->name('my_profile');
 
     /**
@@ -351,11 +351,11 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
      *
      * Keeps logs of what users do in the platform (ONLY for Super Admin)
      */
-    Route::get('/access_logs', [AccessLogController::class, 'index'])
+    Route::get('/registros-acceso', [AccessLogController::class, 'index'])
         ->name('access_logs')
         ->middleware('role:Super Administrador');
 
-    Route::get('/access_logs/export-csv', [AccessLogController::class, 'exportCsv'])
+    Route::get('/registros-acceso/exportar-csv', [AccessLogController::class, 'exportCsv'])
         ->name('access_logs.export-csv')
         ->middleware('role:Super Administrador');
 
@@ -365,10 +365,10 @@ Route::post('/cart/add', [LendingController::class, 'addToCart'])
      * Terms and conditions view for updates (ONLY for Super Admin)
      */
     Route::middleware('auth')->group(function () {
-        Route::get('/terms-and-conditions', [TermsController::class, 'show'])->name('terms.show');
-        Route::get('/terms-and-conditions/footer', [TermsController::class, 'showFromFooter'])->name('terms.footer');
-        Route::post('/terms-and-conditions/accept', [TermsController::class, 'accept'])->name('terms.accept');
-        Route::post('/admin/terms-and-conditions/update', [TermsController::class, 'update'])
+        Route::get('/terminos-y-condiciones', [TermsController::class, 'show'])->name('terms.show');
+        Route::get('/terminos-y-condiciones/pie', [TermsController::class, 'showFromFooter'])->name('terms.footer');
+        Route::post('/terminos-y-condiciones/aceptar', [TermsController::class, 'accept'])->name('terms.accept');
+        Route::post('/admin/terminos-y-condiciones/actualizar', [TermsController::class, 'update'])
         ->name('terms.update')
         ->middleware('role:Super Administrador');
     });

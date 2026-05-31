@@ -111,7 +111,7 @@
 <div class="container-fluid px-0">
     <header class="app-header d-flex flex-wrap align-items-center justify-content-between py-2 px-3 border-bottom">
         {{-- Application logo and home link --}}
-        <a href="/kinemarket" class="d-flex align-items-center mb-2 mb-md-0 text-decoration-none">
+        <a href="/kinemercado" class="d-flex align-items-center mb-2 mb-md-0 text-decoration-none">
             <img src="/images/kine_logo.png"
                  alt="Logo"
                  style="height: 75px; width:auto;"

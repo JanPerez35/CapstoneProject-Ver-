@@ -156,7 +156,7 @@
             @endphp
             <span class="label-badge {{ $badgeClass }} me-2 mb-1">
                 @if ($service === 'utilities')
-                    Utilidades
+                    Material de Limpieza
                 @elseif ($service === 'electricity')
                     Electricidad
                 @elseif ($service === 'water')

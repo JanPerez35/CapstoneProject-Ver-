@@ -846,7 +846,7 @@ window.populatePostDetailsModal = function (post) {
                 if (response.redirected) {
                     const redirectUrl = new URL(response.url, window.location.origin);
 
-                    redirectUrl.searchParams.set('return_to', '/kinemarket');
+                    redirectUrl.searchParams.set('return_to', '/kinemercado');
                     redirectUrl.searchParams.set('post_id', String(post.id));
 
                     window.location.href = redirectUrl.toString();
@@ -1151,6 +1151,42 @@ function getFilteredMarketplacePosts() {
 
 
 /**
+ * Builds a page range array with null values representing ellipsis gaps.
+ *
+ * Always includes the first and last page, plus a window of 2 pages on each
+ * side of the current page. Inserts null wherever pages are skipped.
+ *
+ * Example: currentPage=8, totalPages=20 → [1, null, 6, 7, 8, 9, 10, null, 20]
+ *
+ * @param {number} currentPage - The active page number.
+ * @param {number} totalPages - Total number of pages.
+ * @returns {(number|null)[]} Ordered array of page numbers and nulls for ellipsis.
+ */
+function buildPageRange(currentPage, totalPages) {
+    const delta = 2;
+    const included = new Set();
+
+    included.add(1);
+    included.add(totalPages);
+
+    for (let i = currentPage - delta; i <= currentPage + delta; i++) {
+        if (i >= 1 && i <= totalPages) included.add(i);
+    }
+
+    const sorted = [...included].sort((a, b) => a - b);
+    const result = [];
+    let prev = 0;
+
+    for (const page of sorted) {
+        if (page - prev > 1) result.push(null);
+        result.push(page);
+        prev = page;
+    }
+
+    return result;
+}
+
+/**
  * Renders pagination controls inside a container.
  *
  * Calculates the total pages from item count and itemsPerPage.
@@ -1197,13 +1233,24 @@ function renderPagination({container, currentPage, totalItems, itemsPerPage, onP
         </li>
     `;
 
-    for (let page = 1; page <= totalPages; page++) {
-        paginationHTML += `
-            <li class="page-item ${page === currentPage ? 'active' : ''}">
-                <button type="button" class="page-link" data-page="${page}">${page}</button>
-            </li>
-        `;
-    }
+    const pageRange = buildPageRange(currentPage, totalPages);
+    let ellipsisIndex = 0;
+    pageRange.forEach((page) => {
+        if (page === null) {
+            ellipsisIndex++;
+            paginationHTML += `
+                <li class="page-item disabled" aria-hidden="true">
+                    <span class="page-link" id="pagination-ellipsis-${ellipsisIndex}">&hellip;</span>
+                </li>
+            `;
+        } else {
+            paginationHTML += `
+                <li class="page-item ${page === currentPage ? 'active' : ''}">
+                    <button type="button" class="page-link" data-page="${page}">${page}</button>
+                </li>
+            `;
+        }
+    });
 
     paginationHTML += `
         <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">

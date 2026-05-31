@@ -66,9 +66,9 @@ class FacilityCostController extends Controller
         ];
 
         $servicesMap = [
-            'Utilidades'   => 'utilities',
-            'Electricidad' => 'electricity',
-            'Agua'         => 'water',
+            'Material de Limpieza' => 'utilities',
+            'Electricidad'         => 'electricity',
+            'Agua'                 => 'water',
         ];
 
         $query = FacilityCostReportItem::with('facilityCost')

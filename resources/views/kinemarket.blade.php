@@ -520,7 +520,7 @@
 
                             {{--Link/button to messaging system (Mis Chats) route from a specific post--}}
                             <div class="col-6">
-                                <a href="{{ url('/my_messages') }}" id="postDetailsChatLink" class="btn btn-success w-100 rounded-3">
+                                <a href="{{ url('/mis-mensajes') }}" id="postDetailsChatLink" class="btn btn-success w-100 rounded-3">
                                     <i class="bi bi-chat me-2"></i> Enviar Mensaje
                                 </a>
                             </div>
