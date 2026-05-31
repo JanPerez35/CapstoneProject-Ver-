@@ -41,6 +41,16 @@
             border: 0;
         }
 
+        @media (max-width: 768px) {
+            .pdf-frame {
+                height: 60vh;
+            }
+
+            .card-body {
+                padding: 1rem !important;
+            }
+        }
+
         /*
          * Visual style for the disabled confirmation button.
          * Prevents interaction and reduces opacity so users
@@ -171,7 +181,7 @@
             const viewportHeight = window.innerHeight;
             const fullHeight = document.documentElement.scrollHeight;
 
-            if (scrollTop + viewportHeight >= fullHeight - 10) {
+            if (scrollTop + viewportHeight >= fullHeight - 80) {
                 reachedBottom = true;
                 acceptTermsCheck.disabled = false;
 
@@ -187,6 +197,7 @@
          */
         window.addEventListener('scroll', checkIfReachedBottom);
         window.addEventListener('resize', checkIfReachedBottom);
+        document.addEventListener('touchmove', checkIfReachedBottom);
 
         /*
          * Perform an initial check in case the page already fits

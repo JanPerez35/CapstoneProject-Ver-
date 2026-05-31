@@ -39,11 +39,11 @@
             {{-- High-level overview of the platform --}}
             <p>
                 MAIKINE centraliza las herramientas principales del Departamento de
-                Kinesiología en una sola plataforma. Permite administrar inventario,
-                manejar solicitudes de préstamo, publicar artículos deportivos en el
-                mercado, comunicarse entre usuarios, gestionar querellas y
-                dar seguimiento a estimaciones de costos operacionales en las áreas
-                prestadas del Coliseo Rafael A. Mangual.
+                Kinesiología en una sola plataforma. Permite solicitar equipos del departamento
+                para préstamo, publicar artículos deportivos en el mercado
+                interno, comunicarse entre usuarios, reportar incidentes y evaluar
+                a los vendedores mediante un sistema de calificaciones.
+
             </p>
 
             {{-- Institutional login button using UPRM SAML authentication --}}
@@ -93,14 +93,6 @@
 
         <div class="features-grid">
 
-            {{-- Inventory Management --}}
-            <div class="feature-card">
-                <h3>Inventario</h3>
-                <p>
-                    Consulta, administración y seguimiento de equipos disponibles
-                    del departamento.
-                </p>
-            </div>
 
             {{-- Equipment Lending --}}
             <div class="feature-card">
@@ -126,16 +118,6 @@
                 <p>
                     Comunicación directa entre usuarios para coordinar compras
                     de artículos publicados.
-                </p>
-            </div>
-
-            {{-- Administrative Functions --}}
-            <div class="feature-card">
-                <h3>Administración</h3>
-                <p>
-                    Manejo de querellas, exportación de reportes, bitácora de
-                    acceso, manejo de usuarios, roles y estimaciones de costos
-                    operacionales.
                 </p>
             </div>
 

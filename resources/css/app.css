@@ -2004,6 +2004,9 @@ body {
 
 
 .login-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: 18px 42px;
     font-size: 1.15rem;
     font-weight: 700;
@@ -2012,6 +2015,7 @@ body {
     color: #ffffff;
     border-radius: 12px;
     text-decoration: none;
+    text-align: center;
 }
 
 .login-btn:hover,
@@ -2076,7 +2080,8 @@ body {
 
 .features-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 320px));
+    justify-content: center;
     gap: 18px;
 }
 
@@ -2157,6 +2162,10 @@ body {
 
     .login-btn {
         width: 100%;
-        text-align: center;
+        max-width: 320px;
+        margin: 0 auto;
+        display: flex;
+        padding: 16px 20px;
+        line-height: 1.3;
     }
 }
