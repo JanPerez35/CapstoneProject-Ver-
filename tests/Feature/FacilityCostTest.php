@@ -25,26 +25,26 @@ class FacilityCostTest extends TestCase
     }
 
     public function test_normal_user_cannot_export_facility_csv(): void
-{
-    $user = User::factory()->create([
-        'role' => 'Usuario',
-    ]);
+    {
+        $user = User::factory()->create([
+            'role' => 'Usuario',
+        ]);
 
-    $response = $this->actingAs($user)->get('/facility_management/export/csv');
+        $response = $this->actingAs($user)->get('/facility_management/export/csv');
 
-    $response->assertForbidden();
-}
+        $response->assertForbidden();
+    }
 
-public function test_super_admin_can_export_facility_csv(): void
-{
-    $admin = User::factory()->create([
-        'role' => 'Administrador de Instalaciones',
-    ]);
+    public function test_super_admin_can_export_facility_csv(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'Administrador de Instalaciones',
+        ]);
 
-    $response = $this->actingAs($admin)->get('/facility_management/export/csv');
+        $response = $this->actingAs($admin)->get('/facility_management/export/csv');
 
-    $response->assertOk();
-}
+        $response->assertOk();
+    }
 
     public function test_custom_day_modification_uses_its_own_duration_instead_of_parent_rate_mode(): void
     {
@@ -177,7 +177,7 @@ public function test_super_admin_can_export_facility_csv(): void
             'date' => $tomorrow,
             'start_time' => '09:00',
             'end_time' => '10:00',
-            'period_type' => 'workday',
+            'period_type' => 'non_workday_saturday',
         ])->assertCreated();
 
         $customDay = FacilityCostReportItem::where('custom_parent_item_id', $parent->id)->firstOrFail();
@@ -198,7 +198,7 @@ public function test_super_admin_can_export_facility_csv(): void
         $customDay->refresh();
         $parent->refresh();
 
-        $this->assertEquals(101.00, (float) $customDay->calculated_cost);
+        $this->assertEquals(201.00, (float) $customDay->calculated_cost);
         $this->assertEquals(100.25, (float) $customDay->parent_deducted_cost);
         $this->assertEquals(100.25, (float) $parent->calculated_cost);
         $this->assertGreaterThan((float) $parent->calculated_cost, (float) $customDay->calculated_cost);

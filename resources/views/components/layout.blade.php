@@ -39,7 +39,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title }}</title>
-
+    <link rel="icon" type="image/x-icon" href="{{ asset('logo.ico') }}?v=2">
     {{--Flag used by layout_validation.js to activate layout behaviours like toasts and pop ups--}}
     <script>
         window.useDedicatedLayoutValidation = true;

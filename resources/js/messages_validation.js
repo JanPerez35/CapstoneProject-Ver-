@@ -169,8 +169,22 @@ export function renderMessage(messageObj) {
 
 
     const alignment = isMine ? 'justify-content-end' : 'justify-content-start';
-    const bubbleClass = isMine ? 'bg-success-subtle text-dark border border-success-subtle' : 'bg-success-subtle text-dark border border-success-subtle';
-    const timeClass = 'small mt-1 text-end text-muted';
+    const bubbleClass = isMine
+        ? 'bg-success-subtle text-dark border border-success-subtle'
+        : 'receiver-bubble';
+    const timeClass = isMine
+        ? 'small mt-1 text-end text-muted'
+        : 'small mt-1 text-end text-muted';
+
+    let statusHtml = '';
+
+    if (isMine) {
+        if (messageObj.status === 'read') {
+            statusHtml = '<i class="bi bi-check-all text-info ms-1"></i>';
+        } else {
+            statusHtml = '<i class="bi bi-check-all text-muted ms-1"></i>';
+        }
+    }
 
 
     insertDateSeparatorIfNeeded(
@@ -189,7 +203,10 @@ export function renderMessage(messageObj) {
                    data-sender-id="${messageObj.senderId ?? ''}"
                >
                    <div>${escapeHtml(messageObj.message)}</div>
-                   <div class=" ${timeClass}">${messageObj.time}</div>
+                   <div class="${timeClass}">
+                    ${messageObj.time}
+                    ${statusHtml}
+                </div>
                </div>
            </div>
        `);
@@ -1344,7 +1361,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     }),
                     senderId: msg.sender_id,
                     conversationId: chatId,
-                    isMine: msg.isMine
+                    isMine: msg.isMine,
+                    status: msg.status
                 });
             });
 
