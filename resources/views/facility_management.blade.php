@@ -2302,74 +2302,129 @@
         </div>
     </div>
 
-
     {{-- Notifications toasts --}}
-    <div class="toast-container position-fixed bottom-0 start-0 p-3">
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+         style="z-index: 2000; margin-top: 18vh;">
+
         <div id="deleteEntryToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-             role="alert" aria-live="assertive" aria-atomic="true" style="width:auto; max-width:fit-content;">
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
-                <div class="toast-body fw-semibold pe-1">Evento eliminado correctamente.</div>
-                <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar"
-                        style="transform:scale(0.8);"></button>
+                <div class="toast-body fw-semibold pe-1">
+                    Evento eliminado correctamente.
+                </div>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
         <div id="downloadToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-             role="alert" aria-live="assertive" aria-atomic="true" style="width:auto; max-width:fit-content;">
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold pe-1">
                     Tu documento se descargará en unos instantes.
                 </div>
-                <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar"
-                        style="transform:scale(0.8);"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
         {{-- Areas costs saved toast --}}
         <div id="ratesSavedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-             role="alert" aria-live="assertive" aria-atomic="true">
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold pe-1">
                     Tarifas guardadas correctamente.
                 </div>
-                <button type="button" class="btn-close ms-auto me-3" data-bs-dismiss="toast"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
         {{-- Event creation toast --}}
         <div id="rentalSavedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-             role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex align-items-center w-100">
-                <div class="toast-body fw-semibold">
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold pe-1">
                     Evento creado correctamente.
                 </div>
-                <button type="button" class="btn-close ms-auto me-3" data-bs-dismiss="Cerrar"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
         <div id="classroomAddedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-             role="alert" aria-live="assertive" aria-atomic="true">
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold pe-1">
                     Área agregada correctamente.
                 </div>
-                <button type="button" class="btn-close ms-auto me-3" data-bs-dismiss="toast"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
         <div id="classroomsDeletedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-             role="alert" aria-live="assertive" aria-atomic="true">
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold pe-1">
                     Área(s) descartada(s) correctamente.
                 </div>
-                <button type="button" class="btn-close ms-auto me-3" data-bs-dismiss="toast"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
@@ -2377,56 +2432,82 @@
         @if(session('mock_imported'))
             <div id="mockImportToast"
                  class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-                 role="alert" aria-live="assertive" aria-atomic="true" style="width:auto; max-width:fit-content;">
+                 role="alert"
+                 aria-live="assertive"
+                 aria-atomic="true"
+                 style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
                 <div class="d-flex align-items-center">
                     <div class="toast-body fw-semibold pe-1">
                         {{ session('mock_imported') }}
                     </div>
-                    <button type="button" class="btn-close ms-auto me-3" data-bs-dismiss="toast" aria-label="Cerrar"
-                            style="transform:scale(0.8);"></button>
+
+                    <button type="button"
+                            class="btn-close p-0 ms-1 me-2"
+                            data-bs-dismiss="toast"
+                            aria-label="Cerrar"
+                            style="transform: scale(0.8);">
+                    </button>
                 </div>
             </div>
         @endif
 
         <div id="customizeSavedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-             role="alert" aria-live="assertive" aria-atomic="true"
-             style="width:auto; max-width:fit-content;">
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold pe-1">
                     La excepción fue guardada correctamente.
                 </div>
-                <button type="button" class="btn-close p-0 ms-1 me-2"
-                        data-bs-dismiss="toast" aria-label="Cerrar"
-                        style="transform:scale(0.8);"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
         <div id="editSavedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-             role="alert" aria-live="assertive" aria-atomic="true"
-             style="width:auto; max-width:fit-content;">
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold pe-1">
                     El evento fue actualizado correctamente.
                 </div>
-                <button type="button" class="btn-close p-0 ms-1 me-2"
-                        data-bs-dismiss="toast" aria-label="Cerrar"
-                        style="transform:scale(0.8);"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="transform: scale(0.8);">
+                </button>
             </div>
         </div>
 
         <div id="relatedSavedToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-             role="alert" aria-live="assertive" aria-atomic="true"
-             style="width:auto; max-width:fit-content;">
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold pe-1">
                     El evento relacionado fue preparado correctamente.
                 </div>
-                <button type="button" class="btn-close p-0 ms-1 me-2"
-                        data-bs-dismiss="toast" aria-label="Cerrar"
-                        style="transform:scale(0.8);"></button>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="transform: scale(0.8);">
+                </button>
             </div>
         </div>
     </div>

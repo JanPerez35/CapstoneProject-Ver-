@@ -229,17 +229,19 @@
     </div>
 
     {{-- Download feedback toast shown when export buttons are used --}}
-    <div class="toast-container position-fixed bottom-0 start-0 p-3">
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+         style="z-index: 2000; margin-top: 18vh;">
         <div id="downloadToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
-             style="width: auto; max-width: fit-content;">
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1">
                     Tu documento se descargará en unos instantes.
                 </div>
+
                 <button type="button"
                         class="btn-close p-0 ms-1 me-2"
                         data-bs-dismiss="toast"

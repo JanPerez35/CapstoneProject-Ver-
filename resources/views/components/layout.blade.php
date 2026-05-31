@@ -395,6 +395,16 @@
                             {{-- Loan request details section --}}
                             <h3 class="fw-bold mb-2">Detalles del Préstamo</h3>
 
+                            <div id="missingFieldsAlert"
+                                 class="alert alert-danger border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 shadow-sm d-none"
+                                 role="alert">
+                                <div class="fw-bold mb-2">
+                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                    Faltan campos requeridos para enviar la solicitud
+                                </div>
+
+                                <ul class="mb-0 ps-3" id="missingFieldsList"></ul>
+                            </div>
 
 
                             {{-- Service rules and operating hours --}}
@@ -472,9 +482,9 @@
                                 </label>
                                 <select id="pickup_time"
                                         name="pickup_time"
-                                        class="form-select form-select-lg border border-dark border-1"
+                                        class="form-select form-select-lg border border-dark border-1 text-muted"
                                         required>
-                                    <option value="">Selecciona una hora</option>
+                                    <option value="" selected disabled>Selecciona una hora</option>
                                     <option value="08:00:00">8:00 AM</option>
                                     <option value="08:30:00">8:30 AM</option>
                                     <option value="09:00:00">9:00 AM</option>
@@ -639,12 +649,20 @@
 
                     @if(!empty($cart))
                         {{-- Confirmation button to submit request--}}
-                        <button type="submit"
-                                class="btn btn-success btn-lg"
-                                id="submitLoanRequest">
-                            <i class="bi bi-check-circle me-1"></i>
-                            Enviar Solicitud
-                        </button>
+                        <div id="submitLoanRequestWrapper"
+                             class="d-inline-block"
+                             data-bs-toggle="tooltip"
+                             data-bs-placement="top"
+                             data-bs-custom-class="custom-tooltip"
+                             data-bs-title="Completa los campos requeridos para enviar la solicitud.">
+
+                            <button type="submit"
+                                    class="btn btn-success btn-lg"
+                                    id="submitLoanRequest">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Enviar Solicitud
+                            </button>
+                        </div>
                     @endif
                 </div>
             </form>
@@ -747,8 +765,9 @@
     </div>
 </div>
 
-{{-- Toast notifications for success feedback across cart, requests, and terms updates --}}
-<div class="toast-container position-fixed bottom-0 start-0 p-3">
+{{-- Toast notifications --}}
+<div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+     style="z-index: 2000; margin-top: 18vh;">
 
     <div id="cartToast"
          class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
@@ -772,25 +791,7 @@
         </div>
     </div>
 
-    <div id="errorToast"
-         class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0"
-         role="alert"
-         aria-live="assertive"
-         aria-atomic="true">
 
-        <div class="d-flex align-items-center">
-            <div class="toast-body fw-semibold rounded-0" id="errorToastMessage">
-                Error.
-            </div>
-
-            <button type="button"
-                    class="btn-close me-2"
-                    data-bs-dismiss="toast"
-                    aria-label="Cerrar"
-                    style="background-color: transparent; border: none;">
-            </button>
-        </div>
-    </div>
 
     <div id="submitToast"
          class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
@@ -856,6 +857,30 @@
         </div>
     </div>
 
+</div>
+
+{{-- Centered error toast --}}
+<div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+     style="z-index: 2000; margin-top: 18vh;">    <div id="errorToast"
+         class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true"
+         style="min-width: 360px; max-width: 520px;">
+
+        <div class="d-flex align-items-center">
+            <div class="toast-body fw-semibold rounded-0" id="errorToastMessage">
+                Error.
+            </div>
+
+            <button type="button"
+                    class="btn-close me-2"
+                    data-bs-dismiss="toast"
+                    aria-label="Cerrar"
+                    style="background-color: transparent; border: none;">
+            </button>
+        </div>
+    </div>
 </div>
 
 {{-- Footer with institutional support, department location, and additional contact information --}}
@@ -1105,6 +1130,24 @@
 
             });
     }, 5000);
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const pickupTimeSelect = document.getElementById('pickup_time');
+
+        if (pickupTimeSelect) {
+            pickupTimeSelect.addEventListener('change', function () {
+                if (pickupTimeSelect.value) {
+                    pickupTimeSelect.classList.remove('text-muted');
+                    pickupTimeSelect.classList.add('text-dark');
+                } else {
+                    pickupTimeSelect.classList.add('text-muted');
+                    pickupTimeSelect.classList.remove('text-dark');
+                }
+            });
+        }
+    });
 </script>
 
 <script>

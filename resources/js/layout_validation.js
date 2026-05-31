@@ -55,6 +55,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const specialReason = document.getElementById('special_reason');
     const acceptTerms = document.getElementById('accept_terms');
     const submitBtn = document.getElementById('submitLoanRequest');
+
+    const submitWrapper = document.getElementById('submitLoanRequestWrapper');
+    const missingFieldsAlert = document.getElementById('missingFieldsAlert');
+    const missingFieldsList = document.getElementById('missingFieldsList');
+
     const cartCount = document.getElementById('cartCount');
     const cartButton = document.querySelector('[data-bs-target="#cartModal"]');
     const cartModal = document.getElementById('cartModal');
@@ -687,6 +692,90 @@ document.addEventListener('DOMContentLoaded', function () {
         return valid;
     }
 
+
+    function getMissingFields() {
+        const missing = [];
+
+        if (!pickupDate || !pickupDate.value) {
+            missing.push('Fecha de recogida');
+        }
+
+        if (!pickupTime || !pickupTime.value) {
+            missing.push('Hora de recogida');
+        }
+
+        if (specialCase?.checked) {
+            if (!returnDate || !returnDate.value) {
+                missing.push('Fecha de devolución propuesta');
+            }
+
+            if (!specialReason || !specialReason.value.trim()) {
+                missing.push('Razón del caso especial');
+            }
+        }
+
+        if (!acceptTerms || !acceptTerms.checked) {
+            missing.push('Aceptar las condiciones del préstamo');
+        }
+
+        return missing;
+    }
+
+    function showMissingFieldsIndicator() {
+        const valid = validateForm(true);
+
+        if (valid) {
+            if (missingFieldsAlert) {
+                missingFieldsAlert.classList.add('d-none');
+            }
+
+            form.requestSubmit();
+            return;
+        }
+
+        const missing = getMissingFields();
+
+        if (missingFieldsAlert && missingFieldsList) {
+            missingFieldsList.innerHTML = '';
+
+            missing.forEach(function (fieldName) {
+                const item = document.createElement('li');
+                item.textContent = fieldName;
+                missingFieldsList.appendChild(item);
+            });
+
+            missingFieldsAlert.classList.remove('d-none');
+        }
+
+        const firstInvalidField = form.querySelector('.is-invalid');
+
+        if (firstInvalidField) {
+            firstInvalidField.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+
+            firstInvalidField.classList.add('border-danger');
+
+            setTimeout(function () {
+                firstInvalidField.classList.remove('border-danger');
+            }, 1500);
+        } else if (missingFieldsAlert) {
+            missingFieldsAlert.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+
+        const errorToastEl = document.getElementById('errorToast');
+        const errorToastMessage = document.getElementById('errorToastMessage');
+
+        if (errorToastEl && errorToastMessage) {
+            errorToastMessage.textContent = 'Completa los campos requeridos antes de enviar la solicitud.';
+            bootstrap.Toast.getOrCreateInstance(errorToastEl, { delay: 5000 }).show();
+        }
+    }
+
     /**
      * Re-checks form validity without aggressively showing error messages.
      * Used for live UI updates while the user is still filling the form.
@@ -938,6 +1027,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    if (submitWrapper) {
+        submitWrapper.addEventListener('click', function (event) {
+            if (submitBtn?.disabled) {
+                event.preventDefault();
+                showMissingFieldsIndicator();
+            }
+        });
+    }
+
     if (specialCase) {
         specialCase.addEventListener('change', () => {
             toggleSpecialCaseFields();
@@ -1051,7 +1149,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!validateForm(true)) {
             e.preventDefault();
+            showMissingFieldsIndicator();
         }
+
+
     });
 
     const termsErrorEl = document.querySelector('#termsPdfError');

@@ -736,22 +736,27 @@
                 </div>
             </div>
         </div>
+        {{--Toast notifications for marketplace user feedback--}}
+        <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+             style="z-index: 2000; margin-top: 18vh;">
 
-        {{--Toast notifications for user feedback (success)--}}
-        <div class="toast-container position-fixed bottom-0 start-0 p-3">
+            {{--Toast notification shown only when the seller rating has been submitted successfully--}}
             <div id="ratingSentToast"
                  class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
                  role="alert"
                  aria-live="assertive"
                  aria-atomic="true"
-                 style="width: auto; max-width: fit-content;"
-            >
-                {{--Toast notification shown only when the seller rating has been submitted successfully--}}
-                <div class="d-flex align-items-center">
-                    <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
+                 style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));" >               <div class="d-flex align-items-center">
+                    <div class="toast-body fw-semibold rounded-0 pe-1">
                         Calificación enviada correctamente.
                     </div>
-                    <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar" style="background-color: transparent; border: none; transform: scale(0.8);"></button>
+
+                    <button type="button"
+                            class="btn-close p-0 ms-1 me-2"
+                            data-bs-dismiss="toast"
+                            aria-label="Cerrar"
+                            style="background-color: transparent; border: none; transform: scale(0.8);">
+                    </button>
                 </div>
             </div>
 
@@ -761,50 +766,57 @@
                  role="alert"
                  aria-live="assertive"
                  aria-atomic="true"
-                 style="width: auto; max-width: fit-content;"
-            >
-                <div class="d-flex align-items-center">
-                    <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
-                        Querella fue enviado exitosamente.
+                 style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));" >               <div class="d-flex align-items-center">
+                    <div class="toast-body fw-semibold rounded-0 pe-1">
+                        Querella fue enviada exitosamente.
                     </div>
-                    <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar" style="background-color: transparent; border: none; transform: scale(0.8);"></button>
+
+                    <button type="button"
+                            class="btn-close p-0 ms-1 me-2"
+                            data-bs-dismiss="toast"
+                            aria-label="Cerrar"
+                            style="background-color: transparent; border: none; transform: scale(0.8);">
+                    </button>
                 </div>
             </div>
-
 
             {{--Toast notification shown when inappropriate language is detected during post submission--}}
-            <div
-                id="profanityDetectedToast"
-                class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
-                role="alert"
-                aria-live="assertive"
-                aria-atomic="true"
-                style="width: auto; max-width: 360px;"
-            >
-                <div class="d-flex">
-                    <div class="toast-body fw-semibold">
+            <div id="profanityDetectedToast"
+                 class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
+                 role="alert"
+                 aria-live="assertive"
+                 aria-atomic="true"
+                 style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));"  >              <div class="d-flex align-items-center">
+                    <div class="toast-body fw-semibold rounded-0 pe-1">
                         Se detectó lenguaje inapropiado. Revisa los campos marcados.
                     </div>
-                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+
+                    <button type="button"
+                            class="btn-close p-0 ms-1 me-2"
+                            data-bs-dismiss="toast"
+                            aria-label="Cerrar"
+                            style="background-color: transparent; border: none; transform: scale(0.8);">
+                    </button>
                 </div>
             </div>
-        </div>
 
-        {{--Toast notification shown only when a post has been created successfully--}}
-        <div class="toast-container position-fixed bottom-0 start-0 p-3">
-            <div
-                id="postCreatedToast"
-                class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-                role="alert"
-                aria-live="assertive"
-                aria-atomic="true"
-                style="width: auto; max-width: 300px;"
-            >
-                <div class="d-flex">
-                    <div class="toast-body fw-semibold">
+            {{--Toast notification shown only when a post has been created successfully--}}
+            <div id="postCreatedToast"
+                 class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
+                 role="alert"
+                 aria-live="assertive"
+                 aria-atomic="true"
+                 style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));" >               <div class="d-flex align-items-center">
+                    <div class="toast-body fw-semibold rounded-0 pe-1">
                         Publicación fue creada exitosamente.
                     </div>
-                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+
+                    <button type="button"
+                            class="btn-close p-0 ms-1 me-2"
+                            data-bs-dismiss="toast"
+                            aria-label="Cerrar"
+                            style="background-color: transparent; border: none; transform: scale(0.8);">
+                    </button>
                 </div>
             </div>
 
@@ -814,15 +826,20 @@
                  role="alert"
                  aria-live="assertive"
                  aria-atomic="true"
-                 style="width: auto; max-width: 300px;"
-            >
-                <div class="d-flex">
-                    <div class="toast-body fw-semibold">
+                 style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));" >               <div class="d-flex align-items-center">
+                    <div class="toast-body fw-semibold rounded-0 pe-1">
                         Publicación fue eliminada exitosamente.
                     </div>
-                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+
+                    <button type="button"
+                            class="btn-close p-0 ms-1 me-2"
+                            data-bs-dismiss="toast"
+                            aria-label="Cerrar"
+                            style="background-color: transparent; border: none; transform: scale(0.8);">
+                    </button>
                 </div>
             </div>
+
         </div>
     </div>
 </x-layout>

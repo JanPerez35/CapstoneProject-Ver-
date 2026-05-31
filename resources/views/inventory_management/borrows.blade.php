@@ -573,17 +573,17 @@
         </div>
     </div>
 
+    {{-- Here are toast notifications which act as visual feedback after an action is taken --}}
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+         style="z-index: 2000; margin-top: 18vh;">
 
-    {{-- Here are toast notifications which act as visual feedback after an action is taken--}}
-
-    {{-- Approve success toast --}}
-    <div class="toast-container position-fixed bottom-0 start-0 p-3">
+        {{-- Approve success toast --}}
         <div id="approveToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
-             style="width: auto; max-width: fit-content;">
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
 
                 {{-- Message in the toast pop up --}}
@@ -607,13 +607,14 @@
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
-             style="width: auto; max-width: fit-content;">
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
 
                 {{-- Message --}}
                 <div class="toast-body fw-semibold rounded-0 pe-1">
                     Solicitud denegada correctamente.
                 </div>
+
                 {{-- Close button --}}
                 <button type="button"
                         class="btn-close p-0 ms-1 me-2"
@@ -626,18 +627,19 @@
 
         {{-- Return success toast --}}
         <div id="returnedToast"
-             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
-             style="width: auto; max-width: fit-content;">
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
+
                 {{-- Message --}}
                 <div class="toast-body fw-semibold rounded-0 pe-1">
                     Equipo fue devuelto correctamente.
                 </div>
 
-                {{-- Cancel Button --}}
+                {{-- Close button --}}
                 <button type="button"
                         class="btn-close p-0 ms-1 me-2"
                         data-bs-dismiss="toast"
@@ -647,4 +649,5 @@
             </div>
         </div>
     </div>
+
 </x-layout>

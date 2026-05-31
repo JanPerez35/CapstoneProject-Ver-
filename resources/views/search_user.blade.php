@@ -290,19 +290,22 @@
         </div>
     </div>
 
-    {{-- Role updated toast --}}
-    <div class="toast-container position-fixed bottom-0 start-0 p-3">
+    {{-- User management toast notifications --}}
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+         style="z-index: 2000; margin-top: 18vh;">
+
+        {{-- Role updated toast --}}
         <div id="roleToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
-             style="width: auto; max-width: fit-content;">
-            {{--Message--}}
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
-                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
+                <div class="toast-body fw-semibold rounded-0 pe-1">
                     Rol actualizado correctamente.
                 </div>
+
                 <button type="button"
                         class="btn-close p-0 ms-1 me-2"
                         data-bs-dismiss="toast"
@@ -318,11 +321,9 @@
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
-             style="width: auto; max-width: fit-content;">
-
-            {{-- Message --}}
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
-                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
+                <div class="toast-body fw-semibold rounded-0 pe-1">
                     La cuenta ha sido bloqueada.
                 </div>
 
@@ -337,17 +338,16 @@
 
         {{-- User unbanned toast --}}
         <div id="unbanToast"
-             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
-             style="width: auto; max-width: fit-content;">
-
-            {{-- Message --}}
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
-                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
+                <div class="toast-body fw-semibold rounded-0 pe-1">
                     La cuenta ha sido desbloqueada.
                 </div>
+
                 <button type="button"
                         class="btn-close p-0 ms-1 me-2"
                         data-bs-dismiss="toast"
@@ -356,6 +356,7 @@
                 </button>
             </div>
         </div>
+
     </div>
 
 </x-layout>

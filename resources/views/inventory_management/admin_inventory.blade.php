@@ -745,16 +745,18 @@
     </div>
 
     {{-- Toasts --}}
-    <div class="toast-container position-fixed bottom-0 start-0 p-3">
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+         style="z-index: 2000; margin-top: 18vh;">
+
         <div id="inventoryAddToast"
              class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
-             style="width: auto; max-width: fit-content;">
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
                 {{-- New Item Toast --}}
-                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
+                <div class="toast-body fw-semibold rounded-0 pe-1">
                     Equipo añadido correctamente
                 </div>
 
@@ -772,10 +774,10 @@
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
-             style="width: auto; max-width: fit-content;">
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
-                {{-- Delete item succesfull Toast --}}
-                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
+                {{-- Delete item successful Toast --}}
+                <div class="toast-body fw-semibold rounded-0 pe-1">
                     Equipo borrado correctamente
                 </div>
 
@@ -793,10 +795,10 @@
              role="alert"
              aria-live="assertive"
              aria-atomic="true"
-             style="width: auto; max-width: fit-content;">
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
             <div class="d-flex align-items-center">
                 {{-- Edited Item Toast --}}
-                <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
+                <div class="toast-body fw-semibold rounded-0 pe-1">
                     Equipo editado correctamente
                 </div>
 

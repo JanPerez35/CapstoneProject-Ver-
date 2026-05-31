@@ -314,34 +314,71 @@
             </div>
         </div>
 
-        {{--Toast notifications. They appear at the bottom-left corner of the screen after administrative
-            actions are complted--}}
+    {{--Toast notifications for marketplace management feedback--}}
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+         style="z-index: 2000; margin-top: 18vh;">
 
-    {{--Success toast shown after a report/querella is marked as resolved--}}
-        <div class="toast-container position-fixed bottom-0 start-0 p-3">
-            <div id="resolveToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2 market-toast" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex align-items-center">
-                    <div class="toast-body fw-semibold rounded-0 pe-1 market-toast-body">Querella resuelta correctamente.</div>
-                    <button type="button" class="btn-close p-0 ms-1 me-2 market-toast-close" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+        {{--Success toast shown after a report/querella is marked as resolved--}}
+        <div id="resolveToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2 market-toast"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1 market-toast-body">
+                    Querella resuelta correctamente.
                 </div>
-            </div>
 
-            {{--Success toast shown after a reported publication is deleted and the querella is resolved--}}
-            <div id="deleteToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2 market-toast" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex align-items-center">
-                    <div class="toast-body fw-semibold rounded-0 pe-1 market-toast-body" >Publicación eliminada y querella resuelta correctamente.</div>
-                    <button type="button" class="btn-close p-0 ms-1 me-2 market-toast-close" data-bs-dismiss="toast" aria-label="Cerrar"></button>
-                </div>
-            </div>
-
-            {{--Success toast shown after a seller/user is blocked and the querella is resolved.--}}
-            <div id="banToast" class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2 market-toast" role="alert" aria-live="assertive" aria-atomic="true" >
-                <div class="d-flex align-items-center">
-                    <div class="toast-body fw-semibold rounded-0 pe-1 market-toast-body">Usuario bloqueado y querella resuelta correctamente.</div>
-                    <button type="button" class="btn-close p-0 ms-1 me-2 market-toast-close" data-bs-dismiss="toast" aria-label="Cerrar" ></button>
-                </div>
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2 market-toast-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar">
+                </button>
             </div>
         </div>
+
+        {{--Success toast shown after a reported publication is deleted and the querella is resolved--}}
+        <div id="deleteToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2 market-toast"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1 market-toast-body">
+                    Publicación eliminada y querella resuelta correctamente.
+                </div>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2 market-toast-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar">
+                </button>
+            </div>
+        </div>
+
+        {{--Success toast shown after a seller/user is blocked and the querella is resolved--}}
+        <div id="banToast"
+             class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2 market-toast"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold rounded-0 pe-1 market-toast-body">
+                    Usuario bloqueado y querella resuelta correctamente.
+                </div>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2 market-toast-close"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar">
+                </button>
+            </div>
+        </div>
+
+    </div>
 
     {{--Post details modal. It opens when the administrator selects the view publication
         action from the report row.--}}
