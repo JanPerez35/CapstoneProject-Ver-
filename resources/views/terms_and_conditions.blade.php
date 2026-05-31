@@ -42,15 +42,14 @@
         }
 
         @media (max-width: 768px) {
-            .pdf-frame {
-                height: 60vh;
+            .terms-pdf-box {
+                display: none;
             }
 
             .card-body {
                 padding: 1rem !important;
             }
         }
-
         /*
          * Visual style for the disabled confirmation button.
          * Prevents interaction and reduces opacity so users
@@ -80,12 +79,22 @@
             <div class="card-body p-4">
 
                 {{-- Embedded PDF document containing the current Terms and Conditions --}}
-                <div class="border rounded-4 overflow-hidden mb-4">
+                <div class="border rounded-4 overflow-hidden mb-4 terms-pdf-box">
                     <iframe
                         id="termsPdfFrame"
                         src="{{ asset('documents/terms_conditions.pdf') }}?v={{ file_exists(public_path('documents/terms_conditions.pdf')) ? filemtime(public_path('documents/terms_conditions.pdf')) : time() }}"
                         class="pdf-frame"
                     ></iframe>
+                </div>
+
+                <div class="d-md-none mb-4">
+                    <a
+                        href="{{ asset('documents/terms_conditions.pdf') }}?v={{ file_exists(public_path('documents/terms_conditions.pdf')) ? filemtime(public_path('documents/terms_conditions.pdf')) : time() }}"
+                        target="_blank"
+                        class="btn btn-outline-success w-100 fw-semibold"
+                    >
+                        Abrir términos y condiciones en PDF
+                    </a>
                 </div>
 
                 {{-- Warning notice shown until the user reaches the bottom of the page --}}
@@ -170,6 +179,15 @@
          * of the page at least once.
          */
         let reachedBottom = false;
+
+        if (window.innerWidth <= 768) {
+            reachedBottom = true;
+            acceptTermsCheck.disabled = false;
+
+            scrollNotice.classList.remove('alert-warning');
+            scrollNotice.classList.add('alert-success');
+            scrollNotice.textContent = 'Abre el PDF para leer los términos y luego marca la aceptación.';
+        }
 
         /*
          * Checks whether the user has scrolled to the bottom
