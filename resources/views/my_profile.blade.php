@@ -1,56 +1,5 @@
 <x-layout title="Mi Perfil">
 
-    @if(auth()->user()->role_label === 'Super Administrador')
-
-        {{-- Warning modal before creating database backup --}}
-        <div class="modal fade" id="databaseBackupWarningModal" tabindex="-1" aria-labelledby="databaseBackupWarningModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content rounded-4 border-0 shadow">
-
-                    <div class="modal-header border-0 pb-2 align-items-start">
-                        <div class="pe-3">
-                            <h4 class="modal-title fw-bold text-danger mb-2" id="databaseBackupWarningModalLabel">
-                                Crear respaldo de base de datos
-                            </h4>
-
-                            <p class="text-muted mb-0">
-                                Esta acción generará y descargará un respaldo completo de la base de datos del sistema.
-                                El archivo puede contener información sensible de usuarios, publicaciones, préstamos,
-                                reportes, mensajes y registros de actividad.
-                            </p>
-                        </div>
-
-                        <button
-                            type="button"
-                            class="btn-close mt-1"
-                            data-bs-dismiss="modal"
-                            aria-label="Cerrar"
-                        ></button>
-                    </div>
-
-                    <div class="modal-body pt-2">
-                        <div class="alert alert-warning border-warning rounded-0 mb-0">
-                            <strong>Advertencia:</strong>
-                            Guarde este archivo en un lugar seguro y no lo comparta con usuarios no autorizados.
-                        </div>
-                    </div>
-
-                    <div class="modal-footer border-0 pt-2">
-                        <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
-                            Cancelar
-                        </button>
-
-                        <a href="{{ route('database.backup.download') }}"
-                        class="btn btn-danger px-4"
-                        id="confirmDatabaseBackup">
-                            Sí, Crear Respaldo
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    @endif
-
     <x-navbar></x-navbar>
 
     {{-- Loads the validation and UI behavior logic for the profile page --}}
@@ -282,30 +231,6 @@
                 </div>
             </div>
         </div>
-
-        @if(auth()->user()->role_label === 'Super Administrador')
-            <div class="card border-2 border-danger shadow-sm rounded-4 mb-4">
-                <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-                    <div>
-                        <h4 class="fw-bold mb-1 text-danger">
-                            Respaldo de Base de Datos
-                        </h4>
-                        <p class="text-muted mb-0">
-                            Descarga un respaldo completo de la base de datos del sistema.
-                        </p>
-                    </div>
-
-                    <button
-                        type="button"
-                        class="btn btn-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#databaseBackupWarningModal"
-                    >
-                        Crear Respaldo
-                    </button>
-                </div>
-            </div>
-        @endif
 
         {{-- Navigation tabs for switching between posts and requests --}}
         <ul class="nav profile-tabs-grid w-100 mb-4" id="profileTabs" role="tablist">
@@ -1023,30 +948,6 @@
                 ></button>
             </div>
         </div>
-        @if(auth()->user()->role_label === 'Super Administrador')
-            <div
-                id="databaseBackupToast"
-                class="toast align-items-center shadow-sm border border-success-subtle bg-success-subtle text-success-emphasis rounded-0 mb-2"
-                role="alert"
-                aria-live="assertive"
-                aria-atomic="true"
-                style="width: auto; max-width: fit-content;"
-            >
-                <div class="d-flex align-items-center">
-                    <div class="toast-body fw-semibold rounded-0 pe-1">
-                        Respaldo de base de datos generado correctamente.
-                    </div>
-
-                    <button
-                        type="button"
-                        class="btn-close p-0 ms-1 me-2"
-                        data-bs-dismiss="toast"
-                        aria-label="Cerrar"
-                        style="background-color: transparent; border: none; transform: scale(0.8);"
-                    ></button>
-                </div>
-            </div>
-        @endif
     </div>
 
 </x-layout>

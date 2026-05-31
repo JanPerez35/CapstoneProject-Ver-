@@ -1181,4 +1181,19 @@ document.addEventListener('DOMContentLoaded', function () {
     updateSubmitButtonStateQuietly();
     reopenCartModalIfNeeded(body);
     showGlobalToasts(body);
+
+    const confirmDatabaseBackupBtn = document.getElementById('confirmDatabaseBackup');
+    const databaseBackupModalEl = document.getElementById('databaseBackupWarningModal');
+    const databaseBackupToastEl = document.getElementById('databaseBackupToast');
+
+    if (confirmDatabaseBackupBtn) {
+        confirmDatabaseBackupBtn.addEventListener('click', function () {
+            if (databaseBackupModalEl) {
+                bootstrap.Modal.getOrCreateInstance(databaseBackupModalEl).hide();
+            }
+            if (databaseBackupToastEl) {
+                bootstrap.Toast.getOrCreateInstance(databaseBackupToastEl).show();
+            }
+        });
+    }
 });
