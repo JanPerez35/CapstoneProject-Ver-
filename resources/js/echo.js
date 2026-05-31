@@ -130,9 +130,25 @@ function subscribeToChat(chatId) {
                     }),
                     senderId: data.sender_id,
                     conversationId: data.chat_id,
-                    isMine: String(data.sender_id) === String(currentUserId)
+                    isMine: String(data.sender_id) === String(currentUserId),
+                    status: data.status
                 });
+            })
+            .listen('.messages.read', () => {
+                const activeChatId = String(document.getElementById('messagesView')?.dataset.chatId || '');
+
+                if (activeChatId !== String(chatId)) {
+                    return;
+                }
+
+                document
+                    .querySelectorAll(`#chatMessagesContainer [data-sender-id="${currentUserId}"] .bi-check-all`)
+                    .forEach((icon) => {
+                        icon.classList.remove('text-muted', 'text-secondary');
+                        icon.classList.add('text-info');
+                    });
             });
+
     };
 
     const state = window.Echo.connector.pusher.connection.state;

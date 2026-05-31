@@ -49,7 +49,7 @@
         /* Header styling for the report table */
         /*Changes the background and text color within the table*/
         th {
-            background: #6FC21F;
+            background: #828282;
             color: white;
             font-weight: bold;
         }

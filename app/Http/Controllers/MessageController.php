@@ -9,6 +9,7 @@ use App\Events\MessageSent;
 use App\Jobs\SendUnreadMessageReminder;
 use App\Http\Controllers\Concerns\LogsActivity;
 use App\Http\Controllers\Concerns\AuthorizesChat;
+use App\Events\MessagesRead;
 
 /**
  * Class MessageController
@@ -118,6 +119,8 @@ class MessageController extends Controller
             Chat::where('id', $chatId)->update([
                 'unread_reminder_sent_at' => null,
             ]);
+
+            broadcast(new MessagesRead($chatId, $userId))->toOthers();
         }
 
         $messages = Message::where('chat_id', $chatId)

@@ -51,7 +51,7 @@
                         Allows the user to return to the page they originally came from.
                         (Usually the marketplace post details)--}}
                     <div class="px-4 pt-4 pb-2">
-                        <a href="{{ request('return_to', route('kinemarket')) }}" class="btn btn-outline-secondary rounded-3 px-4"  id="messagesVolverBtn"
+                        <a href="{{ request('return_to', route('kinemarket')) }}" class="btn btn-outline-success rounded-3 px-4"  id="messagesVolverBtn"
                            data-return-post-id="{{ request('post_id', '') }}">
 
                             <i class="bi bi-arrow-left me-2"></i>Volver
@@ -195,7 +195,7 @@
                                 Used when the screen is small enough--}}
                             <button
                                 type="button"
-                                class="btn btn-outline-secondary d-md-none"
+                                class="btn btn-outline-success d-md-none"
                                 id="backToChatsBtn"
                             >
                                 <i class="bi bi-arrow-left"></i> Volver
