@@ -103,7 +103,7 @@ class TermsController extends Controller
     {
         // Only Super Administrador users are authorized to update the terms document
         if (!auth()->check() || auth()->user()->role !== 'Super Administrador') {
-            abort(403, 'No autorizado');
+            abort(404);
         }
 
         // Validate uploaded file
