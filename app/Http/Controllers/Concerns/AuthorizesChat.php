@@ -17,7 +17,6 @@ trait AuthorizesChat
             $chat->buyer_user_id != $userId &&
             $chat->seller_user_id != $userId
         ) {
-            abort(403, 'No autorizado');
-        }
+            abort(404);        }
     }
 }

@@ -414,7 +414,6 @@
                                  class="alert alert-danger border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 shadow-sm d-none"
                                  role="alert">
                                 <div class="fw-bold mb-2">
-                                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
                                     Faltan campos requeridos para enviar la solicitud
                                 </div>
 
