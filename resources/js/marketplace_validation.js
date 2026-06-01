@@ -291,8 +291,17 @@ const MIN_IMAGES = 1;
  */
 const openCreatePostBtn = document.querySelector('.open-create-post');
 const maxPostLimitModal = document.getElementById('maxPostLimitModal');
-const nextPostAvailableTime = document.getElementById('nextPostAvailableTime');
 
+
+const publishBtnWrapper = document.getElementById('publishBtnWrapper');
+const marketplaceMissingFieldsAlert = document.getElementById('marketplaceMissingFieldsAlert');
+const marketplaceMissingFieldsList = document.getElementById('marketplaceMissingFieldsList');
+
+const submitReportBtnWrapper = document.getElementById('submitReportBtnWrapper');
+const reportMissingFieldsAlert = document.getElementById('reportMissingFieldsAlert');
+const reportMissingFieldsList = document.getElementById('reportMissingFieldsList');
+
+const closeCreatePostModalBtn = document.getElementById('closeCreatePostModalBtn');
 /**
  * Post limit state.
  *
@@ -510,6 +519,16 @@ function clearImageError() {
 
     imageError.textContent = '';
     imageError.classList.add('d-none');
+}
+
+function showRequiredFieldsToast(message) {
+    const errorToastEl = document.getElementById('errorToast');
+    const errorToastMessage = document.getElementById('errorToastMessage');
+
+    if (errorToastEl && errorToastMessage) {
+        errorToastMessage.textContent = message;
+        bootstrap.Toast.getOrCreateInstance(errorToastEl, { delay: 5000 }).show();
+    }
 }
 
 /**
@@ -1639,6 +1658,125 @@ function updatePublishButtonState() {
     publishBtn.disabled = !isReady;
 }
 
+function validateCreatePostForm(showErrors = true) {
+    let valid = true;
+
+    if (!validateTitle(showErrors)) valid = false;
+    if (!validatePrice(showErrors)) valid = false;
+    if (!validateSelect(postCategory, showErrors)) valid = false;
+    if (!validateSelect(postCondition, showErrors)) valid = false;
+    if (!validateImages(showErrors)) valid = false;
+    if (!validateDescription(showErrors)) valid = false;
+    if (!validateCreatePostProfanity(showErrors)) valid = false;
+
+    if (publishBtn) publishBtn.disabled = !valid;
+
+    return valid;
+}
+
+function getMarketplaceMissingFields() {
+    const missing = [];
+
+    if (!postTitle || !postTitle.value.trim()) missing.push('Título');
+    if (!postPrice || !postPrice.value.trim()) missing.push('Precio');
+    if (!postCategory || !postCategory.value) missing.push('Categoría');
+    if (!postCondition || !postCondition.value) missing.push('Condición');
+    if (selectedPostImages.length < MIN_IMAGES) missing.push('Fotos del equipo');
+
+    return missing;
+}
+
+function showMarketplaceMissingFieldsIndicator() {
+    const valid = validateCreatePostForm(true);
+
+    if (valid) {
+        marketplaceMissingFieldsAlert?.classList.add('d-none');
+        publishBtn?.click();
+        return;
+    }
+
+    const missing = getMarketplaceMissingFields();
+
+    if (marketplaceMissingFieldsAlert && marketplaceMissingFieldsList) {
+        marketplaceMissingFieldsList.innerHTML = '';
+
+        missing.forEach((fieldName) => {
+            const item = document.createElement('li');
+            item.textContent = fieldName;
+            marketplaceMissingFieldsList.appendChild(item);
+        });
+
+        marketplaceMissingFieldsAlert.classList.remove('d-none');
+    }
+
+    const firstInvalidField = createPostForm?.querySelector('.is-invalid');
+
+    if (firstInvalidField) {
+        firstInvalidField.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+
+        firstInvalidField.classList.add('border-danger');
+
+        setTimeout(() => {
+            firstInvalidField.classList.remove('border-danger');
+        }, 1500);
+    } else {
+        marketplaceMissingFieldsAlert?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+    }
+
+    showRequiredFieldsToast(
+        'Completa los campos requeridos antes de publicar el artículo.'
+    );
+}
+
+publishBtnWrapper?.addEventListener('click', function (event) {
+    if (publishBtn?.disabled) {
+        event.preventDefault();
+        showMarketplaceMissingFieldsIndicator();
+    }
+});
+
+
+function updateSelectPlaceholderColor(select, placeholderValue = '') {
+    if (!select) return;
+
+    if (select.value === placeholderValue) {
+        select.classList.add('text-muted');
+    } else {
+        select.classList.remove('text-muted');
+    }
+}
+
+[postCategory, postCondition, reportReason].forEach((select) => {
+    if (!select) return;
+
+    updateSelectPlaceholderColor(select, '');
+
+    select.addEventListener('change', () => {
+        updateSelectPlaceholderColor(select, '');
+    });
+});
+
+[
+    marketplaceCategoryFilter,
+    marketplaceRatingFilter,
+    marketplacePriceFilter,
+    marketplaceConditionFilter
+].forEach((select) => {
+    if (!select) return;
+
+    updateSelectPlaceholderColor(select, 'all');
+
+    select.addEventListener('change', () => {
+        updateSelectPlaceholderColor(select, 'all');
+    });
+});
+
 /**
  * Renders preview cards for all selected create-post images.
  *
@@ -1754,6 +1892,14 @@ function resetCreatePostValidation() {
     if (postCondition) postCondition.classList.remove('is-invalid');
 
     clearImageError();
+
+    if (marketplaceMissingFieldsAlert) {
+        marketplaceMissingFieldsAlert.classList.add('d-none');
+    }
+
+    if (marketplaceMissingFieldsList) {
+        marketplaceMissingFieldsList.innerHTML = '';
+    }
 }
 
 /**
@@ -1767,6 +1913,8 @@ function resetCreatePostValidation() {
 function resetCreatePostForm() {
     if (createPostForm) {
         createPostForm.reset();
+        updateSelectPlaceholderColor(postCategory, '');
+        updateSelectPlaceholderColor(postCondition, '');
     }
 
     selectedPostImages = [];
@@ -1792,6 +1940,8 @@ function resetCreatePostForm() {
 function resetCreatePostLocalState() {
     if (createPostForm) {
         createPostForm.reset();
+        updateSelectPlaceholderColor(postCategory, '');
+        updateSelectPlaceholderColor(postCondition, '');
     }
 
     selectedPostImages = [];
@@ -1935,6 +2085,74 @@ function updateReportButtonState() {
     submitReportBtn.disabled = !isReady;
 }
 
+function validateReportForm(showErrors = true) {
+    let valid = true;
+
+    if (!validateReportReason(showErrors)) valid = false;
+    if (!validateReportDescription(showErrors)) valid = false;
+
+    if (submitReportBtn) submitReportBtn.disabled = !valid;
+
+    return valid;
+}
+
+function getReportMissingFields() {
+    const missing = [];
+
+    if (!reportReason || !reportReason.value) {
+        missing.push('Razón de la querella');
+    }
+
+    if (!reportDescription || !reportDescription.value.trim()) {
+        missing.push('Descripción de la querella');
+    }
+
+    return missing;
+}
+
+function showReportMissingFieldsIndicator() {
+    const valid = validateReportForm(true);
+
+    if (valid) {
+        reportMissingFieldsAlert?.classList.add('d-none');
+        submitReportBtn?.click();
+        return;
+    }
+
+    const missing = getReportMissingFields();
+
+    if (reportMissingFieldsAlert && reportMissingFieldsList) {
+        reportMissingFieldsList.innerHTML = '';
+
+        missing.forEach((fieldName) => {
+            const item = document.createElement('li');
+            item.textContent = fieldName;
+            reportMissingFieldsList.appendChild(item);
+        });
+
+        reportMissingFieldsAlert.classList.remove('d-none');
+    }
+
+    const firstInvalidField = reportUserForm?.querySelector('.is-invalid');
+
+    if (firstInvalidField) {
+        firstInvalidField.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
+    }
+    showRequiredFieldsToast(
+        'Completa los campos requeridos antes de enviar la querella.'
+    );
+}
+
+submitReportBtnWrapper?.addEventListener('click', function (event) {
+    if (submitReportBtn?.disabled) {
+        event.preventDefault();
+        showReportMissingFieldsIndicator();
+    }
+});
+
 /**
  * Clears all report form validation styling and
  * resets default error text state.
@@ -1955,6 +2173,14 @@ function resetReportValidation() {
     if (reportReasonError) {
         reportReasonError.textContent = 'Selecciona una razón.';
     }
+
+    if (reportMissingFieldsAlert) {
+        reportMissingFieldsAlert.classList.add('d-none');
+    }
+
+    if (reportMissingFieldsList) {
+        reportMissingFieldsList.innerHTML = '';
+    }
 }
 
 
@@ -1968,6 +2194,7 @@ function resetReportValidation() {
 function resetReportForm() {
     if (reportUserForm) {
         reportUserForm.reset();
+        updateSelectPlaceholderColor(reportReason, '');
     }
 
     isReportDirty = false;
@@ -2017,10 +2244,10 @@ function tryCloseReportModal() {
 
         if (postDetailsModal) {
             setTimeout(() => {
-                const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
-                postModalInstance.show();
-            });
+                bootstrap.Modal.getOrCreateInstance(postDetailsModal).show();
+            }, 200);
         }
+
         return;
     }
 
@@ -2030,18 +2257,7 @@ function tryCloseReportModal() {
     }
 }
 
-/**
- * Reopens the post details modal when the report modal is dismissed
- * by clicking outside the modal or by using Bootstrap's default close behavior.
- */
-if (reportUserModal && postDetailsModal) {
-    reportUserModal.addEventListener('hidden.bs.modal', () => {
-        if (allowReportClose) return;
 
-        const postModalInstance = bootstrap.Modal.getOrCreateInstance(postDetailsModal);
-        postModalInstance.show();
-    });
-}
 
 /**
  * Initializes the interactive seller star-rating widget.
@@ -2719,6 +2935,10 @@ if (cancelCreatePostBtn && createPostModal) {
         }
     });
 }
+
+closeCreatePostModalBtn?.addEventListener('click', () => {
+    cancelCreatePostBtn?.click();
+});
 
 /**
  * Confirm cancel create-post handler.

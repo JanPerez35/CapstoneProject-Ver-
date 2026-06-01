@@ -245,6 +245,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatMessageGroup = document.getElementById('chatMessageGroup');
 
 
+
+
     /**
      * Chat context and header references.
      *
@@ -329,6 +331,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const ratingSentToastEl = document.getElementById('ratingSentToast');
     const reportSentToastEl = document.getElementById('reportSentToast');
 
+    function showRequiredFieldsToast(message) {
+        const errorToastEl = document.getElementById('errorToast');
+        const errorToastMessage = document.getElementById('errorToastMessage');
+
+        if (errorToastEl && errorToastMessage) {
+            errorToastMessage.textContent = message;
+
+            bootstrap.Toast.getOrCreateInstance(errorToastEl, {
+                delay: 5000
+            }).show();
+        }
+    }
 
 
 
@@ -356,6 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * to the backend for the marketplace management page.
      */
     const submitReportBtn = document.getElementById('submitReportBtn');
+    const submitReportBtnWrapper = document.getElementById('submitReportBtnWrapper');
     const reportUserForm = document.getElementById('reportUserForm');
     const reportReason = document.getElementById('reportReason');
     const reportReasonError = document.getElementById('reportReasonError');
@@ -367,7 +382,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelReportConfirmModal = document.getElementById('cancelReportConfirmModal');
     const confirmCancelReport = document.getElementById('confirmCancelReport');
     const reportUserText = document.getElementById('reportUserText');
-
+    const reportMissingFieldsAlert = document.getElementById('reportMissingFieldsAlert');
+    const reportMissingFieldsList = document.getElementById('reportMissingFieldsList');
 
 
 
@@ -1139,6 +1155,22 @@ document.addEventListener('DOMContentLoaded', () => {
         return isValid;
     }
 
+    function updateSelectPlaceholderColor(select, placeholderValue = '') {
+        if (!select) return;
+
+        if (select.value === placeholderValue) {
+            select.classList.add('text-muted');
+        } else {
+            select.classList.remove('text-muted');
+        }
+    }
+
+    updateSelectPlaceholderColor(reportReason, '');
+
+    reportReason?.addEventListener('change', () => {
+        updateSelectPlaceholderColor(reportReason, '');
+    });
+
 
     /**
      * Validates the report description field.
@@ -1223,6 +1255,76 @@ document.addEventListener('DOMContentLoaded', () => {
         submitReportBtn.disabled = !isReady;
     }
 
+    function validateReportForm(showErrors = true) {
+        let valid = true;
+
+        if (!validateReportReason(showErrors)) valid = false;
+        if (!validateReportDescription(showErrors)) valid = false;
+
+        if (submitReportBtn) submitReportBtn.disabled = !valid;
+
+        return valid;
+    }
+
+    function getReportMissingFields() {
+        const missing = [];
+
+        if (!reportReason || !reportReason.value) {
+            missing.push('Razón de la querella');
+        }
+
+        if (!reportDescription || !reportDescription.value.trim()) {
+            missing.push('Descripción de la querella');
+        }
+
+        return missing;
+    }
+
+    function showReportMissingFieldsIndicator() {
+        const valid = validateReportForm(true);
+
+        if (valid) {
+            reportMissingFieldsAlert?.classList.add('d-none');
+            submitReportBtn?.click();
+            return;
+        }
+
+        const missing = getReportMissingFields();
+
+        if (reportMissingFieldsAlert && reportMissingFieldsList) {
+            reportMissingFieldsList.innerHTML = '';
+
+            missing.forEach((fieldName) => {
+                const item = document.createElement('li');
+                item.textContent = fieldName;
+                reportMissingFieldsList.appendChild(item);
+            });
+
+            reportMissingFieldsAlert.classList.remove('d-none');
+        }
+
+        const firstInvalidField = reportUserForm?.querySelector('.is-invalid');
+
+        if (firstInvalidField) {
+            firstInvalidField.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+        }
+
+        showRequiredFieldsToast(
+            'Completa los campos requeridos antes de enviar la querella.'
+        );
+    }
+
+    submitReportBtnWrapper?.addEventListener('click', (event) => {
+        if (submitReportBtn?.disabled) {
+            event.preventDefault();
+
+            showReportMissingFieldsIndicator();
+        }
+    });
+
 
     /**
      * Clears all report modal validation styles and messages.
@@ -1255,6 +1357,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetReportForm() {
         if (reportUserForm) {
             reportUserForm.reset();
+            updateSelectPlaceholderColor(reportReason, '');
         }
 
 
@@ -2156,6 +2259,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
                 setTimeout(() => {
+                    bootstrap.Toast.getInstance(document.getElementById('errorToast'))?.hide();
                     reportSentToast?.show();
                 }, 250);
 

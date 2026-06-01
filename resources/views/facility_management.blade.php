@@ -572,6 +572,13 @@
                               novalidate>
                             @csrf
 
+                            <div id="ratesMissingFieldsAlert"
+                                 class="alert alert-danger border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 shadow-sm d-none"
+                                 role="alert">
+                                <div class="fw-bold mb-2">Faltan campos requeridos para guardar las tarifas</div>
+                                <ul class="mb-0 ps-3" id="ratesMissingFieldsList"></ul>
+                            </div>
+
                             <div class="mb-4">
                                 <label class="form-label fw-semibold fs-5 mb-3">
                                     Áreas a configurar <span class="text-danger">*</span>
@@ -839,21 +846,21 @@
                                 <div class="col-12 col-lg-4">
                                     <div class="total-hour-box rounded-4 p-4 h-100">
                                         <div class="fw-bold fs-6 mb-2">Vista previa período laborable</div>
-                                        <div class="fw-bold text-success fs-4" id="configWorkdayPreview">$0.00</div>
+                                        <div class="fw-bold  fs-4" id="configWorkdayPreview">$0.00</div>
                                     </div>
                                 </div>
 
                                 <div class="col-12 col-lg-4">
                                     <div class="total-hour-box rounded-4 p-4 h-100">
                                         <div class="fw-bold fs-6 mb-2">Vista previa no laborable sábado</div>
-                                        <div class="fw-bold text-success fs-4" id="configSaturdayPreview">$0.00</div>
+                                        <div class="fw-bold fs-4" id="configSaturdayPreview">$0.00</div>
                                     </div>
                                 </div>
 
                                 <div class="col-12 col-lg-4">
                                     <div class="total-hour-box rounded-4 p-4 h-100">
                                         <div class="fw-bold fs-6 mb-2">Vista previa domingo o festivo</div>
-                                        <div class="fw-bold text-success fs-4" id="configSundayHolidayPreview">$0.00
+                                        <div class="fw-bold fs-4" id="configSundayHolidayPreview">$0.00
                                         </div>
                                     </div>
                                 </div>
@@ -866,9 +873,11 @@
                     <button type="button" class="btn btn-outline-secondary px-4 configure-cancel-btn">
                         Cancelar
                     </button>
-                    <button type="button" class="btn btn-success px-4" id="saveRatesBtn" disabled>
-                        Guardar Tarifas
-                    </button>
+                    <span id="saveRatesBtnWrapper" class="d-inline-block">
+                        <button type="button" class="btn btn-success px-4" id="saveRatesBtn" disabled>
+                            Guardar Tarifas
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
@@ -901,6 +910,13 @@
                 <div class="modal-body pt-3">
                     <form id="addRentalForm" method="POST" action="{{ route('facility.events.store') }}" novalidate>
                         @csrf
+
+                        <div id="rentalMissingFieldsAlert"
+                             class="alert alert-danger border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 shadow-sm d-none"
+                             role="alert">
+                            <div class="fw-bold mb-2">Faltan campos requeridos para agregar el evento</div>
+                            <ul class="mb-0 ps-3" id="rentalMissingFieldsList"></ul>
+                        </div>
 
                         <div class="row g-2 mb-2 justify-content-center">
                             <div class="col-12">
@@ -1207,7 +1223,7 @@
                                     <small class="text-muted d-block">Se determina según período y servicios
                                         seleccionados.</small>
                                 </div>
-                                <span class="fw-bold text-success fs-2 mb-0" id="rentalEstimatedTotal">$0.00</span>
+                                <span class="fw-bold fs-2 mb-0" id="rentalEstimatedTotal">$0.00</span>
                             </div>
                             <div class="mt-3">
                                 <small class="text-muted d-block">Período seleccionado: <span id="detectedPeriodLabel"
@@ -1223,9 +1239,11 @@
 
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-outline-secondary px-4 rental-cancel-btn">Cancelar</button>
-                    <button type="button" class="btn btn-success px-4" id="saveRentalBtn">
-                        Guardar Evento
-                    </button>
+                    <span id="saveRentalBtnWrapper" class="d-inline-block">
+                        <button type="button" class="btn btn-success px-4" id="saveRentalBtn" disabled>
+                            Guardar Evento
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
@@ -1303,6 +1321,7 @@
     --}}
     <div class="modal fade" id="createRelatedModal" tabindex="-1" aria-labelledby="createRelatedModalLabel"
          aria-hidden="true">
+
         <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-lg-down modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0 align-items-start">
@@ -1322,6 +1341,13 @@
                     <form id="createRelatedForm" novalidate>
                         <input type="hidden" id="relatedParentEventId">
                         <input type="hidden" id="relatedRateMode" name="rate_mode">
+
+                        <div id="relatedMissingFieldsAlert"
+                             class="alert alert-danger border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 shadow-sm d-none"
+                             role="alert">
+                            <div class="fw-bold mb-2">Faltan campos requeridos para crear el evento relacionado</div>
+                            <ul class="mb-0 ps-3" id="relatedMissingFieldsList"></ul>
+                        </div>
 
                         <div class="row g-2 mb-2 justify-content-center">
                             <div class="col-12">
@@ -1601,9 +1627,12 @@
                     <button type="button" class="btn btn-outline-secondary px-4 related-cancel-btn">
                         Cancelar
                     </button>
-                    <button type="button" class="btn btn-success px-4" id="saveRelatedEventBtn" disabled>
-                        Guardar Evento Relacionado
-                    </button>
+
+                    <span id="saveRelatedEventBtnWrapper" class="d-inline-block">
+                        <button type="button" class="btn btn-success px-4" id="saveRelatedEventBtn" disabled>
+                            Guardar Evento Relacionado
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
@@ -1639,6 +1668,7 @@
     --}}
     <div class="modal fade" id="customizeDaysModal" tabindex="-1" aria-labelledby="customizeDaysModalLabel"
          aria-hidden="true">
+
         <div class="modal-dialog modal-dialog-scrollable modal-lg modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0 align-items-start">
@@ -1657,6 +1687,13 @@
                 <div class="modal-body pt-3">
                     <form id="customizeDaysForm" novalidate>
                         <input type="hidden" id="customizeEventId">
+
+                        <div id="customizeMissingFieldsAlert"
+                             class="alert alert-danger border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 shadow-sm d-none"
+                             role="alert">
+                            <div class="fw-bold mb-2">Faltan campos requeridos para modificar los días</div>
+                            <ul class="mb-0 ps-3" id="customizeMissingFieldsList"></ul>
+                        </div>
 
                         <div class="row g-3">
                             <div class="col-12">
@@ -1771,9 +1808,12 @@
                     <button type="button" class="btn btn-outline-secondary px-4 customize-cancel-btn">
                         Cancelar
                     </button>
-                    <button type="button" class="btn btn-success px-4" id="saveCustomizeDaysBtn" disabled>
-                        Guardar Modificación
-                    </button>
+
+                    <span id="saveCustomizeDaysBtnWrapper" class="d-inline-block">
+                        <button type="button" class="btn btn-success px-4" id="saveCustomizeDaysBtn" disabled>
+                            Guardar Modificación
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
@@ -1808,6 +1848,8 @@
         existing custom-day modifications.
     --}}
     <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+
+
         <div class="modal-dialog modal-dialog-scrollable modal-xl modal-fullscreen-lg-down modal-dialog-centered">
             <div class="modal-content rounded-4 border-0 shadow">
                 <div class="modal-header border-0 pb-0 align-items-start">
@@ -1827,6 +1869,13 @@
                     <form id="editEventForm" novalidate>
                         <input type="hidden" id="editEventId">
                         <input type="hidden" id="editRateMode" name="rate_mode">
+
+                        <div id="editMissingFieldsAlert"
+                             class="alert alert-danger border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 shadow-sm d-none"
+                             role="alert">
+                            <div class="fw-bold mb-2">Faltan campos requeridos para editar el evento</div>
+                            <ul class="mb-0 ps-3" id="editMissingFieldsList"></ul>
+                        </div>
 
                         <div class="row g-2 mb-2 justify-content-center">
                             <div class="col-12">
@@ -2119,9 +2168,11 @@
                     <button type="button" class="btn btn-outline-secondary px-4 edit-cancel-btn">
                         Cancelar
                     </button>
-                    <button type="button" class="btn btn-success px-4" id="saveEditEventBtn" disabled>
-                        Guardar Cambios
-                    </button>
+                    <span id="saveEditEventBtnWrapper" class="d-inline-block">
+                        <button type="button" class="btn btn-success px-4" id="saveEditEventBtn" disabled>
+                            Guardar Cambios
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
@@ -2501,6 +2552,24 @@
                 <div class="toast-body fw-semibold pe-1">
                     El evento relacionado fue preparado correctamente.
                 </div>
+
+                <button type="button"
+                        class="btn-close p-0 ms-1 me-2"
+                        data-bs-dismiss="toast"
+                        aria-label="Cerrar"
+                        style="transform: scale(0.8);">
+                </button>
+            </div>
+        </div>
+
+        <div id="errorToast"
+             class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+             style="width: fit-content; max-width: min(520px, calc(100vw - 2rem));">
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold pe-1" id="errorToastMessage"></div>
 
                 <button type="button"
                         class="btn-close p-0 ms-1 me-2"

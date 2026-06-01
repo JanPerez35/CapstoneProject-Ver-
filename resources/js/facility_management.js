@@ -126,6 +126,60 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const $ = (id) => document.getElementById(id);
 
+    function showRequiredFieldsToast(message) {
+        const errorToastEl = $('errorToast');
+        const errorToastMessage = $('errorToastMessage');
+
+        if (errorToastEl && errorToastMessage) {
+            errorToastMessage.textContent = message;
+            bootstrap.Toast.getOrCreateInstance(errorToastEl, { delay: 5000 }).show();
+        }
+    }
+
+    function updateSelectPlaceholderColor(select, placeholderValue = '') {
+        if (!select) return;
+
+        if (select.value === placeholderValue) {
+            select.classList.add('text-muted');
+            select.classList.remove('text-dark');
+        } else {
+            select.classList.remove('text-muted');
+            select.classList.add('text-dark');
+        }
+    }
+
+    function renderMissingFields(alertEl, listEl, fields) {
+        if (!alertEl || !listEl) return;
+
+        listEl.innerHTML = '';
+
+        fields.forEach((fieldName) => {
+            const item = document.createElement('li');
+            item.textContent = fieldName;
+            listEl.appendChild(item);
+        });
+
+        alertEl.classList.remove('d-none');
+    }
+
+    function hideMissingFields(alertEl, listEl) {
+        alertEl?.classList.add('d-none');
+
+        if (listEl) {
+            listEl.innerHTML = '';
+        }
+    }
+
+    function scrollToFirstInvalid(form, alertEl) {
+        const firstInvalidField = form?.querySelector('.is-invalid');
+
+        if (firstInvalidField) {
+            firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            alertEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
     /**
      * Export button references.
      *
@@ -230,6 +284,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveRatesBtn = $('saveRatesBtn');
     const saveRentalBtn = $('saveRentalBtn');
 
+    const saveRatesBtnWrapper = $('saveRatesBtnWrapper');
+
+
     /**
      * Configure-rates modal classroom references.
      *
@@ -280,6 +337,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const configDaily3 = $('configDaily3');
     const configWeekly3 = $('configWeekly3');
     const configMonthly3 = $('configMonthly3');
+
+
 
     /**
      * Configure-rates modal estimated preview.
@@ -562,6 +621,224 @@ document.addEventListener('DOMContentLoaded', () => {
     const customizePeriodTypeError = $('customizePeriodTypeError');
     const customizeStartTime = $('customizeStartTime');
     const customizeEndTime = $('customizeEndTime');
+
+    const saveRentalBtnWrapper = $('saveRentalBtnWrapper');
+    const saveRelatedEventBtnWrapper = $('saveRelatedEventBtnWrapper');
+    const saveEditEventBtnWrapper = $('saveEditEventBtnWrapper');
+    const saveCustomizeDaysBtnWrapper = $('saveCustomizeDaysBtnWrapper');
+
+    const rentalMissingFieldsAlert = $('rentalMissingFieldsAlert');
+    const rentalMissingFieldsList = $('rentalMissingFieldsList');
+
+    const relatedMissingFieldsAlert = $('relatedMissingFieldsAlert');
+    const relatedMissingFieldsList = $('relatedMissingFieldsList');
+
+    const editMissingFieldsAlert = $('editMissingFieldsAlert');
+    const editMissingFieldsList = $('editMissingFieldsList');
+
+    const customizeMissingFieldsAlert = $('customizeMissingFieldsAlert');
+    const customizeMissingFieldsList = $('customizeMissingFieldsList');
+
+    const ratesMissingFieldsAlert = $('ratesMissingFieldsAlert');
+    const ratesMissingFieldsList = $('ratesMissingFieldsList');
+
+    [
+        rentalClassroom,
+        rentalPeriodType,
+        rentalStartTime,
+        rentalEndTime,
+        relatedArea,
+        relatedPeriodType,
+        relatedStartTime,
+        relatedEndTime,
+        editClassroom,
+        editPeriodType,
+        editStartTime,
+        editEndTime,
+        customizeScope,
+        customizePeriodType,
+        customizeStartTime,
+        customizeEndTime,
+    ].forEach((select) => {
+        updateSelectPlaceholderColor(select, '');
+
+        select?.addEventListener('change', () => {
+            updateSelectPlaceholderColor(select, '');
+        });
+    });
+
+
+    function getRentalMissingFields() {
+        const missing = [];
+
+        if (!rentalClassroom?.value) missing.push('Área');
+        if (!rentalResponsible?.value.trim()) missing.push('Responsable');
+        if (!rentalDescription?.value.trim()) missing.push('Descripción');
+        if (!rentalStartDate?.value) missing.push('Fecha inicial');
+        if (!rentalEndDate?.value) missing.push('Fecha final');
+        if (!rentalPeriodType?.value) missing.push('Tipo de período');
+        if (!rentalStartTime?.value) missing.push('Hora inicial');
+        if (!rentalEndTime?.value) missing.push('Hora final');
+        if (!rentalServiceChecks.some(input => input?.checked)) missing.push('Servicios');
+
+        return missing;
+    }
+
+    function getRelatedMissingFields() {
+        const missing = [];
+
+        if (!relatedArea?.value) missing.push('Área');
+        if (!relatedResponsible?.value.trim()) missing.push('Responsable');
+        if (!relatedDescription?.value.trim()) missing.push('Descripción');
+        if (!relatedStartDate?.value) missing.push('Fecha inicial');
+        if (!relatedEndDate?.value) missing.push('Fecha final');
+        if (!relatedPeriodType?.value) missing.push('Tipo de período');
+        if (!relatedStartTime?.value) missing.push('Hora inicial');
+        if (!relatedEndTime?.value) missing.push('Hora final');
+        if (!relatedServiceChecks.some(input => input?.checked)) missing.push('Servicios');
+
+        return missing;
+    }
+
+    function getEditMissingFields() {
+        const missing = [];
+
+        if (!editClassroom?.value) missing.push('Área');
+        if (!editResponsible?.value.trim()) missing.push('Responsable');
+        if (!editDescription?.value.trim()) missing.push('Descripción');
+        if (!editStartDate?.value) missing.push('Fecha inicial');
+        if (!editEndDate?.value) missing.push('Fecha final');
+        if (!editPeriodType?.value) missing.push('Tipo de período');
+        if (!editStartTime?.value) missing.push('Hora inicial');
+        if (!editEndTime?.value) missing.push('Hora final');
+        if (!editServiceChecks.some(input => input?.checked)) missing.push('Servicios');
+
+        return missing;
+    }
+
+    function getCustomizeMissingFields() {
+        const missing = [];
+
+        if (!customizeScope?.value) missing.push('Alcance de modificación');
+        if (!customizeDate?.value) missing.push('Fecha');
+        if (!customizePeriodType?.value) missing.push('Tipo de período');
+        if (!customizeStartTime?.value) missing.push('Hora inicial');
+        if (!customizeEndTime?.value) missing.push('Hora final');
+
+        return missing;
+    }
+
+    saveRatesBtnWrapper?.addEventListener('click', (event) => {
+        if (saveRatesBtn?.disabled) {
+            event.preventDefault();
+
+            configClassroomSelectionTouched = true;
+            updateConfigureClassroomSelectionError();
+
+            validateAreaField(configClassroomArea, true);
+            moneyInputs.forEach(input => validateMoneyField(input, true));
+
+            renderMissingFields(
+                ratesMissingFieldsAlert,
+                ratesMissingFieldsList,
+                getRatesMissingFields()
+            );
+
+            scrollToFirstInvalid(configureRatesForm, ratesMissingFieldsAlert);
+
+            showRequiredFieldsToast(
+                'Completa los campos requeridos antes de guardar las tarifas.'
+            );
+        }
+    });
+
+    saveRentalBtnWrapper?.addEventListener('click', (event) => {
+        if (saveRentalBtn?.disabled) {
+            event.preventDefault();
+
+            validateRentalDates(true, true);
+            validateResponsible(true);
+            validateDescription(true);
+            validateEventTimes({
+                startTime: rentalStartTime,
+                endTime: rentalEndTime,
+                periodType: rentalPeriodType,
+                startDate: rentalStartDate,
+                timeError: document.getElementById('rentalTimeError'),
+                showError: true
+            });
+            toggleServicesError(!hasSelectedServices());
+            renderMissingFields(rentalMissingFieldsAlert, rentalMissingFieldsList, getRentalMissingFields());
+            scrollToFirstInvalid(addRentalForm, rentalMissingFieldsAlert);
+
+            showRequiredFieldsToast('Completa los campos requeridos antes de guardar el evento.');
+        }
+    });
+
+    saveRelatedEventBtnWrapper?.addEventListener('click', (event) => {
+        if (saveRelatedEventBtn?.disabled) {
+            event.preventDefault();
+
+            validateRelatedEventForm(true);
+            renderMissingFields(relatedMissingFieldsAlert, relatedMissingFieldsList, getRelatedMissingFields());
+            scrollToFirstInvalid($('createRelatedForm'), relatedMissingFieldsAlert);
+
+            showRequiredFieldsToast('Completa los campos requeridos antes de guardar el evento relacionado.');
+        }
+    });
+
+    saveEditEventBtnWrapper?.addEventListener('click', (event) => {
+        if (saveEditEventBtn?.disabled) {
+            event.preventDefault();
+
+            validateEditEventForm(true);
+            renderMissingFields(editMissingFieldsAlert, editMissingFieldsList, getEditMissingFields());
+            scrollToFirstInvalid($('editEventForm'), editMissingFieldsAlert);
+
+            showRequiredFieldsToast('Completa los campos requeridos antes de actualizar el evento.');
+        }
+    });
+
+    saveCustomizeDaysBtnWrapper?.addEventListener('click', (event) => {
+        if (saveCustomizeDaysBtn?.disabled) {
+            event.preventDefault();
+
+            validateCustomizeDaysForm(true);
+            renderMissingFields(customizeMissingFieldsAlert, customizeMissingFieldsList, getCustomizeMissingFields());
+            scrollToFirstInvalid($('customizeDaysForm'), customizeMissingFieldsAlert);
+
+            showRequiredFieldsToast('Completa los campos requeridos antes de guardar la modificación.');
+        }
+    });
+
+    function getRatesMissingFields() {
+        const missing = [];
+
+        if (getConfigClassroomChecks().every(input => !input.checked)) {
+            missing.push('Áreas a configurar');
+        }
+
+        [
+            [configClassroomArea, 'Medida del área'],
+            [configUtilities, 'Material de Limpieza'],
+            [configElectricity, 'Electricidad'],
+            [configWater, 'Agua'],
+            [configDaily1, 'Diario - período laborable'],
+            [configWeekly1, 'Semanal - período laborable'],
+            [configMonthly1, 'Mensual - período laborable'],
+            [configDaily2, 'Diario - no laborable sábado'],
+            [configWeekly2, 'Semanal - no laborable sábado'],
+            [configMonthly2, 'Mensual - no laborable sábado'],
+            [configDaily3, 'Diario - no laborable domingo o festivo'],
+            [configWeekly3, 'Semanal - no laborable domingo o festivo'],
+            [configMonthly3, 'Mensual - no laborable domingo o festivo'],
+        ].forEach(([input, label]) => {
+            if (!input?.value.trim()) missing.push(label);
+        });
+
+        return missing;
+    }
+
     const customizeScopeError = $('customizeScopeError');
     const customizeDateError = $('customizeDateError');
     const customizeTimeError = $('customizeTimeError');
@@ -4197,6 +4474,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         clearEditErrors();
+
+        hideMissingFields(editMissingFieldsAlert, editMissingFieldsList);
+
+        [
+            editClassroom,
+            editPeriodType,
+            editStartTime,
+            editEndTime,
+        ].forEach(select => updateSelectPlaceholderColor(select, ''));
+
         updateEditSummary();
         updateEditSaveState();
 
@@ -4392,6 +4679,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 updateCustomizeTimeOptions();
 
+                hideMissingFields(customizeMissingFieldsAlert, customizeMissingFieldsList);
+
+                [
+                    customizeScope,
+                    customizePeriodType,
+                    customizeStartTime,
+                    customizeEndTime,
+                ].forEach(select => updateSelectPlaceholderColor(select, ''));
+
                 customizeStartTime.classList.remove('is-invalid');
                 customizeEndTime.classList.remove('is-invalid');
                 customizeTimeError.textContent = '';
@@ -4459,6 +4755,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 relatedStartTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
                 relatedEndTime.innerHTML = '<option value="" selected disabled>Primero selecciona el tipo de período</option>';
 
+                hideMissingFields(relatedMissingFieldsAlert, relatedMissingFieldsList);
+
+                [
+                    relatedArea,
+                    relatedPeriodType,
+                    relatedStartTime,
+                    relatedEndTime,
+                ].forEach(select => updateSelectPlaceholderColor(select, ''));
+
                 relatedEstimatedTotal.textContent = '$0.00';
                 if (relatedDetectedPeriodLabel) relatedDetectedPeriodLabel.textContent = '—';
                 if (relatedDetectedHoursLabel) relatedDetectedHoursLabel.textContent = '0.00 horas';
@@ -4517,6 +4822,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 relatedTimeError.textContent = '';
 
                 toggleRelatedServicesError(false);
+                hideMissingFields(relatedMissingFieldsAlert, relatedMissingFieldsList);
+
+                [
+                    relatedArea,
+                    relatedPeriodType,
+                    relatedStartTime,
+                    relatedEndTime,
+                ].forEach(select => updateSelectPlaceholderColor(select, ''));
                 updateRelatedSaveState();
             };
         });
@@ -5306,6 +5619,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            hideMissingFields(customizeMissingFieldsAlert, customizeMissingFieldsList);
+
             if (payload.scope === 'this_and_following' && currentCustomizeParentRow) {
                 const endDate = currentCustomizeParentRow.dataset.endDate || currentCustomizeParentRow.dataset.date || '';
                 const groupKey = currentCustomizeParentRow.dataset.groupKey || '';
@@ -5360,6 +5675,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
+            hideMissingFields(editMissingFieldsAlert, editMissingFieldsList);
+
             if (!editingIsCustomDay) {
                 const outOfRangeCustomDays = getCustomDaysOutsideEditedParentRange(
                     payload.event_id,
@@ -5411,13 +5728,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (saveRelatedEventBtn) {
         saveRelatedEventBtn.addEventListener('click', async () => {
             const payload = validateRelatedEventForm(true);
-
             if (!payload) {
                 updateRelatedSaveState();
                 return;
             }
 
+            hideMissingFields(relatedMissingFieldsAlert, relatedMissingFieldsList);
             await submitRelatedEvent(payload);
+
         });
     }
 
@@ -5578,6 +5896,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        hideMissingFields(ratesMissingFieldsAlert, ratesMissingFieldsList);
         updateConfigureSaveState();
         updateConfigPreview();
     }
@@ -5611,6 +5930,14 @@ document.addEventListener('DOMContentLoaded', () => {
         detectedPeriodLabel.textContent = '—';
         detectedHoursLabel.textContent = '0.00 horas';
 
+        hideMissingFields(rentalMissingFieldsAlert, rentalMissingFieldsList);
+
+        [
+            rentalClassroom,
+            rentalPeriodType,
+            rentalStartTime,
+            rentalEndTime,
+        ].forEach(select => updateSelectPlaceholderColor(select, ''));
         updateAutomaticRateMode();
         updateRentalTimeOptions();
         updateRentalSaveState();
@@ -6218,8 +6545,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!isConfigureFormValid(true)) {
             updateConfigureSaveState();
+
+            renderMissingFields(
+                ratesMissingFieldsAlert,
+                ratesMissingFieldsList,
+                getRatesMissingFields()
+            );
+
+            scrollToFirstInvalid(configureRatesForm, ratesMissingFieldsAlert);
+
+            showRequiredFieldsToast(
+                'Completa los campos requeridos antes de guardar las tarifas.'
+            );
+
             return;
         }
+
+        hideMissingFields(ratesMissingFieldsAlert, ratesMissingFieldsList);
 
         sessionStorage.setItem('facilityScrollTarget', 'facilityActionButtons');
         configureRatesForm.submit();
@@ -6278,6 +6620,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         sessionStorage.setItem('facilityScrollTarget', 'facilityCostTable');
+        hideMissingFields(rentalMissingFieldsAlert, rentalMissingFieldsList);
         addRentalForm.submit();
     });
 

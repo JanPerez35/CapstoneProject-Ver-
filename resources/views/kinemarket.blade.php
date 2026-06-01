@@ -64,7 +64,12 @@
                                 <span class="text-danger">*</span> Campos requeridos
                             </small>
                         </div>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            id="closeCreatePostModalBtn"
+                            aria-label="Cerrar"
+                        ></button>
                     </div>
 
                     {{--Create post modal body--}}
@@ -72,6 +77,16 @@
                         {{--Form used for post creation with validation handled in the marketplace JS--}}
                         <form id="createPostForm" novalidate>
                             @csrf
+
+                            <div id="marketplaceMissingFieldsAlert"
+                                 class="alert alert-danger border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 shadow-sm d-none"
+                                 role="alert">
+                                <div class="fw-bold mb-2">
+                                    Faltan campos requeridos para crear la publicación
+                                </div>
+
+                                <ul class="mb-0 ps-3" id="marketplaceMissingFieldsList"></ul>
+                            </div>
                             <div class="mb-3">
                                 <div class="alert alert-warning rounded-0 border-0 shadow-sm mt-3 mb-3 px-4 py-3" id="postExpirationNotice">
                                     <div class="d-flex align-items-start gap-3">
@@ -162,7 +177,7 @@
                                     <label for="postCategory" class="form-label fw-semibold">
                                         Categoría<span class="text-danger">*</span>
                                     </label>
-                                    <select class="form-select form-select-lg" id="postCategory" required>
+                                    <select class="form-select form-select-lg text-muted" id="postCategory" required>
                                         <option value="" selected>Selecciona un deporte</option>
                                         <option value="Baloncesto">Baloncesto</option>
                                         <option value="Tenis">Tenis</option>
@@ -182,7 +197,7 @@
                                 <label for="postCondition" class="form-label fw-semibold">
                                     Condición<span class="text-danger">*</span>
                                 </label>
-                                <select class="form-select form-select-lg" id="postCondition" required>
+                                <select class="form-select form-select-lg text-muted" id="postCondition" required>
                                     <option value="" selected>Selecciona una condición</option>
                                     <option>Nuevo</option>
                                     <option>Como Nuevo</option>
@@ -233,9 +248,17 @@
                         <button type="button" class="btn btn-outline-secondary px-4" id="cancelCreatePostBtn">
                             Cancelar
                         </button>
-                        <button type="button" class="btn btn-success px-4" id="publishBtn" disabled>
-                            Publicar
-                        </button>
+                        <div id="publishBtnWrapper"
+                             class="d-inline-block"
+                             data-bs-toggle="tooltip"
+                             data-bs-placement="top"
+                             data-bs-custom-class="custom-tooltip"
+                             data-bs-title="Completa los campos requeridos para publicar.">
+
+                            <button type="button" class="btn btn-success px-4" id="publishBtn" disabled>
+                                Publicar
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -609,6 +632,16 @@
                         <form id="reportUserForm" novalidate>
                             @csrf
 
+                            <div id="reportMissingFieldsAlert"
+                                 class="alert alert-danger border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 shadow-sm d-none"
+                                 role="alert">
+                                <div class="fw-bold mb-2">
+                                    Faltan campos requeridos para enviar la querella
+                                </div>
+
+                                <ul class="mb-0 ps-3" id="reportMissingFieldsList"></ul>
+                            </div>
+
                             {{--Notice message explaining report review process--}}
                             <div class="alert alert-warning rounded-0 mb-3 shadow-sm">
                                 <strong>Aviso importante:</strong> Los querellas son revisados por los administradores de mercado.
@@ -660,9 +693,17 @@
                         <button type="button" class="btn btn-outline-secondary px-4" id="cancelReportBtn">
                             Cancelar
                         </button>
-                        <button type="button" class="btn btn-danger px-4" id="submitReportBtn" disabled>
-                            Enviar Querella
-                        </button>
+                        <div id="submitReportBtnWrapper"
+                             class="d-inline-block"
+                             data-bs-toggle="tooltip"
+                             data-bs-placement="top"
+                             data-bs-custom-class="custom-tooltip"
+                             data-bs-title="Completa los campos requeridos para enviar la querella.">
+
+                            <button type="button" class="btn btn-danger px-4" id="submitReportBtn" disabled>
+                                Enviar Querella
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

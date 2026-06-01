@@ -42,8 +42,8 @@
         }
 
         @media (max-width: 768px) {
-            .terms-pdf-box {
-                display: none;
+            .pdf-frame {
+                height: 75vh;
             }
 
             .card-body {
@@ -80,11 +80,25 @@
 
                 {{-- Embedded PDF document containing the current Terms and Conditions --}}
                 <div class="border rounded-4 overflow-hidden mb-4 terms-pdf-box">
-                    <iframe
+                    <object
                         id="termsPdfFrame"
-                        src="{{ asset('documents/terms_conditions.pdf') }}?v={{ file_exists(public_path('documents/terms_conditions.pdf')) ? filemtime(public_path('documents/terms_conditions.pdf')) : time() }}"
+                        data="{{ asset('documents/terms_conditions.pdf') }}?v={{ file_exists(public_path('documents/terms_conditions.pdf')) ? filemtime(public_path('documents/terms_conditions.pdf')) : time() }}"
+                        type="application/pdf"
                         class="pdf-frame"
-                    ></iframe>
+                    >
+                        <div class="p-4 text-center">
+                            <p class="fw-semibold mb-3">
+                                Si el documento no carga, ábrelo directamente.
+                            </p>
+                            <a
+                                href="{{ asset('documents/terms_conditions.pdf') }}?v={{ file_exists(public_path('documents/terms_conditions.pdf')) ? filemtime(public_path('documents/terms_conditions.pdf')) : time() }}"
+                                target="_blank"
+                                class="btn btn-outline-success fw-semibold"
+                            >
+                                Abrir términos y condiciones en PDF
+                            </a>
+                        </div>
+                    </object>
                 </div>
 
                 <div class="d-md-none mb-4">

@@ -529,6 +529,15 @@
                     <form id="reportUserForm" novalidate>
                         @csrf
 
+                        <div id="reportMissingFieldsAlert"
+                             class="alert alert-danger border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 shadow-sm d-none"
+                             role="alert">
+                            <div class="fw-bold mb-2">
+                                Faltan campos requeridos para enviar la querella
+                            </div>
+
+                            <ul class="mb-0 ps-3" id="reportMissingFieldsList"></ul>
+                        </div>
                         {{--Administrative warning explaining the possible consequences after a report/querella is submitted--}}
                         <div class="alert alert-warning rounded-0 shadow-sm mb-0">
                             <strong>Aviso importante:</strong>
@@ -541,8 +550,8 @@
                             <label for="reportReason" class="form-label fw-semibold">
                                 Razón de la Querella <span class="text-danger">*</span>
                             </label>
-                            <select class="form-select form-select-lg" id="reportReason" required>
-                                <option value="" selected>Selecciona una razón</option>
+                            <select class="form-select form-select-lg text-muted" id="reportReason" required>
+                                <option value="" disabled selected>Selecciona una razón</option>
                                 <option value="Fraude o estafa">Fraude o estafa</option>
                                 <option value="Información falsa">Información falsa</option>
                                 <option value="Lenguaje ofensivo">Lenguaje ofensivo</option>
@@ -590,14 +599,16 @@
                     </button>
 
                     {{--Disabled until the reason and description pass frontend validation--}}
-                    <button
-                        type="button"
-                        class="btn btn-danger px-4"
-                        id="submitReportBtn"
-                        disabled
-                    >
-                        Enviar Querella
-                    </button>
+                    <span id="submitReportBtnWrapper" class="d-inline-block">
+                        <button
+                            type="button"
+                            class="btn btn-danger px-4"
+                            id="submitReportBtn"
+                            disabled
+                        >
+                            Enviar Querella
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
@@ -647,7 +658,8 @@
 
     {{--Marketplace-style success toast container, shown on the bottom left of the screen
         when an action has been confirmed--}}
-    <div class="toast-container position-fixed bottom-0 start-0 p-3">
+    <div class="toast-container position-fixed top-0 start-50 translate-middle-x p-3"
+         style="z-index: 2000; margin-top: 18vh;">
 
         {{--Shown after a seller rating is successfully submitted--}}
         <div id="ratingSentToast"
@@ -675,9 +687,21 @@
         >
             <div class="d-flex align-items-center">
                 <div class="toast-body fw-semibold rounded-0 pe-1" style="padding-right: 0;">
-                    Querella fue enviado exitosamente.
+                    Querella fue enviada exitosamente.
                 </div>
                 <button type="button" class="btn-close p-0 ms-1 me-2" data-bs-dismiss="toast" aria-label="Cerrar" style="background-color: transparent; border: none; transform: scale(0.8);"></button>
+            </div>
+        </div>
+
+        <div id="errorToast"
+             class="toast align-items-center shadow-sm border border-danger-subtle bg-danger-subtle text-danger-emphasis rounded-0 mb-2"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true"
+        >
+            <div class="d-flex align-items-center">
+                <div class="toast-body fw-semibold" id="errorToastMessage"></div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
             </div>
         </div>
     </div>
