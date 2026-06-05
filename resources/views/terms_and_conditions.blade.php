@@ -79,7 +79,7 @@
             <div class="card-body p-4">
 
                 {{-- Embedded PDF document containing the current Terms and Conditions --}}
-                <div class="border rounded-4 overflow-hidden mb-4 terms-pdf-box">
+                <div class="border rounded-4 overflow-hidden mb-4 terms-pdf-box d-none d-md-block">
                     <object
                         id="termsPdfFrame"
                         data="{{ asset('documents/terms_conditions.pdf') }}?v={{ file_exists(public_path('documents/terms_conditions.pdf')) ? filemtime(public_path('documents/terms_conditions.pdf')) : time() }}"
@@ -102,12 +102,17 @@
                 </div>
 
                 <div class="d-md-none mb-4">
+                    <div class="alert alert-info rounded-4 mb-3">
+                        En dispositivos móviles, abre el PDF en otra página para poder verlo completo.
+                    </div>
+
                     <a
                         href="{{ asset('documents/terms_conditions.pdf') }}?v={{ file_exists(public_path('documents/terms_conditions.pdf')) ? filemtime(public_path('documents/terms_conditions.pdf')) : time() }}"
                         target="_blank"
+                        rel="noopener noreferrer"
                         class="btn btn-outline-success w-100 fw-semibold"
                     >
-                        Abrir términos y condiciones en PDF
+                        Abrir términos y condiciones en otra página
                     </a>
                 </div>
 

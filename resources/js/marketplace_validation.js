@@ -635,7 +635,7 @@ function createMarketplaceCardHTML(post) {
                    src="${post.photo_1_url ? '/storage/' + post.photo_1_url : '/images/marketplace_images/picture-not-available.png'}"
                    class="card-img-top"
                    alt="${post.title}"
-                   style="height: 300px; object-fit: contain;"
+                   style="height: 250px; object-fit: cover;"
                    onerror="this.onerror=null;this.src='/images/marketplace_images/picture-not-available.png';"
                >
 

@@ -452,7 +452,7 @@
                             <div class="col-6 text-end fw-bold text-success" id="postDetailsPrice">$0.00</div>
 
 
-                            <div class="col-6 text-muted">Estado:</div>
+                            <div class="col-6 text-muted">Disponibilidad:</div>
                             <div class="col-6 text-end">
                                <span class="label-badge badge-available" id="postDetailsStatus">
                                      Disponible
